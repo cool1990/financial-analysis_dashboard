@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+  # 不使用 pull_request_target
 
 concurrency:
   group: earnings-pipeline
@@ -21,15 +22,46 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+
+      - name: Restore LLM cache
+        uses: actions/cache@v4
+        with:
+          path: cache/llm
+          key: llm-cache-${{ hashFiles('prompts/**') }}-${{ runner.os }}
+          restore-keys: |
+            llm-cache-${{ hashFiles('prompts/**') }}-
+
+      - name: Check OPENROUTER_API_KEY
+        id: keycheck
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::OPENROUTER_API_KEY 未配置：若命中财报窗口将无法跑 Stage1/2 LLM，poll 将跳过 LLM 并告警"
+          else
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Poll earnings window
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HAS_KEY: ${{ steps.keycheck.outputs.has_key }}
         run: |
-          python -m pipeline poll
-          python -m pipeline build
+          set -euo pipefail
+          mkdir -p logs
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "WARNING: 无 OPENROUTER_API_KEY，仅检测窗口；若需 Stage1/2 请配置 Secret" | tee logs/poll.log
+            # 仍调用 poll：无 key 时 Stage1 会失败并记入 actions，不中断整个 job 的建站
+            python -m pipeline poll 2>&1 | tee -a logs/poll.log || echo "::warning::poll 在无 key 时部分失败（预期）"
+          else
+            python -m pipeline poll 2>&1 | tee logs/poll.log
+          fi
+          python -m pipeline build 2>&1 | tee -a logs/poll.log
+
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
@@ -38,3 +70,12 @@ jobs:
           git add data site || true
           git diff --staged --quiet || git commit -m "chore: poll update"
           git push
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poll-llm-logs
+          path: logs/
+          retention-days: 30
+          if-no-files-found: ignore

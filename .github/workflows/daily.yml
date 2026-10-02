@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: "30 22 * * *"
   workflow_dispatch:
+  # 注意：不使用 pull_request / pull_request_target，避免 fork PR 读取 secrets
 
 concurrency:
   group: earnings-pipeline
@@ -22,15 +23,45 @@ jobs:
           python-version: "3.12"
       - name: Install
         run: pip install -r requirements.txt
-      - name: Snapshot + stage3 + build
+
+      - name: Restore LLM cache
+        uses: actions/cache@v4
+        with:
+          path: cache/llm
+          key: llm-cache-${{ hashFiles('prompts/**') }}-${{ runner.os }}
+          restore-keys: |
+            llm-cache-${{ hashFiles('prompts/**') }}-
+
+      - name: Check OPENROUTER_API_KEY
+        id: keycheck
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::OPENROUTER_API_KEY 未配置：将跳过 LLM 步骤，快照与页面重建照常执行"
+          else
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Snapshot + optional LLM + build
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HAS_KEY: ${{ steps.keycheck.outputs.has_key }}
         run: |
-          python -m pipeline snapshot
-          python -m pipeline build
+          set -euo pipefail
+          mkdir -p logs
+          python -m pipeline snapshot 2>&1 | tee logs/daily_snapshot.log
+          if [ "$HAS_KEY" = "true" ]; then
+            echo "LLM secret 可用；daily 当前以快照+建站为主（Stage3 可后续接入）"
+          else
+            echo "WARNING: 跳过 LLM 相关步骤" | tee -a logs/daily_snapshot.log
+          fi
+          python -m pipeline build 2>&1 | tee logs/daily_build.log
+
       - name: Commit data/site
         run: |
           git config user.name "github-actions[bot]"
@@ -39,3 +70,13 @@ jobs:
           git add data site || true
           git diff --staged --quiet || git commit -m "chore: daily snapshot and site rebuild"
           git push
+
+      - name: Upload LLM logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-llm-logs
+          path: |
+            logs/
+          retention-days: 30
+          if-no-files-found: ignore

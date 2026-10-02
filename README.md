@@ -52,9 +52,14 @@ python -m pipeline build
 
 ## Secrets
 
+仅在 GitHub Actions 中配置（不要写入本地 `.env` / 代码）：
+
 - `SEC_USER_AGENT`（必需）
-- `OPENROUTER_API_KEY`（LLM 抽取）
+- `OPENROUTER_API_KEY`（LLM；仅 Actions）
 - 可选：`TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`
+
+本地无 key 时可运行：`pytest`、`python -m pipeline build`、`python -m pipeline snapshot`（无 LLM）。
+LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Actions → `manual` / `eval`。
 
 ## 说明
 

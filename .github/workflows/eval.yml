@@ -1,0 +1,69 @@
+name: eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: "逗号分隔模型 slug"
+        required: true
+        default: "openai/gpt-6-luna,z-ai/glm-5.3-flash,deepseek/deepseek-v4-pro-0813"
+      samples:
+        description: "逗号分隔样本（TICKER 或 TICKER:PERIOD）"
+        required: true
+        default: "MU"
+
+concurrency:
+  group: earnings-eval
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Require OPENROUTER_API_KEY
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "::error::缺少 GitHub Secret OPENROUTER_API_KEY。eval 必须配置该 Secret 后才能运行。"
+            exit 1
+          fi
+
+      # eval 关闭缓存，不恢复 cache/llm，避免污染评测
+
+      - name: Run eval
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p logs reports
+          python -m pipeline eval --models "${{ inputs.models }}" --samples "${{ inputs.samples }}" 2>&1 | tee logs/eval.log
+
+      - name: Commit reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          git add reports || true
+          git diff --staged --quiet || git commit -m "chore: eval report"
+          git push
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: |
+            reports/
+            logs/
+          retention-days: 30
