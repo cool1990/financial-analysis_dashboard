@@ -117,9 +117,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
+          # 先提交流水线产物，再 rebase；否则 unstaged 改动会阻断 pull --rebase
           git add data site config || true
           git diff --staged --quiet || git commit -m "chore: manual ${{ inputs.action }} ${{ inputs.ticker }}"
+          git pull --rebase --autostash
           git push
 
       - name: Upload logs artifact
@@ -129,5 +130,8 @@ jobs:
           name: manual-llm-logs
           path: |
             logs/
+            data/${{ inputs.ticker }}/
+            site/stocks/${{ inputs.ticker }}/
+            site/index.html
           retention-days: 30
           if-no-files-found: ignore
