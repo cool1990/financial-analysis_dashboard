@@ -54,16 +54,12 @@ def _structure_batch(llm: LLMClient, prompt_tmpl: str, batch: list[dict[str, Any
         models = llm.complete_json_list("structure_qa.md", user, QAItem)
         return [m.model_dump() for m in models]
     except Exception as e:
-        # 批次失败时逐条重试，降低整批空白响应拖垮
-        if len(batch) > 1:
-            out: list[dict[str, Any]] = []
-            for ex in batch:
-                out.extend(_structure_batch(llm, prompt_tmpl, [ex]))
-            return out
+        # 不再逐条重试：单次调用可达数分钟，逐条会把 Stage2 拖到十几分钟并重复烧额度。
+        # 批次失败则整批用占位，由人工或 --force 重跑补齐。
         reason = "模型返回空或非 JSON" if "Expecting value" in str(e) else "解析失败"
         if isinstance(e, LLMError):
-            reason = "模型调用失败" if "HTTP" in str(e) else reason
-        return [_fallback_item(batch[0], reason)]
+            reason = "模型调用失败" if ("HTTP" in str(e) or "超时" in str(e) or "timeout" in str(e).lower()) else reason
+        return [_fallback_item(ex, reason) for ex in batch]
 
 
 def structure_qa(
@@ -81,9 +77,11 @@ def structure_qa(
         press_release_numbers=json.dumps(press_release_numbers or {}, ensure_ascii=False),
     )
     items: list[dict[str, Any]] = []
-    batch_size = 2
+    # 更大批次 → 更少次 OpenRouter 往返（原先 batch=2 + 失败逐条重试会放大耗时）
+    batch_size = 5
     for i in range(0, len(exchanges), batch_size):
         batch = exchanges[i : i + batch_size]
+        print(f"[stage2/qa] batch {i // batch_size + 1}/{(len(exchanges) + batch_size - 1) // batch_size} size={len(batch)}", flush=True)
         items.extend(_structure_batch(llm, prompt_tmpl, batch))
     stats = compute_topic_stats(items)
     return {

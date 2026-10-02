@@ -35,6 +35,12 @@ on:
         default: "false"
         type: choice
         options: ["false", "true"]
+      force:
+        description: "Stage2 强制重跑 LLM（默认跳过已完成）"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
 concurrency:
   group: earnings-pipeline
@@ -46,6 +52,7 @@ permissions:
 jobs:
   manual:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -104,6 +111,7 @@ jobs:
               ARGS=(--ticker "${{ inputs.ticker }}" --stage "${{ inputs.stage }}" "${MODEL_ARGS[@]}")
               if [ -n "${{ inputs.period }}" ]; then ARGS+=(--period "${{ inputs.period }}"); fi
               if [ -n "${{ inputs.accession }}" ]; then ARGS+=(--accession "${{ inputs.accession }}"); fi
+              if [ "${{ inputs.force }}" = "true" ]; then ARGS+=(--force); fi
               python -m pipeline run "${ARGS[@]}" 2>&1 | tee logs/manual.log
               python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
               ;;

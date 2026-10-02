@@ -35,6 +35,11 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument("--stage", type=int, required=True, choices=[1, 2, 3])
     p_run.add_argument("--accession", default=None, help="指定 8-K accession 模拟/重跑")
     p_run.add_argument("--model", default=None, help="覆盖 settings.yaml 中的模型")
+    p_run.add_argument(
+        "--force",
+        action="store_true",
+        help="Stage2：即使已有完整产物也强制重跑 LLM（默认跳过已完成）",
+    )
 
     p_bf = sub.add_parser("backfill", help="历史回补")
     p_bf.add_argument("--ticker", required=True)
@@ -86,7 +91,13 @@ def main(argv: list[str] | None = None) -> int:
                     period = None  # stage1 自动从最新 8-K 推断
                 else:
                     period = resolve_latest_period(args.ticker)
-            doc = run_pipeline(args.ticker, period, args.stage, accession=args.accession)
+            doc = run_pipeline(
+                args.ticker,
+                period,
+                args.stage,
+                accession=args.accession,
+                force=bool(getattr(args, "force", False)),
+            )
             print(json.dumps({"period": doc["meta"]["fiscal_period"], "stage": doc["status"]["stage"], "warnings": doc["status"]["warnings"]}, ensure_ascii=False, indent=2))
             write_github_step_summary(doc["status"].get("warnings"))
             return 0

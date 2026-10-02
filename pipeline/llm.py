@@ -5,6 +5,8 @@ import json
 import os
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Type, TypeVar
@@ -22,6 +24,10 @@ class LLMError(RuntimeError):
 
 
 class CostLimitExceeded(LLMError):
+    pass
+
+
+class LLMTimeoutError(LLMError):
     pass
 
 
@@ -211,7 +217,9 @@ class LLMClient:
         self.model = model or os.environ.get("PIPELINE_LLM_MODEL") or settings["model"]
         self.temperature = settings.get("temperature", 0)
         self.base_url = settings.get("base_url", "https://openrouter.ai/api/v1")
-        self.max_retries = settings.get("max_retries", 1)
+        self.max_retries = int(settings.get("max_retries", 1))
+        self.max_tokens = int(settings.get("max_tokens", 4096))
+        self.request_timeout_sec = float(settings.get("request_timeout_sec", 90))
         self.max_cost = float(settings.get("max_cost_per_run_usd", 2))
         self.use_cache = use_cache
         self.api_key = openrouter_api_key()
@@ -296,18 +304,40 @@ class LLMClient:
         body: dict[str, Any] = {
             "model": self.model,
             "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
             "messages": messages,
         }
         if json_object:
             body["response_format"] = {"type": "json_object"}
-        t0 = time.monotonic()
-        try:
-            with httpx.Client(timeout=120.0) as client:
-                resp = client.post(
+        # httpx 的 read timeout 会在每个 chunk 间重置；流式长输出可拖到数十分钟。
+        # 用线程池施加墙钟上限，超时即放弃本次调用。
+        deadline = max(1.0, float(self.request_timeout_sec))
+        http_timeout = min(deadline, 60.0)
+
+        def _do_request() -> httpx.Response:
+            with httpx.Client(timeout=http_timeout) as client:
+                return client.post(
                     f"{self.base_url.rstrip('/')}/chat/completions",
-                    headers=auth_headers(self.api_key),
+                    headers=auth_headers(self.api_key or ""),
                     json=body,
                 )
+
+        t0 = time.monotonic()
+        try:
+            pool = ThreadPoolExecutor(max_workers=1)
+            try:
+                fut = pool.submit(_do_request)
+                try:
+                    resp = fut.result(timeout=deadline)
+                except FuturesTimeout:
+                    # 不 wait 卡住的请求线程，避免超时后仍阻塞到 httpx 读完
+                    raise LLMTimeoutError(
+                        f"LLM 请求超过墙钟上限 {deadline:.0f}s（model={self.model}）"
+                    ) from None
+            finally:
+                pool.shutdown(wait=False, cancel_futures=True)
+        except LLMTimeoutError:
+            raise
         except Exception as e:
             raise LLMError(redact_secrets(str(e), self.api_key)) from None
         latency = (time.monotonic() - t0) * 1000

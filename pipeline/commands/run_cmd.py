@@ -344,11 +344,32 @@ def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | N
     return doc
 
 
-def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
+def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[str, Any]:
+    import time as _time
+
     cfg = load_ticker_config(ticker)
     doc = load_period_json(ticker, fiscal_period)
     if not doc:
         raise RuntimeError(f"缺少 {ticker} {fiscal_period} 数据，请先跑 Stage 1")
+
+    stage_now = (doc.get("status") or {}).get("stage") or ""
+    qa_items = ((doc.get("qa") or {}).get("items")) or []
+    driver_metrics = ((doc.get("drivers") or {}).get("metrics")) or []
+    # 已完成且产物齐全时默认跳过，避免 oneshot/误触重跑长时间烧 OpenRouter
+    if (
+        not force
+        and stage_now in {"stage2_done", "stage3_done"}
+        and qa_items
+        and driver_metrics
+        and (doc.get("summary") or {}).get("headline")
+    ):
+        print(
+            f"[stage2] 跳过：{ticker} {fiscal_period} 已是 {stage_now} "
+            f"(qa={len(qa_items)}, drivers={len(driver_metrics)})。需要重跑请加 --force",
+            flush=True,
+        )
+        return doc
+
     raw_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / fiscal_period
     release_at = (doc.get("meta") or {}).get("release_at_utc")
     text, source = fetch_transcript(
@@ -368,15 +389,30 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
     doc["meta"]["transcript_source"] = source
     mark_stage(ticker, fiscal_period, "transcript_found")
 
+    def _step(name: str):
+        t0 = _time.monotonic()
+        print(f"[stage2] start {name}", flush=True)
+        return t0
+
+    def _done(name: str, t0: float) -> None:
+        print(f"[stage2] done {name} in {_time.monotonic() - t0:.1f}s", flush=True)
+
     # guidance merge from call
     llm = LLMClient()
     g_prompt = llm.load_prompt("extract_guidance.md", guidance_keys=", ".join(load_guidance_keys()))
+    t0 = _step("extract_guidance")
     try:
-        models = llm.complete_json_list("extract_guidance.md", g_prompt + "\n\n----\n" + text[:80000], GuidanceItem)
+        # 控制输入体积：80k 字符对长文本模型仍会拖很久；40k 通常够覆盖指引段落
+        models = llm.complete_json_list(
+            "extract_guidance.md",
+            g_prompt + "\n\n----\n" + text[:40000],
+            GuidanceItem,
+        )
         call_items = [parse_guidance_item(m.model_dump()) for m in models]
     except Exception as e:
         call_items = []
         doc["status"]["warnings"].append(f"电话会指引抽取失败: {e}")
+    _done("extract_guidance", t0)
 
     merged = {_guidance_merge_key(i): i for i in doc.get("guidance", {}).get("items", [])}
     for ci in call_items:
@@ -405,7 +441,9 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
         "revenue": (doc.get("financials") or {}).get("revenue", {}).get("value"),
         "eps": next((c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "eps"), None),
     }
+    t0 = _step("structure_qa")
     qa = structure_qa(text, press_nums)
+    _done("structure_qa", t0)
     prior = load_period_json(ticker, prior_fiscal_period(fiscal_period))
     stats = __import__("pipeline.compute.topics", fromlist=["compute_topic_stats"]).compute_topic_stats(
         qa.get("items") or [], (prior or {}).get("qa", {}).get("items")
@@ -418,6 +456,7 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
     # drivers stage2
     press_path = raw_dir / "press_release.html"
     press_text = load_press_release(press_path)["combined"] if press_path.exists() else ""
+    t0 = _step("analyze_drivers")
     try:
         drivers = analyze_drivers(
             doc.get("financials") or {},
@@ -430,13 +469,16 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
         doc["status"]["warnings"] = strip_driver_warnings(doc["status"]["warnings"]) + (drivers.get("warnings") or [])
     except Exception as e:
         doc["status"]["warnings"].append(f"Stage2 drivers 失败: {e}")
+    _done("analyze_drivers", t0)
 
     # summary
+    t0 = _step("summarize")
     try:
         prior_watch = (prior or {}).get("summary", {}).get("next_watchlist") or []
         doc["summary"] = summarize_period(doc, prior_watch)
     except Exception as e:
         doc["status"]["warnings"].append(f"总结失败: {e}")
+    _done("summarize", t0)
 
     doc["status"]["stage"] = "stage2_done"
     save_period_json(ticker, fiscal_period, doc)
@@ -585,14 +627,21 @@ def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
     return doc
 
 
-def run_pipeline(ticker: str, period: str | None, stage: int, accession: str | None = None) -> dict[str, Any]:
+def run_pipeline(
+    ticker: str,
+    period: str | None,
+    stage: int,
+    accession: str | None = None,
+    *,
+    force: bool = False,
+) -> dict[str, Any]:
     try:
         if stage == 1:
             return run_stage1(ticker, period, accession=accession)
         if stage == 2:
             if not period:
                 raise RuntimeError("Stage2 需要 --period")
-            return run_stage2(ticker, period)
+            return run_stage2(ticker, period, force=force)
         if stage == 3:
             if not period:
                 raise RuntimeError("Stage3 需要 --period")
