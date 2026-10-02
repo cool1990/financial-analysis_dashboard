@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from pipeline.config import data_dir, list_tickers, load_ticker_config, site_dir
 from pipeline import ROOT
+from pipeline.config import data_dir, list_tickers, load_ticker_config, site_dir
 
 
 def _fmt_pct(value: float | None, pp: bool = False) -> str:
@@ -18,7 +19,7 @@ def _fmt_pct(value: float | None, pp: bool = False) -> str:
     except (TypeError, ValueError):
         return "—"
     if pp:
-        return f"{value*100:+.2f} pp" if abs(value) < 2 else f"{value:+.2f} pp"
+        return f"{value*100:+.2f} 百分点" if abs(value) < 2 else f"{value:+.2f} 百分点"
     return f"{value*100:+.2f}%"
 
 
@@ -41,27 +42,106 @@ def _fmt_money(value: float | None) -> str:
 METRIC_LABELS = {
     "revenue": "营收",
     "gross_margin": "毛利率",
-    "gross_margin_gaap": "毛利率 GAAP",
-    "gross_margin_nongaap": "毛利率 Non-GAAP",
+    "gross_margin_gaap": "毛利率（GAAP）",
+    "gross_margin_nongaap": "毛利率（Non-GAAP）",
     "operating_margin": "营业利润率",
-    "operating_margin_gaap": "营业利润率 GAAP",
-    "operating_margin_nongaap": "营业利润率 Non-GAAP",
-    "eps": "EPS",
-    "eps_gaap": "稀释 EPS GAAP",
-    "eps_nongaap": "稀释 EPS Non-GAAP",
+    "operating_margin_gaap": "营业利润率（GAAP）",
+    "operating_margin_nongaap": "营业利润率（Non-GAAP）",
+    "eps": "每股收益",
+    "eps_gaap": "稀释每股收益（GAAP）",
+    "eps_nongaap": "稀释每股收益（Non-GAAP）",
     "operating_cash_flow": "经营现金流",
     "capex": "资本开支",
     "fcf": "自由现金流",
-    "opex_gaap": "运营费用 GAAP",
-    "opex_nongaap": "运营费用 Non-GAAP",
-    "share_count": "股本",
+    "opex_gaap": "运营费用（GAAP）",
+    "opex_nongaap": "运营费用（Non-GAAP）",
+    "share_count": "稀释股本",
     "next_q_revenue_guidance": "下季营收指引",
-    "next_q_eps_guidance": "下季 EPS 指引",
+    "next_q_eps_guidance": "下季每股收益指引",
 }
+
+STAGE_LABELS = {
+    "stage1_done": "阶段1 · 新闻稿",
+    "stage2_done": "阶段2 · 含电话会",
+    "stage3_done": "阶段3 · 市场反应",
+    "transcript_found": "已找到文字稿",
+    "backfill_gaap": "历史回补（GAAP）",
+    "scheduled": "待财报",
+}
+
+SOURCE_LABELS = {
+    "press_release": "新闻稿",
+    "prepared_remarks": "管理层发言",
+    "qa": "问答环节",
+    "motley_fool": "Motley Fool 文字稿",
+    "ir_page": "投资者关系",
+    "manual": "手动上传",
+    "consensus": "一致预期",
+    "none": "无",
+    "xbrl": "SEC XBRL",
+    "gaap": "GAAP",
+    "non_gaap": "Non-GAAP",
+    "unspecified": "未注明",
+}
+
+DIRECTION_LABELS = {
+    "up": "看高",
+    "down": "看低",
+    "flat": "持平",
+}
+
+DIRECTNESS_LABELS = {
+    "direct": "直接回答",
+    "partial": "部分回答",
+    "evasive": "回避",
+}
+
+TONE_LABELS = {
+    "positive": "偏积极",
+    "neutral": "中性",
+    "cautious": "偏谨慎",
+}
+
+METRIC_SECTIONS = [
+    ("revenue", "营收", False),
+    ("gross_margin_nongaap", "毛利率（Non-GAAP）", True),
+    ("gross_margin_gaap", "毛利率（GAAP）", True),
+    ("operating_margin_nongaap", "营业利润率（Non-GAAP）", True),
+    ("operating_margin_gaap", "营业利润率（GAAP）", True),
+    ("eps_nongaap", "稀释每股收益（Non-GAAP）", False),
+    ("eps_gaap", "稀释每股收益（GAAP）", False),
+    ("operating_cash_flow", "经营现金流", False),
+    ("capex", "资本开支", False),
+    ("fcf", "自由现金流", False),
+]
 
 
 def _metric_label(key: str | None) -> str:
     return METRIC_LABELS.get(key or "", key or "—")
+
+
+def _stage_label(stage: str | None) -> str:
+    return STAGE_LABELS.get(stage or "", stage or "—")
+
+
+def _source_label(src: str | None) -> str:
+    if not src:
+        return "—"
+    return SOURCE_LABELS.get(src, src)
+
+
+def _direction_label(d: str | None) -> str:
+    if not d:
+        return ""
+    return DIRECTION_LABELS.get(d, d)
+
+
+def _directness_label(d: str | None) -> str:
+    return DIRECTNESS_LABELS.get(d or "", d or "—")
+
+
+def _tone_label(t: str | None) -> str:
+    return TONE_LABELS.get(t or "", t or "—")
 
 
 def _fmt_guide(value: float | None, metric_key: str | None) -> str:
@@ -92,9 +172,87 @@ def _dedupe(items: list | None) -> list:
     return out
 
 
+def _humanize_warning(text: str) -> str:
+    """把残留的英文/元组告警转成更可读的中文。"""
+    s = str(text)
+    s = s.replace("Expecting value: line 1 column 1 (char 0)", "模型返回空内容，结构化失败")
+    m = re.search(r"电话会指引与新闻稿不一致:\s*\('([^']*)',\s*'([^']*)'\)", s)
+    if m:
+        return f"电话会与新闻稿指引条目冲突（已拆分展示）：{_metric_label(m.group(1))} · {m.group(2)}"
+    return s
+
+
 def _verdict_label(v: str | None) -> str:
-    mapping = {"beat": "Beat", "miss": "Miss", "inline": "In-line", "unknown": "待核对", "": "—", None: "—"}
+    mapping = {
+        "beat": "超预期",
+        "miss": "不及预期",
+        "inline": "符合预期",
+        "unknown": "待核对",
+        "": "—",
+        None: "—",
+    }
     return mapping.get(v or "", v or "—")
+
+
+def _period_zh(period: str | None) -> str:
+    if not period:
+        return "—"
+    p = period.strip()
+    repl = [
+        (r"(?i)fiscal\s*(\d{4})", r"\1财年"),
+        (r"(?i)q([1-4])\s*fiscal\s*(\d{4})", r"\2财年Q\1"),
+        (r"(?i)first quarter fiscal\s*(\d{4})", r"\1财年第一季度"),
+        (r"(?i)calendar\s*(\d{4})", r"\1日历年"),
+        (r"(?i)through\s*(\d{4})", r"至\1年"),
+        (r"(?i)beyond\s*(\d{4})", r"\1年以后"),
+        (r"(?i)not specified|unspecified", "未指明期间"),
+        (r"(?i)second half of next year", "明年下半年"),
+        (r"(?i)second half of calendar\s*(\d{4})", r"\1日历年下半年"),
+    ]
+    out = p
+    for pat, rep in repl:
+        out = re.sub(pat, rep, out)
+    return out
+
+
+def _is_quant_guidance(g: dict[str, Any]) -> bool:
+    return g.get("mid") is not None or g.get("low") is not None or g.get("high") is not None
+
+
+def _metric_sections(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    fin = doc.get("financials") or {}
+    drivers = {(m.get("metric") or ""): m for m in ((doc.get("drivers") or {}).get("metrics") or [])}
+    used: set[str] = set()
+    sections: list[dict[str, Any]] = []
+    for key, label, is_ratio in METRIC_SECTIONS:
+        metric = fin.get(key)
+        if not metric:
+            continue
+        used.add(key)
+        sections.append(
+            {
+                "key": key,
+                "label": label,
+                "is_ratio": is_ratio,
+                "is_eps": "eps" in key,
+                "metric": metric,
+                "driver": drivers.get(key),
+            }
+        )
+    for key, drv in drivers.items():
+        if key in used:
+            continue
+        sections.append(
+            {
+                "key": key,
+                "label": _metric_label(key),
+                "is_ratio": "margin" in (key or ""),
+                "is_eps": "eps" in (key or ""),
+                "metric": fin.get(key),
+                "driver": drv,
+            }
+        )
+    return sections
 
 
 def _index_row(t: str, cfg: dict[str, Any], period: str, doc: dict[str, Any]) -> dict[str, Any]:
@@ -137,20 +295,23 @@ def build_site(ticker: str | None = None) -> list[Path]:
     env.filters["label"] = _metric_label
     env.filters["guide"] = _fmt_guide
     env.filters["dedupe"] = _dedupe
-    # 用 Jinja 内置 tojson（返回 Markup 且对 <>&' 做 JS 安全转义）；
-    # 自定义 json.dumps 会被 autoescape 成 &#34;，导致页面图表脚本语法错误
+    env.filters["stage"] = _stage_label
+    env.filters["source"] = _source_label
+    env.filters["direction"] = _direction_label
+    env.filters["directness"] = _directness_label
+    env.filters["tone"] = _tone_label
+    env.filters["period_zh"] = _period_zh
+    env.filters["warn_zh"] = _humanize_warning
     env.policies["json.dumps_kwargs"] = {"sort_keys": True, "ensure_ascii": False}
 
     out_dir = site_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
-    # copy static
     static_src = ROOT / "builder" / "static"
     static_dst = out_dir / "static"
     static_dst.mkdir(parents=True, exist_ok=True)
     for f in static_src.glob("*"):
         (static_dst / f.name).write_bytes(f.read_bytes())
 
-    # 首页始终列出全部股票；--ticker 只限制重新生成哪只股票的详情页
     tickers = list_tickers()
     only = ticker.upper() if ticker else None
     if only and only not in tickers:
@@ -172,7 +333,6 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 index_rows.append(_scheduled_row(t, cfg))
             continue
         docs = {p: json.loads((folder / f"{p}.json").read_text(encoding="utf-8")) for p in periods}
-        # history series for charts
         history = []
         for hp in sorted(periods):
             fin = docs[hp].get("financials") or {}
@@ -188,6 +348,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
             )
         for period in periods:
             doc = docs[period]
+            guidance_items = (doc.get("guidance") or {}).get("items") or []
             html = env.get_template("period.html").render(
                 ticker=t,
                 company=cfg.get("name"),
@@ -196,6 +357,10 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 current_period=period,
                 history=history[-8:],
                 waiting_transcript=doc.get("status", {}).get("stage") == "stage1_done",
+                metric_sections=_metric_sections(doc),
+                quant_guidance=[g for g in guidance_items if _is_quant_guidance(g)],
+                qual_guidance=[g for g in guidance_items if not _is_quant_guidance(g)],
+                warnings=[_humanize_warning(w) for w in _dedupe(doc.get("status", {}).get("warnings"))],
             )
             stock_dir = out_dir / "stocks" / t
             stock_dir.mkdir(parents=True, exist_ok=True)
