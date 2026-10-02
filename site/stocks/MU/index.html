@@ -127,7 +127,17 @@
     </tbody>
   </table>
   </div>
-  <p class="muted" style="margin:0.8rem 0 0">次日股价反应：等待阶段3</p>
+  <p class="muted" style="margin:0.8rem 0 0">
+    次日股价反应：
+    
+      <span class="v beat">
+        +3.03%
+      </span>
+      
+        <span class="muted">（2026-09-30 $1065.11 → 2026-10-01 $1097.39）</span>
+      
+    
+  </p>
 </section>
 
 
@@ -708,9 +718,9 @@
   </div>
 
   <div class="charts">
-    <canvas id="revChart" height="120"></canvas>
-    <canvas id="marginChart" height="120"></canvas>
-    <canvas id="fcfChart" height="120"></canvas>
+    <div class="chart-card"><canvas id="revChart"></canvas></div>
+    <div class="chart-card"><canvas id="marginChart"></canvas></div>
+    <div class="chart-card"><canvas id="fcfChart"></canvas></div>
   </div>
 </section>
 
@@ -1060,7 +1070,86 @@
 
   <h3>分析师修正</h3>
   
-  <pre class="muted">{"gap_closure": {"eps": null, "revenue": null}, "t_minus_1": {"date": "2026-10-02", "eps": 38.22891, "revenue": 61669197360}, "t_plus_1": {"date": null, "eps": null, "eps_chg": null, "revenue": null, "revenue_chg": null}, "t_plus_3": {"date": null, "eps": null, "eps_chg": null, "revenue": null, "revenue_chg": null}, "t_plus_7": {"date": null, "eps": null, "eps_chg": null, "revenue": null, "revenue_chg": null}}</pre>
+  
+  
+  
+  
+  <p class="section-note">看一致预期在财报前后如何变化。T+1/T+3/T+7 需要发布后对应天数的快照；未到日期或未拍摄时显示「待补」。</p>
+  
+  <p class="muted">财报前对本季一致预期：每股收益 $32.46 · 营收 —（2026-09-30）</p>
+  
+  <div class="table-wrap">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>时点</th><th>含义</th><th>日期</th><th>每股收益预期</th><th>较T-1</th><th>营收预期</th><th>较T-1</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      
+        
+        
+        
+        <tr>
+          <td>T-1</td>
+          <td>发布前·下季预期</td>
+          <td>2026-09-30</td>
+          <td>$34.33</td>
+          <td>—</td>
+          <td>待补</td>
+          <td>—</td>
+        </tr>
+      
+        
+        
+        
+        <tr>
+          <td>T+1</td>
+          <td>发布后约1天·下季</td>
+          <td>2026-10-02</td>
+          <td>$38.23</td>
+          <td>11.4%</td>
+          <td>$61.67B</td>
+          <td>—</td>
+        </tr>
+      
+        
+        
+        
+        <tr>
+          <td>T+3</td>
+          <td>发布后约3天·下季</td>
+          <td>待补</td>
+          <td>待补</td>
+          <td>—</td>
+          <td>待补</td>
+          <td>—</td>
+        </tr>
+      
+        
+        
+        
+        <tr>
+          <td>T+7</td>
+          <td>发布后约7天·下季</td>
+          <td>待补</td>
+          <td>待补</td>
+          <td>—</td>
+          <td>待补</td>
+          <td>—</td>
+        </tr>
+      
+    </tbody>
+  </table>
+  </div>
+  
+  
+  <p class="muted" style="margin-top:0.7rem">指引缺口收敛（下季）：每股收益 — · 营收 —</p>
+  
+  
+  <ul class="muted"><li>缺少发布后 T+3 快照</li><li>缺少发布后 T+7 快照</li></ul>
+  
   
 </section>
 
@@ -1278,7 +1367,27 @@ James Schneider</span>
 <script>
 const periodHistory = [{"fcf": 32863000000.0, "gross_margin": 0.8704567666746574, "operating_margin": 0.823102030279002, "period": "FY2026Q4", "revenue": 54229000000.0, "revenue_yoy": null}];
 const labels = periodHistory.map(h => h.period);
-new Chart(document.getElementById('revChart'), {
+const chartOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { position: 'bottom' } }
+};
+function mountChart(id, title, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wrap = el.parentElement;
+  if (!periodHistory.length) {
+    wrap.innerHTML = '<p class="placeholder">暂无历史序列可绘制。</p>';
+    return;
+  }
+  config.options = Object.assign({ plugins: { title: { display: true, text: title } } }, chartOpts, config.options || {});
+  if (config.options.plugins && chartOpts.plugins) {
+    config.options.plugins = Object.assign({}, chartOpts.plugins, config.options.plugins);
+  }
+  new Chart(el, config);
+}
+mountChart('revChart', '营收与同比', {
+  type: 'bar',
   data: {
     labels,
     datasets: [
@@ -1286,20 +1395,18 @@ new Chart(document.getElementById('revChart'), {
       {type:'line', label:'同比%', data: periodHistory.map(h => h.revenue_yoy == null ? null : h.revenue_yoy*100), yAxisID:'y1'}
     ]
   },
-  options: {responsive:true, plugins:{title:{display:true,text:'营收与同比'}}, scales:{y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}}}}
+  options: {scales:{y:{position:'left', title:{display:true,text:'营收'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'同比%'}}}}
 });
-new Chart(document.getElementById('marginChart'), {
+mountChart('marginChart', '利润率趋势', {
   type:'line',
   data:{labels, datasets:[
     {label:'毛利率%', data: periodHistory.map(h => h.gross_margin == null ? null : h.gross_margin*100)},
     {label:'营业利润率%', data: periodHistory.map(h => h.operating_margin == null ? null : h.operating_margin*100)}
-  ]},
-  options:{responsive:true, plugins:{title:{display:true,text:'利润率趋势'}}}
+  ]}
 });
-new Chart(document.getElementById('fcfChart'), {
+mountChart('fcfChart', '自由现金流', {
   type:'bar',
-  data:{labels, datasets:[{label:'自由现金流', data: periodHistory.map(h => h.fcf)}]},
-  options:{responsive:true, plugins:{title:{display:true,text:'自由现金流'}}}
+  data:{labels, datasets:[{label:'自由现金流', data: periodHistory.map(h => h.fcf)}]}
 });
 </script>
 

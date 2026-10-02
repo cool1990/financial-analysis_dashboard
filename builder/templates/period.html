@@ -53,7 +53,21 @@
     </tbody>
   </table>
   </div>
-  <p class="muted" style="margin:0.8rem 0 0">次日股价反应：{% if doc.price_reaction.next_day_pct is not none %}{{ '%.2f'|format(doc.price_reaction.next_day_pct*100) }}%{% else %}等待阶段3{% endif %}</p>
+  <p class="muted" style="margin:0.8rem 0 0">
+    次日股价反应：
+    {% if doc.price_reaction.next_day_pct is not none %}
+      <span class="v {% if doc.price_reaction.next_day_pct > 0 %}beat{% elif doc.price_reaction.next_day_pct < 0 %}miss{% else %}inline{% endif %}">
+        {{ '%+.2f'|format(doc.price_reaction.next_day_pct*100) }}%
+      </span>
+      {% if doc.price_reaction.close_before is not none and doc.price_reaction.close_after is not none %}
+        <span class="muted">（{{ doc.price_reaction.before_date or '' }} ${{ '%.2f'|format(doc.price_reaction.close_before) }} → {{ doc.price_reaction.after_date or '' }} ${{ '%.2f'|format(doc.price_reaction.close_after) }}）</span>
+      {% endif %}
+    {% elif doc.status.stage == 'stage3_done' %}
+      暂无（{{ doc.price_reaction.note or '交易日数据不足' }}）
+    {% else %}
+      等待阶段3
+    {% endif %}
+  </p>
 </section>
 
 {% if doc.summary and doc.summary.headline %}
@@ -133,9 +147,9 @@
   </div>
 
   <div class="charts">
-    <canvas id="revChart" height="120"></canvas>
-    <canvas id="marginChart" height="120"></canvas>
-    <canvas id="fcfChart" height="120"></canvas>
+    <div class="chart-card"><canvas id="revChart"></canvas></div>
+    <div class="chart-card"><canvas id="marginChart"></canvas></div>
+    <div class="chart-card"><canvas id="fcfChart"></canvas></div>
   </div>
 </section>
 
@@ -190,10 +204,55 @@
   {% endif %}
 
   <h3>分析师修正</h3>
-  {% if doc.guidance.get('analyst_revisions') and doc.guidance.analyst_revisions.get('t_minus_1') %}
-  <pre class="muted">{{ doc.guidance.analyst_revisions | tojson }}</pre>
+  {% set ar = doc.guidance.get('analyst_revisions') or {} %}
+  {% set tm1 = ar.get('t_minus_1') or {} %}
+  {% set tm1_cq = ar.get('t_minus_1_current_quarter') or {} %}
+  {% set has_tm1 = tm1_cq or (tm1.get('eps') is not none or tm1.get('revenue') is not none) %}
+  {% if has_tm1 %}
+  <p class="section-note">看一致预期在财报前后如何变化。T+1/T+3/T+7 需要发布后对应天数的快照；未到日期或未拍摄时显示「待补」。</p>
+  {% if tm1_cq %}
+  <p class="muted">财报前对本季一致预期：每股收益 {% if tm1_cq.get('eps') is not none %}${{ '%.2f'|format(tm1_cq.eps) }}{% else %}—{% endif %} · 营收 {{ tm1_cq.get('revenue')|money }}（{{ tm1_cq.get('date') or '—' }}）</p>
+  {% endif %}
+  <div class="table-wrap">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>时点</th><th>含义</th><th>日期</th><th>每股收益预期</th><th>较T-1</th><th>营收预期</th><th>较T-1</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set rows = [
+        ('t_minus_1', 'T-1', '发布前·下季预期'),
+        ('t_plus_1', 'T+1', '发布后约1天·下季'),
+        ('t_plus_3', 'T+3', '发布后约3天·下季'),
+        ('t_plus_7', 'T+7', '发布后约7天·下季')
+      ] %}
+      {% for key, label, meaning in rows %}
+        {% set r = ar.get(key) or {} %}
+        {% set eps_chg = r.get('eps_chg') %}
+        {% set rev_chg = r.get('revenue_chg') %}
+        <tr>
+          <td>{{ label }}</td>
+          <td>{{ meaning }}</td>
+          <td>{{ r.get('date') or '待补' }}</td>
+          <td>{% if r.get('eps') is not none %}${{ '%.2f'|format(r.eps) }}{% else %}待补{% endif %}</td>
+          <td>{% if eps_chg is not none %}{{ '%.1f'|format(eps_chg*100) }}%{% else %}—{% endif %}</td>
+          <td>{{ r.get('revenue')|money if r.get('revenue') is not none else '待补' }}</td>
+          <td>{% if rev_chg is not none %}{{ '%.1f'|format(rev_chg*100) }}%{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if ar.get('gap_closure') %}
+  {% set gc = ar.get('gap_closure') or {} %}
+  <p class="muted" style="margin-top:0.7rem">指引缺口收敛（下季）：每股收益 {{ gc.get('eps') if gc.get('eps') is not none else '—' }} · 营收 {{ gc.get('revenue') if gc.get('revenue') is not none else '—' }}</p>
+  {% endif %}
+  {% if ar.get('status_notes') %}
+  <ul class="muted">{% for n in ar.get('status_notes') %}<li>{{ n }}</li>{% endfor %}</ul>
+  {% endif %}
   {% else %}
-  <p class="placeholder">等待阶段3（发布后 T+1 / T+3 / T+7 一致预期快照）。</p>
+  <p class="placeholder">尚无可用的发布前/后一致预期快照。保持 daily 拍摄后，阶段3会自动补齐 T+1/T+3/T+7。</p>
   {% endif %}
 </section>
 
@@ -244,7 +303,27 @@
 <script>
 const periodHistory = {{ history|tojson }};
 const labels = periodHistory.map(h => h.period);
-new Chart(document.getElementById('revChart'), {
+const chartOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { position: 'bottom' } }
+};
+function mountChart(id, title, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wrap = el.parentElement;
+  if (!periodHistory.length) {
+    wrap.innerHTML = '<p class="placeholder">暂无历史序列可绘制。</p>';
+    return;
+  }
+  config.options = Object.assign({ plugins: { title: { display: true, text: title } } }, chartOpts, config.options || {});
+  if (config.options.plugins && chartOpts.plugins) {
+    config.options.plugins = Object.assign({}, chartOpts.plugins, config.options.plugins);
+  }
+  new Chart(el, config);
+}
+mountChart('revChart', '营收与同比', {
+  type: 'bar',
   data: {
     labels,
     datasets: [
@@ -252,20 +331,18 @@ new Chart(document.getElementById('revChart'), {
       {type:'line', label:'同比%', data: periodHistory.map(h => h.revenue_yoy == null ? null : h.revenue_yoy*100), yAxisID:'y1'}
     ]
   },
-  options: {responsive:true, plugins:{title:{display:true,text:'营收与同比'}}, scales:{y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}}}}
+  options: {scales:{y:{position:'left', title:{display:true,text:'营收'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'同比%'}}}}
 });
-new Chart(document.getElementById('marginChart'), {
+mountChart('marginChart', '利润率趋势', {
   type:'line',
   data:{labels, datasets:[
     {label:'毛利率%', data: periodHistory.map(h => h.gross_margin == null ? null : h.gross_margin*100)},
     {label:'营业利润率%', data: periodHistory.map(h => h.operating_margin == null ? null : h.operating_margin*100)}
-  ]},
-  options:{responsive:true, plugins:{title:{display:true,text:'利润率趋势'}}}
+  ]}
 });
-new Chart(document.getElementById('fcfChart'), {
+mountChart('fcfChart', '自由现金流', {
   type:'bar',
-  data:{labels, datasets:[{label:'自由现金流', data: periodHistory.map(h => h.fcf)}]},
-  options:{responsive:true, plugins:{title:{display:true,text:'自由现金流'}}}
+  data:{labels, datasets:[{label:'自由现金流', data: periodHistory.map(h => h.fcf)}]}
 });
 </script>
 {% endblock %}

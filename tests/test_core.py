@@ -353,3 +353,25 @@ def test_metric_sections_bind_drivers():
     assert secs and secs[0]["key"] == "revenue" and secs[0]["driver"]["summary"] == "需求强"
     assert _verdict_label("beat") == "超预期"
     assert "结构化失败" in _humanize_warning("Expecting value: line 1 column 1 (char 0)")
+
+
+def test_next_day_reaction_amc_logic_unit():
+    """不依赖外网：用伪造 closes 验证 AMC/BMO 选取规则。"""
+    from pipeline.sources.yfinance_src import YFinanceSource
+
+    yf = YFinanceSource("MU")
+
+    def fake_closes(start, end):
+        return [
+            ("2026-09-29", 100.0),
+            ("2026-09-30", 110.0),
+            ("2026-10-01", 121.0),
+        ]
+
+    yf.daily_closes = fake_closes  # type: ignore[method-assign]
+    amc = yf.next_day_reaction("2026-09-30T20:00:00Z", release_timing="amc")
+    assert amc["before_date"] == "2026-09-30" and amc["after_date"] == "2026-10-01"
+    assert abs(amc["next_day_pct"] - 0.1) < 1e-9
+    bmo = yf.next_day_reaction("2026-09-30T12:00:00Z", release_timing="bmo")
+    assert bmo["before_date"] == "2026-09-29" and bmo["after_date"] == "2026-09-30"
+    assert abs(bmo["next_day_pct"] - 0.1) < 1e-9

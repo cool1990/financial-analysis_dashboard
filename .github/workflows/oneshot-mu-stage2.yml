@@ -1,0 +1,78 @@
+name: oneshot-mu-stage2
+
+# 一次性：合并到 main 后自动重跑 MU Stage2（修 Q&A 结构化失败），完成后删除本文件。
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/oneshot-mu-stage2.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: earnings-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  stage2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Restore LLM cache
+        uses: actions/cache@v4
+        with:
+          path: cache/llm
+          key: llm-cache-${{ hashFiles('prompts/**') }}-${{ runner.os }}
+          restore-keys: |
+            llm-cache-${{ hashFiles('prompts/**') }}-
+
+      - name: Require secrets
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: |
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "::error::缺少 OPENROUTER_API_KEY"
+            exit 1
+          fi
+          if [ -z "${SEC_USER_AGENT}" ]; then
+            echo "::warning::SEC_USER_AGENT 为空，SEC 请求可能被拒"
+          fi
+
+      - name: Run MU Stage2 + build
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p logs
+          python -m pipeline run --ticker MU --period FY2026Q4 --stage 2 2>&1 | tee logs/oneshot_stage2.log
+          python -m pipeline build --ticker MU 2>&1 | tee -a logs/oneshot_stage2.log
+
+      - name: Commit results and remove oneshot workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/oneshot-mu-stage2.yml
+          git add data site .github/workflows || true
+          git diff --staged --quiet || git commit -m "chore: oneshot 重跑 MU Stage2 并移除一次性 workflow"
+          git pull --rebase --autostash || true
+          git push
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oneshot-mu-stage2-logs
+          path: logs/
+          retention-days: 14
+          if-no-files-found: ignore

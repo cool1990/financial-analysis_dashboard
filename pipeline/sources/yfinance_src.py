@@ -73,6 +73,96 @@ class YFinanceSource:
         df = _safe_call(self.t.history, start=start, end=end, auto_adjust=False)
         return _df_to_records(df)
 
+    def daily_closes(self, start: str, end: str) -> list[tuple[str, float]]:
+        """返回 [(YYYY-MM-DD, close), ...]，按日期升序。"""
+        df = _safe_call(self.t.history, start=start, end=end, auto_adjust=False)
+        if df is None or getattr(df, "empty", True):
+            return []
+        out: list[tuple[str, float]] = []
+        for idx, row in df.iterrows():
+            try:
+                day = idx.date().isoformat() if hasattr(idx, "date") else str(idx)[:10]
+                close = float(row["Close"])
+            except Exception:
+                continue
+            out.append((day, close))
+        out.sort(key=lambda x: x[0])
+        return out
+
+    def next_day_reaction(
+        self,
+        release_at_utc: str,
+        *,
+        release_timing: str = "amc",
+    ) -> dict[str, Any]:
+        """按 AMC/BMO 规则计算财报次日涨跌。
+
+        AMC（盘后）：发布日收盘 → 下一交易日收盘
+        BMO（盘前）：上一交易日收盘 → 发布日收盘
+        """
+        release_dt = datetime.fromisoformat(release_at_utc.replace("Z", "+00:00"))
+        release_day = release_dt.date().isoformat()
+        # 多取几天覆盖周末/假日
+        from datetime import timedelta
+
+        start = (release_dt.date() - timedelta(days=7)).isoformat()
+        end = (release_dt.date() + timedelta(days=10)).isoformat()
+        closes = self.daily_closes(start, end)
+        if not closes:
+            return {
+                "next_day_pct": None,
+                "close_before": None,
+                "close_after": None,
+                "before_date": None,
+                "after_date": None,
+                "timing": release_timing,
+                "note": "无法取得附近交易日收盘价",
+            }
+
+        days = [d for d, _ in closes]
+        by_day = {d: c for d, c in closes}
+        timing = (release_timing or "amc").lower()
+
+        def _prev(day: str) -> str | None:
+            earlier = [d for d in days if d < day]
+            return earlier[-1] if earlier else None
+
+        def _next(day: str) -> str | None:
+            later = [d for d in days if d > day]
+            return later[0] if later else None
+
+        if timing == "bmo":
+            after_date = release_day if release_day in by_day else _next(release_day)
+            before_date = _prev(after_date) if after_date else None
+        else:
+            # amc / unknown：发布日收盘为「前」，下一交易日为「后」
+            before_date = release_day if release_day in by_day else _prev(release_day)
+            after_date = _next(before_date) if before_date else None
+
+        close_before = by_day.get(before_date) if before_date else None
+        close_after = by_day.get(after_date) if after_date else None
+        pct = None
+        if close_before and close_after and close_before != 0:
+            pct = (close_after - close_before) / abs(close_before)
+
+        note = None
+        if pct is None:
+            note = "交易日收盘价不足，暂无法计算次日涨跌"
+        elif timing == "bmo":
+            note = f"BMO：{before_date} 收盘 → {after_date} 收盘"
+        else:
+            note = f"AMC：{before_date} 收盘 → {after_date} 收盘"
+
+        return {
+            "next_day_pct": pct,
+            "close_before": close_before,
+            "close_after": close_after,
+            "before_date": before_date,
+            "after_date": after_date,
+            "timing": timing,
+            "note": note,
+        }
+
     def snapshot_bundle(self) -> dict[str, Any]:
         return {
             "ticker": self.ticker,
