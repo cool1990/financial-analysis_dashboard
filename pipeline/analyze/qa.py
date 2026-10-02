@@ -91,14 +91,17 @@ def _structure_batch(
         models = llm.complete_json_list("structure_qa.md", user, QAItem)
         return [m.model_dump() for m in models]
     except Exception as e:
-        # 失败多因一批输出太长被截断 / 返回空：拆成两半各试一次（只拆一层，调用次数有上限）。
-        # 熔断或额度用完时不再尝试。
-        if split and len(batch) > 1 and not isinstance(e, CostLimitExceeded):
+        ids = ",".join(str(ex.get("exchange_id")) for ex in batch)
+        # 失败多因一批输出太长被截断 / 返回空：拆成两半重试。截断说明输出确实装不下，
+        # 继续对半拆到单轮为止；其它错误只拆一层。总调用次数不超过 2×批大小。熔断后不再尝试。
+        truncated = isinstance(e, LLMTruncatedError)
+        if (split or truncated) and len(batch) > 1 and not isinstance(e, CostLimitExceeded):
             mid = (len(batch) + 1) // 2
-            print(f"[stage2/qa] 批次失败（{_failure_reason(e)}），拆成 {mid}+{len(batch) - mid} 重试", flush=True)
+            print(f"[stage2/qa] 第 {ids} 轮失败（{_failure_reason(e)}），拆成 {mid}+{len(batch) - mid} 重试", flush=True)
             return _structure_batch(llm, prompt_tmpl, batch[:mid], split=False) + _structure_batch(
                 llm, prompt_tmpl, batch[mid:], split=False
             )
+        print(f"[stage2/qa] 第 {ids} 轮放弃（{_failure_reason(e)}）：{str(e)[:160]}", flush=True)
         return [_fallback_item(ex, _failure_reason(e)) for ex in batch]
 
 
