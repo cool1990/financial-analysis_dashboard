@@ -45,10 +45,14 @@ kpis:
   source: call
   hint: HBM revenue, share, capacity, customer qualification
 transcript_sources:
-- manual
 - motley_fool
-- whisper
+- ir_page
+- manual
 webcast_audio_url: null
 management_aliases: []
+# Motley Fool 为主源（自动搜索）；也可填死链接：
+# motley_fool_url: https://www.fool.com/earnings/call-transcripts/...
 ir_transcript_url: null
-ir_transcript_match: null
+ir_transcript_match: (?i)transcript|prepared.?remarks
+# IR 备选：Prepared Remarks PDF（占位 {fy}/{q}/{yy}）
+ir_prepared_remarks_url: https://investors.micron.com/files/doc_financials/{fy}/q{q}/Q{q}-FY{yy}-Prepared-Remarks.pdf
