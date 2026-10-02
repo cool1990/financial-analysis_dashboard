@@ -312,9 +312,18 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
     if not doc:
         raise RuntimeError(f"缺少 {ticker} {fiscal_period} 数据，请先跑 Stage 1")
     raw_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / fiscal_period
-    text, source = fetch_transcript(cfg, raw_dir)
+    release_at = (doc.get("meta") or {}).get("release_at_utc")
+    text, source = fetch_transcript(
+        cfg,
+        raw_dir,
+        fiscal_period=fiscal_period,
+        release_at=release_at,
+    )
     if not text:
-        doc["status"]["warnings"].append("文字稿未取得，可手动放入 raw/{period}/transcript.txt")
+        doc["status"]["warnings"].append(
+            "文字稿未取得（已试 Motley Fool / IR / manual）。"
+            f"可手动放入 raw/{fiscal_period}/transcript.txt 后重跑 Stage2"
+        )
         save_period_json(ticker, fiscal_period, doc)
         raise RuntimeError("文字稿未取得")
 

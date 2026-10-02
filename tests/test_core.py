@@ -253,3 +253,65 @@ def test_guidance_plus_minus_inside_point_raw():
     assert abs(item["low"] - 37.15) < 1e-9 and abs(item["high"] - 39.15) < 1e-9
     low, mid, high = parse_plus_minus("$6.2 ± 0.2 billion")
     assert (low, mid, high) == (6.0e9, 6.2e9, 6.4e9)
+
+
+def test_motley_fool_period_and_ticker_match():
+    from pipeline.sources.motley_fool import (
+        extract_transcript_text,
+        matches_period_and_ticker,
+        parse_fiscal_period,
+        ticker_token_ok,
+    )
+
+    assert parse_fiscal_period("FY2026Q4") == (2026, 4)
+    assert ticker_token_ok("micron-mu-q4-2026-earnings-call-transcript", "MU")
+    assert not ticker_token_ok("aeluma-almu-q4-2026-earnings-call-transcript", "MU")
+    assert matches_period_and_ticker(
+        "https://www.fool.com/earnings/call-transcripts/2026/10/01/micron-mu-q4-2026-earnings-call-transcript/",
+        "MU",
+        2026,
+        4,
+    )
+    html = """
+    <html><body><div class="article-body transcript-content">
+    Operator: Welcome to the call.
+    """ + ("We discuss revenue and guidance. " * 80) + """
+    Question-and-Answer Session
+    Analyst: What about HBM?
+    Operator: This concludes today's call.
+    </div></body></html>
+    """
+    text = extract_transcript_text(html)
+    assert text and "Operator" in text and "HBM" in text
+
+
+def test_ir_prepared_remarks_template_and_pdf():
+    from pipeline.sources.ir_transcript import _format_template, extract_pdf_text
+
+    url = _format_template(
+        "https://investors.example.com/files/{fy}/q{q}/Q{q}-FY{yy}-Prepared-Remarks.pdf",
+        2026,
+        4,
+    )
+    assert url.endswith("/2026/q4/Q4-FY26-Prepared-Remarks.pdf")
+
+    sample = Path("/tmp/mu_remarks.pdf")
+    if sample.exists():
+        text = extract_pdf_text(sample.read_bytes())
+        assert text and len(text) > 500
+    else:
+        assert extract_pdf_text(b"not a pdf") is None
+
+
+def test_fetch_transcript_prefers_manual(tmp_path):
+    from pipeline.sources.transcripts import fetch_transcript
+
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "transcript.txt").write_text("Operator: hello\n" + ("x" * 900), encoding="utf-8")
+    text, src = fetch_transcript(
+        {"ticker": "MU", "name": "Micron", "transcript_sources": ["manual", "motley_fool"]},
+        raw,
+        fiscal_period="FY2026Q4",
+    )
+    assert src == "manual" and text.startswith("Operator")

@@ -63,6 +63,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 
 ## 说明
 
+- Stage2 文字稿默认自动获取：`motley_fool`（主）→ `ir_page`/`ir_prepared_remarks_url`（备）→ `manual`。
 - `data/*/raw/*/transcript*` 不入库（电话会文字稿）；SEC 新闻稿 HTML 与 API 原始响应需提交。
 - 新增股票：复制 `config/tickers/MU.yaml`，改配置后 `init`，无需改代码。
 - 单季 JSON 经 `PeriodDoc`（`schema_version: 1`）校验后写入。
