@@ -35,6 +35,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p logs
+          # 新加的股票自动补 CIK 与业绩口径（只在缺 CIK 时请求 SEC）
+          python -m pipeline init-missing 2>&1 | tee logs/daily_init.log
           python -m pipeline snapshot 2>&1 | tee logs/daily_snapshot.log
           python -m pipeline stage3-recent 2>&1 | tee logs/daily_stage3.log
           python -m pipeline build 2>&1 | tee logs/daily_build.log
@@ -45,7 +47,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # 先提交流水线产物，再 rebase；否则 unstaged 改动会阻断 pull --rebase
-          git add data site || true
+          git add data site config || true
           if git diff --staged --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else

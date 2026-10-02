@@ -44,13 +44,41 @@ def save_ticker_config(ticker: str, data: dict[str, Any]) -> None:
     save_yaml(path, data)
 
 
-def load_theses(ticker: str) -> dict[str, Any] | None:
-    """config/theses/{TICKER}.yaml：投资论点（可选）。没有文件时返回 None。"""
+STAGES = {
+    "观察": ("watch", "观察仓"), "观察仓": ("watch", "观察仓"),
+    "等待": ("wait", "等待仓"), "等待仓": ("wait", "等待仓"),
+    "持仓": ("hold", "持仓"), "持有": ("hold", "持仓"),
+}
+
+
+def load_position(ticker: str) -> dict[str, Any] | None:
+    """config/theses/{TICKER}.yaml：仓位档案（阶段、论点、买卖条件、想搞清楚的问题）。
+
+    文件用中文键方便手写，这里统一转成内部结构；没有文件时返回 None。
+    """
     path = repo_path("config", "theses", f"{ticker.upper()}.yaml")
     if not path.exists():
         return None
-    data = load_yaml(path) or {}
-    return data if data.get("theses") else None
+    raw = load_yaml(path) or {}
+    stage, label = STAGES.get(str(raw.get("阶段") or "观察").strip(), ("watch", "观察仓"))
+    theses = [
+        {"bull": str(t.get("看好") or ""), "bear": str(t.get("担心") or ""), "falsify": str(t.get("证伪") or "")}
+        for t in raw.get("论点") or []
+        if isinstance(t, dict)
+    ]
+    triggers = [{"name": str(k), "text": str(v)} for k, v in (raw.get("条件") or {}).items() if v]
+    questions = [str(q) for q in raw.get("问题") or [] if q]
+    text = path.read_text(encoding="utf-8")
+    return {
+        "stage": stage,
+        "stage_label": label,
+        "updated": str(raw.get("更新") or ""),
+        "theses": theses,
+        "triggers": triggers,
+        "questions": questions,
+        # 文件里还有「草稿」「【请填写】」字样时，页面提示尚未定稿
+        "draft": "草稿" in text.split("\n", 1)[0] or "【请填写】" in text,
+    }
 
 
 def list_tickers() -> list[str]:

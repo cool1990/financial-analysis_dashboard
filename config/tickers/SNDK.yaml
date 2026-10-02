@@ -1,0 +1,32 @@
+ticker: SNDK
+name: Sandisk Corporation
+cik: null
+# 财年结束于 6 月底附近的周五
+fiscal_year_end_month: 6
+release_timing: amc
+eps_basis: null
+eps_basis_override: null
+eps_basis_evidence: []
+capex_definition: gross
+benchmark: SOXX
+kpis:
+  - key: datacenter_revenue
+    name: 数据中心营收
+    unit: USD
+    source: press_release
+    hint: "Datacenter end market revenue"
+  - key: consumer_revenue
+    name: 消费类营收
+    unit: USD
+    source: press_release
+    hint: "Consumer end market revenue"
+transcript_sources: [motley_fool, ir_page, manual]
+webcast_audio_url: null
+management_aliases: []
+ir_transcript_url: null
+ir_transcript_match: (?i)transcript|prepared.?remarks
+ir_prepared_remarks_url: null
+quality_checks:
+  - {key: cash_conversion, op: ">=", value: 0.6, note: 存储是重资产周期股，现金转化阈值放宽到 60%}
+  - {key: gm_guide_delta, op: ">=", value: 0, note: 下季毛利率指引不低于本季，说明周期仍在上行}
+  - {key: revenue_qoq, op: ">=", value: 0, note: 周期股看环比更能反映周期位置}

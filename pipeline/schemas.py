@@ -106,14 +106,27 @@ class SummaryResult(BaseModel):
     next_watchlist: list[Any] = Field(default_factory=list)
 
 
-class ThesisReviewItem(BaseModel):
-    id: str
+class ThesisCheck(BaseModel):
+    index: int
     status: Literal["strengthened", "unchanged", "weakened"] = "unchanged"
     evidence: str = ""
     quote: Optional[str] = None
     source: Optional[str] = None
-    confirm_hits: list[int] = Field(default_factory=list)
-    falsify_hits: list[int] = Field(default_factory=list)
+    falsified: bool = False
+
+
+class TriggerCheck(BaseModel):
+    name: str
+    state: Literal["triggered", "not_triggered", "unknown"] = "unknown"
+    reason: str = ""
+
+
+class QuestionAnswer(BaseModel):
+    index: int
+    answered: bool = False
+    answer: str = ""
+    quote: Optional[str] = None
+    source: Optional[str] = None
 
 
 class NewConcern(BaseModel):
@@ -122,8 +135,10 @@ class NewConcern(BaseModel):
     why: Optional[str] = None
 
 
-class ThesisReviewResult(BaseModel):
-    reviews: list[ThesisReviewItem] = Field(default_factory=list)
+class PositionReviewResult(BaseModel):
+    theses: list[ThesisCheck] = Field(default_factory=list)
+    triggers: list[TriggerCheck] = Field(default_factory=list)
+    answers: list[QuestionAnswer] = Field(default_factory=list)
     new_concerns: list[NewConcern] = Field(default_factory=list)
 
 
@@ -276,7 +291,7 @@ class PeriodDoc(BaseModel):
     guidance: GuidanceBlock = Field(default_factory=GuidanceBlock)
     qa: QABlock = Field(default_factory=QABlock)
     summary: SummaryBlock = Field(default_factory=SummaryBlock)
-    # 论点评估（config/theses/{TICKER}.yaml 存在时才有）：reviews / new_concerns / fingerprint
+    # 仓位评估（config/theses/{TICKER}.yaml 存在时才有）：theses / triggers / answers / new_concerns / fingerprint
     thesis_review: dict[str, Any] = Field(default_factory=dict)
 
 

@@ -28,6 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     p_snap.add_argument("--ticker", default=None, help="缺省则全部股票")
 
     p_poll = sub.add_parser("poll", help="财报窗口轮询 / 文字稿获取")
+    sub.add_parser("init-missing", help="给缺 CIK 的股票自动初始化（不调用 LLM）")
     sub.add_parser("stage3-recent", help="刷新近期财报的股价反应与分析师修正（无 LLM）")
     p_th = sub.add_parser("thesis", help="评估投资论点（1 次小调用；论点和数据都没变时跳过）")
     p_th.add_argument("--ticker", required=True)
@@ -96,6 +97,11 @@ def main(argv: list[str] | None = None) -> int:
                 with open(gh_out, "a", encoding="utf-8") as f:
                     f.write(f"did_work={'true' if out.get('did_work') else 'false'}\n")
             write_github_step_summary()
+            return 0
+        if args.cmd == "init-missing":
+            from pipeline.commands.init_cmd import init_missing
+
+            print(json.dumps(init_missing(), ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "thesis":
             period = resolve_latest_period(args.ticker) if args.period.lower() == "latest" else args.period

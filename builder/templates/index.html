@@ -4,28 +4,33 @@
 <div class="page-head">
   <div>
     <h1>财报解读</h1>
-    <div class="sub">单季记分卡 · 财务解读 · 业绩指引 · 电话会问答</div>
+    <div class="sub">按仓位分组：持仓看买卖时点，等待仓看买点，观察仓先了解事实</div>
   </div>
 </div>
+{% for g in groups %}
+<h2 class="group-h">{{ g.label }} <span class="muted small">{{ g.rows|length }}</span></h2>
 <div class="hub">
-  {% for r in rows %}
+  {% for r in g.rows %}
   <a class="card{% if r.period == '—' %} off{% endif %}" href="{{ r.href }}">
     <div class="h-top">
       <h2>{{ r.ticker }}<small>{{ r.name }}</small></h2>
       <span class="tag-state">{{ r.period }}</span>
     </div>
     {% if r.headline %}<p class="h-head">{{ r.headline }}</p>{% endif %}
+    {% if r.period != '—' %}
     <div class="hub-grid">
       <div><span>营收</span><b class="v-{{ r.revenue.verdict }}">{{ r.revenue.label }}</b></div>
       <div><span>每股收益</span><b class="v-{{ r.eps.verdict }}">{{ r.eps.label }}</b></div>
       <div><span>下季指引</span><b class="v-{{ r.guide.verdict }}">{{ r.guide.label }}</b></div>
       <div><span>次日涨跌</span><b class="num c-{{ r.price.cls }}">{{ r.price.text }}</b></div>
     </div>
+    {% endif %}
     <div class="h-foot">
-      <span>{{ r.stage }}</span>
+      <span>{{ r.stage if r.period != '—' else '等待首份财报' }}</span>
       <span>{% if r.next_earnings %}下次财报 {{ r.next_earnings }} {{ r.timing }}{% else %}下次财报日待定{% endif %}</span>
     </div>
   </a>
   {% endfor %}
 </div>
+{% endfor %}
 {% endblock %}

@@ -1,11 +1,16 @@
 {% extends "base.html" %}
-{% block title %}{{ ticker }} · 等待数据{% endblock %}
+{% block title %}{{ ticker }} · {{ company }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{{ ticker }} · {{ company }}</h1>
-    <div class="sub">尚无财季数据</div>
+    <h1>{{ ticker }} · {{ company }}{% if thesis %} <span class="stage-badge s-{{ thesis.stage }}">{{ thesis.stage_label }}</span>{% endif %}</h1>
+    <div class="sub">还没有财季数据：daily 会自动完成初始化，下一次财报发布后自动生成解读。</div>
   </div>
 </div>
-<div class="card placeholder">请先运行 <code>python -m pipeline init --ticker {{ ticker }}</code>，再等待下一次财报或手动回补。</div>
+{% if thesis %}
+<section class="dim" id="thesis" style="padding-top:0">
+  {% set has_data = false %}
+  {% include "_position.html" %}
+</section>
+{% endif %}
 {% endblock %}

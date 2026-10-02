@@ -1,0 +1,61 @@
+{# 仓位卡：观察仓 = 问题 + 本季事实；等待仓 / 持仓 = 论点 + 买卖条件。thesis 由 _position_view 生成 #}
+<div class="card tcard">
+  <h2>{{ thesis.stage_label }}
+    <small>
+      {% if thesis.stage == 'watch' %}逻辑还不清楚，先了解事实{% elif thesis.stage == 'wait' %}逻辑清楚，等待买点{% else %}已持有，等待加仓或卖出时点{% endif %}
+      {% if thesis.reviewed %} · 评估于 {{ thesis.reviewed_at }}{% elif has_data %} · 尚未评估：Actions → manual 选 thesis 运行一次{% endif %}
+      {% if thesis.draft %} · <span class="warn-text">档案还有待填写的内容</span>{% endif %}
+    </small>
+  </h2>
+
+  {% if thesis.theses %}
+  <div class="pos-table">
+    <div class="pos-row pos-head"><span>看好</span><span>担心</span><span>证伪条件</span><span>本季</span></div>
+    {% for t in thesis.theses %}
+    <div class="pos-row">
+      <span><i class="m-label">看好</i>{{ t.bull }}</span>
+      <span class="muted-ink"><i class="m-label">担心</i>{{ t.bear }}</span>
+      <span><i class="m-label">证伪</i>{{ t.falsify }}{% if t.deadline.left %}<small class="t-dl {{ t.deadline.cls }}">{{ t.deadline.left }}</small>{% endif %}</span>
+      <span><span class="vchip {{ t.cls }}">{{ t.status }}</span>{% if t.evidence %}<small class="pos-ev">{{ t.evidence }}</small>{% endif %}</span>
+    </div>
+    {% if t.quote %}<blockquote class="pos-quote">{{ t.quote }}</blockquote>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if thesis.triggers %}
+  <ul class="trig">
+    {% for t in thesis.triggers %}
+    <li><b>{{ t.name }}</b><span>{{ t.text }}</span><span class="vchip {{ t.cls }}">{{ t.state }}</span>{% if t.reason %}<small>{{ t.reason }}</small>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if thesis.questions %}
+  <ul class="qs">
+    {% for q in thesis.questions %}
+    <li>
+      <b>{{ q.text }}</b>
+      {% if q.answer %}<p class="{{ '' if q.answered else 'muted' }}">{{ q.answer }}</p>{% endif %}
+      {% if q.quote %}<blockquote>{{ q.quote }}</blockquote>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% elif thesis.stage == 'watch' and not thesis.facts %}
+  <p class="muted small" style="padding:8px 0">还没写想搞清楚的问题。在 config/theses/{{ ticker }}.yaml 的「问题」下写 2–3 条，每季财报会用事实回答。</p>
+  {% endif %}
+
+  {% if thesis.facts %}
+  <div class="facts">
+    <b>本季管理层新给出的数字</b>
+    <ul>{% for f in thesis.facts %}<li><span class="num">{{ f.number }}</span>{{ f.meaning }}{% if f.who %}<small>· 回答 {{ f.who }}</small>{% endif %}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if thesis.concerns %}
+  <div class="concerns">
+    <b>档案没覆盖的新担忧</b>
+    <ul>{% for c in thesis.concerns %}<li>{{ c.concern }}{% if c.raised_by %}<span class="basis">· {{ c.raised_by }}</span>{% endif %}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+</div>

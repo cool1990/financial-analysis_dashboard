@@ -12,7 +12,7 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{{ ticker }} · {{ company }} · {{ current_period }}</h1>
+    <h1>{{ ticker }} · {{ company }} · {{ current_period }}{% if thesis %} <span class="stage-badge s-{{ thesis.stage }}">{{ thesis.stage_label }}</span>{% endif %}</h1>
     <div class="sub">
       {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }} · {{ doc.status.stage|stage }}
     </div>
@@ -22,7 +22,7 @@
 <nav class="section-nav" aria-label="分区">
   <div class="chips">
     <a href="#top">判断</a>
-    {% if thesis %}<a href="#thesis">论点</a>{% endif %}
+    {% if thesis %}<a href="#thesis">{{ thesis.stage_label }}</a>{% endif %}
     <a href="#quality">质量与验证</a>
     <a href="#fin">财务</a>
     <a href="#guide">指引</a>
@@ -100,47 +100,10 @@
 </section>
 
 {% if thesis %}
-<!-- ④ 论点追踪：你事先写下的论点，本季被强化 / 不变 / 削弱 -->
+<!-- ④ 仓位卡：按观察 / 等待 / 持仓显示不同内容 -->
 <section class="dim" id="thesis">
-  <div class="card tcard">
-    <h2>论点追踪
-      <small>{% if thesis.reviewed %}评估于 {{ thesis.reviewed_at }}{% else %}尚未评估：在 Actions → manual 选 thesis 运行一次{% endif %}{% if thesis.draft %} · 论点为草稿{% endif %}</small>
-    </h2>
-    {% for t in thesis['items'] %}
-    <details class="thesis">
-      <summary>
-        <span class="t-name">{{ t.name }}</span>
-        <span class="vchip {{ t.cls }}">{{ t.status }}</span>
-        <span class="t-ev">{{ t.evidence or '展开查看看好理由、市场担心和验证条件' }}</span>
-        <span class="t-dl {{ t.deadline.cls }}">{{ t.deadline.left or t.deadline.text }}</span>
-      </summary>
-      <div class="t-body">
-        <div class="t-two">
-          <div><b class="t-k ok">我看好</b><p>{{ t.bull }}</p></div>
-          <div><b class="t-k bad">市场担心</b><p>{{ t.bear }}</p></div>
-        </div>
-        {% if t.quote %}<blockquote>{{ t.quote }}{% if t.source %}<span class="basis">· {{ t.source }}</span>{% endif %}</blockquote>
-        {% elif t.quote_unverified %}<p class="small muted">模型给出的引文在原材料中没有找到，未展示。</p>{% endif %}
-        <div class="t-two">
-          <div><b class="t-k">证实条件</b><ul class="cond">{% for c in t.confirm %}<li class="{{ 'hit-ok' if c.hit }}">{{ c.text }}</li>{% endfor %}</ul></div>
-          <div><b class="t-k">证伪条件</b><ul class="cond">{% for c in t.falsify %}<li class="{{ 'hit-bad' if c.hit }}">{{ c.text }}</li>{% endfor %}</ul></div>
-        </div>
-        {% if t.checks %}
-        <ul class="checks">
-          {% for c in t.checks %}<li><i class="ck {{ 'ok' if c.status == 'ok' else 'warn' if c.status == 'warn' else 'info' }}">{{ '✓' if c.status == 'ok' else '!' if c.status == 'warn' else '…' }}</i><b>自动核对</b><span>{{ c.text }}</span></li>{% endfor %}
-        </ul>
-        {% endif %}
-        <p class="small muted">验证时点：{{ t.deadline.text }}</p>
-      </div>
-    </details>
-    {% endfor %}
-    {% if thesis.concerns %}
-    <div class="concerns">
-      <b>论点没覆盖的新担忧</b>
-      <ul>{% for c in thesis.concerns %}<li>{{ c.concern }}{% if c.raised_by %}<span class="basis">· {{ c.raised_by }}</span>{% endif %}{% if c.why %}<span class="small muted">（{{ c.why }}）</span>{% endif %}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-  </div>
+  {% set has_data = true %}
+  {% include "_position.html" %}
 </section>
 {% endif %}
 
