@@ -290,7 +290,7 @@ def test_position_view_hold_with_review(monkeypatch):
            "theses": [{"bull": "a", "bear": "b", "falsify": "营收 < 60B（2026-12-23）"}, {"bull": "c", "bear": "d", "falsify": "e"}],
            "triggers": [{"name": "加仓", "text": "x"}, {"name": "卖出", "text": "y"}], "questions": []}
     monkeypatch.setattr(build, "load_position", lambda t: pos)
-    doc = {"thesis_review": {"fingerprint": "f", "reviewed_at": "2026-10-02T00:00:00",
+    doc = {"thesis_review": {"stage": "hold", "fingerprint": "f", "reviewed_at": "2026-10-02T00:00:00",
                              "theses": [{"index": 0, "status": "strengthened", "evidence": "ok"},
                                         {"index": 1, "status": "weakened", "falsified": True, "quote": "q", "quote_unverified": True}],
                              "triggers": [{"name": "卖出", "state": "triggered", "reason": "证伪出现"}]}}
@@ -301,6 +301,9 @@ def test_position_view_hold_with_review(monkeypatch):
     assert sell["state"] == "已触发" and sell["cls"] == "bad"
     chips = [c["text"] for c in _verdict_chips({}, [], {"stance": None, "price": {"text": "—"}}, [], v)]
     assert "论点：1 强化 · 1 已证伪" in chips and "卖出条件已触发" in chips
+    # 旧格式评估（没有 stage）不算已评估
+    doc["thesis_review"].pop("stage")
+    assert _position_view("X", doc, date(2026, 10, 2))["reviewed"] is False
 
 
 def test_position_review_skips_when_unchanged_or_nothing_to_ask(monkeypatch):
