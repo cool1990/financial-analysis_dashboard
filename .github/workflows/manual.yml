@@ -53,20 +53,26 @@ jobs:
   manual:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
       - run: pip install -r requirements.txt
 
+      # 缓存 key 必须每次唯一：actions/cache 命中精确 key 时不会回写，
+      # 旧写法导致首轮之后新的 LLM 结果永远进不了缓存，重跑会重复付费。
+      # 缓存条目本身按 prompt 全文 + 模型 + 输入做 sha256，不需要 key 里再带 prompt hash。
       - name: Restore LLM cache
         uses: actions/cache@v4
         with:
           path: cache/llm
-          key: llm-cache-${{ hashFiles('prompts/**') }}-${{ runner.os }}
+          key: llm-cache-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            llm-cache-${{ hashFiles('prompts/**') }}-
+            llm-cache-${{ runner.os }}-
 
       - name: Require OPENROUTER_API_KEY
         env:
@@ -106,6 +112,9 @@ jobs:
               BF=(--ticker "${{ inputs.ticker }}" "${MODEL_ARGS[@]}")
               if [ "${{ inputs.dry_run }}" = "true" ]; then BF+=(--dry-run); fi
               python -m pipeline backfill "${BF[@]}" 2>&1 | tee logs/manual.log
+              if [ "${{ inputs.dry_run }}" != "true" ]; then
+                python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
+              fi
               ;;
             run)
               ARGS=(--ticker "${{ inputs.ticker }}" --stage "${{ inputs.stage }}" "${MODEL_ARGS[@]}")
@@ -121,15 +130,21 @@ jobs:
           esac
 
       - name: Commit results
+        id: commit
         if: ${{ inputs.action == 'run' || (inputs.action == 'backfill' && inputs.dry_run == 'false') }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # 先提交流水线产物，再 rebase；否则 unstaged 改动会阻断 pull --rebase
           git add data site config || true
-          git diff --staged --quiet || git commit -m "chore: manual ${{ inputs.action }} ${{ inputs.ticker }}"
-          git pull --rebase --autostash
-          git push
+          if git diff --staged --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: manual ${{ inputs.action }} ${{ inputs.ticker }}"
+            git pull --rebase --autostash
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload logs artifact
         if: always()
@@ -143,3 +158,13 @@ jobs:
             site/index.html
           retention-days: 30
           if-no-files-found: ignore
+
+  # GITHUB_TOKEN 推送的提交不会触发 deploy.yml 的 push 事件，在这里直接部署
+  deploy:
+    needs: manual
+    if: needs.manual.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

@@ -1,353 +1,366 @@
 {% extends "base.html" %}
-{% set root = "../../" %}
 {% block title %}{{ ticker }} {{ current_period }} · 财报解读{% endblock %}
-{% block nav %}
+{% block topbar_extra %}
 <label class="period-switch">财季
-  <select onchange="location.href=this.value">
+  <select onchange="location.href=this.value" aria-label="切换财季">
     {% for p in periods %}
-      <option value="{{ p }}.html" {% if p==current_period %}selected{% endif %}>{{ p }}</option>
+    <option value="{{ p }}.html"{% if p == current_period %} selected{% endif %}>{{ p }}</option>
     {% endfor %}
   </select>
 </label>
 {% endblock %}
 {% block content %}
-<section class="page-head">
-  <div class="page-head-row">
-    <div>
-      <p class="eyebrow">{{ ticker }} · {{ company }}</p>
-      <h1>{{ current_period }}{% if doc.meta.period_start %}（{{ doc.meta.period_start[5:7] }}–{{ doc.meta.period_end[5:7] }} 月）{% endif %}</h1>
-      <p class="muted">发布 {{ doc.meta.release_at_utc or "—" }} · 业绩口径 {{ doc.meta.eps_basis|source }}</p>
-      <div class="badge-row">
-        <span class="badge">{{ doc.status.stage|stage }}</span>
-        {% if doc.meta.transcript_source %}<span class="badge">文字稿：{{ doc.meta.transcript_source|source }}</span>{% endif %}
+<div class="page-head">
+  <div>
+    <h1>{{ ticker }} · {{ company }} · {{ current_period }}</h1>
+    <div class="sub">
+      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }}
+    </div>
+    <div class="tags">
+      <span class="tag-state">{{ doc.status.stage|stage }}</span>
+      <span class="tag-state">业绩口径 {{ doc.meta.eps_basis|source }}</span>
+      {% if doc.meta.transcript_source %}<span class="tag-state">文字稿 {{ doc.meta.transcript_source|source }}</span>{% endif %}
+      {% if doc.status.needs_review %}<span class="tag-state warn">需要人工复核</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<nav class="section-nav" aria-label="分区">
+  <div class="chips">
+    <a href="#top">结论</a>
+    <a href="#fin">财务</a>
+    <a href="#guide">指引</a>
+    <a href="#qa">问答{% if qa.evasive_count %}<b>{{ qa.evasive_count }}</b>{% endif %}</a>
+    <a href="#watch">跟踪</a>
+    <a href="#notes">来源{% if warnings %}<b>{{ warnings|length }}</b>{% endif %}</a>
+  </div>
+</nav>
+
+<!-- 第一屏：左边结论 + 记分卡，右边关键数字与市场反应 -->
+<section class="dim" id="top">
+<div class="top">
+  <div class="top-main">
+    <div class="card verdict">
+      <div class="v-label">一句话结论</div>
+      {% if doc.summary and doc.summary.headline %}
+      <h2 class="v-head">{{ doc.summary.headline }}</h2>
+      <ol class="v-lines">
+        {% for f in findings %}<li><span>{{ f }}</span></li>{% endfor %}
+      </ol>
+      {% elif waiting_transcript %}
+      <p class="empty-note">新闻稿已解读，结论将在电话会文字稿到位后生成。</p>
+      {% else %}
+      <p class="empty-note">尚未生成结论。</p>
+      {% endif %}
+    </div>
+
+    <div class="card score">
+      <h2>记分卡</h2>
+      <p class="layer-sub">实际值对比财报前一致预期；下季指引对比当时的下季一致预期。缺一致预期时判定为「待核对」。</p>
+      <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>指标</th><th>实际</th><th>基准</th><th>差异</th><th>判定</th></tr></thead>
+        <tbody>
+        {% for r in scorecard %}
+          <tr>
+            <td>{{ r.label }}{% if r.basis %}<span class="basis">{{ r.basis }}</span>{% endif %}</td>
+            <td>{{ r.actual }}</td>
+            <td>{{ r.bench }}{% if r.source %}<span class="basis">{{ r.source }}</span>{% endif %}</td>
+            <td class="c-{{ r.diff.cls }}">{{ r.diff.text }}</td>
+            <td class="v-{{ r.verdict }}">{{ r.verdict_label }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
       </div>
     </div>
   </div>
-</section>
 
-{% if doc.status.needs_review or warnings %}
-<div class="banner warn">
-  {% if doc.status.needs_review %}<strong>需要人工复核。</strong>{% endif %}
-  <ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+  <aside class="card side">
+    <h2>关键数字</h2>
+    <ul class="kn">
+      {% for k in key_numbers %}
+      <li>
+        <span class="k">{{ k.label }}</span><span class="val">{{ k.value }}</span>
+        <span class="chg"><span>同比 <b class="c-{{ k.yoy.cls }}">{{ k.yoy.text }}</b></span><span>环比 <b class="c-{{ k.qoq.cls }}">{{ k.qoq.text }}</b></span></span>
+      </li>
+      {% else %}
+      <li class="muted">财务数据尚未生成。</li>
+      {% endfor %}
+    </ul>
+
+    <h2 class="side-h2">次日股价反应</h2>
+    <div class="big c-{{ price.cls }}">{{ price.text }}</div>
+    {% if price.detail %}<p class="small muted">{{ price.detail }}</p>{% endif %}
+
+    <h2 class="side-h2">状态</h2>
+    <ul class="meta-list">
+      <li><span>进度</span><span>{{ doc.status.stage|stage }}</span></li>
+      <li><span>文字稿</span><span>{{ doc.meta.transcript_source|source if doc.meta.transcript_source else '等待中' }}</span></li>
+      {% if next_earnings %}<li><span>下次财报</span><span>{{ next_earnings }}</span></li>{% endif %}
+    </ul>
+  </aside>
 </div>
-{% endif %}
-
-<section class="panel scorecard">
-  <h2>记分卡</h2>
-  <p class="section-note">实际值对比一致预期 / 下季指引。缺一致预期时显示「待核对」。</p>
-  <div class="table-wrap">
-  <table class="data">
-    <thead><tr><th>指标</th><th>实际</th><th>基准</th><th>来源</th><th>差异</th><th>判定</th></tr></thead>
-    <tbody>
-    {% for row in doc.scorecard %}
-      {% set b = row.benchmark if row.benchmark is mapping else {'value': row.benchmark, 'source': row.benchmark_source, 'diff_pct': row.pct, 'diff_pp': none} %}
-      <tr>
-        <td>{{ row.metric|label }}{% if row.basis %} <span class="tag">{{ row.basis|source }}</span>{% endif %}</td>
-        <td>{% if row.metric in ['gross_margin','operating_margin'] %}{% if row.actual is not none %}{{ '%.1f'|format(row.actual*100) }}%{% else %}—{% endif %}{% elif 'eps' in row.metric %}{% if row.actual is not none %}${{ '%.2f'|format(row.actual) }}{% else %}—{% endif %}{% else %}{{ row.actual|money }}{% endif %}</td>
-        <td>{% if row.metric in ['gross_margin','operating_margin'] %}{% if b.value is not none %}{{ '%.1f'|format(b.value*100) }}%{% else %}—{% endif %}{% elif 'eps' in row.metric %}{% if b.value is not none %}${{ '%.2f'|format(b.value) }}{% else %}—{% endif %}{% else %}{{ b.value|money }}{% endif %}</td>
-        <td>{{ b.source|source }}</td>
-        <td>{% if row.metric in ['gross_margin','operating_margin'] %}{{ b.diff_pp|pct(pp=true) }}{% else %}{{ b.diff_pct|pct }}{% endif %}</td>
-        <td><span class="v {{ row.verdict }}">{{ row.verdict|verdict }}</span></td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  </div>
-  <p class="muted" style="margin:0.8rem 0 0">
-    次日股价反应：
-    {% if doc.price_reaction.next_day_pct is not none %}
-      <span class="v {% if doc.price_reaction.next_day_pct > 0 %}beat{% elif doc.price_reaction.next_day_pct < 0 %}miss{% else %}inline{% endif %}">
-        {{ '%+.2f'|format(doc.price_reaction.next_day_pct*100) }}%
-      </span>
-      {% if doc.price_reaction.close_before is not none and doc.price_reaction.close_after is not none %}
-        <span class="muted">（{{ doc.price_reaction.before_date or '' }} ${{ '%.2f'|format(doc.price_reaction.close_before) }} → {{ doc.price_reaction.after_date or '' }} ${{ '%.2f'|format(doc.price_reaction.close_after) }}）</span>
-      {% endif %}
-    {% elif doc.status.stage == 'stage3_done' %}
-      暂无（{{ doc.price_reaction.note or '交易日数据不足' }}）
-    {% else %}
-      等待阶段3
-    {% endif %}
-  </p>
 </section>
 
-{% if doc.summary and doc.summary.headline %}
-<section class="panel">
-  <h2>{{ doc.summary.headline }}</h2>
-  <ol class="findings">
-    {% for f in doc.summary.key_findings %}<li>{{ f if f is string else f.get('text', f) }}</li>{% endfor %}
-  </ol>
-</section>
-{% endif %}
-
-<section class="panel">
-  <h2>① 财报解读</h2>
-  <p class="section-note">每个指标把本季数字、同比/环比与变动原因放在一起阅读。</p>
-
-  <div class="metric-stack">
-  {% for s in metric_sections %}
-    {% set m = s.metric %}
-    <article class="metric-card">
-      <div class="metric-card-head">
-        <div class="title-cell">
-          <div class="k">指标</div>
-          <div class="title">{{ s.label }}</div>
-        </div>
-        <div>
-          <div class="k">本季</div>
-          <div class="vnum">
-            {% if m %}
-              {% if s.is_ratio and m.value is not none %}{{ '%.1f'|format(m.value*100) }}%
-              {% elif s.is_eps and m.value is not none %}${{ '%.2f'|format(m.value) }}
-              {% else %}{{ m.value|money }}{% endif %}
-            {% else %}—{% endif %}
+<!-- 财务解读 -->
+<section class="dim" id="fin">
+  <h2>财务解读</h2>
+  <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开驱动因素与原文引用；标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <div class="card rows">
+    <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
+    {% for r in fin_rows %}
+    <details class="mrow">
+      <summary>
+        <span class="m-name">{{ r.label }}</span>
+        <span class="m-val num">{{ r.value }}</span>
+        <span class="num"><i class="m-label">同比</i><span class="c-{{ r.yoy.cls }}">{{ r.yoy.text }}</span></span>
+        <span class="num"><i class="m-label">环比</i><span class="c-{{ r.qoq.cls }}">{{ r.qoq.text }}</span></span>
+        <span class="num"><i class="m-label">对比预期</i><span class="c-{{ r.vs.cls }}">{{ r.vs.text }}</span></span>
+        <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif waiting_transcript %}<span class="muted">待电话会文字稿</span>{% else %}<span class="muted">—</span>{% endif %}</span>
+      </summary>
+      <div class="m-body">
+        {% for drv in r.drivers %}
+        <div class="drv">
+          <div class="drv-meta">
+            {% if drv.type %}<span class="pill">{{ drv.type }}</span>{% endif %}
+            {% if drv.direction == '+' %}<span class="pill ok">正贡献</span>{% elif drv.direction == '-' %}<span class="pill alert">负贡献</span>{% endif %}
+            {% if drv.quote_unverified %}<span class="pill warn">引文未核实</span>{% elif drv.is_inference %}<span class="pill warn">推测</span>{% endif %}
+            {% if drv.source %}<span>{{ drv.source|source }}</span>{% endif %}
           </div>
+          <p>{{ drv.description }}</p>
+          {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
+          {% if drv.is_inference and drv.reasoning %}<p class="small muted">依据：{{ drv.reasoning }}</p>{% endif %}
         </div>
-        <div>
-          <div class="k">同比</div>
-          <div class="vnum">{% if m %}{% if s.is_ratio %}{{ m.yoy_pp|pct(pp=true) }}{% else %}{{ m.yoy_pct|pct }}{% endif %}{% else %}—{% endif %}</div>
-        </div>
-        <div>
-          <div class="k">环比</div>
-          <div class="vnum">{% if m %}{% if s.is_ratio %}{{ m.qoq_pp|pct(pp=true) }}{% else %}{{ m.qoq_pct|pct }}{% endif %}{% else %}—{% endif %}</div>
-        </div>
-      </div>
-      <div class="metric-body">
-        {% if m and m.benchmark and m.benchmark.value is not none %}
-        <p class="muted" style="margin-top:0">相对基准（{{ m.benchmark.source|source }}）：
-          {% if s.is_ratio %}{{ m.benchmark.diff_pp|pct(pp=true) }}{% else %}{{ m.benchmark.diff_pct|pct }}{% endif %}
-        </p>
-        {% endif %}
-        {% if s.driver %}
-          <p class="driver-summary">{{ s.driver.summary }}</p>
-          <ul class="driver-list">
-            {% for drv in s.driver.drivers %}
-            <li class="{% if drv.is_inference %}inference{% endif %}">
-              <div class="meta-line">
-                <span class="tag">{{ drv.type }}</span>
-                {% if drv.quote_unverified %}<span class="unverified-flag">引文未核实</span>
-                {% elif drv.is_inference %}<span class="inference-flag">推测</span>{% endif %}
-              </div>
-              {{ drv.description }}
-              {% if drv.evidence_quote %}<blockquote title="来源：{{ drv.source|source }}">{{ drv.evidence_quote }}</blockquote>{% endif %}
-              {% if drv.is_inference and drv.reasoning %}<p class="muted">依据：{{ drv.reasoning }}</p>{% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-          {% if s.driver.conflicts %}<div class="conflict">冲突：{{ s.driver.conflicts }}</div>{% endif %}
-        {% elif waiting_transcript %}
-          <p class="placeholder">变动原因将在电话会文字稿到位后更新。</p>
         {% else %}
-          <p class="muted">暂无单独解读。</p>
-        {% endif %}
+        <p class="muted">暂无单独解读。</p>
+        {% endfor %}
+        {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
+        {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
       </div>
-    </article>
-  {% else %}
+    </details>
+    {% else %}
     <p class="placeholder">财务数据尚未生成。</p>
-  {% endfor %}
+    {% endfor %}
   </div>
 
+  {% if history %}
   <div class="charts">
-    <div class="chart-card"><canvas id="revChart"></canvas></div>
-    <div class="chart-card"><canvas id="marginChart"></canvas></div>
-    <div class="chart-card"><canvas id="fcfChart"></canvas></div>
+    <div class="card chart"><h3>营收</h3><p class="c-sub">柱：营收（十亿美元）</p><div class="c-body"><canvas id="revChart" aria-label="营收趋势"></canvas></div></div>
+    <div class="card chart"><h3>利润率</h3><p class="c-sub">毛利率与营业利润率（%）</p><div class="c-body"><canvas id="marginChart" aria-label="利润率趋势"></canvas></div></div>
+    <div class="card chart"><h3>自由现金流</h3><p class="c-sub">十亿美元</p><div class="c-body"><canvas id="fcfChart" aria-label="自由现金流趋势"></canvas></div></div>
   </div>
+  {% if history_derived %}<p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>{% endif %}
+  {% endif %}
 </section>
 
-<section class="panel">
-  <h2>② 业绩指引</h2>
+<!-- 业绩指引 -->
+<section class="dim" id="guide">
+  <h2>业绩指引</h2>
+  <p class="layer-sub">定量指引是管理层给出的数字或区间；定性展望只有方向或文字，用来理解语气与中长期叙事，不当作精确指引。</p>
 
   {% if quant_guidance %}
-  <h3>定量指引</h3>
-  <p class="section-note">管理层给出了数字区间或中值的指引。</p>
-  <div class="table-wrap">
-  <table class="data">
-    <thead><tr><th>指标</th><th>期间</th><th>低</th><th>中</th><th>高</th><th>口径</th><th>来源</th></tr></thead>
-    <tbody>
-    {% for g in quant_guidance %}
-      <tr>
-        <td>{{ g.metric_key|label if g.metric_key != 'other' else (g.metric_label or '其他') }}</td>
-        <td>{{ g.period|period_zh }}</td>
-        <td>{{ g.low|guide(g.metric_key) }}</td>
-        <td>{{ g.mid|guide(g.metric_key) }}</td>
-        <td>{{ g.high|guide(g.metric_key) }}</td>
-        <td>{{ g.basis|source }}</td>
-        <td>{{ g.source|source }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <div class="group-title">定量指引</div>
+  <div class="card" style="padding:4px 16px 8px">
+    <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>指标</th><th>期间</th><th>区间</th><th>中值</th><th>口径</th><th>来源</th></tr></thead>
+      <tbody>
+      {% for g in quant_guidance %}
+        <tr>
+          <td class="wrap">{{ g.label }}<span class="sub-line" title="{{ g.statement }}">{{ g.statement }}</span></td>
+          <td>{{ g.period }}</td>
+          <td>{{ g.range or '—' }}</td>
+          <td><b>{{ g.mid or '—' }}</b>{% if g.variant %}<span class="sub-line">{{ g.variant }}</span>{% endif %}</td>
+          <td>{{ g.basis }}</td>
+          <td>{{ g.source }}{% if g.confirmed %}<span class="basis">· {{ g.confirmed }}确认</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
   </div>
   {% endif %}
 
   {% if qual_guidance %}
-  <h3>定性展望</h3>
-  <p class="section-note">没有给出具体数字，而是方向性表述（看高/看低/持平或文字说明）。用于理解管理层语气与中长期叙事，不要当成可交易的精确指引。</p>
-  <div class="guide-qual-grid">
-    {% for g in qual_guidance %}
-    <article class="guide-qual-card">
-      <header>
-        <span class="title">{{ g.metric_label or (g.metric_key|label) }}</span>
-        {% if g.direction %}<span class="tag dir-{{ g.direction }}">{{ g.direction|direction }}</span>{% endif %}
-        <span class="period">{{ g.period|period_zh }} · {{ g.source|source }}</span>
-      </header>
-      <p>{{ g.statement or g.source_quote or '—' }}</p>
-      {% if g.source_quote and g.statement and g.source_quote != g.statement %}
-      <blockquote>{{ g.source_quote }}</blockquote>
-      {% endif %}
-    </article>
-    {% endfor %}
+  <div class="group-title">定性展望 <span class="muted small">{{ qual_guidance|length }} 条</span></div>
+  <div class="card">
+    <ul class="qual">
+      {% for g in qual_guidance[:6] %}{% include "_qual_item.html" %}{% endfor %}
+    </ul>
+    {% if qual_guidance|length > 6 %}
+    <details class="more">
+      <summary>展开其余 {{ qual_guidance|length - 6 }} 条</summary>
+      <ul class="qual">
+        {% for g in qual_guidance[6:] %}{% include "_qual_item.html" %}{% endfor %}
+      </ul>
+    </details>
+    {% endif %}
   </div>
   {% endif %}
 
   {% if not quant_guidance and not qual_guidance %}
-  <p class="placeholder">指引数据生成中或尚未抽取。</p>
+  <div class="card placeholder">指引数据生成中或尚未抽取。</div>
   {% endif %}
 
-  <h3>分析师修正</h3>
-  {% set ar = doc.guidance.get('analyst_revisions') or {} %}
-  {% set tm1 = ar.get('t_minus_1') or {} %}
-  {% set tm1_cq = ar.get('t_minus_1_current_quarter') or {} %}
-  {% set has_tm1 = tm1_cq or (tm1.get('eps') is not none or tm1.get('revenue') is not none) %}
-  {% if has_tm1 %}
-  <p class="section-note">看一致预期在财报前后如何变化。T+1/T+3/T+7 需要发布后对应天数的快照；未到日期或未拍摄时显示「待补」。</p>
-  {% if tm1_cq %}
-  <p class="muted">财报前对本季一致预期：每股收益 {% if tm1_cq.get('eps') is not none %}${{ '%.2f'|format(tm1_cq.eps) }}{% else %}—{% endif %} · 营收 {{ tm1_cq.get('revenue')|money }}（{{ tm1_cq.get('date') or '—' }}）</p>
-  {% endif %}
-  <div class="table-wrap">
-  <table class="data">
-    <thead>
-      <tr>
-        <th>时点</th><th>含义</th><th>日期</th><th>每股收益预期</th><th>较T-1</th><th>营收预期</th><th>较T-1</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% set rows = [
-        ('t_minus_1', 'T-1', '发布前·下季预期'),
-        ('t_plus_1', 'T+1', '发布后约1天·下季'),
-        ('t_plus_3', 'T+3', '发布后约3天·下季'),
-        ('t_plus_7', 'T+7', '发布后约7天·下季')
-      ] %}
-      {% for key, label, meaning in rows %}
-        {% set r = ar.get(key) or {} %}
-        {% set eps_chg = r.get('eps_chg') %}
-        {% set rev_chg = r.get('revenue_chg') %}
+  <div class="group-title">分析师修正</div>
+  {% if revisions.has %}
+  <div class="card" style="padding:4px 16px 10px">
+    <p class="layer-sub" style="margin-top:8px">财报后一致预期如何移动。T-1 为发布前对「下季」的预期，T+N 为发布后第 N 天的下季预期；没有对应日期快照时显示「待补」，daily 会自动补齐。
+      {% if revisions.current_q %}财报前对本季的预期：每股收益 {{ revisions.current_q.eps }} · 营收 {{ revisions.current_q.rev }}（{{ revisions.current_q.date }}）。{% endif %}</p>
+    <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>时点</th><th>日期</th><th>每股收益预期</th><th>较 T-1</th><th>营收预期</th><th>较 T-1</th></tr></thead>
+      <tbody>
+      {% for r in revisions.rows %}
         <tr>
-          <td>{{ label }}</td>
-          <td>{{ meaning }}</td>
-          <td>{{ r.get('date') or '待补' }}</td>
-          <td>{% if r.get('eps') is not none %}${{ '%.2f'|format(r.eps) }}{% else %}待补{% endif %}</td>
-          <td>{% if eps_chg is not none %}{{ '%.1f'|format(eps_chg*100) }}%{% else %}—{% endif %}</td>
-          <td>{{ r.get('revenue')|money if r.get('revenue') is not none else '待补' }}</td>
-          <td>{% if rev_chg is not none %}{{ '%.1f'|format(rev_chg*100) }}%{% else %}—{% endif %}</td>
+          <td>{{ r.label }}</td><td>{{ r.date }}</td>
+          <td>{{ r.eps }}</td><td class="c-{{ r.eps_chg.cls }}">{{ r.eps_chg.text }}</td>
+          <td>{{ r.rev }}</td><td class="c-{{ r.rev_chg.cls }}">{{ r.rev_chg.text }}</td>
         </tr>
       {% endfor %}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+    </div>
   </div>
-  {% if ar.get('gap_closure') %}
-  {% set gc = ar.get('gap_closure') or {} %}
-  <p class="muted" style="margin-top:0.7rem">指引缺口收敛（下季）：每股收益 {{ gc.get('eps') if gc.get('eps') is not none else '—' }} · 营收 {{ gc.get('revenue') if gc.get('revenue') is not none else '—' }}</p>
-  {% endif %}
-  {% if ar.get('status_notes') %}
-  <ul class="muted">{% for n in ar.get('status_notes') %}<li>{{ n }}</li>{% endfor %}</ul>
-  {% endif %}
   {% else %}
-  <p class="placeholder">尚无可用的发布前/后一致预期快照。保持 daily 拍摄后，阶段3会自动补齐 T+1/T+3/T+7。</p>
+  <div class="card placeholder">尚无发布前后的一致预期快照。daily 每天拍摄，财报后会自动补齐 T+1/T+3/T+7。</div>
   {% endif %}
 </section>
 
-<section class="panel">
-  <h2>③ 互动交流</h2>
-  {% if doc.qa.get('items') %}
-  <p class="section-note">新话题：{{ doc.qa.new_topics|join('、') or '—' }} · 热门：{{ doc.qa.hot_topics|join('、') or '—' }}</p>
-  <div class="qa-list">
-    {% for q in doc.qa.get('items') %}
-    <article class="qa {% if q.directness in ['partial','evasive'] %}warn{% endif %} {% if q.parse_failed or '结构化失败' in (q.question_summary or '') or '解析失败' in (q.question_summary or '') %}failed{% endif %}">
-      <header>
-        <strong>{{ q.analyst or '分析师' }}</strong>
-        {% if q.firm %}<span>· {{ q.firm }}</span>{% endif %}
-        <span class="tag">{{ q.topic }}</span>
-        <span class="tag">{{ q.directness|directness }}</span>
-        <span class="tag">{{ q.tone|tone }}</span>
-      </header>
-      <p><strong>问：</strong>{{ q.question_summary }}</p>
-      <p><strong>答：</strong>{{ q.answer_summary or '—' }}</p>
-      {% if q.evasion_note and 'Expecting value' not in q.evasion_note %}<p class="muted">补充：{{ q.evasion_note }}</p>{% endif %}
-      {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}
-    </article>
+<!-- 电话会问答 -->
+<section class="dim" id="qa">
+  <h2>电话会问答</h2>
+  {% if qa['items'] %}
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>{{ qa['items']|length }}</b> 轮</span>
+    {% if qa.hot %}<span>热门话题：<b>{{ qa.hot|join('、') }}</b></span>{% endif %}
+    {% if qa.new %}<span>新出现：<b>{{ qa.new|join('、') }}</b></span>{% endif %}
+    {% if qa.failed_count %}<span class="muted">{{ qa.failed_count }} 轮未能结构化</span>{% endif %}
+    {% if qa.evasive_count %}
+    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 {{ qa.evasive_count }}</button>
+    </span>
+    {% endif %}
+  </div>
+  <div class="card" id="qa-list">
+    {% for q in qa['items'] %}
+    <details class="qa{% if q.failed %} failed{% endif %}" data-evasive="{{ 'true' if q.evasive else 'false' }}">
+      <summary>
+        <span class="qa-who">{{ q.analyst or '分析师' }}{% if q.firm %}<small>{{ q.firm }}</small>{% endif %}</span>
+        <span class="qa-q">{{ q.question_summary }}</span>
+        <span class="qa-tags">
+          {% if q.topic %}<span class="pill">{{ q.topic }}</span>{% endif %}
+          {% if q.directness == 'evasive' %}<span class="pill alert">回避</span>{% elif q.directness == 'partial' %}<span class="pill warn">部分回答</span>{% endif %}
+          {% if q.tone and q.tone != 'neutral' %}<span class="pill">{{ q.tone|tone }}</span>{% endif %}
+        </span>
+      </summary>
+      <div class="qa-body">
+        <p><b>答：</b>{{ q.answer_summary or '—' }}</p>
+        {% if q.note %}<p class="small">未回答的部分：{{ q.note }}</p>{% endif %}
+        {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}
+        {% if q.new_numbers %}
+        <p class="small">新数字：{% for n in q.new_numbers %}{{ n.number if n is mapping else n }}{% if n is mapping and n.meaning %}（{{ n.meaning }}）{% endif %}{% if not loop.last %}；{% endif %}{% endfor %}</p>
+        {% endif %}
+      </div>
+    </details>
     {% endfor %}
   </div>
   {% else %}
-  <p class="placeholder">等待电话会文字稿</p>
+  <div class="card placeholder">等待电话会文字稿。</div>
   {% endif %}
 </section>
 
-<section class="panel">
-  <h2>跟踪清单</h2>
-  {% if doc.summary.get('next_watchlist') %}
-  <ul class="watch-list">{% for w in doc.summary.next_watchlist %}<li>{{ w if w is string else (w.get('condition') or w.get('text') or w) }}{% if w is mapping and w.get('threshold') %}（阈值：{{ w.threshold }}）{% endif %}</li>{% endfor %}</ul>
+<!-- 跟踪清单 -->
+<section class="dim" id="watch">
+  <h2>下季跟踪</h2>
+  <p class="layer-sub">下次财报时逐条核对。</p>
+  {% if watchlist %}
+  <div class="card">
+    <ul class="wl">
+      {% for w in watchlist %}
+      <li><span>{{ w.text }}</span><span class="w-th">{{ w.threshold }}</span></li>
+      {% endfor %}
+    </ul>
+  </div>
   {% else %}
-  <p class="placeholder">阶段2完成后生成。</p>
+  <div class="card placeholder">阶段2完成后生成。</div>
   {% endif %}
 </section>
 
-<section class="panel sources">
-  <h2>来源</h2>
-  <ul>
-    <li>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}">SEC EDGAR</a>{% else %}—{% endif %}</li>
-    <li>文字稿来源：{{ doc.meta.transcript_source|source }}</li>
-    <li>文件编号：{{ doc.meta.accession or "—" }}</li>
-  </ul>
+<section id="notes" style="scroll-margin-top:110px">
+  <div class="card notes">
+    <p>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}" rel="noopener">SEC EDGAR</a>{% else %}—{% endif %} · 文件编号 {{ doc.meta.accession or "—" }} · 文字稿：{{ doc.meta.transcript_source|source }}</p>
+    {% if doc.meta.pre_earnings_snapshot_source %}<p>财报前一致预期：{{ doc.meta.pre_earnings_snapshot_source }}</p>{% endif %}
+    <p>记分卡判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
+  </div>
+  {% if warnings %}
+  <details class="card health"{% if doc.status.needs_review %} open{% endif %}>
+    <summary>数据提示 {{ warnings|length }} 条</summary>
+    <ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
 </section>
+{% endblock %}
 
+{% block scripts %}
 <script>
-const periodHistory = {{ history|tojson }};
-const labels = periodHistory.map(h => h.period);
-const chartOpts = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { position: 'bottom' } }
-};
-function mountChart(id, title, config) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const wrap = el.parentElement;
-  if (typeof Chart === 'undefined') {
-    wrap.innerHTML = '<p class="placeholder">图表库未能加载（请检查网络或脚本完整性）。</p>';
-    return;
-  }
-  if (!periodHistory.length) {
-    wrap.innerHTML = '<p class="placeholder">暂无历史序列可绘制。</p>';
-    return;
-  }
-  config.type = config.type || 'bar';
-  config.options = Object.assign({ plugins: { title: { display: true, text: title } } }, chartOpts, config.options || {});
-  if (config.options.plugins && chartOpts.plugins) {
-    config.options.plugins = Object.assign({}, chartOpts.plugins, config.options.plugins);
-  }
-  new Chart(el, config);
-}
-mountChart('revChart', '营收与同比', {
-  type: 'bar',
-  data: {
-    labels,
-    datasets: [
-      {type:'bar', label:'营收', data: periodHistory.map(h => h.revenue), yAxisID:'y'},
-      {type:'line', label:'同比%', data: periodHistory.map(h => h.revenue_yoy == null ? null : h.revenue_yoy*100), yAxisID:'y1'}
-    ]
-  },
-  options: {scales:{y:{position:'left', title:{display:true,text:'营收'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'同比%'}}}}
-});
-mountChart('marginChart', '利润率趋势', {
-  type:'line',
-  data:{labels, datasets:[
-    {label:'毛利率%', data: periodHistory.map(h => h.gross_margin == null ? null : h.gross_margin*100)},
-    {label:'营业利润率%', data: periodHistory.map(h => h.operating_margin == null ? null : h.operating_margin*100)}
-  ]}
-});
-mountChart('fcfChart', '自由现金流', {
-  type:'bar',
-  data:{labels, datasets:[{label:'自由现金流', data: periodHistory.map(h => h.fcf)}]}
+document.querySelectorAll('[data-qa]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var mode = btn.getAttribute('data-qa');
+    document.querySelectorAll('[data-qa]').forEach(function (b) { b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+    document.querySelectorAll('#qa-list details.qa').forEach(function (el) {
+      el.hidden = mode === 'evasive' && el.getAttribute('data-evasive') !== 'true';
+    });
+  });
 });
 </script>
+{% if history %}
+<script src="{{ root }}static/vendor/chart.umd.min.js"></script>
+<script>
+(function () {
+  var history = {{ history|tojson }};
+  if (typeof Chart === 'undefined') {
+    document.querySelectorAll('.chart .c-body').forEach(function (el) { el.innerHTML = '<p class="placeholder">图表库未能加载。</p>'; });
+    return;
+  }
+  var css = getComputedStyle(document.documentElement);
+  var v = function (name) { return css.getPropertyValue(name).trim(); };
+  Chart.defaults.font.family = v('--font') || 'system-ui';
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = v('--ink-2');
+  Chart.defaults.borderColor = v('--grid');
+  var labels = history.map(function (h) { return h.period; });
+  var bn = function (x) { return x == null ? null : x / 1e9; };
+  var pct = function (x) { return x == null ? null : x * 100; };
+  var base = {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: false } },
+    scales: { x: { grid: { display: false } }, y: { border: { display: false } } }
+  };
+  var opts = function (extra) { return Object.assign({}, base, extra || {}); };
+  new Chart(document.getElementById('revChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: '营收（十亿美元）', data: history.map(function (h) { return bn(h.revenue); }), backgroundColor: v('--s1'), borderRadius: 3, maxBarThickness: 36 }] },
+    options: opts()
+  });
+  new Chart(document.getElementById('marginChart'), {
+    type: 'line',
+    data: { labels: labels, datasets: [
+      { label: '毛利率 %', data: history.map(function (h) { return pct(h.gross_margin); }), borderColor: v('--s1'), backgroundColor: v('--s1'), tension: .25, spanGaps: true },
+      { label: '营业利润率 %', data: history.map(function (h) { return pct(h.operating_margin); }), borderColor: v('--s2'), backgroundColor: v('--s2'), tension: .25, spanGaps: true }
+    ] },
+    options: opts({ plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, boxHeight: 3 } } } })
+  });
+  new Chart(document.getElementById('fcfChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: '自由现金流（十亿美元）', data: history.map(function (h) { return bn(h.fcf); }), backgroundColor: v('--s3'), borderRadius: 3, maxBarThickness: 36 }] },
+    options: opts()
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}

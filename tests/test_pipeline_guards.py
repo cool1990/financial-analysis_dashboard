@@ -1,0 +1,181 @@
+"""成本护栏与无 LLM 数据补全的回归测试（不联网）。"""
+from __future__ import annotations
+
+import json
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+# ---- 新 8-K 过滤：历史 8-K 不能被 poll 当成新财报 --------------------------------
+
+def _filing(acc: str, accepted: datetime) -> dict:
+    return {"accessionNumber": acc, "acceptanceDateTime": accepted.strftime("%Y-%m-%dT%H:%M:%S.000Z"), "form": "8-K", "items": "2.02"}
+
+
+def test_detect_new_filings_ignores_old_and_failed(monkeypatch, tmp_path):
+    from pipeline.commands import run_cmd
+    from pipeline import state
+
+    now = datetime(2026, 10, 1, 21, 0, tzinfo=timezone.utc)
+    filings = [
+        _filing("new-1", now - timedelta(hours=2)),
+        _filing("failed-1", now - timedelta(hours=3)),
+        _filing("old-1", now - timedelta(days=90)),
+    ]
+    monkeypatch.setattr(run_cmd, "load_ticker_config", lambda t: {"cik": "0000000001"})
+    monkeypatch.setattr(run_cmd.SecEdgarClient, "__init__", lambda self, *a, **k: None)
+    monkeypatch.setattr(run_cmd.SecEdgarClient, "find_earnings_8k", lambda self, cik: filings)
+    monkeypatch.setattr(state, "data_dir", lambda t=None: tmp_path)
+    for _ in range(3):
+        state.record_filing_failure("X", "failed-1")
+    monkeypatch.setattr(run_cmd, "load_processed", state.load_processed)
+    monkeypatch.setattr(run_cmd, "load_failures", state.load_failures)
+    out = run_cmd.detect_new_filings("X", now=now)
+    assert [f["accessionNumber"] for f in out] == ["new-1"]
+
+    state.add_processed("X", "new-1")
+    assert run_cmd.detect_new_filings("X", now=now) == []
+    data = json.loads((tmp_path / "processed.json").read_text())
+    assert data["accessions"] == ["new-1"] and data["failures"] == {"failed-1": 3}
+
+
+def test_near_earnings_gate(monkeypatch):
+    from pipeline.commands import poll_cmd
+
+    monkeypatch.setattr(poll_cmd, "known_earnings_dates", lambda t: [date(2026, 9, 30), date(2026, 12, 23)])
+    assert poll_cmd.near_earnings("MU", date(2026, 9, 30))
+    assert poll_cmd.near_earnings("MU", date(2026, 10, 2))
+    assert not poll_cmd.near_earnings("MU", date(2026, 11, 10))
+    monkeypatch.setattr(poll_cmd, "known_earnings_dates", lambda t: [])
+    assert poll_cmd.near_earnings("MU", date(2026, 11, 10))  # 无日期时保守放行
+
+
+def test_poll_stops_stage2_after_transcript_deadline(monkeypatch, tmp_path):
+    from pipeline.commands import poll_cmd
+
+    (tmp_path / "state").mkdir()
+    (tmp_path / "state" / "FY2026Q4.json").write_text(json.dumps({"stage": "stage1_done", "fiscal_period": "FY2026Q4"}))
+    (tmp_path / "FY2026Q4.json").write_text(json.dumps({"meta": {"release_at_utc": "2026-09-28T20:00:00Z"}}))
+    called = []
+    monkeypatch.setattr(poll_cmd, "list_tickers", lambda: ["MU"])
+    monkeypatch.setattr(poll_cmd, "load_ticker_config", lambda t: {"release_timing": "amc", "cik": None})
+    monkeypatch.setattr(poll_cmd, "data_dir", lambda t=None: tmp_path)
+    monkeypatch.setattr(poll_cmd, "run_stage2", lambda *a, **k: called.append(a))
+    out = poll_cmd.poll_once(datetime(2026, 10, 1, 12, 0, tzinfo=timezone.utc))
+    assert called == []
+    assert out["did_work"] is False and out["actions"][0]["skipped"] is True
+
+
+# ---- 新闻稿对比列 → 同比 / 环比 ----------------------------------------------------
+
+def test_press_release_comparatives_mu():
+    from pipeline.compute.comparatives import apply_press_comparatives, detect_layout
+
+    extracted = json.loads((ROOT / "data" / "MU" / "raw" / "FY2026Q4" / "extracted_financials.json").read_text())
+    assert detect_layout(extracted) == {"yoy": 2, "qoq": 1}
+    fin = {
+        "revenue": {"value": 54229e6, "yoy_pct": None, "qoq_pct": None},
+        "gross_margin_nongaap": {"value": 47204 / 54229, "yoy_pp": None, "qoq_pp": None},
+        "eps_nongaap": {"value": 33.42, "yoy_pct": None, "qoq_pct": None},
+        "fcf": {"value": 32863e6, "yoy_pct": None, "qoq_pct": None},
+    }
+    filled = apply_press_comparatives(fin, extracted)
+    assert set(filled) == set(fin)
+    assert fin["revenue"]["qoq_pct"] == pytest.approx(54229 / 41456 - 1)
+    assert fin["revenue"]["yoy_pct"] == pytest.approx(54229 / 11315 - 1)
+    assert fin["gross_margin_nongaap"]["qoq_pp"] == pytest.approx(47204 / 54229 - 35199 / 41456)
+    assert fin["eps_nongaap"]["prior_q"] == pytest.approx(25.11)
+    assert fin["fcf"]["prior_q"] == pytest.approx((25388 - 7826) * 1e6)
+
+
+def test_comparatives_two_column_layout_and_existing_values_kept():
+    from pipeline.compute.comparatives import apply_press_comparatives
+
+    extracted = {
+        "revenue": {"raw": "94,930", "unit": "millions", "source_quote": "Total net sales 94,930 89,498 391,035 383,285"},
+        "prior_year_comparables": {"revenue": {"raw": "89,498"}},
+        "operating_income_gaap": {"raw": "29,591", "unit": "millions", "source_quote": "Operating income 29,591 (1,200) 123,216"},
+    }
+    fin = {
+        "revenue": {"value": 94930e6, "yoy_pct": 0.5, "qoq_pct": None},
+        "operating_margin_gaap": {"value": 29591 / 94930, "yoy_pp": None, "qoq_pp": None},
+    }
+    apply_press_comparatives(fin, extracted)
+    assert fin["revenue"]["yoy_pct"] == 0.5  # 已有值不覆盖
+    assert fin["revenue"]["qoq_pct"] is None  # 两列版式没有上季
+    # 去年同季亏损要保留负号
+    assert fin["operating_margin_gaap"]["year_ago"] == pytest.approx(-1200 / 89498)
+
+
+def test_comparatives_reject_row_without_anchor():
+    from pipeline.compute.comparatives import press_release_comparatives
+
+    extracted = {
+        "revenue": {"raw": "100", "unit": "millions", "source_quote": "Revenue 120 110 90"},
+        "prior_year_comparables": {"revenue": {"raw": "90"}},
+    }
+    assert press_release_comparatives(extracted) == {}
+
+
+# ---- 指引期间归一 / 合并 -------------------------------------------------------------
+
+def test_guidance_merge_normalizes_period_and_keeps_directional():
+    from pipeline.commands.run_cmd import merge_guidance_items
+    from pipeline.extract.guidance import normalize_period
+
+    assert normalize_period("FQ1-27") == normalize_period("Q1 Fiscal 2027") == "FY2027Q1"
+    assert normalize_period("first quarter fiscal 2027") == "FY2027Q1"
+    press = [{"metric_key": "revenue", "period": "FQ1-27", "mid": 61.5e9, "source": "press_release"},
+             {"metric_key": "opex_gaap", "period": "FQ1-27", "mid": 2.31e9, "source": "press_release"}]
+    call = [{"metric_key": "revenue", "period": "Q1 Fiscal 2027", "mid": 61.5e9, "source": "prepared_remarks"},
+            {"metric_key": "opex_gaap", "period": "first quarter fiscal 2027", "mid": None, "direction": "up", "source": "qa"}]
+    warnings: list[str] = []
+    out = merge_guidance_items(press, call, warnings)
+    assert len(out) == 3
+    assert out[0]["confirmed_by"] == "prepared_remarks"
+    assert warnings == []
+
+
+# ---- 问答 ----------------------------------------------------------------------------
+
+def test_clean_firm_and_failed_items_not_evasive():
+    from pipeline.analyze.qa import _fallback_item, clean_firm
+    from pipeline.compute.topics import compute_topic_stats
+
+    assert clean_firm("Operator: the line of Atif Malik from Citi.\nAtif Malik: hi") == "Citi"
+    assert clean_firm("Operator: Next is Joseph Moore with Morgan Stanley. Your line is open.") == "Morgan Stanley"
+    item = _fallback_item({"exchange_id": "1", "text": "x"}, "解析失败")
+    assert compute_topic_stats([item])["evasive_list"] == []
+
+
+# ---- 页面 ----------------------------------------------------------------------------
+
+def test_change_formatting():
+    from builder.build import _change
+
+    assert _change(0.308)["text"] == "+30.8%"
+    assert _change(455.4)["text"] == "456 倍"
+    assert _change(0.021, pp=True)["text"] == "+2.1pp"
+    assert _change(None)["cls"] == "na"
+
+
+def test_other_guidance_uses_raw_text():
+    from builder.build import _guidance_value
+
+    rng, mid = _guidance_value({"metric_key": "other", "mid": 75.0, "point_raw": "more than 75%"})
+    assert rng == "more than 75%" and "$" not in rng
+
+
+def test_build_site_renders(tmp_path, monkeypatch):
+    import builder.build as b
+
+    monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
+    pages = b.build_site()
+    html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
+    assert "财务解读" in html and "revChart" in html and "{{" not in html
+    assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
+    assert any(p.name == "index.html" for p in pages)

@@ -3,26 +3,30 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
   <title>NKE · 等待数据</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../static/style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-Zo0JQxn9A2/FqzWx5WJmOaodijMzCKGq/S5YsQdnqzTjlFAKeQxZK+kRlTYfQ/4b17k+qYpGgy/gYpO6RiFubA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="../../index.html">财报解读</a>
-    <nav></nav>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../../index.html">财报解读</a>
+      <nav class="nav" aria-label="股票">
+        <a href="../../stocks/AAPL/index.html">AAPL</a>
+        <a href="../../stocks/MU/index.html">MU</a>
+        <a href="../../stocks/NKE/index.html" class="active">NKE</a>
+      </nav>
+    </div>
   </header>
   <main>
-    
-<section class="page-head">
-  <h1>NKE · NIKE, Inc.</h1>
-  <p class="placeholder">尚无财季数据。请先运行 <code>python -m pipeline init --ticker NKE</code> 与快照/回补。</p>
-</section>
-
+<div class="page-head">
+  <div>
+    <h1>NKE · NIKE, Inc.</h1>
+    <div class="sub">尚无财季数据</div>
+  </div>
+</div>
+<div class="card placeholder">请先运行 <code>python -m pipeline init --ticker NKE</code>，再等待下一次财报或手动回补。</div>
   </main>
-  <footer class="site-footer">数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿 · 仅供研究参考，不构成投资建议</footer>
+  <footer>数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿。解读由模型生成并经原文引用校验，仅供研究参考，不构成投资建议。</footer>
 </body>
 </html>

@@ -3,21 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
   <title>{% block title %}财报解读{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ root|default('') }}static/style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="{{ root }}static/style.css" />
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="{{ root|default('') }}index.html">财报解读</a>
-    <nav>{% block nav %}{% endblock %}</nav>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ root }}index.html">财报解读</a>
+      <nav class="nav" aria-label="股票">
+        {% for n in nav %}
+        <a href="{{ root }}{{ n.href }}"{% if n.ticker == active %} class="active"{% endif %}>{{ n.ticker }}</a>
+        {% endfor %}
+      </nav>
+      {% block topbar_extra %}{% endblock %}
+    </div>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
-  <footer class="site-footer">数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿 · 仅供研究参考，不构成投资建议</footer>
+  <footer>数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿。解读由模型生成并经原文引用校验，仅供研究参考，不构成投资建议。</footer>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

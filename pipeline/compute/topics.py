@@ -17,7 +17,7 @@ def compute_topic_stats(
     evasive = [
         i
         for i in current_items
-        if (i.get("directness") or "") in {"partial", "evasive"}
+        if (i.get("directness") or "") in {"partial", "evasive"} and not i.get("parse_failed")
     ]
     return {
         "topic_stats": dict(cur),

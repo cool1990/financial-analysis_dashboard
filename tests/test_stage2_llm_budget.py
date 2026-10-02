@@ -106,3 +106,38 @@ def test_stage2_skips_when_already_complete(tmp_path, monkeypatch):
     out = run_stage2("MU", "FY2026Q4", force=False)
     assert out["status"]["stage"] == "stage3_done"
     assert called["fetch"] == 0
+
+
+def test_complete_json_accepts_fenced_output_without_retry(monkeypatch):
+    """模型包了 ```json 围栏时直接解析，不应再付费重试。"""
+    from pipeline.schemas import SummaryResult
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-key-for-unit")
+    calls = {"n": 0}
+
+    def fake_post(self, messages, *, json_object=True):
+        calls["n"] += 1
+        return '```json\n{"headline": "h", "key_findings": []}\n```', {"prompt_tokens": 1, "completion_tokens": 1}, 1.0
+
+    monkeypatch.setattr(LLMClient, "_post_chat", fake_post)
+    client = LLMClient(require_key=True, use_cache=False)
+    out = client.complete_json("summarize.md", "x", SummaryResult)
+    assert out.headline == "h"
+    assert calls["n"] == 1
+
+
+def test_complete_json_list_attempts_bounded(monkeypatch):
+    from pipeline.schemas import QAItem
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-key-for-unit")
+    calls = {"n": 0}
+
+    def fake_post(self, messages, *, json_object=True):
+        calls["n"] += 1
+        return "not json", {"prompt_tokens": 1, "completion_tokens": 1}, 1.0
+
+    monkeypatch.setattr(LLMClient, "_post_chat", fake_post)
+    client = LLMClient(require_key=True, use_cache=False)
+    with pytest.raises(LLMError):
+        client.complete_json_list("structure_qa.md", "x", QAItem)
+    assert calls["n"] == client.max_retries + 1

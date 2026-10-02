@@ -6,6 +6,8 @@ on:
       - "site/**"
     branches: [main]
   workflow_dispatch:
+  # daily / poll / manual 推送后直接调用（GITHUB_TOKEN 的推送不会触发 push 事件）
+  workflow_call:
 
 permissions:
   contents: read
@@ -24,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 被调用时 github.sha 是触发时的提交，不含刚推送的 site/，所以显式取 main 最新
+          ref: main
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -9,6 +9,12 @@ llm:
   # 整次请求墙钟上限（含流式吐字）；httpx read timeout 会随 chunk 重置，不能单靠它
   request_timeout_sec: 90
   max_cost_per_run_usd: 2
+  # 单价拿不到时金额上限会失效，token 上限始终生效（输入+输出合计）
+  max_tokens_per_run: 600000
+  # 单轮累计超时达到此次数即熔断：超时的请求在服务端仍会计费
+  max_timeouts_per_run: 2
+  # Stage1 仅凭新闻稿先做一版「变动原因」（约 1 次调用），Stage2 会用文字稿重算覆盖；false 可省掉
+  stage1_drivers: true
 
 thresholds:
   revenue_inline_pct: 0.01
@@ -28,7 +34,12 @@ polling:
   amc_window_et: ["16:00", "20:00"]
   bmo_window_et: ["06:00", "09:30"]
   transcript_max_hours: 36
-  max_retries: 5
+  # 仅处理发布不超过 N 天的 8-K；更早的历史季度走 backfill，避免 poll 逐份回溯烧 LLM
+  new_filing_max_age_days: 4
+  # 同一份 8-K Stage1 连续失败达到此次数后 poll 不再自动重试
+  max_retries: 3
+  # 发布后 N 天内，daily 自动刷新 Stage3（股价反应 + T+1/3/7 分析师修正，无 LLM）
+  stage3_refresh_days: 10
 
 sec:
   max_rps: 5

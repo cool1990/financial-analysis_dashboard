@@ -11,6 +11,23 @@ from pipeline.schemas import QAItem
 from pipeline.sources.transcripts import split_prepared_and_qa
 
 
+_FIRM_RE = re.compile(r"\b(?:from|with)\s+([A-Z][A-Za-z0-9&.'\-]*(?:[ ,]+[A-Z&][A-Za-z0-9&.'\-]*)*)")
+
+
+def clean_firm(text: str | None) -> str | None:
+    """从主持人引出语中取机构名：「...the line of Atif Malik from Citi.」→「Citi」。"""
+    if not text:
+        return None
+    head = text.split("\n", 2)
+    for line in head[:2]:
+        # 「from 分析师 with/from 机构」：取最后一个匹配
+        found = _FIRM_RE.findall(line)
+        if found:
+            firm = re.split(r"\.\s+(?:Please|Your|Go|You|The|Our)\b", found[-1])[0]
+            return firm.strip(" ,.")[:80] or None
+    return None
+
+
 def _split_exchanges(qa_text: str) -> list[dict[str, Any]]:
     """粗拆 exchanges：以 Operator 引出下一位分析师为界。"""
     parts = re.split(r"\n(?=Operator:)", qa_text)
@@ -20,9 +37,7 @@ def _split_exchanges(qa_text: str) -> list[dict[str, Any]]:
             continue
         analyst = None
         firm = None
-        m = re.search(r"(?:from|with)\s+([A-Za-z0-9&.,\-\s]+)", part)
-        if m:
-            firm = m.group(1).strip()[:80]
+        firm = clean_firm(part)
         name_m = re.search(r"\n([A-Z][a-z]+(?:\s[A-Z][a-z]+)+):", part)
         if name_m:
             analyst = name_m.group(1)
@@ -40,8 +55,9 @@ def _fallback_item(ex: dict[str, Any], reason: str) -> dict[str, Any]:
         "question_summary": f"本轮问答未能自动结构化（{reason}）。",
         "answer_summary": excerpt or "原文片段不足，请重跑 Stage2 或查看文字稿。",
         "new_numbers": [],
-        "directness": "partial",
-        "evasion_note": "结构化失败，内容仅供参考，不代表回避回答。",
+        # 结构化失败不代表回避：不能填 partial，否则会被计入「部分回答 / 回避」
+        "directness": None,
+        "evasion_note": "",
         "tone": "neutral",
         "answer_quote": "",
         "parse_failed": True,

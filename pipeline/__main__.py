@@ -11,7 +11,7 @@ from pipeline.commands.init_cmd import init_ticker
 from pipeline.commands.llm_ping_cmd import llm_ping, require_openrouter_key
 from pipeline.commands.period_resolve import resolve_latest_period
 from pipeline.commands.poll_cmd import poll_once
-from pipeline.commands.run_cmd import run_pipeline
+from pipeline.commands.run_cmd import refresh_comparatives, refresh_recent_stage3, run_pipeline
 from pipeline.commands.snapshot_cmd import take_all_snapshots, take_snapshot
 from pipeline.llm import write_github_step_summary, reset_run_tracker, get_run_tracker
 
@@ -28,6 +28,9 @@ def main(argv: list[str] | None = None) -> int:
     p_snap.add_argument("--ticker", default=None, help="缺省则全部股票")
 
     p_poll = sub.add_parser("poll", help="财报窗口轮询 / 文字稿获取")
+    sub.add_parser("stage3-recent", help="刷新近期财报的股价反应与分析师修正（无 LLM）")
+    p_cmp = sub.add_parser("comparatives", help="用新闻稿对比列补算同比 / 环比（无 LLM、不联网）")
+    p_cmp.add_argument("--ticker", default=None)
 
     p_run = sub.add_parser("run", help="按阶段重跑")
     p_run.add_argument("--ticker", required=True)
@@ -81,8 +84,20 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(out if isinstance(out, dict) and "snapshot_at" not in out else {"ok": True}, ensure_ascii=False, indent=2)[:2000])
             return 0
         if args.cmd == "poll":
-            print(json.dumps(poll_once(), ensure_ascii=False, indent=2))
+            out = poll_once()
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            gh_out = os.environ.get("GITHUB_OUTPUT")
+            if gh_out:
+                with open(gh_out, "a", encoding="utf-8") as f:
+                    f.write(f"did_work={'true' if out.get('did_work') else 'false'}\n")
             write_github_step_summary()
+            return 0
+        if args.cmd == "comparatives":
+            print(json.dumps(refresh_comparatives(args.ticker), ensure_ascii=False, indent=2))
+            return 0
+        if args.cmd == "stage3-recent":
+            out = refresh_recent_stage3()
+            print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "run":
             period = args.period
