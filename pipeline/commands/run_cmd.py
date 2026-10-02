@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,43 @@ from pipeline.analyze.drivers import analyze_drivers, strip_driver_warnings
 from pipeline.analyze.qa import structure_qa
 from pipeline.analyze.summary import summarize_period
 from pipeline.notify import format_scorecard_text, maybe_notify
+
+
+def _guidance_merge_key(item: dict[str, Any]) -> tuple:
+    """合并键：other 类按标签区分，避免「全年展望」与「出货锁定」被当成同一条冲突。"""
+    mk = item.get("metric_key") or ""
+    period = (item.get("period") or "").strip().lower()
+    if mk == "other":
+        label = (item.get("metric_label") or item.get("statement") or "").strip().lower()
+        label = re.sub(r"\s+", " ", label)[:80]
+        return (mk, period, label)
+    return (mk, period)
+
+
+def _numeric_mid(item: dict[str, Any]) -> float | None:
+    mid = item.get("mid")
+    if mid is None:
+        return None
+    try:
+        return float(mid)
+    except (TypeError, ValueError):
+        return None
+
+
+def _guidance_conflict_warning(press: dict[str, Any], call: dict[str, Any]) -> str | None:
+    """仅当双方都有数值且明显不一致时告警；文案用中文。"""
+    a, b = _numeric_mid(press), _numeric_mid(call)
+    if a is None or b is None:
+        return None
+    if a == 0:
+        differ = abs(b - a) > 1e-9
+    else:
+        differ = abs(b - a) / abs(a) > 0.02 and abs(b - a) > 1e-6
+    if not differ:
+        return None
+    label = press.get("metric_label") or call.get("metric_label") or press.get("metric_key") or "指标"
+    period = press.get("period") or call.get("period") or "—"
+    return f"电话会与新闻稿数值指引不一致：{label}（{period}）新闻稿中值 {a} vs 电话会 {b}"
 from pipeline.compute.revisions import compute_analyst_revisions
 
 
@@ -340,13 +378,24 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
         call_items = []
         doc["status"]["warnings"].append(f"电话会指引抽取失败: {e}")
 
-    merged = {(i.get("metric_key"), i.get("period")): i for i in doc.get("guidance", {}).get("items", [])}
+    merged = {_guidance_merge_key(i): i for i in doc.get("guidance", {}).get("items", [])}
     for ci in call_items:
-        key = (ci.get("metric_key"), ci.get("period"))
+        key = _guidance_merge_key(ci)
         if key in merged:
-            if ci.get("mid") != merged[key].get("mid"):
+            warn = _guidance_conflict_warning(merged[key], ci)
+            if warn:
                 merged[key]["call_variant"] = ci
-                doc["status"]["warnings"].append(f"电话会指引与新闻稿不一致: {key}")
+                doc["status"]["warnings"].append(warn)
+            else:
+                # 同键但无数值冲突：用电话会内容丰富字段（保留新闻稿来源优先的数值）
+                base = merged[key]
+                for field in ("statement", "source_quote", "direction", "metric_label"):
+                    if not base.get(field) and ci.get(field):
+                        base[field] = ci.get(field)
+                if _numeric_mid(base) is None and _numeric_mid(ci) is not None:
+                    for field in ("low", "mid", "high", "type", "basis", "source"):
+                        if ci.get(field) is not None:
+                            base[field] = ci.get(field)
         else:
             merged[key] = ci
     doc["guidance"]["items"] = list(merged.values())

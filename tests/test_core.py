@@ -315,3 +315,41 @@ def test_fetch_transcript_prefers_manual(tmp_path):
         fiscal_period="FY2026Q4",
     )
     assert src == "manual" and text.startswith("Operator")
+
+
+def test_loads_json_payload_strips_fence_and_rejects_empty():
+    from pipeline.llm import _loads_json_payload
+    import json as _json
+
+    assert _loads_json_payload('```json\n[{"a":1}]\n```') == [{"a": 1}]
+    assert _loads_json_payload('here\n{"items":[1,2]}\n') == {"items": [1, 2]}
+    try:
+        _loads_json_payload("   ")
+        assert False, "expected empty reject"
+    except _json.JSONDecodeError:
+        pass
+
+
+def test_guidance_merge_key_separates_other_labels():
+    from pipeline.commands.run_cmd import _guidance_merge_key, _guidance_conflict_warning
+
+    a = {"metric_key": "other", "period": "fiscal 2027", "metric_label": "fiscal 2027 results", "mid": None}
+    b = {"metric_key": "other", "period": "fiscal 2027", "metric_label": "Committed Shipments", "mid": 75.0}
+    assert _guidance_merge_key(a) != _guidance_merge_key(b)
+    assert _guidance_conflict_warning(a, b) is None
+    c = {"metric_key": "eps_nongaap", "period": "Q1", "mid": 10.0, "metric_label": "EPS"}
+    d = {"metric_key": "eps_nongaap", "period": "Q1", "mid": 12.0, "metric_label": "EPS"}
+    assert "不一致" in (_guidance_conflict_warning(c, d) or "")
+
+
+def test_metric_sections_bind_drivers():
+    from builder.build import _metric_sections, _verdict_label, _humanize_warning
+
+    doc = {
+        "financials": {"revenue": {"value": 1, "yoy_pct": None, "qoq_pct": None}},
+        "drivers": {"metrics": [{"metric": "revenue", "summary": "需求强", "drivers": []}]},
+    }
+    secs = _metric_sections(doc)
+    assert secs and secs[0]["key"] == "revenue" and secs[0]["driver"]["summary"] == "需求强"
+    assert _verdict_label("beat") == "超预期"
+    assert "结构化失败" in _humanize_warning("Expecting value: line 1 column 1 (char 0)")

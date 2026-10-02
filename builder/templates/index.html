@@ -2,29 +2,33 @@
 {% block title %}财报解读 · 股票列表{% endblock %}
 {% block content %}
 <section class="hero-lite">
+  <p class="eyebrow">EARNINGS DESK</p>
   <h1>财报解读看板</h1>
-  <p>美股单季解读：记分卡 · 财务解读 · 指引 · 互动交流</p>
+  <p class="lead">单季记分卡、财务解读、业绩指引与电话会问答，按股票汇总。</p>
 </section>
-<div class="table-wrap">
-<table class="data">
-  <thead>
-    <tr>
-      <th>股票</th><th>最新财季</th><th>营收</th><th>EPS</th><th>下季指引</th><th>次日涨跌</th><th>状态</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for r in rows %}
-    <tr>
-      <td><a href="{{ r.href }}">{{ r.ticker }}</a><div class="muted">{{ r.name }}</div></td>
-      <td>{{ r.period }}</td>
-      <td><span class="v {{ r.revenue_verdict }}">{{ r.revenue_verdict|verdict }}</span></td>
-      <td><span class="v {{ r.eps_verdict }}">{{ r.eps_verdict|verdict }}</span></td>
-      <td><span class="v {{ r.guide_verdict }}">{{ r.guide_verdict|verdict }}</span></td>
-      <td>{% if r.price is not none %}{{ '%.2f'|format(r.price*100) }}%{% else %}—{% endif %}</td>
-      <td>{{ r.stage }}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
-</div>
+<section class="panel">
+  <h2>覆盖股票</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>股票</th><th>最新财季</th><th>营收</th><th>每股收益</th><th>下季指引</th><th>次日涨跌</th><th>进度</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><a href="{{ r.href }}">{{ r.ticker }}</a><div class="muted">{{ r.name }}</div></td>
+        <td>{{ r.period }}</td>
+        <td><span class="v {{ r.revenue_verdict }}">{{ r.revenue_verdict|verdict }}</span></td>
+        <td><span class="v {{ r.eps_verdict }}">{{ r.eps_verdict|verdict }}</span></td>
+        <td><span class="v {{ r.guide_verdict }}">{{ r.guide_verdict|verdict }}</span></td>
+        <td>{% if r.price is not none %}{{ '%.2f'|format(r.price*100) }}%{% else %}—{% endif %}</td>
+        <td>{{ r.stage|stage }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
 {% endblock %}

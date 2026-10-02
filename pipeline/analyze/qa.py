@@ -6,7 +6,7 @@ from typing import Any
 
 from pipeline.compute.topics import compute_topic_stats
 from pipeline.config import load_topics
-from pipeline.llm import LLMClient
+from pipeline.llm import LLMClient, LLMError
 from pipeline.schemas import QAItem
 from pipeline.sources.transcripts import split_prepared_and_qa
 
@@ -30,6 +30,42 @@ def _split_exchanges(qa_text: str) -> list[dict[str, Any]]:
     return exchanges
 
 
+def _fallback_item(ex: dict[str, Any], reason: str) -> dict[str, Any]:
+    excerpt = re.sub(r"\s+", " ", (ex.get("text") or ""))[:220]
+    return {
+        "exchange_id": ex["exchange_id"],
+        "analyst": ex.get("analyst"),
+        "firm": ex.get("firm"),
+        "topic": "其他",
+        "question_summary": f"本轮问答未能自动结构化（{reason}）。",
+        "answer_summary": excerpt or "原文片段不足，请重跑 Stage2 或查看文字稿。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "结构化失败，内容仅供参考，不代表回避回答。",
+        "tone": "neutral",
+        "answer_quote": "",
+        "parse_failed": True,
+    }
+
+
+def _structure_batch(llm: LLMClient, prompt_tmpl: str, batch: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    user = prompt_tmpl + "\n\n" + json.dumps(batch, ensure_ascii=False)
+    try:
+        models = llm.complete_json_list("structure_qa.md", user, QAItem)
+        return [m.model_dump() for m in models]
+    except Exception as e:
+        # 批次失败时逐条重试，降低整批空白响应拖垮
+        if len(batch) > 1:
+            out: list[dict[str, Any]] = []
+            for ex in batch:
+                out.extend(_structure_batch(llm, prompt_tmpl, [ex]))
+            return out
+        reason = "模型返回空或非 JSON" if "Expecting value" in str(e) else "解析失败"
+        if isinstance(e, LLMError):
+            reason = "模型调用失败" if "HTTP" in str(e) else reason
+        return [_fallback_item(batch[0], reason)]
+
+
 def structure_qa(
     transcript: str,
     press_release_numbers: dict[str, Any] | None = None,
@@ -45,31 +81,10 @@ def structure_qa(
         press_release_numbers=json.dumps(press_release_numbers or {}, ensure_ascii=False),
     )
     items: list[dict[str, Any]] = []
-    # batch ~ few exchanges
-    batch_size = 3
+    batch_size = 2
     for i in range(0, len(exchanges), batch_size):
         batch = exchanges[i : i + batch_size]
-        user = prompt_tmpl + "\n\n" + json.dumps(batch, ensure_ascii=False)
-        try:
-            models = llm.complete_json_list("structure_qa.md", user, QAItem)
-            items.extend([m.model_dump() for m in models])
-        except Exception as e:
-            for ex in batch:
-                items.append(
-                    {
-                        "exchange_id": ex["exchange_id"],
-                        "analyst": ex.get("analyst"),
-                        "firm": ex.get("firm"),
-                        "topic": "其他",
-                        "question_summary": f"（解析失败）{e}",
-                        "answer_summary": "",
-                        "new_numbers": [],
-                        "directness": "partial",
-                        "evasion_note": str(e),
-                        "tone": "neutral",
-                        "answer_quote": "",
-                    }
-                )
+        items.extend(_structure_batch(llm, prompt_tmpl, batch))
     stats = compute_topic_stats(items)
     return {
         "prepared_remarks": prepared,

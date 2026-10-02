@@ -52,6 +52,32 @@ def auth_headers(api_key: str) -> dict[str, str]:
     }
 
 
+def _loads_json_payload(content: str) -> Any:
+    """解析模型输出：去 markdown 围栏、截取首个 JSON 值，拒绝空响应。"""
+    text = (content or "").strip()
+    if not text:
+        raise json.JSONDecodeError("Expecting value", content or "", 0)
+    fence = re.search(r"```(?:json)?\s*([\s\S]*?)```", text, re.IGNORECASE)
+    if fence:
+        text = fence.group(1).strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        candidates: list[tuple[int, str]] = []
+        for opener, closer in (("{", "}"), ("[", "]")):
+            start = text.find(opener)
+            end = text.rfind(closer)
+            if start != -1 and end > start:
+                candidates.append((start, text[start : end + 1]))
+        candidates.sort(key=lambda x: x[0])
+        for _, frag in candidates:
+            try:
+                return json.loads(frag)
+            except json.JSONDecodeError:
+                continue
+        raise
+
+
 class RunCostTracker:
     """单次进程内累计 LLM 花费。"""
 
@@ -350,34 +376,60 @@ class LLMClient:
         user_content: str,
         item_schema: Type[BaseModel],
     ) -> list[Any]:
-        system = "You output only a valid JSON array. No markdown fences."
+        system = (
+            "You output only a valid JSON array (or {\"items\": [...]}). "
+            "No markdown fences, no commentary, no empty response."
+        )
         key = self._cache_key(prompt_name, system, user_content)
         cached = self._read_cache(key)
         if cached:
             self._log_usage(prompt_name, cached.get("usage", {}), 0, True)
             return [item_schema.model_validate(x) for x in cached["data"]]
 
-        try:
-            content, usage, latency = self._post_chat(
-                [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user_content},
-                ],
-                json_object=False,
-            )
+        last_err: Exception | None = None
+        content = ""
+        for attempt in range(self.max_retries + 2):
+            messages = [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_content},
+            ]
+            if last_err is not None:
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            f"上次输出无法解析：{redact_secrets(str(last_err), self.api_key)}。"
+                            "请只输出 JSON 数组，不要其它文字。"
+                        ),
+                    }
+                )
+            try:
+                # 优先 json_object，兼容模型返回 {"items":[...]}；失败再试纯数组模式
+                use_obj = attempt == 0 or attempt % 2 == 0
+                content, usage, latency = self._post_chat(
+                    messages,
+                    json_object=use_obj,
+                )
+            except LLMError:
+                raise
             self._log_usage(prompt_name, usage, latency, False)
-            data = json.loads(content)
-            if isinstance(data, dict) and "items" in data:
-                data = data["items"]
-            if not isinstance(data, list):
-                raise LLMError("期望 JSON 数组")
-            models = [item_schema.model_validate(x) for x in data]
-            self._write_cache(key, {"data": data, "usage": usage})
-            return models
-        except LLMError:
-            raise
-        except Exception as e:
-            raise LLMError(redact_secrets(str(e), self.api_key)) from None
+            try:
+                data = _loads_json_payload(content)
+                if isinstance(data, dict) and "items" in data:
+                    data = data["items"]
+                if not isinstance(data, list):
+                    raise LLMError("期望 JSON 数组")
+                models = [item_schema.model_validate(x) for x in data]
+                self._write_cache(key, {"data": data, "usage": usage})
+                return models
+            except (json.JSONDecodeError, ValidationError, LLMError) as e:
+                last_err = e
+                if attempt >= self.max_retries + 1:
+                    break
+        raise LLMError(
+            f"LLM JSON 数组校验失败: {redact_secrets(str(last_err), self.api_key)}; "
+            f"raw={redact_secrets(content[:500], self.api_key)}"
+        )
 
     def ping(self) -> dict[str, Any]:
         """极小请求，要求返回 {"ok": true}。"""
