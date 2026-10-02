@@ -49,6 +49,7 @@ python -m pipeline build
 | `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补 |
 | `python -m pipeline build` | 生成 `site/` |
 | `python -m pipeline stage3-recent` | 近期财报的股价反应 + T+1/3/7 分析师修正（daily 自动跑，无 LLM） |
+| `python -m pipeline thesis --ticker MU` | 评估投资论点（1 次小调用；论点和本季数据都没变时跳过） |
 | `python -m pipeline comparatives` | 用新闻稿对比列补算同比 / 环比（无 LLM、不联网） |
 | `python -m pipeline validate --ticker MU --period FY2026Q4` | 查看状态 |
 
@@ -62,6 +63,14 @@ python -m pipeline build
 
 本地无 key 时可运行：`pytest`、`python -m pipeline build`、`python -m pipeline snapshot`（无 LLM）。
 LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Actions → `manual` / `eval`。
+
+## 投资论点与增长质量
+
+- `config/theses/{TICKER}.yaml`：每条论点写「我看好 / 市场担心 / 证实条件 / 证伪条件 / 验证时点」，可选 `metric` 自动核对
+  （写 `period` 的只用该财季实际数据核对）。Stage2 完成时自动评估；改了论点后用 manual → `thesis` 重评。
+- 增长质量 = 通用层（`settings.yaml` 的 `quality.defaults`，会计质量类）+ 公司层（股票配置 `quality_checks`，同 key 覆盖通用阈值）。
+  可用指标见 `pipeline/compute/derived.py`。
+- 次日涨跌同时计算相对对照指数（股票配置 `benchmark`，默认 SPY）的超额涨跌。
 
 ## LLM 成本护栏
 

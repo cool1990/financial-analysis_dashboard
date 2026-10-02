@@ -340,6 +340,11 @@ def _run_stage1_filing(
         "operating_cash_flow": build_metric_block(ocf_val, yoy_base=hist("operating_cash_flow", yoy_doc), qoq_base=hist("operating_cash_flow", qoq_doc)),
         "capex": build_metric_block(capex_val, yoy_base=hist("capex", yoy_doc), qoq_base=hist("capex", qoq_doc)),
         "fcf": build_metric_block(fcf, yoy_base=hist("fcf", yoy_doc), qoq_base=hist("fcf", qoq_doc)),
+        # 净利润只用于页面的「现金转化」检查（自由现金流 / 净利润）
+        "net_income_gaap": build_metric_block(
+            ParsedAmount.from_dict(extracted.get("net_income_gaap")).value,
+            source_quote=(extracted.get("net_income_gaap") or {}).get("source_quote"),
+        ),
         "kpis": extracted.get("kpis") or {},
     }
 
@@ -550,10 +555,45 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
         doc["status"]["warnings"].append(f"总结失败: {e}")
     _done("summarize", t0)
 
+    t0 = _step("review_theses")
+    try:
+        _apply_thesis_review(ticker, doc)
+    except Exception as e:
+        doc["status"]["warnings"].append(f"论点评估失败: {e}")
+    _done("review_theses", t0)
+
     doc["status"]["stage"] = "stage2_done"
     save_period_json(ticker, fiscal_period, doc)
     mark_stage(ticker, fiscal_period, "stage2_done")
     maybe_notify(f"{ticker} {fiscal_period} Stage2 完成")
+    return doc
+
+
+def _apply_thesis_review(ticker: str, doc: dict[str, Any], *, force: bool = False) -> bool:
+    """有论点文件时评估论点；论点和本季数据都没变则跳过（不花钱）。返回是否调用了 LLM。"""
+    from pipeline.analyze.thesis import review_fingerprint, review_theses
+    from pipeline.config import load_theses
+
+    theses = load_theses(ticker)
+    if not theses:
+        return False
+    old = doc.get("thesis_review") or {}
+    if not force and old.get("fingerprint") == review_fingerprint(theses, doc):
+        print("[thesis] 论点与本季数据都没变，跳过评估", flush=True)
+        return False
+    doc["thesis_review"] = review_theses(theses, doc)
+    return True
+
+
+def run_thesis_review(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[str, Any]:
+    """只做论点评估（1 次小调用）：用于已完成的季度，或修改论点文件之后。"""
+    doc = load_period_json(ticker, fiscal_period)
+    if not doc:
+        raise RuntimeError(f"缺少 {ticker} {fiscal_period} 数据")
+    if not ((doc.get("qa") or {}).get("items") or (doc.get("summary") or {}).get("headline")):
+        raise RuntimeError("Stage2 尚未完成，论点评估需要电话会结果")
+    if _apply_thesis_review(ticker, doc, force=force):
+        save_period_json(ticker, fiscal_period, doc)
     return doc
 
 
@@ -636,6 +676,26 @@ def _first_snap_on_or_after(
     return None
 
 
+def _benchmark_reaction(cfg: dict[str, Any], release: str, timing: str, own: dict[str, Any]) -> dict[str, Any]:
+    """同一对交易日里对照指数（ETF）的涨跌，以及个股的超额涨跌。失败时只返回 benchmark 名称。"""
+    from pipeline.sources.yfinance_src import YFinanceSource
+
+    symbol = (cfg.get("benchmark") or "SPY").upper()
+    out: dict[str, Any] = {"benchmark": symbol, "benchmark_pct": None, "excess_pct": None}
+    try:
+        bench = YFinanceSource(symbol).next_day_reaction(release, release_timing=timing)
+    except Exception:
+        return out
+    # 交易日要对得上才可比
+    if bench.get("before_date") != own.get("before_date") or bench.get("after_date") != own.get("after_date"):
+        return out
+    b, s = bench.get("next_day_pct"), own.get("next_day_pct")
+    out["benchmark_pct"] = b
+    if b is not None and s is not None:
+        out["excess_pct"] = s - b
+    return out
+
+
 def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
     """股价反应 + 分析师修正（按发布前后快照对齐）。"""
     from datetime import timedelta
@@ -655,6 +715,7 @@ def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
     timing = cfg.get("release_timing") or "amc"
     try:
         doc["price_reaction"] = yf.next_day_reaction(release, release_timing=timing)
+        doc["price_reaction"].update(_benchmark_reaction(cfg, release, timing, doc["price_reaction"]))
     except Exception as e:
         doc["price_reaction"] = {
             "next_day_pct": None,
@@ -746,8 +807,14 @@ def refresh_comparatives(ticker: str | None = None) -> dict[str, Any]:
                 continue
             doc = json.loads(path.read_text(encoding="utf-8"))
             extracted = json.loads(extracted_path.read_text(encoding="utf-8"))
-            filled = apply_press_comparatives(
-                doc.get("financials") or {},
+            fin = doc.setdefault("financials", {})
+            filled = []
+            ni = ParsedAmount.from_dict(extracted.get("net_income_gaap"))
+            if "net_income_gaap" not in fin and ni.value is not None:
+                fin["net_income_gaap"] = build_metric_block(ni.value, source_quote=ni.source_quote)
+                filled.append("net_income_gaap")
+            filled += apply_press_comparatives(
+                fin,
                 extracted,
                 capex_definition=cfg.get("capex_definition") or "gross",
             )

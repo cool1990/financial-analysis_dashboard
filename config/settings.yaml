@@ -55,3 +55,11 @@ paths:
   logs: logs
   config: config
   prompts: prompts
+
+# 增长质量 · 通用层：只放会计质量类检查。各股票在 config/tickers/*.yaml 的
+# quality_checks 里写公司层检查；写了同一个 key 就覆盖这里的阈值。
+# 可用指标见 pipeline/compute/derived.py 的 METRICS。
+quality:
+  defaults:
+    - {key: cash_conversion, op: ">=", value: 0.8, note: 看利润能否转成现金}
+    - {key: gaap_gap, op: "<=", value: 0.10, note: 调整项过大时要看剔除了什么}

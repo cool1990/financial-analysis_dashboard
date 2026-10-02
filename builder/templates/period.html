@@ -14,98 +14,176 @@
   <div>
     <h1>{{ ticker }} · {{ company }} · {{ current_period }}</h1>
     <div class="sub">
-      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }}
-    </div>
-    <div class="tags">
-      <span class="tag-state">{{ doc.status.stage|stage }}</span>
-      <span class="tag-state">业绩口径 {{ doc.meta.eps_basis|source }}</span>
-      {% if doc.meta.transcript_source %}<span class="tag-state">文字稿 {{ doc.meta.transcript_source|source }}</span>{% endif %}
-      {% if doc.status.needs_review %}<span class="tag-state warn">需要人工复核</span>{% endif %}
+      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }} · {{ doc.status.stage|stage }}
     </div>
   </div>
 </div>
 
 <nav class="section-nav" aria-label="分区">
   <div class="chips">
-    <a href="#top">结论</a>
+    <a href="#top">判断</a>
+    {% if thesis %}<a href="#thesis">论点</a>{% endif %}
+    <a href="#quality">质量与验证</a>
     <a href="#fin">财务</a>
     <a href="#guide">指引</a>
     <a href="#qa">问答{% if qa.evasive_count %}<b>{{ qa.evasive_count }}</b>{% endif %}</a>
-    <a href="#watch">跟踪</a>
     <a href="#notes">来源{% if warnings %}<b>{{ warnings|length }}</b>{% endif %}</a>
   </div>
 </nav>
 
-<!-- 第一屏：左边结论 + 记分卡，右边关键数字与市场反应 -->
+<!-- ① 判断条：一句话 + 状态标签 -->
 <section class="dim" id="top">
-<div class="top">
-  <div class="top-main">
-    <div class="card verdict">
-      <div class="v-label">一句话结论</div>
-      {% if doc.summary and doc.summary.headline %}
-      <h2 class="v-head">{{ doc.summary.headline }}</h2>
-      <ol class="v-lines">
-        {% for f in findings %}<li><span>{{ f }}</span></li>{% endfor %}
-      </ol>
-      {% elif waiting_transcript %}
-      <p class="empty-note">新闻稿已解读，结论将在电话会文字稿到位后生成。</p>
-      {% else %}
-      <p class="empty-note">尚未生成结论。</p>
-      {% endif %}
+  <div class="card verdict">
+    {% if doc.summary and doc.summary.headline %}
+    <h2 class="v-head">{{ doc.summary.headline }}</h2>
+    {% elif waiting_transcript %}
+    <h2 class="v-head muted">新闻稿已解读，结论将在电话会文字稿到位后生成</h2>
+    {% else %}
+    <h2 class="v-head muted">尚未生成结论</h2>
+    {% endif %}
+    {% if chips %}
+    <div class="vchips">
+      {% for c in chips %}<span class="vchip {{ c.cls }}">{{ c.text }}</span>{% endfor %}
     </div>
-
-    <div class="card score">
-      <h2>记分卡</h2>
-      <p class="layer-sub">实际值对比财报前一致预期；下季指引对比当时的下季一致预期。缺一致预期时判定为「待核对」。</p>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>指标</th><th>实际</th><th>基准</th><th>差异</th><th>判定</th></tr></thead>
-        <tbody>
-        {% for r in scorecard %}
-          <tr>
-            <td>{{ r.label }}{% if r.basis %}<span class="basis">{{ r.basis }}</span>{% endif %}</td>
-            <td>{{ r.actual }}</td>
-            <td>{{ r.bench }}{% if r.source %}<span class="basis">{{ r.source }}</span>{% endif %}</td>
-            <td class="c-{{ r.diff.cls }}">{{ r.diff.text }}</td>
-            <td class="v-{{ r.verdict }}">{{ r.verdict_label }}</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-      </div>
-    </div>
+    {% endif %}
+    {% if findings %}
+    <ol class="v-lines">
+      {% for f in findings %}<li><span>{{ f }}</span></li>{% endfor %}
+    </ol>
+    {% endif %}
   </div>
 
-  <aside class="card side">
-    <h2>关键数字</h2>
-    <ul class="kn">
-      {% for k in key_numbers %}
-      <li>
-        <span class="k">{{ k.label }}</span><span class="val">{{ k.value }}</span>
-        <span class="chg"><span>同比 <b class="c-{{ k.yoy.cls }}">{{ k.yoy.text }}</b></span><span>环比 <b class="c-{{ k.qoq.cls }}">{{ k.qoq.text }}</b></span></span>
-      </li>
-      {% else %}
-      <li class="muted">财务数据尚未生成。</li>
-      {% endfor %}
-    </ul>
+  <div class="judge">
+    <!-- ② 预期差 -->
+    <div class="card gapcard">
+      <h2>预期差 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
+      <div class="gap-rows">
+        {% for g in gaps %}
+        <div class="gap">
+          <span class="g-lab">{{ g.label }}<small>{{ g.detail }}</small></span>
+          {% if g.has %}
+          <div class="track" role="img" aria-label="{{ g.label }} 相对预期 {{ g.gap.text }}"><i class="dot v-{{ g.verdict }}" style="left:{{ g.pos }}%"></i></div>
+          <span class="g-val c-{{ g.gap.cls }}">{{ g.gap.text }}{% if g.clipped %}<small>超出刻度</small>{% endif %}</span>
+          {% else %}
+          <div class="track none"><span>缺一致预期</span></div>
+          <span class="g-val c-na">—</span>
+          {% endif %}
+        </div>
+        {% else %}
+        <p class="muted">记分卡尚未生成。</p>
+        {% endfor %}
+        {% if gaps %}<div class="gap axis"><span></span><div><span>-15%</span><span>0</span><span>+15%</span></div><span></span></div>{% endif %}
+      </div>
+    </div>
 
-    <h2 class="side-h2">次日股价反应</h2>
-    <div class="big c-{{ price.cls }}">{{ price.text }}</div>
-    {% if price.detail %}<p class="small muted">{{ price.detail }}</p>{% endif %}
-
-    <h2 class="side-h2">状态</h2>
-    <ul class="meta-list">
-      <li><span>进度</span><span>{{ doc.status.stage|stage }}</span></li>
-      <li><span>文字稿</span><span>{{ doc.meta.transcript_source|source if doc.meta.transcript_source else '等待中' }}</span></li>
-      {% if next_earnings %}<li><span>下次财报</span><span>{{ next_earnings }}</span></li>{% endif %}
-    </ul>
-  </aside>
-</div>
+    <!-- ③ 市场怎么判 -->
+    <div class="card mkt">
+      <h2>市场怎么判{% if market.stance %} <span class="vchip {{ market.stance.cls }}">{{ market.stance.text }}</span>{% endif %}</h2>
+      <div class="kv">
+        <span>次日股价</span><b class="c-{{ market.price.cls }}">{{ market.price.text }}</b>
+        {% if market.price.detail %}<small>{{ market.price.detail }}</small>{% endif %}
+      </div>
+      {% if market.bench.excess %}
+      <div class="kv">
+        <span>相对 {{ market.bench.symbol }}（扣除板块波动）</span><b class="c-{{ market.bench.excess.cls }}">{{ market.bench.excess.text }}</b>
+        <small>{{ market.bench.symbol }} 同期 {{ market.bench.pct.text }}</small>
+      </div>
+      {% endif %}
+      <div class="kv">
+        <span>下季 EPS 一致预期{% if market.revision %}（{{ market.revision.label }}）{% endif %}</span>
+        <b class="c-{{ market.revision.chg.cls if market.revision else 'na' }}">{{ market.revision.chg.text if market.revision else '待补' }}</b>
+        <small>{% if market.revision %}{{ market.revision.detail }}，财报后分析师对下季的预期变化{% else %}财报后快照到位后自动补{% endif %}</small>
+      </div>
+      <p class="small muted">股价{% if market.bench.excess %}（相对 {{ market.bench.symbol }}）{% endif %}和预期修正同向，说明市场采信了这份财报；方向相反时值得多看一眼。</p>
+    </div>
+  </div>
 </section>
 
+{% if thesis %}
+<!-- ④ 论点追踪：你事先写下的论点，本季被强化 / 不变 / 削弱 -->
+<section class="dim" id="thesis">
+  <div class="card tcard">
+    <h2>论点追踪
+      <small>{% if thesis.reviewed %}评估于 {{ thesis.reviewed_at }}{% else %}尚未评估：在 Actions → manual 选 thesis 运行一次{% endif %}{% if thesis.draft %} · 论点为草稿{% endif %}</small>
+    </h2>
+    {% for t in thesis['items'] %}
+    <details class="thesis">
+      <summary>
+        <span class="t-name">{{ t.name }}</span>
+        <span class="vchip {{ t.cls }}">{{ t.status }}</span>
+        <span class="t-ev">{{ t.evidence or '展开查看看好理由、市场担心和验证条件' }}</span>
+        <span class="t-dl {{ t.deadline.cls }}">{{ t.deadline.left or t.deadline.text }}</span>
+      </summary>
+      <div class="t-body">
+        <div class="t-two">
+          <div><b class="t-k ok">我看好</b><p>{{ t.bull }}</p></div>
+          <div><b class="t-k bad">市场担心</b><p>{{ t.bear }}</p></div>
+        </div>
+        {% if t.quote %}<blockquote>{{ t.quote }}{% if t.source %}<span class="basis">· {{ t.source }}</span>{% endif %}</blockquote>
+        {% elif t.quote_unverified %}<p class="small muted">模型给出的引文在原材料中没有找到，未展示。</p>{% endif %}
+        <div class="t-two">
+          <div><b class="t-k">证实条件</b><ul class="cond">{% for c in t.confirm %}<li class="{{ 'hit-ok' if c.hit }}">{{ c.text }}</li>{% endfor %}</ul></div>
+          <div><b class="t-k">证伪条件</b><ul class="cond">{% for c in t.falsify %}<li class="{{ 'hit-bad' if c.hit }}">{{ c.text }}</li>{% endfor %}</ul></div>
+        </div>
+        {% if t.checks %}
+        <ul class="checks">
+          {% for c in t.checks %}<li><i class="ck {{ 'ok' if c.status == 'ok' else 'warn' if c.status == 'warn' else 'info' }}">{{ '✓' if c.status == 'ok' else '!' if c.status == 'warn' else '…' }}</i><b>自动核对</b><span>{{ c.text }}</span></li>{% endfor %}
+        </ul>
+        {% endif %}
+        <p class="small muted">验证时点：{{ t.deadline.text }}</p>
+      </div>
+    </details>
+    {% endfor %}
+    {% if thesis.concerns %}
+    <div class="concerns">
+      <b>论点没覆盖的新担忧</b>
+      <ul>{% for c in thesis.concerns %}<li>{{ c.concern }}{% if c.raised_by %}<span class="basis">· {{ c.raised_by }}</span>{% endif %}{% if c.why %}<span class="small muted">（{{ c.why }}）</span>{% endif %}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ⑤ 增长质量 + ⑧ 验证清单 -->
+<section class="dim" id="quality">
+  <div class="judge even">
+    <div class="card qcard">
+      <h2>增长质量 <small>通用规则 + 本公司规则，阈值写在配置里</small></h2>
+      {% if checks %}
+      <ul class="checks">
+        {% for c in checks %}
+        <li><i class="ck {{ c.status }}" aria-label="{{ {'ok':'通过','warn':'注意','info':'中性'}[c.status] }}">{{ {'ok':'✓','warn':'!','info':'·'}[c.status] }}</i><b>{{ c.name }}<small>{{ c.layer }}</small></b><span>{{ c.text }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">财务数据不足，暂不检查。</p>
+      {% endif %}
+    </div>
+    <div class="card wcard">
+      <h2>下季验证清单 <small>下次财报逐条核对</small></h2>
+      {% if watchlist %}
+      <ul class="wl">
+        {% for w in watchlist %}
+        <li><span>{{ w.text }}</span><span class="w-th">{{ w.threshold }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">阶段2完成后生成。</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<div class="ev-head">
+  <h2>证据</h2>
+  <p class="layer-sub">上面每个判断的出处。点开查看明细、原文引用和逐轮问答。</p>
+</div>
+
+
 <!-- 财务解读 -->
-<section class="dim" id="fin">
-  <h2>财务解读</h2>
+<details class="ev" id="fin">
+  <summary><span class="ev-t">财务解读</span><span class="ev-meta">{{ fin_rows|length }} 项指标 · 同比 / 环比 · 变动原因与原文{% if history %} · 趋势图{% endif %}</span></summary>
+  <div class="ev-body">
   <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开驱动因素与原文引用；标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   <div class="card rows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
@@ -152,11 +230,13 @@
   </div>
   {% if history_derived %}<p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>{% endif %}
   {% endif %}
-</section>
+  </div>
+</details>
 
 <!-- 业绩指引 -->
-<section class="dim" id="guide">
-  <h2>业绩指引</h2>
+<details class="ev" id="guide">
+  <summary><span class="ev-t">业绩指引</span><span class="ev-meta">{% if guidance.tiles %}下季 {{ guidance.tiles|length }} 项数字 · {% endif %}管理层展望 {{ guidance.outlook_count }} 条 · 分析师预期修正</span></summary>
+  <div class="ev-body">
   <p class="layer-sub">上面是管理层对下一季给出的具体数字；下面是新闻稿、管理层发言和问答里对未来的表述，按主题归类，用来理解语气与中长期叙事，不当作精确指引。</p>
 
   {% if guidance.tiles %}
@@ -228,11 +308,13 @@
   {% else %}
   <div class="card placeholder">尚无发布前后的一致预期快照。daily 每天拍摄，财报后会自动补齐 T+1/T+3/T+7。</div>
   {% endif %}
-</section>
+  </div>
+</details>
 
 <!-- 电话会问答 -->
-<section class="dim" id="qa">
-  <h2>电话会问答</h2>
+<details class="ev" id="qa">
+  <summary><span class="ev-t">电话会问答</span><span class="ev-meta">{% if qa['items'] %}{{ qa['items']|length }} 轮{% if qa.evasive_count %} · 部分回答 / 回避 {{ qa.evasive_count }}{% endif %}{% else %}等待文字稿{% endif %}</span></summary>
+  <div class="ev-body">
   {% if qa['items'] %}
   <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
   <div class="qa-stats">
@@ -277,38 +359,18 @@
   {% else %}
   <div class="card placeholder">等待电话会文字稿。</div>
   {% endif %}
-</section>
-
-<!-- 跟踪清单 -->
-<section class="dim" id="watch">
-  <h2>下季跟踪</h2>
-  <p class="layer-sub">下次财报时逐条核对。</p>
-  {% if watchlist %}
-  <div class="card">
-    <ul class="wl">
-      {% for w in watchlist %}
-      <li><span>{{ w.text }}</span><span class="w-th">{{ w.threshold }}</span></li>
-      {% endfor %}
-    </ul>
   </div>
-  {% else %}
-  <div class="card placeholder">阶段2完成后生成。</div>
-  {% endif %}
-</section>
+</details>
 
-<section id="notes" style="scroll-margin-top:110px">
-  <div class="card notes">
+<details class="ev" id="notes">
+  <summary><span class="ev-t">来源与数据提示</span><span class="ev-meta">新闻稿 · 文字稿{% if warnings %} · 数据提示 {{ warnings|length }} 条{% endif %}</span></summary>
+  <div class="ev-body notes">
     <p>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}" rel="noopener">SEC EDGAR</a>{% else %}—{% endif %} · 文件编号 {{ doc.meta.accession or "—" }} · 文字稿：{{ doc.meta.transcript_source|source }}</p>
     {% if doc.meta.pre_earnings_snapshot_source %}<p>财报前一致预期：{{ doc.meta.pre_earnings_snapshot_source }}</p>{% endif %}
-    <p>记分卡判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
+    <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。增长质量规则：现金转化 ≥80% 为好、&lt;50% 提示；口径差 ≥10% 提示；同比 &gt;100% 提示基数效应；资本开支环比快于营收环比 5 个百分点以上提示。</p>
+    {% if warnings %}<ul class="warn-list">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
   </div>
-  {% if warnings %}
-  <details class="card health"{% if doc.status.needs_review %} open{% endif %}>
-    <summary>数据提示 {{ warnings|length }} 条</summary>
-    <ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
-  </details>
-  {% endif %}
-</section>
+</details>
 {% endblock %}
 
 {% block scripts %}
@@ -322,11 +384,26 @@ document.querySelectorAll('[data-qa]').forEach(function (btn) {
     });
   });
 });
+// 证据块默认折叠：从分区导航或带 #fin 之类的链接进入时自动展开
+function openFromHash() {
+  var el = location.hash && document.getElementById(location.hash.slice(1));
+  if (el && el.tagName === 'DETAILS') { el.open = true; }
+}
+window.addEventListener('hashchange', openFromHash);
+openFromHash();
 </script>
 {% if history %}
 <script src="{{ root }}static/vendor/chart.umd.min.js"></script>
 <script>
+// 图表在「财务」证据块第一次展开时才绘制：折叠状态下画布尺寸为 0
 (function () {
+  var box = document.getElementById('fin');
+  var drawn = false;
+  function draw() { if (!drawn && box.open) { drawn = true; drawCharts(); } }
+  box.addEventListener('toggle', draw);
+  draw();
+})();
+function drawCharts() {
   var history = {{ history|tojson }};
   if (typeof Chart === 'undefined') {
     document.querySelectorAll('.chart .c-body').forEach(function (el) { el.innerHTML = '<p class="placeholder">图表库未能加载。</p>'; });
@@ -366,7 +443,7 @@ document.querySelectorAll('[data-qa]').forEach(function (btn) {
     data: { labels: labels, datasets: [{ label: '自由现金流（十亿美元）', data: history.map(function (h) { return bn(h.fcf); }), backgroundColor: v('--s3'), borderRadius: 3, maxBarThickness: 36 }] },
     options: opts()
   });
-})();
+}
 </script>
 {% endif %}
 {% endblock %}

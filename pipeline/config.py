@@ -44,6 +44,15 @@ def save_ticker_config(ticker: str, data: dict[str, Any]) -> None:
     save_yaml(path, data)
 
 
+def load_theses(ticker: str) -> dict[str, Any] | None:
+    """config/theses/{TICKER}.yaml：投资论点（可选）。没有文件时返回 None。"""
+    path = repo_path("config", "theses", f"{ticker.upper()}.yaml")
+    if not path.exists():
+        return None
+    data = load_yaml(path) or {}
+    return data if data.get("theses") else None
+
+
 def list_tickers() -> list[str]:
     folder = repo_path("config", "tickers")
     return sorted(p.stem for p in folder.glob("*.yaml"))

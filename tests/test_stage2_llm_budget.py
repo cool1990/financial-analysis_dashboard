@@ -209,3 +209,28 @@ def test_complete_json_list_attempts_bounded(monkeypatch):
     with pytest.raises(LLMError):
         client.complete_json_list("structure_qa.md", "x", QAItem)
     assert calls["n"] == client.max_retries + 1
+
+
+def test_truncation_splits_down_to_single_rounds():
+    from pipeline.llm import LLMTruncatedError
+    from pipeline.schemas import QAItem
+
+    calls = []
+
+    class Trunc(LLMClient):
+        def __init__(self):  # noqa: D107
+            pass
+
+        def complete_json_list(self, prompt_name, user, item_schema):  # noqa: ANN001
+            import json as _j
+
+            batch = _j.loads(user.split("\n\n", 1)[1])
+            calls.append(len(batch))
+            if len(batch) > 1:
+                raise LLMTruncatedError("cut")
+            return [QAItem(exchange_id=batch[0]["exchange_id"], question_summary="q")]
+
+    batch = [{"exchange_id": str(i), "text": "x"} for i in range(1, 5)]
+    out = _structure_batch(Trunc(), "prompt", batch)  # type: ignore[arg-type]
+    assert not any(o.get("parse_failed") for o in out) and len(out) == 4
+    assert len(calls) <= 2 * len(batch)

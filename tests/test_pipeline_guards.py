@@ -176,7 +176,9 @@ def test_build_site_renders(tmp_path, monkeypatch):
     monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
     pages = b.build_site()
     html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
-    assert "财务解读" in html and "revChart" in html and "{{" not in html
+    assert "预期差" in html and "增长质量" in html and "{{" not in html
+    # 明细默认折叠在证据层，图表随「财务」块展开时绘制
+    assert '<details class="ev" id="fin">' in html and "revChart" in html
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
 
@@ -197,3 +199,147 @@ def test_guidance_view_tiles_and_outlook_categories():
     assert _outlook_category({"metric_key": "other", "metric_label": "1-delta DRAM ramp", "statement": "产能爬坡"}) == "tech"
     assert _outlook_category({"metric_key": "capex", "statement": "洁净室建设"}) == "invest"
     assert _outlook_category({"metric_key": "other", "metric_label": "Market conditions", "statement": "市场状况将保持紧张"}) == "supply"
+
+
+def test_judgment_layer_rules():
+    from builder.build import _gap_rows, _market_view, _quality_checks, _verdict_chips
+
+    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    gaps = _gap_rows(doc)
+    by = {g["label"]: g for g in gaps}
+    assert by["本季营收"]["has"] is False  # 缺一致预期不能当成符合预期
+    assert by["下季 EPS 指引"]["gap"]["text"] == "+11.1%" and by["下季 EPS 指引"]["pos"] == pytest.approx(87.1, abs=0.1)
+    market = _market_view(doc)
+    assert market["stance"]["text"] == "市场认可" and market["revision"]["label"] == "T+1"
+    from pipeline.config import load_ticker_config
+
+    qc = _quality_checks(doc, load_ticker_config("MU"))
+    checks = {c["name"]: (c["status"], c["layer"]) for c in qc}
+    # 公司层覆盖了通用层的现金转化阈值；口径差仍走通用层
+    assert checks["自由现金流 / 净利润"] == ("ok", "本公司")
+    assert checks["Non-GAAP 比 GAAP EPS 高出"] == ("ok", "通用")
+    assert checks["下季毛利率指引 − 本季毛利率"][0] == "warn"
+    assert checks["资本开支环比 − 营收环比"][0] == "warn"
+    chips = [c["text"] for c in _verdict_chips(doc, gaps, market, checks=qc)]
+    assert any("缺一致预期" in c for c in chips) and any(c.startswith("市场认可") for c in chips)
+
+
+def test_gap_row_clips_outside_scale():
+    from builder.build import _gap_rows
+
+    doc = {"scorecard": [{"metric": "eps", "actual": 1.5, "verdict": "beat",
+                          "benchmark": {"value": 1.0, "diff_pct": 0.5}}]}
+    row = _gap_rows(doc)[0]
+    assert row["pos"] == 100 and row["clipped"] is True
+
+
+def test_market_view_flags_disagreement():
+    from builder.build import _market_view
+
+    doc = {"price_reaction": {"next_day_pct": -0.04},
+           "guidance": {"analyst_revisions": {"t_minus_1": {"eps": 2.0}, "t_plus_1": {"eps": 2.2, "eps_chg": 0.1}}}}
+    assert _market_view(doc)["stance"]["text"] == "市场分歧"
+
+
+def test_benchmark_reaction_excess(monkeypatch):
+    from pipeline.commands import run_cmd
+    from pipeline.sources import yfinance_src
+
+    def fake(self, release, release_timing="amc"):
+        pct = 0.01 if self.ticker == "SOXX" else 0.04
+        return {"next_day_pct": pct, "before_date": "2026-09-30", "after_date": "2026-10-01"}
+
+    monkeypatch.setattr(yfinance_src.YFinanceSource, "__init__", lambda self, t: setattr(self, "ticker", t.upper()))
+    monkeypatch.setattr(yfinance_src.YFinanceSource, "next_day_reaction", fake)
+    own = fake(type("X", (), {"ticker": "MU"})(), "")
+    out = run_cmd._benchmark_reaction({"benchmark": "SOXX"}, "2026-09-30T20:00:00Z", "amc", own)
+    assert out["benchmark"] == "SOXX" and out["excess_pct"] == pytest.approx(0.03)
+    # 交易日对不上时不给超额
+    own2 = {**own, "after_date": "2026-10-02"}
+    assert run_cmd._benchmark_reaction({}, "x", "amc", own2)["excess_pct"] is None
+
+
+def test_thesis_view_pending_and_auto_checks():
+    from builder.build import _thesis_view
+
+    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    doc.pop("thesis_review", None)
+    v = _thesis_view("MU", "FY2026Q4", {"FY2026Q4": doc}, date(2026, 10, 2))
+    assert v and not v["reviewed"] and v["counts"]["待评估"] == len(v["items"])
+    hbm = next(t for t in v["items"] if t["id"] == "hbm_ai_demand")
+    # 下季条件不能用本季数据判
+    assert hbm["checks"][0]["status"] == "pending" and "FY2027Q1" in hbm["checks"][0]["text"]
+    assert hbm["deadline"]["left"] == "还有 82 天"
+    capex = next(t for t in v["items"] if t["id"] == "capex_returns")
+    assert capex["checks"][0]["status"] == "ok"  # 20.5% <= 25%
+
+
+def test_thesis_view_with_review_marks_hits():
+    from builder.build import _thesis_view, _verdict_chips
+
+    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    doc["thesis_review"] = {
+        "reviews": [
+            {"id": "margin_durability", "status": "weakened", "evidence": "毛利率指引回落", "confirm_hits": [], "falsify_hits": [0]},
+            {"id": "hbm_ai_demand", "status": "strengthened", "evidence": "HBM 提价", "quote": "x", "quote_unverified": True},
+        ],
+        "new_concerns": [{"concern": "NAND 份额", "raised_by": "Mehdi Hosseini"}],
+        "reviewed_at": "2026-10-02T00:00:00+00:00",
+    }
+    v = _thesis_view("MU", "FY2026Q4", {"FY2026Q4": doc}, date(2026, 10, 2))
+    m = next(t for t in v["items"] if t["id"] == "margin_durability")
+    assert m["status"] == "削弱" and m["falsify"][0]["hit"]
+    h = next(t for t in v["items"] if t["id"] == "hbm_ai_demand")
+    assert h["quote"] == "" and h["quote_unverified"]  # 未核实的引文不展示
+    chips = [c["text"] for c in _verdict_chips(doc, [], {"stance": None, "price": {"text": "—"}}, [], v)]
+    assert chips[0] == "论点：1 强化 · 1 削弱"
+
+
+def test_thesis_review_skipped_when_unchanged(monkeypatch):
+    from pipeline.analyze import thesis as th
+    from pipeline.commands import run_cmd
+    from pipeline.config import load_theses
+
+    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    calls = []
+    monkeypatch.setattr(th, "review_theses", lambda theses, d: calls.append(1) or {"fingerprint": th.review_fingerprint(theses, d)})
+    assert run_cmd._apply_thesis_review("MU", doc) is True
+    assert run_cmd._apply_thesis_review("MU", doc) is False  # 论点与数据都没变：不再调用
+    assert run_cmd._apply_thesis_review("MU", doc, force=True) is True
+    assert len(calls) == 2
+    assert load_theses("NOPE") is None
+
+
+def test_review_theses_filters_ids_and_checks_quotes(monkeypatch):
+    from pipeline.analyze import thesis as th
+    from pipeline.config import load_theses
+    from pipeline.schemas import ThesisReviewResult
+
+    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    real_quote = next(q["answer_quote"] for q in doc["qa"]["items"] if q.get("answer_quote"))
+    captured = {}
+
+    class FakeLLM:
+        model = "fake"
+
+        def load_prompt(self, name, **kw):
+            return "P " + kw["theses"]
+
+        def complete_json(self, name, user, schema):
+            captured["user"] = user
+            return ThesisReviewResult.model_validate({
+                "reviews": [
+                    {"id": "hbm_ai_demand", "status": "strengthened", "evidence": "e", "quote": real_quote},
+                    {"id": "margin_durability", "status": "weakened", "evidence": "e", "quote": "管理层从未说过这句话的编造引文"},
+                    {"id": "made_up", "status": "weakened", "evidence": "e"},
+                ],
+                "new_concerns": [],
+            })
+
+    monkeypatch.setattr(th, "LLMClient", FakeLLM)
+    out = th.review_theses(load_theses("MU"), doc)
+    ids = [r["id"] for r in out["reviews"]]
+    assert ids == ["hbm_ai_demand", "margin_durability"]
+    assert out["reviews"][0]["quote_unverified"] is False and out["reviews"][1]["quote_unverified"] is True
+    # 输入不含文字稿全文，只有结构化结果
+    assert "transcript" not in captured["user"] and len(captured["user"]) < 60000

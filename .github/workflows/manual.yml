@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "run / llm-ping / backfill"
+        description: "run / thesis（只评估论点）/ llm-ping / backfill"
         required: true
         default: run
         type: choice
-        options: [run, llm-ping, backfill]
+        options: [run, thesis, llm-ping, backfill]
       ticker:
         description: Ticker
         required: true
@@ -105,6 +105,12 @@ jobs:
             export PIPELINE_LLM_MODEL="${{ inputs.model }}"
           fi
           case "${{ inputs.action }}" in
+            thesis)
+              TH=(--ticker "${{ inputs.ticker }}" --period "${{ inputs.period }}" "${MODEL_ARGS[@]}")
+              if [ "${{ inputs.force }}" = "true" ]; then TH+=(--force); fi
+              python -m pipeline thesis "${TH[@]}" 2>&1 | tee logs/manual.log
+              python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
+              ;;
             llm-ping)
               python -m pipeline llm-ping "${MODEL_ARGS[@]}" 2>&1 | tee logs/manual.log
               ;;
@@ -131,7 +137,7 @@ jobs:
 
       - name: Commit results
         id: commit
-        if: ${{ inputs.action == 'run' || (inputs.action == 'backfill' && inputs.dry_run == 'false') }}
+        if: ${{ inputs.action == 'run' || inputs.action == 'thesis' || (inputs.action == 'backfill' && inputs.dry_run == 'false') }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
