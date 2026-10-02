@@ -322,60 +322,6 @@ def _fin_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
-def _scorecard_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
-    rows = []
-    for row in doc.get("scorecard") or []:
-        key = row.get("metric") or ""
-        b = row.get("benchmark") if isinstance(row.get("benchmark"), dict) else {"value": row.get("benchmark")}
-        is_ratio = _is_ratio_key(key)
-        fmt_key = "eps" if "eps" in key else key
-        rows.append(
-            {
-                "label": _metric_label(key),
-                "basis": _source_label(row.get("basis")) if row.get("basis") else "",
-                "actual": _fmt_value(row.get("actual"), fmt_key),
-                "bench": _fmt_value(b.get("value"), fmt_key),
-                "source": _source_label(b.get("source")) if b.get("value") is not None else "",
-                "diff": _change(b.get("diff_pp") if is_ratio else b.get("diff_pct"), pp=is_ratio),
-                "verdict": row.get("verdict") or "",
-                "verdict_label": _verdict_label(row.get("verdict")) if row.get("verdict") else "—",
-            }
-        )
-    return rows
-
-
-def _key_numbers(doc: dict[str, Any]) -> list[dict[str, Any]]:
-    fin = doc.get("financials") or {}
-    basis = (doc.get("meta") or {}).get("eps_basis")
-    eps_key = "eps_gaap" if basis == "gaap" else "eps_nongaap"
-    margin_sfx = "gaap" if basis == "gaap" else "nongaap"
-    picks = [
-        ("revenue", "营收"),
-        (eps_key if fin.get(eps_key) else "eps_gaap", "每股收益"),
-        (f"gross_margin_{margin_sfx}" if fin.get(f"gross_margin_{margin_sfx}") else "gross_margin_gaap", "毛利率"),
-        (
-            f"operating_margin_{margin_sfx}" if fin.get(f"operating_margin_{margin_sfx}") else "operating_margin_gaap",
-            "营业利润率",
-        ),
-        ("fcf", "自由现金流"),
-    ]
-    out = []
-    for key, label in picks:
-        m = fin.get(key)
-        if not m or m.get("value") is None:
-            continue
-        ratio = _is_ratio_key(key)
-        out.append(
-            {
-                "label": label,
-                "value": _fmt_value(m.get("value"), key),
-                "yoy": _change(m.get("yoy_pp") if ratio else m.get("yoy_pct"), pp=ratio),
-                "qoq": _change(m.get("qoq_pp") if ratio else m.get("qoq_pct"), pp=ratio),
-            }
-        )
-    return out
-
-
 def _price_view(doc: dict[str, Any]) -> dict[str, Any]:
     pr = doc.get("price_reaction") or {}
     pct = _num(pr.get("next_day_pct"))
@@ -692,6 +638,164 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
     }
 
 
+# ---------------------------------------------------------------- 判断层（规则，不调用 LLM）
+
+GAP_SCALE = 0.15  # 预期差尺子的满刻度：±15%
+GAP_ROWS = [
+    ("revenue", "本季营收"),
+    ("eps", "本季 EPS"),
+    ("next_q_revenue_guidance", "下季营收指引"),
+    ("next_q_eps_guidance", "下季 EPS 指引"),
+]
+
+
+def _gap_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    """预期差尺子：竖线 = 财报前一致预期，圆点 = 实际 / 指引中值。"""
+    sc = {c.get("metric"): c for c in doc.get("scorecard") or []}
+    rows = []
+    for key, label in GAP_ROWS:
+        row = sc.get(key)
+        if not row or row.get("actual") is None:
+            continue
+        b = row.get("benchmark") or {}
+        fmt_key = "eps" if "eps" in key else key
+        actual = _fmt_value(row.get("actual"), fmt_key)
+        diff = _num(b.get("diff_pct"))
+        if b.get("value") is None or diff is None:
+            rows.append({"label": label, "has": False, "detail": f"{'指引中值' if 'guidance' in key else '实际'} {actual}"})
+            continue
+        clipped = max(-GAP_SCALE, min(GAP_SCALE, diff))
+        rows.append(
+            {
+                "label": label,
+                "has": True,
+                "pos": round(50 + clipped / GAP_SCALE * 50, 1),
+                "clipped": abs(diff) > GAP_SCALE,
+                "gap": _change(diff),
+                "verdict": row.get("verdict") or "",
+                "detail": f"{'指引中值' if 'guidance' in key else '实际'} {actual} · 预期 {_fmt_value(b.get('value'), fmt_key)}",
+            }
+        )
+    return rows
+
+
+def _market_view(doc: dict[str, Any]) -> dict[str, Any]:
+    """市场怎么判：次日股价 + 财报后下季一致预期的修正。两者同向才算市场认可。"""
+    price = _price_view(doc)
+    ar = (doc.get("guidance") or {}).get("analyst_revisions") or {}
+    tm1 = ar.get("t_minus_1") or {}
+    latest = None
+    for key, label in (("t_plus_7", "T+7"), ("t_plus_3", "T+3"), ("t_plus_1", "T+1")):
+        r = ar.get(key) or {}
+        if r.get("eps_chg") is not None:
+            latest = {"label": label, "chg": _change(r.get("eps_chg")), "raw": r.get("eps_chg"),
+                      "detail": f"${float(tm1['eps']):.2f} → ${float(r['eps']):.2f}" if tm1.get("eps") is not None and r.get("eps") is not None else ""}
+            break
+    p, rv = _num((doc.get("price_reaction") or {}).get("next_day_pct")), latest["raw"] if latest else None
+    if p is None or rv is None:
+        stance = None
+    elif p > 0 and rv > 0:
+        stance = {"text": "市场认可", "cls": "ok"}
+    elif p < 0 and rv < 0:
+        stance = {"text": "市场不认可", "cls": "bad"}
+    else:
+        stance = {"text": "市场分歧", "cls": "warn"}
+    return {"price": price, "revision": latest, "stance": stance}
+
+
+def _check(status: str, name: str, text: str) -> dict[str, str]:
+    return {"status": status, "name": name, "text": text}
+
+
+def _quality_checks(doc: dict[str, Any]) -> list[dict[str, str]]:
+    """增长质量：几条透明的规则，回答「这份成绩靠不靠得住」。数据缺失的检查直接跳过。"""
+    fin = doc.get("financials") or {}
+    basis = (doc.get("meta") or {}).get("eps_basis") or "non_gaap"
+    val = lambda k, f="value": _num((fin.get(k) or {}).get(f))  # noqa: E731
+    out: list[dict[str, str]] = []
+
+    fcf, ni = val("fcf"), val("net_income_gaap")
+    if fcf is not None and ni and ni > 0:
+        r = fcf / ni
+        st = "ok" if r >= 0.8 else "info" if r >= 0.5 else "warn"
+        note = {"ok": "利润基本都转成了现金", "info": "部分利润没有转成现金", "warn": "利润转成现金的比例偏低"}[st]
+        out.append(_check(st, "现金转化", f"自由现金流 / 净利润 = {r*100:.0f}%，{note}"))
+
+    g, ng = val("eps_gaap"), val("eps_nongaap")
+    if g and ng is not None and g > 0:
+        d = (ng - g) / abs(g)
+        out.append(
+            _check("ok" if abs(d) < 0.1 else "warn", "口径差",
+                   f"Non-GAAP 比 GAAP EPS {'高' if d >= 0 else '低'} {abs(d)*100:.1f}%，" + ("调整项小" if abs(d) < 0.1 else "调整项较大，留意剔除了什么"))
+        )
+
+    yoy = val("revenue", "yoy_pct")
+    if yoy is not None:
+        if yoy > 1:
+            out.append(_check("warn", "增速基数", f"营收同比 {_change(yoy)['text']}，去年同季基数很低，高增速难以延续"))
+        elif yoy < 0:
+            out.append(_check("warn", "营收方向", f"营收同比 {_change(yoy)['text']}"))
+        else:
+            out.append(_check("ok", "营收增速", f"营收同比 {_change(yoy)['text']}"))
+
+    capex_q, rev_q = val("capex", "qoq_pct"), val("revenue", "qoq_pct")
+    if capex_q is not None and rev_q is not None:
+        faster = capex_q - rev_q > 0.05
+        out.append(
+            _check("warn" if faster else "ok", "投入强度",
+                   f"资本开支环比 {_change(capex_q)['text']}，营收环比 {_change(rev_q)['text']}" + ("，投入增长快于收入" if faster else ""))
+        )
+
+    # 下季毛利率指引 vs 本季（同一口径；指引常以百分数存，如 86.25）
+    sfx = "gaap" if basis == "gaap" else "nongaap"
+    cur = val(f"gross_margin_{sfx}") or val("gross_margin_gaap")
+    guide = next(
+        (_num(gi.get("mid")) for gi in (doc.get("guidance") or {}).get("items") or []
+         if gi.get("metric_key") == f"gross_margin_{sfx}" and gi.get("mid") is not None and gi.get("source") == "press_release"),
+        None,
+    )
+    if cur is not None and guide is not None:
+        guide = guide / 100 if guide > 1.5 else guide
+        d = guide - cur
+        if d < -0.002:
+            out.append(_check("warn", "利润率方向", f"下季毛利率指引 {guide*100:.2f}%，低于本季 {cur*100:.2f}%"))
+        elif d > 0.002:
+            out.append(_check("ok", "利润率方向", f"下季毛利率指引 {guide*100:.2f}%，高于本季 {cur*100:.2f}%"))
+        else:
+            out.append(_check("info", "利润率方向", f"下季毛利率指引 {guide*100:.2f}%，与本季持平"))
+    return out
+
+
+def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict[str, Any],
+                   checks: list[dict[str, str]]) -> list[dict[str, str]]:
+    """判断条上的状态标签：每个标签把一块内容压成一句，数据缺口也直说。"""
+    chips: list[dict[str, str]] = []
+    cls_of = {"beat": "ok", "miss": "bad", "inline": "", "unknown": "warn"}
+    for g in gaps:
+        if g["has"]:
+            if "指引" in g["label"]:
+                word = {"beat": "高于预期", "miss": "低于预期", "inline": "符合预期"}.get(g["verdict"], "")
+            else:
+                word = {"beat": "超预期", "miss": "不及预期", "inline": "符合预期"}.get(g["verdict"], "")
+            chips.append({"text": f"{g['label']} {word} {g['gap']['text']}", "cls": cls_of.get(g["verdict"], "")})
+    m = market
+    if m["stance"]:
+        rev = m["revision"]
+        moved = "上修" if rev["raw"] > 0 else "下修"
+        chips.append({"text": f"{m['stance']['text']}：次日 {m['price']['text']}，下季 EPS 预期{moved} {rev['chg']['text'].lstrip('+-')}", "cls": m["stance"]["cls"]})
+    elif m["price"]["text"] != "—":
+        chips.append({"text": f"次日股价 {m['price']['text']}", "cls": ""})
+    warns = [c for c in checks if c["status"] == "warn"]
+    if warns:
+        chips.append({"text": "质量提示：" + "、".join(c["name"] for c in warns), "cls": "warn"})
+    missing = [g["label"] for g in gaps if not g["has"]]
+    if missing:
+        chips.append({"text": "缺一致预期：" + "、".join(missing), "cls": "muted"})
+    if (doc.get("status") or {}).get("needs_review"):
+        chips.append({"text": "需要人工复核", "cls": "bad"})
+    return chips
+
+
 # ---------------------------------------------------------------- 渲染
 
 
@@ -765,7 +869,14 @@ def build_site(ticker: str | None = None) -> list[Path]:
         for period in periods:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
+            gaps = _gap_rows(doc)
+            market = _market_view(doc)
+            checks = _quality_checks(doc)
             html = env.get_template("period.html").render(
+                gaps=gaps,
+                market=market,
+                checks=checks,
+                chips=_verdict_chips(doc, gaps, market, checks),
                 root="../../",
                 nav=nav,
                 active=t,
@@ -779,9 +890,6 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 history_derived=any(h.get("derived") for h in history),
                 waiting_transcript=(doc.get("status") or {}).get("stage") == "stage1_done",
                 findings=_findings(doc),
-                scorecard=_scorecard_rows(doc),
-                key_numbers=_key_numbers(doc),
-                price=_price_view(doc),
                 fin_rows=_fin_rows(doc),
                 guidance=_guidance_view(doc),
                 revisions=_revision_rows(doc),

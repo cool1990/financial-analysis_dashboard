@@ -340,6 +340,11 @@ def _run_stage1_filing(
         "operating_cash_flow": build_metric_block(ocf_val, yoy_base=hist("operating_cash_flow", yoy_doc), qoq_base=hist("operating_cash_flow", qoq_doc)),
         "capex": build_metric_block(capex_val, yoy_base=hist("capex", yoy_doc), qoq_base=hist("capex", qoq_doc)),
         "fcf": build_metric_block(fcf, yoy_base=hist("fcf", yoy_doc), qoq_base=hist("fcf", qoq_doc)),
+        # 净利润只用于页面的「现金转化」检查（自由现金流 / 净利润）
+        "net_income_gaap": build_metric_block(
+            ParsedAmount.from_dict(extracted.get("net_income_gaap")).value,
+            source_quote=(extracted.get("net_income_gaap") or {}).get("source_quote"),
+        ),
         "kpis": extracted.get("kpis") or {},
     }
 
@@ -746,8 +751,14 @@ def refresh_comparatives(ticker: str | None = None) -> dict[str, Any]:
                 continue
             doc = json.loads(path.read_text(encoding="utf-8"))
             extracted = json.loads(extracted_path.read_text(encoding="utf-8"))
-            filled = apply_press_comparatives(
-                doc.get("financials") or {},
+            fin = doc.setdefault("financials", {})
+            filled = []
+            ni = ParsedAmount.from_dict(extracted.get("net_income_gaap"))
+            if "net_income_gaap" not in fin and ni.value is not None:
+                fin["net_income_gaap"] = build_metric_block(ni.value, source_quote=ni.source_quote)
+                filled.append("net_income_gaap")
+            filled += apply_press_comparatives(
+                fin,
                 extracted,
                 capex_definition=cfg.get("capex_definition") or "gross",
             )
