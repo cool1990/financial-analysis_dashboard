@@ -2,38 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pipeline.extract.numbers import parse_number, parse_plus_minus
-
 
 ChangeVsPrior = Literal["raised", "lowered", "maintained", "narrowed", "new", "dropped"]
-
-
-def parse_guidance_item(item: dict[str, Any]) -> dict[str, Any]:
-    out = dict(item)
-    low = high = mid = None
-    if item.get("plus_minus_raw") or (
-        item.get("point_raw") and item.get("plus_minus_raw") is not None
-    ):
-        # point ± delta
-        combined = None
-        if item.get("point_raw") and item.get("plus_minus_raw"):
-            combined = f"{item['point_raw']} ± {item['plus_minus_raw']}"
-        elif item.get("point_raw"):
-            combined = str(item["point_raw"])
-        low, mid, high = parse_plus_minus(combined)
-    else:
-        if item.get("low_raw") is not None:
-            low = parse_number(item.get("low_raw"))
-        if item.get("high_raw") is not None:
-            high = parse_number(item.get("high_raw"))
-        if item.get("point_raw") is not None:
-            mid = parse_number(item.get("point_raw"))
-        if mid is None and low is not None and high is not None:
-            mid = (low + high) / 2
-        if low is None and high is None and mid is not None:
-            low = high = mid
-    out.update({"low": low, "mid": mid, "high": high})
-    return out
 
 
 def change_vs_prior(
@@ -55,14 +25,10 @@ def change_vs_prior(
     if cur_mid is None or pri_mid is None:
         return "maintained"
     if is_ratio:
-        # margins stored as fraction or percent? assume same units as guidance parse
         delta = cur_mid - pri_mid
-        thr = change_pp if abs(cur_mid) > 1 else change_pp * 0.01
-        # if values look like 42.5 (percent points), thr=0.25
         thr = change_pp if cur_mid > 1 else change_pp * 0.01
         if abs(delta) <= thr:
-            # check narrowing
-            if _width(current) < _width(prior) - 1e-12 and abs(delta) <= thr:
+            if _width(current) < _width(prior) - 1e-12:
                 return "narrowed"
             return "maintained"
         return "raised" if delta > 0 else "lowered"

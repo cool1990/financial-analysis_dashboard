@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RawNumber(BaseModel):
@@ -53,6 +53,12 @@ class GuidanceItem(BaseModel):
     statement: Optional[str] = None
     source: Optional[str] = None
     source_quote: Optional[str] = None
+    # parsed fields
+    low: Optional[float] = None
+    mid: Optional[float] = None
+    high: Optional[float] = None
+    call_variant: Optional[dict[str, Any]] = None
+    change_vs_prior: Optional[str] = None
 
 
 class DriverItem(BaseModel):
@@ -97,3 +103,162 @@ class SummaryResult(BaseModel):
     key_findings: list[Any] = Field(default_factory=list)
     prior_watchlist_review: list[Any] = Field(default_factory=list)
     next_watchlist: list[Any] = Field(default_factory=list)
+
+
+# --- Period document schema (schema_version = 1) ---
+
+Verdict = Literal["beat", "miss", "inline", "unknown", ""]
+
+
+class Benchmark(BaseModel):
+    """scorecard 与 financials 共用的基准结构。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    value: Optional[float] = None
+    source: str = "none"  # consensus / prior_guidance_mid / derived_from_guidance / none
+    diff: Optional[float] = None
+    diff_pct: Optional[float] = None  # 金额类
+    diff_pp: Optional[float] = None  # 比率类（小数形式，如 0.011 = 1.1pp）
+
+
+class MetricBlock(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    value: Optional[float] = None
+    yoy_pct: Optional[float] = None
+    qoq_pct: Optional[float] = None
+    yoy_pp: Optional[float] = None
+    qoq_pp: Optional[float] = None
+    benchmark: Benchmark = Field(default_factory=Benchmark)
+    source_quote: Optional[str] = None
+
+
+class ScorecardItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    metric: str
+    actual: Optional[float] = None
+    benchmark: Benchmark = Field(default_factory=Benchmark)
+    verdict: Verdict | str = ""
+    basis: Optional[str] = None
+
+
+class PeriodMeta(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    schema_version: Literal[1] = 1
+    ticker: str
+    fiscal_period: str
+    calendar_quarter: Optional[str] = None
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None
+    release_at_utc: Optional[str] = ""
+    accession: Optional[str] = ""
+    press_release_url: Optional[str] = ""
+    transcript_source: Optional[str] = None
+    eps_basis: Optional[str] = None
+
+
+class PeriodStatus(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    stage: str
+    needs_review: bool = False
+    warnings: list[str] = Field(default_factory=list)
+
+
+class PriceReaction(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    next_day_pct: Optional[float] = None
+    close_before: Optional[float] = None
+    close_after: Optional[float] = None
+    note: Optional[str] = None
+
+
+class Financials(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    revenue: Optional[MetricBlock] = None
+    gross_margin_gaap: Optional[MetricBlock] = None
+    gross_margin_nongaap: Optional[MetricBlock] = None
+    operating_margin_gaap: Optional[MetricBlock] = None
+    operating_margin_nongaap: Optional[MetricBlock] = None
+    eps_gaap: Optional[MetricBlock] = None
+    eps_nongaap: Optional[MetricBlock] = None
+    operating_cash_flow: Optional[MetricBlock] = None
+    capex: Optional[MetricBlock] = None
+    fcf: Optional[MetricBlock] = None
+    kpis: dict[str, Any] = Field(default_factory=dict)
+
+
+class DriversBlock(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    stage: int = 0
+    metrics: list[MetricDrivers] = Field(default_factory=list)
+    status: Optional[str] = None
+
+
+class AnalystRevisions(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    t_minus_1: dict[str, Any] = Field(default_factory=dict)
+    t_plus_1: dict[str, Any] = Field(default_factory=dict)
+    t_plus_3: dict[str, Any] = Field(default_factory=dict)
+    t_plus_7: dict[str, Any] = Field(default_factory=dict)
+    gap_closure: Optional[Any] = None
+
+
+class GuidanceBlock(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    prior_guidance_review: list[Any] = Field(default_factory=list)
+    vs_consensus: list[Any] = Field(default_factory=list)
+    analyst_revisions: AnalystRevisions = Field(default_factory=AnalystRevisions)
+
+
+class QABlock(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    topic_stats: dict[str, Any] = Field(default_factory=dict)
+    new_topics: list[str] = Field(default_factory=list)
+    dropped_topics: list[str] = Field(default_factory=list)
+    hot_topics: list[str] = Field(default_factory=list)
+    evasive_list: list[Any] = Field(default_factory=list)
+
+
+class SummaryBlock(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    headline: Optional[str] = ""
+    key_findings: list[Any] = Field(default_factory=list)
+    prior_watchlist_review: list[Any] = Field(default_factory=list)
+    next_watchlist: list[Any] = Field(default_factory=list)
+
+
+class PeriodDoc(BaseModel):
+    """单季 data/{TICKER}/{fiscal_period}.json 的完整 schema。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    meta: PeriodMeta
+    status: PeriodStatus
+    scorecard: list[ScorecardItem] = Field(default_factory=list)
+    price_reaction: PriceReaction = Field(default_factory=PriceReaction)
+    financials: Financials = Field(default_factory=Financials)
+    drivers: DriversBlock = Field(default_factory=DriversBlock)
+    guidance: GuidanceBlock = Field(default_factory=GuidanceBlock)
+    qa: QABlock = Field(default_factory=QABlock)
+    summary: SummaryBlock = Field(default_factory=SummaryBlock)
+
+
+def validate_period_doc(data: dict[str, Any]) -> PeriodDoc:
+    """校验并规范化单季 JSON；失败抛出 ValidationError。"""
+    meta = dict(data.get("meta") or {})
+    meta.setdefault("schema_version", 1)
+    payload = {**data, "meta": meta}
+    return PeriodDoc.model_validate(payload)

@@ -82,7 +82,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
                     {
                         "period": hp,
                         "revenue": (fin.get("revenue") or {}).get("value"),
-                        "revenue_yoy": (fin.get("revenue") or {}).get("yoy"),
+                        "revenue_yoy": (fin.get("revenue") or {}).get("yoy_pct"),
                         "gross_margin": (fin.get("gross_margin_nongaap") or fin.get("gross_margin_gaap") or {}).get("value"),
                         "operating_margin": (fin.get("operating_margin_nongaap") or fin.get("operating_margin_gaap") or {}).get("value"),
                         "fcf": (fin.get("fcf") or {}).get("value"),
