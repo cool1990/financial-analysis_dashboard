@@ -30,7 +30,7 @@ from pipeline.state import (
 from pipeline.validate import validate_extraction
 from pipeline.extract.guidance import parse_guidance_item
 from pipeline.compute.guidance_review import change_vs_prior, position_in_range
-from pipeline.analyze.drivers import analyze_drivers
+from pipeline.analyze.drivers import analyze_drivers, strip_driver_warnings
 from pipeline.analyze.qa import structure_qa
 from pipeline.analyze.summary import summarize_period
 from pipeline.notify import format_scorecard_text, maybe_notify
@@ -235,11 +235,15 @@ def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | N
         guidance_items = []
 
     next_q_rev_guide = next_q_eps_guide = None
+    # EPS 指引按 eps_basis 选口径（新闻稿通常 GAAP 在前，不能简单取第一条）
+    eps_keys = ["eps_gaap", "eps_nongaap"] if basis == "gaap" else ["eps_nongaap", "eps_gaap"]
+    eps_guides: dict[str, float] = {}
     for gi in guidance_items:
         if gi.get("metric_key") == "revenue" and gi.get("mid") is not None and next_q_rev_guide is None:
             next_q_rev_guide = gi["mid"]
-        if gi.get("metric_key") in {"eps_nongaap", "eps_gaap"} and gi.get("mid") is not None and next_q_eps_guide is None:
-            next_q_eps_guide = gi["mid"]
+        if gi.get("metric_key") in eps_keys and gi.get("mid") is not None:
+            eps_guides.setdefault(gi["metric_key"], gi["mid"])
+    next_q_eps_guide = next((eps_guides[k] for k in eps_keys if k in eps_guides), None)
 
     scorecard = build_scorecard(
         revenue_actual=revenue.value,
@@ -365,7 +369,7 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
             stage=2,
         )
         doc["drivers"] = {"stage": 2, "metrics": drivers.get("metrics", [])}
-        doc["status"]["warnings"].extend(drivers.get("warnings") or [])
+        doc["status"]["warnings"] = strip_driver_warnings(doc["status"]["warnings"]) + (drivers.get("warnings") or [])
     except Exception as e:
         doc["status"]["warnings"].append(f"Stage2 drivers 失败: {e}")
 

@@ -4,14 +4,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from pipeline.extract.numbers import parse_number, parse_plus_minus
+from pipeline.extract.numbers import PM_SPLIT_RE, parse_number, parse_plus_minus
 
 
 def parse_guidance_item(item: dict[str, Any]) -> dict[str, Any]:
     """解析指引条目的 raw 文本为 low/mid/high。"""
     out = dict(item)
     low = high = mid = None
-    if item.get("plus_minus_raw") or (
+    point_has_pm = bool(item.get("point_raw")) and bool(PM_SPLIT_RE.search(str(item["point_raw"])))
+    if point_has_pm and not item.get("plus_minus_raw"):
+        # LLM 常把 "$61.5 billion ± $1.5 billion" 整段放进 point_raw
+        low, mid, high = parse_plus_minus(str(item["point_raw"]))
+    elif item.get("plus_minus_raw") or (
         item.get("point_raw") and item.get("plus_minus_raw") is not None
     ):
         combined = None

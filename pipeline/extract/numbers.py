@@ -109,19 +109,44 @@ def apply_unit(value: float | None, unit: str | None, *, is_eps: bool = False) -
     return value * scale
 
 
+PM_SPLIT_RE = re.compile(r"\s*(?:±|\+/-|\+/−|plus or minus)\s*", re.IGNORECASE)
+
+
+def _unit_scale(text: str) -> float:
+    m = WORD_UNIT_RE.search(text)
+    if not m:
+        return 1.0
+    key = m.group("unit").lower()
+    return UNIT_SCALE.get(key if key.endswith("s") else key + "s", 1.0)
+
+
 def parse_plus_minus(raw: str | None) -> tuple[float | None, float | None, float | None]:
-    """解析 '中值 ± X'，返回 (low, mid, high)。金额类与百分比均可。"""
+    """解析 '中值 ± X'，返回 (low, mid, high)。金额类与百分比均可。
+
+    支持 "$61.5 billion ± $1.5 billion"、"$37.84 ± $1.00"、"42.5% ± 1%"、"$6.2 ± 0.2 billion"。
+    """
     if raw is None:
         return None, None, None
     text = strip_footnote(str(raw)).strip()
-    m = PLUS_MINUS_RE.search(text)
-    if not m:
-        point = parse_number(text)
-        return point, point, point
-    point = parse_number(m.group("point"))
-    delta = parse_number(m.group("delta"))
+    parts = PM_SPLIT_RE.split(text, maxsplit=1)
+    if len(parts) == 2 and parts[0].strip() and parts[1].strip():
+        point_txt, delta_txt = parts
+    else:
+        m = PLUS_MINUS_RE.search(text)
+        if not m:
+            point = parse_number(text)
+            return point, point, point
+        point_txt, delta_txt = m.group("point"), m.group("delta")
+    point = parse_number(point_txt)
+    delta = parse_number(delta_txt)
     if point is None or delta is None:
         return None, None, None
+    # 单位只写在一侧时（"$6.2 ± 0.2 billion" / "$6.2 billion ± 0.2"），两侧取同一量级
+    p_scale, d_scale = _unit_scale(point_txt), _unit_scale(delta_txt)
+    if p_scale == 1.0 and d_scale != 1.0:
+        point *= d_scale
+    elif d_scale == 1.0 and p_scale != 1.0:
+        delta *= p_scale
     # 百分比符号一致性：若 point 是 42.5 且 delta 文本含 %，都当百分点
     return point - abs(delta), point, point + abs(delta)
 

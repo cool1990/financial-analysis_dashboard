@@ -22,7 +22,7 @@
 {% if doc.status.needs_review or doc.status.warnings %}
 <div class="banner warn">
   {% if doc.status.needs_review %}<strong>需要人工复核。</strong>{% endif %}
-  <ul>{% for w in doc.status.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+  <ul>{% for w in doc.status.warnings|dedupe %}<li>{{ w }}</li>{% endfor %}</ul>
 </div>
 {% endif %}
 
@@ -35,7 +35,7 @@
     {% for row in doc.scorecard %}
       {% set b = row.benchmark if row.benchmark is mapping else {'value': row.benchmark, 'source': row.benchmark_source, 'diff_pct': row.pct, 'diff_pp': none} %}
       <tr>
-        <td>{{ row.metric }}{% if row.basis %} <span class="tag">{{ row.basis }}</span>{% endif %}</td>
+        <td>{{ row.metric|label }}{% if row.basis %} <span class="tag">{{ row.basis }}</span>{% endif %}</td>
         <td>{% if row.metric in ['gross_margin','operating_margin'] %}{% if row.actual is not none %}{{ '%.1f'|format(row.actual*100) }}%{% else %}—{% endif %}{% elif 'eps' in row.metric %}{% if row.actual is not none %}${{ '%.2f'|format(row.actual) }}{% else %}—{% endif %}{% else %}{{ row.actual|money }}{% endif %}</td>
         <td>{% if row.metric in ['gross_margin','operating_margin'] %}{% if b.value is not none %}{{ '%.1f'|format(b.value*100) }}%{% else %}—{% endif %}{% elif 'eps' in row.metric %}{% if b.value is not none %}${{ '%.2f'|format(b.value) }}{% else %}—{% endif %}{% else %}{{ b.value|money }}{% endif %}</td>
         <td>{{ b.source or '—' }}</td>
@@ -99,13 +99,14 @@
   <div class="cards">
     {% for d in doc.drivers.metrics %}
     <details class="driver">
-      <summary><strong>{{ d.metric }}</strong> — {{ d.summary }}</summary>
+      <summary><strong>{{ d.metric|label }}</strong> — {{ d.summary }}</summary>
       <ul>
         {% for drv in d.drivers %}
         <li class="{% if drv.is_inference %}inference{% endif %}">
           <span class="tag">{{ drv.type }}</span> {{ drv.description }}
-          {% if drv.is_inference %}<em>推测</em>{% endif %}
-          {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
+          {% if drv.quote_unverified %}<em>引文未核实</em>{% elif drv.is_inference %}<em>推测</em>{% endif %}
+          {% if drv.evidence_quote %}<blockquote{% if drv.source %} title="来源：{{ drv.source }}"{% endif %}>{{ drv.evidence_quote }}</blockquote>{% endif %}
+          {% if drv.is_inference and drv.reasoning %}<p class="muted">依据：{{ drv.reasoning }}</p>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -125,11 +126,11 @@
   <table class="data">
     <thead><tr><th>指标</th><th>期间</th><th>低</th><th>中</th><th>高</th><th>口径</th><th>来源</th></tr></thead>
     <tbody>
-    {% for g in doc.guidance.get('items') %}
+    {% for g in doc.guidance.get('items') if g.mid is not none or g.low is not none or g.high is not none %}
       <tr>
-        <td>{{ g.metric_label or g.metric_key }}</td>
+        <td>{{ g.metric_key|label if g.metric_key != 'other' else (g.metric_label or '其他') }}</td>
         <td>{{ g.period }}</td>
-        <td>{{ g.low }}</td><td>{{ g.mid }}</td><td>{{ g.high }}</td>
+        <td>{{ g.low|guide(g.metric_key) }}</td><td>{{ g.mid|guide(g.metric_key) }}</td><td>{{ g.high|guide(g.metric_key) }}</td>
         <td>{{ g.basis }}</td>
         <td>{{ g.source }}</td>
       </tr>
@@ -137,6 +138,15 @@
     </tbody>
   </table>
   </div>
+  {% set qual = doc.guidance.get('items')|selectattr('mid', 'none')|selectattr('low', 'none')|selectattr('high', 'none')|list %}
+  {% if qual %}
+  <h3>定性表述</h3>
+  <ul class="guide-qual">
+    {% for g in qual %}
+    <li>{% if g.direction %}<span class="tag">{{ {'up': '↑ 向上', 'down': '↓ 向下', 'flat': '→ 持平'}.get(g.direction, g.direction) }}</span> {% endif %}{{ g.statement or g.source_quote }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
   {% else %}
   <p class="placeholder">指引数据生成中或尚未抽取。</p>
   {% endif %}
@@ -188,14 +198,14 @@
 </section>
 
 <script>
-const history = {{ history|tojson }};
-const labels = history.map(h => h.period);
+const periodHistory = {{ history|tojson }};
+const labels = periodHistory.map(h => h.period);
 new Chart(document.getElementById('revChart'), {
   data: {
     labels,
     datasets: [
-      {type:'bar', label:'营收', data: history.map(h => h.revenue), yAxisID:'y'},
-      {type:'line', label:'同比', data: history.map(h => h.revenue_yoy == null ? null : h.revenue_yoy*100), yAxisID:'y1'}
+      {type:'bar', label:'营收', data: periodHistory.map(h => h.revenue), yAxisID:'y'},
+      {type:'line', label:'同比', data: periodHistory.map(h => h.revenue_yoy == null ? null : h.revenue_yoy*100), yAxisID:'y1'}
     ]
   },
   options: {responsive:true, scales:{y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}}}}
@@ -203,14 +213,14 @@ new Chart(document.getElementById('revChart'), {
 new Chart(document.getElementById('marginChart'), {
   type:'line',
   data:{labels, datasets:[
-    {label:'毛利率', data: history.map(h => h.gross_margin == null ? null : h.gross_margin*100)},
-    {label:'营业利润率', data: history.map(h => h.operating_margin == null ? null : h.operating_margin*100)}
+    {label:'毛利率', data: periodHistory.map(h => h.gross_margin == null ? null : h.gross_margin*100)},
+    {label:'营业利润率', data: periodHistory.map(h => h.operating_margin == null ? null : h.operating_margin*100)}
   ]},
   options:{responsive:true}
 });
 new Chart(document.getElementById('fcfChart'), {
   type:'bar',
-  data:{labels, datasets:[{label:'FCF', data: history.map(h => h.fcf)}]},
+  data:{labels, datasets:[{label:'FCF', data: periodHistory.map(h => h.fcf)}]},
   options:{responsive:true}
 });
 </script>
