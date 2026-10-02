@@ -1,4 +1,4 @@
-# MU 投资论点 · 草稿（待你确认，代码尚未读取本文件）
+# MU 投资论点 · 草稿（待你确认；Stage2 和 manual → thesis 会读取本文件评估）
 #
 # 每条论点四件事：市场担心什么、你为什么看好、什么算证实 / 证伪、到什么时候验证。
 # 依据：MU FY2026Q4 新闻稿、管理层发言与电话会问答（2026-09-30 发布）。
@@ -13,7 +13,8 @@
 #   confirm     证实条件（满足越多，论点越强）
 #   falsify     证伪条件（出现任一条就要重新评估）
 #   deadline    最晚在什么时点能看出结果
-#   metric      可自动核对的条件（可选）：指标、比较、阈值
+#   metric      可自动核对的条件（可选）：key / op / value，可用指标见 pipeline/compute/derived.py；
+#               写了 period 的只用那个财季的实际数据核对（之前显示「待验证」），不写则每季核对
 
 ticker: MU
 updated: 2026-10-02
@@ -37,7 +38,7 @@ theses:
       - HBM 定价下调，或客户推迟提货、调整合同量
     deadline: FQ1-27 财报（预计 2026-12-23）
     metric:
-      - {key: revenue, op: ">=", value: 61.5e9, note: 下季营收不低于指引中值}
+      - {key: revenue, op: ">=", value: 61500000000, period: FY2027Q1, note: 营收不低于本季给出的指引中值}
 
   - id: supply_discipline
     name: 行业供给受限，周期被拉长
@@ -71,7 +72,7 @@ theses:
       - 管理层提到价格松动或产品组合转差
     deadline: FQ2-27 财报（预计 2027-03）
     metric:
-      - {key: gross_margin_nongaap, op: ">=", value: 0.8625, note: 下季毛利率不低于指引中值}
+      - {key: gross_margin_nongaap, op: ">=", value: 0.8625, period: FY2027Q1, note: 毛利率不低于本季给出的指引中值}
 
   - id: contract_visibility
     name: 长约让盈利更可预期

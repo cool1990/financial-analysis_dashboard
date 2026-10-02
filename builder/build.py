@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -12,7 +12,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from pipeline import ROOT
 from pipeline.compute.periods import prior_fiscal_period, yoy_fiscal_period
-from pipeline.config import data_dir, list_tickers, load_ticker_config, site_dir
+from pipeline.compute.derived import derived_metrics, evaluate, merge_checks
+from pipeline.config import data_dir, list_tickers, load_settings, load_theses, load_ticker_config, site_dir
 
 ET = ZoneInfo("America/New_York")
 BJ = ZoneInfo("Asia/Shanghai")
@@ -691,7 +692,16 @@ def _market_view(doc: dict[str, Any]) -> dict[str, Any]:
             latest = {"label": label, "chg": _change(r.get("eps_chg")), "raw": r.get("eps_chg"),
                       "detail": f"${float(tm1['eps']):.2f} → ${float(r['eps']):.2f}" if tm1.get("eps") is not None and r.get("eps") is not None else ""}
             break
-    p, rv = _num((doc.get("price_reaction") or {}).get("next_day_pct")), latest["raw"] if latest else None
+    pr = doc.get("price_reaction") or {}
+    excess = _num(pr.get("excess_pct"))
+    bench = {
+        "symbol": pr.get("benchmark") or "",
+        "pct": _change(pr.get("benchmark_pct")) if pr.get("benchmark_pct") is not None else None,
+        "excess": _change(excess) if excess is not None else None,
+    }
+    # 有对照指数时用超额涨跌判断，扣掉板块整体波动
+    p = excess if excess is not None else _num(pr.get("next_day_pct"))
+    rv = latest["raw"] if latest else None
     if p is None or rv is None:
         stance = None
     elif p > 0 and rv > 0:
@@ -700,76 +710,111 @@ def _market_view(doc: dict[str, Any]) -> dict[str, Any]:
         stance = {"text": "市场不认可", "cls": "bad"}
     else:
         stance = {"text": "市场分歧", "cls": "warn"}
-    return {"price": price, "revision": latest, "stance": stance}
+    return {"price": price, "revision": latest, "stance": stance, "bench": bench}
 
 
-def _check(status: str, name: str, text: str) -> dict[str, str]:
-    return {"status": status, "name": name, "text": text}
+def _quality_checks(doc: dict[str, Any], cfg: dict[str, Any] | None = None) -> list[dict[str, str]]:
+    """增长质量：通用层（settings.yaml quality.defaults）+ 公司层（股票配置 quality_checks）。
 
-
-def _quality_checks(doc: dict[str, Any]) -> list[dict[str, str]]:
-    """增长质量：几条透明的规则，回答「这份成绩靠不靠得住」。数据缺失的检查直接跳过。"""
-    fin = doc.get("financials") or {}
-    basis = (doc.get("meta") or {}).get("eps_basis") or "non_gaap"
-    val = lambda k, f="value": _num((fin.get(k) or {}).get(f))  # noqa: E731
-    out: list[dict[str, str]] = []
-
-    fcf, ni = val("fcf"), val("net_income_gaap")
-    if fcf is not None and ni and ni > 0:
-        r = fcf / ni
-        st = "ok" if r >= 0.8 else "info" if r >= 0.5 else "warn"
-        note = {"ok": "利润基本都转成了现金", "info": "部分利润没有转成现金", "warn": "利润转成现金的比例偏低"}[st]
-        out.append(_check(st, "现金转化", f"自由现金流 / 净利润 = {r*100:.0f}%，{note}"))
-
-    g, ng = val("eps_gaap"), val("eps_nongaap")
-    if g and ng is not None and g > 0:
-        d = (ng - g) / abs(g)
-        out.append(
-            _check("ok" if abs(d) < 0.1 else "warn", "口径差",
-                   f"Non-GAAP 比 GAAP EPS {'高' if d >= 0 else '低'} {abs(d)*100:.1f}%，" + ("调整项小" if abs(d) < 0.1 else "调整项较大，留意剔除了什么"))
-        )
-
-    yoy = val("revenue", "yoy_pct")
-    if yoy is not None:
-        if yoy > 1:
-            out.append(_check("warn", "增速基数", f"营收同比 {_change(yoy)['text']}，去年同季基数很低，高增速难以延续"))
-        elif yoy < 0:
-            out.append(_check("warn", "营收方向", f"营收同比 {_change(yoy)['text']}"))
-        else:
-            out.append(_check("ok", "营收增速", f"营收同比 {_change(yoy)['text']}"))
-
-    capex_q, rev_q = val("capex", "qoq_pct"), val("revenue", "qoq_pct")
-    if capex_q is not None and rev_q is not None:
-        faster = capex_q - rev_q > 0.05
-        out.append(
-            _check("warn" if faster else "ok", "投入强度",
-                   f"资本开支环比 {_change(capex_q)['text']}，营收环比 {_change(rev_q)['text']}" + ("，投入增长快于收入" if faster else ""))
-        )
-
-    # 下季毛利率指引 vs 本季（同一口径；指引常以百分数存，如 86.25）
-    sfx = "gaap" if basis == "gaap" else "nongaap"
-    cur = val(f"gross_margin_{sfx}") or val("gross_margin_gaap")
-    guide = next(
-        (_num(gi.get("mid")) for gi in (doc.get("guidance") or {}).get("items") or []
-         if gi.get("metric_key") == f"gross_margin_{sfx}" and gi.get("mid") is not None and gi.get("source") == "press_release"),
-        None,
-    )
-    if cur is not None and guide is not None:
-        guide = guide / 100 if guide > 1.5 else guide
-        d = guide - cur
-        if d < -0.002:
-            out.append(_check("warn", "利润率方向", f"下季毛利率指引 {guide*100:.2f}%，低于本季 {cur*100:.2f}%"))
-        elif d > 0.002:
-            out.append(_check("ok", "利润率方向", f"下季毛利率指引 {guide*100:.2f}%，高于本季 {cur*100:.2f}%"))
-        else:
-            out.append(_check("info", "利润率方向", f"下季毛利率指引 {guide*100:.2f}%，与本季持平"))
+    规则全部在配置里，阈值和说明可按公司调整；缺数据的检查不显示。
+    """
+    defaults = (load_settings().get("quality") or {}).get("defaults") or []
+    specs = merge_checks(defaults, (cfg or {}).get("quality_checks") or [])
+    metrics = derived_metrics(doc)
+    out = []
+    for spec in specs:
+        r = evaluate(spec, metrics)
+        if r["status"] == "na":
+            continue
+        out.append({"status": r["status"], "name": r["label"], "text": r["text"], "layer": spec["layer"]})
     return out
 
 
+THESIS_STATUS = {
+    "strengthened": ("强化", "ok"),
+    "unchanged": ("不变", ""),
+    "weakened": ("削弱", "bad"),
+}
+
+
+def _deadline_view(text: str | None, today: date) -> dict[str, str]:
+    """「预计 2026-12-23」→ 还有 N 天；过期提示重新评估。只有月份时照原文显示。"""
+    text = text or ""
+    m = re.search(r"(\d{4})-(\d{2})-(\d{2})", text)
+    if not m:
+        return {"text": text, "left": "", "cls": ""}
+    d = date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    days = (d - today).days
+    if days < 0:
+        return {"text": text, "left": f"已过 {-days} 天，需重新评估", "cls": "warn"}
+    return {"text": text, "left": f"还有 {days} 天", "cls": ""}
+
+
+def _thesis_view(ticker: str, period: str, docs: dict[str, dict[str, Any]], today: date) -> dict[str, Any] | None:
+    theses = load_theses(ticker)
+    if not theses:
+        return None
+    doc = docs[period]
+    review = doc.get("thesis_review") or {}
+    by_id = {r.get("id"): r for r in review.get("reviews") or []}
+    cur_metrics = derived_metrics(doc)
+    items = []
+    for t in theses.get("theses") or []:
+        r = by_id.get(t.get("id"))
+        word, cls = THESIS_STATUS.get((r or {}).get("status"), ("待评估", "muted"))
+        checks = []
+        for spec in t.get("metric") or []:
+            target = str(spec.get("period") or "")
+            if target and target not in docs:
+                state = "待验证" if target > period else "缺数据"
+                checks.append({"status": "pending", "text": f"{spec.get('note') or spec.get('key')}：{state}（{target} 财报）"})
+                continue
+            res = evaluate(spec, derived_metrics(docs[target]) if target else cur_metrics)
+            checks.append({"status": res["status"] if res["status"] != "na" else "pending",
+                           "text": f"{res['label']}{'（' + target + '）' if target else ''}：{res['text']}"})
+        confirm_hits = set((r or {}).get("confirm_hits") or [])
+        falsify_hits = set((r or {}).get("falsify_hits") or [])
+        items.append(
+            {
+                "id": t.get("id"),
+                "name": t.get("name"),
+                "status": word,
+                "cls": cls,
+                "evidence": (r or {}).get("evidence") or "",
+                "quote": (r or {}).get("quote") if r and not r.get("quote_unverified") else "",
+                "quote_unverified": bool(r and r.get("quote_unverified")),
+                "source": _source_label((r or {}).get("source")) if r and r.get("source") else "",
+                "bull": t.get("bull") or "",
+                "bear": t.get("bear") or "",
+                "confirm": [{"text": c, "hit": i in confirm_hits} for i, c in enumerate(t.get("confirm") or [])],
+                "falsify": [{"text": c, "hit": i in falsify_hits} for i, c in enumerate(t.get("falsify") or [])],
+                "checks": checks,
+                "deadline": _deadline_view(t.get("deadline"), today),
+            }
+        )
+    counts = {w: sum(1 for x in items if x["status"] == w) for w in ("强化", "不变", "削弱", "待评估")}
+    return {
+        "items": items,
+        "counts": counts,
+        "reviewed": bool(by_id),
+        "reviewed_at": (review.get("reviewed_at") or "")[:10],
+        "draft": (theses.get("status") or "") == "draft",
+        "concerns": review.get("new_concerns") or [],
+    }
+
+
 def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict[str, Any],
-                   checks: list[dict[str, str]]) -> list[dict[str, str]]:
+                   checks: list[dict[str, str]], thesis: dict[str, Any] | None = None) -> list[dict[str, str]]:
     """判断条上的状态标签：每个标签把一块内容压成一句，数据缺口也直说。"""
     chips: list[dict[str, str]] = []
+    if thesis:
+        c = thesis["counts"]
+        if thesis["reviewed"]:
+            parts = [f"{c[w]} {w}" for w in ("强化", "不变", "削弱") if c[w]]
+            cls = "bad" if c["削弱"] > c["强化"] else "ok" if c["强化"] > c["削弱"] else ""
+            chips.append({"text": "论点：" + " · ".join(parts), "cls": cls})
+        else:
+            chips.append({"text": "论点待评估", "cls": "muted"})
     cls_of = {"beat": "ok", "miss": "bad", "inline": "", "unknown": "warn"}
     for g in gaps:
         if g["has"]:
@@ -787,7 +832,7 @@ def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict
         chips.append({"text": f"次日股价 {m['price']['text']}", "cls": ""})
     warns = [c for c in checks if c["status"] == "warn"]
     if warns:
-        chips.append({"text": "质量提示：" + "、".join(c["name"] for c in warns), "cls": "warn"})
+        chips.append({"text": f"增长质量 {len(warns)} 条需注意", "cls": "warn"})
     missing = [g["label"] for g in gaps if not g["has"]]
     if missing:
         chips.append({"text": "缺一致预期：" + "、".join(missing), "cls": "muted"})
@@ -866,17 +911,20 @@ def build_site(ticker: str | None = None) -> list[Path]:
             pages.append(stock_dir / "index.html")
             continue
         history = _history(docs)[-8:]
+        today = datetime.now(BJ).date()
         for period in periods:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
             gaps = _gap_rows(doc)
             market = _market_view(doc)
-            checks = _quality_checks(doc)
+            checks = _quality_checks(doc, cfg)
+            thesis = _thesis_view(t, period, docs, today)
             html = env.get_template("period.html").render(
                 gaps=gaps,
                 market=market,
                 checks=checks,
-                chips=_verdict_chips(doc, gaps, market, checks),
+                thesis=thesis,
+                chips=_verdict_chips(doc, gaps, market, checks, thesis),
                 root="../../",
                 nav=nav,
                 active=t,

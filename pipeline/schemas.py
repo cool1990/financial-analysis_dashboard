@@ -106,6 +106,27 @@ class SummaryResult(BaseModel):
     next_watchlist: list[Any] = Field(default_factory=list)
 
 
+class ThesisReviewItem(BaseModel):
+    id: str
+    status: Literal["strengthened", "unchanged", "weakened"] = "unchanged"
+    evidence: str = ""
+    quote: Optional[str] = None
+    source: Optional[str] = None
+    confirm_hits: list[int] = Field(default_factory=list)
+    falsify_hits: list[int] = Field(default_factory=list)
+
+
+class NewConcern(BaseModel):
+    concern: str
+    raised_by: Optional[str] = None
+    why: Optional[str] = None
+
+
+class ThesisReviewResult(BaseModel):
+    reviews: list[ThesisReviewItem] = Field(default_factory=list)
+    new_concerns: list[NewConcern] = Field(default_factory=list)
+
+
 # --- Period document schema (schema_version = 1) ---
 
 Verdict = Literal["beat", "miss", "inline", "unknown", ""]
@@ -255,6 +276,8 @@ class PeriodDoc(BaseModel):
     guidance: GuidanceBlock = Field(default_factory=GuidanceBlock)
     qa: QABlock = Field(default_factory=QABlock)
     summary: SummaryBlock = Field(default_factory=SummaryBlock)
+    # 论点评估（config/theses/{TICKER}.yaml 存在时才有）：reviews / new_concerns / fingerprint
+    thesis_review: dict[str, Any] = Field(default_factory=dict)
 
 
 def validate_period_doc(data: dict[str, Any]) -> PeriodDoc:

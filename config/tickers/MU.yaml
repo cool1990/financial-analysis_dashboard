@@ -56,3 +56,14 @@ ir_transcript_url: null
 ir_transcript_match: (?i)transcript|prepared.?remarks
 # IR 备选：Prepared Remarks PDF（占位 {fy}/{q}/{yy}）
 ir_prepared_remarks_url: https://investors.micron.com/files/doc_financials/{fy}/q{q}/Q{q}-FY{yy}-Prepared-Remarks.pdf
+
+# 次日涨跌的对照指数（ETF）：扣掉板块整体波动后看个股反应
+benchmark: SOXX
+
+# 增长质量 · 公司层（存储是重资产周期股）
+quality_checks:
+  - {key: cash_conversion, op: ">=", value: 0.6, note: 重资产扩产期现金转化天然偏低，阈值放宽到 60%}
+  - {key: capex_to_revenue, op: "<=", value: 0.30, note: 超过 30% 说明扩产偏激进}
+  - {key: capex_minus_revenue_growth, op: "<=", value: 0.05, note: 投入不应长期快于收入}
+  - {key: gm_guide_delta, op: ">=", value: 0, note: 下季毛利率指引不低于本季，说明周期仍在上行}
+  - {key: revenue_qoq, op: ">=", value: 0, note: 周期股看环比更能反映周期位置}
