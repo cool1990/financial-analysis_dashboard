@@ -312,10 +312,15 @@ function mountChart(id, title, config) {
   const el = document.getElementById(id);
   if (!el) return;
   const wrap = el.parentElement;
+  if (typeof Chart === 'undefined') {
+    wrap.innerHTML = '<p class="placeholder">图表库未能加载（请检查网络或脚本完整性）。</p>';
+    return;
+  }
   if (!periodHistory.length) {
     wrap.innerHTML = '<p class="placeholder">暂无历史序列可绘制。</p>';
     return;
   }
+  config.type = config.type || 'bar';
   config.options = Object.assign({ plugins: { title: { display: true, text: title } } }, chartOpts, config.options || {});
   if (config.options.plugins && chartOpts.plugins) {
     config.options.plugins = Object.assign({}, chartOpts.plugins, config.options.plugins);

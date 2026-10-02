@@ -375,3 +375,22 @@ def test_next_day_reaction_amc_logic_unit():
     bmo = yf.next_day_reaction("2026-09-30T12:00:00Z", release_timing="bmo")
     assert bmo["before_date"] == "2026-09-29" and bmo["after_date"] == "2026-09-30"
     assert abs(bmo["next_day_pct"] - 0.1) < 1e-9
+
+
+def test_chartjs_sri_matches_cdn():
+    """错误 SRI 会让浏览器拦截 Chart.js，页面出现三块空白图。"""
+    import base64
+    import hashlib
+    import re
+    import urllib.request
+
+    html = (ROOT / "builder" / "templates" / "base.html").read_text(encoding="utf-8")
+    m = re.search(
+        r'src="(https://cdnjs\.cloudflare\.com/ajax/libs/Chart\.js/[^"]+)"\s+integrity="(sha512-[^"]+)"',
+        html,
+    )
+    assert m, "base.html 缺少 Chart.js script + integrity"
+    url, declared = m.group(1), m.group(2)
+    data = urllib.request.urlopen(url, timeout=30).read()
+    actual = "sha512-" + base64.b64encode(hashlib.sha512(data).digest()).decode()
+    assert declared == actual, f"Chart.js SRI 不匹配：declared={declared} actual={actual}"
