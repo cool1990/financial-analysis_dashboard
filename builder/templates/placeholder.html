@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% set root = "../../" %}
 {% block title %}{{ ticker }} · 等待数据{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h1>{{ ticker }} · {{ company }}</h1>
-  <p class="placeholder">尚无财季数据。请先运行 <code>python -m pipeline init --ticker {{ ticker }}</code> 与快照/回补。</p>
-</section>
+<div class="page-head">
+  <div>
+    <h1>{{ ticker }} · {{ company }}</h1>
+    <div class="sub">尚无财季数据</div>
+  </div>
+</div>
+<div class="card placeholder">请先运行 <code>python -m pipeline init --ticker {{ ticker }}</code>，再等待下一次财报或手动回补。</div>
 {% endblock %}

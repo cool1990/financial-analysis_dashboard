@@ -64,11 +64,41 @@ def load_processed(ticker: str) -> set[str]:
     return set(data.get("accessions", []))
 
 
-def add_processed(ticker: str, accession: str) -> None:
+def _load_processed_file(ticker: str) -> dict[str, Any]:
+    path = data_dir(ticker) / "processed.json"
+    if not path.exists():
+        return {"accessions": []}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _save_processed_file(ticker: str, data: dict[str, Any]) -> None:
     path = data_dir(ticker) / "processed.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = {"accessions": sorted(load_processed(ticker) | {accession})}
+    if not data.get("failures"):
+        data.pop("failures", None)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+def add_processed(ticker: str, accession: str) -> None:
+    data = _load_processed_file(ticker)
+    data["accessions"] = sorted(set(data.get("accessions", [])) | {accession})
+    (data.get("failures") or {}).pop(accession, None)
+    _save_processed_file(ticker, data)
+
+
+def load_failures(ticker: str) -> dict[str, int]:
+    """每份 8-K 的 Stage1 失败次数；达到 polling.max_retries 后 poll 不再自动重试。"""
+    return {k: int(v) for k, v in (_load_processed_file(ticker).get("failures") or {}).items()}
+
+
+def record_filing_failure(ticker: str, accession: str) -> int:
+    data = _load_processed_file(ticker)
+    if accession in set(data.get("accessions", [])):
+        return 0
+    failures = data.setdefault("failures", {})
+    failures[accession] = int(failures.get(accession, 0)) + 1
+    _save_processed_file(ticker, data)
+    return failures[accession]
 
 
 def load_period_json(ticker: str, fiscal_period: str) -> dict[str, Any] | None:

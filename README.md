@@ -48,6 +48,8 @@ python -m pipeline build
 | `python -m pipeline run --ticker MU --period FY2026Q4 --stage 1` | 重跑阶段 |
 | `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补 |
 | `python -m pipeline build` | 生成 `site/` |
+| `python -m pipeline stage3-recent` | 近期财报的股价反应 + T+1/3/7 分析师修正（daily 自动跑，无 LLM） |
+| `python -m pipeline comparatives` | 用新闻稿对比列补算同比 / 环比（无 LLM、不联网） |
 | `python -m pipeline validate --ticker MU --period FY2026Q4` | 查看状态 |
 
 ## Secrets
@@ -60,6 +62,19 @@ python -m pipeline build
 
 本地无 key 时可运行：`pytest`、`python -m pipeline build`、`python -m pipeline snapshot`（无 LLM）。
 LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Actions → `manual` / `eval`。
+
+## LLM 成本护栏
+
+只有 Stage1（新闻稿抽取 + 指引，可选变动原因）和 Stage2（电话会指引、问答、变动原因、总结）调用 LLM，其余全部是规则计算。
+
+- poll 只在「财报窗口 + 已知财报日前 7 天至后 4 天」检查 SEC，且只处理发布不超过 `polling.new_filing_max_age_days`（默认 4 天）的 8-K；历史季度走 `backfill`。
+- 同一份 8-K Stage1 失败达到 `polling.max_retries` 次后不再自动重试（计数在 `data/*/processed.json` 的 `failures`）。
+- 文字稿超过 `polling.transcript_max_hours` 仍未取到时停止自动重试 Stage2。
+- 每轮进程有金额上限 `max_cost_per_run_usd`、token 上限 `max_tokens_per_run`（拿不到单价时依然生效）和超时熔断 `max_timeouts_per_run`；单次请求有 `max_tokens` 与墙钟超时。
+- Actions 的 LLM 缓存每次运行都会回写（key 带 run_id），重跑同样输入不再重复付费；Stage2 已完成时默认跳过，`--force` 才重跑。
+- `llm.reasoning_effort`（默认 low）限制推理模型的思考 token：思考 token 计入 max_tokens 且计费，曾把输出额度耗尽导致问答整批返回空；输出被截断时不原样重试。
+- 问答批次失败时拆半各试一次（每批最多 3 次调用）；Stage2 已完成但有失败轮次时，不加 `--force` 重跑只补失败的几轮。
+- `llm.stage1_drivers: false` 可省掉 Stage1 的变动原因调用（Stage2 会重算）。
 
 ## 说明
 

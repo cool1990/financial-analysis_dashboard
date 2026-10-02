@@ -2,7 +2,10 @@ name: poll
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    # 财报窗口（UTC）：盘前 06:00–09:30 ET ≈ 10–14 点；盘后 16:00–20:00 ET ≈ 20–01 点 → 每 15 分钟
+    - cron: "*/15 10-14,20-23,0-1 * * *"
+    # 其余时段每小时一次，只为等待文字稿（Stage2）
+    - cron: "7 2-9,15-19 * * *"
   workflow_dispatch:
   # 不使用 pull_request_target
 
@@ -17,67 +20,79 @@ jobs:
   poll:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
       - run: pip install -r requirements.txt
 
+      # 缓存 key 必须每次唯一：actions/cache 命中精确 key 时不会回写，
+      # 旧写法导致首轮之后新的 LLM 结果永远进不了缓存，重跑会重复付费。
+      # 缓存条目本身按 prompt 全文 + 模型 + 输入做 sha256，不需要 key 里再带 prompt hash。
       - name: Restore LLM cache
         uses: actions/cache@v4
         with:
           path: cache/llm
-          key: llm-cache-${{ hashFiles('prompts/**') }}-${{ runner.os }}
+          key: llm-cache-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            llm-cache-${{ hashFiles('prompts/**') }}-
-
-      - name: Check OPENROUTER_API_KEY
-        id: keycheck
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          if [ -z "${OPENROUTER_API_KEY}" ]; then
-            echo "has_key=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::OPENROUTER_API_KEY 未配置：若命中财报窗口将无法跑 Stage1/2 LLM，poll 将跳过 LLM 并告警"
-          else
-            echo "has_key=true" >> "$GITHUB_OUTPUT"
-          fi
+            llm-cache-${{ runner.os }}-
 
       - name: Poll earnings window
+        id: poll
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          HAS_KEY: ${{ steps.keycheck.outputs.has_key }}
         run: |
           set -euo pipefail
           mkdir -p logs
-          if [ "$HAS_KEY" != "true" ]; then
-            echo "WARNING: 无 OPENROUTER_API_KEY，仅检测窗口；若需 Stage1/2 请配置 Secret" | tee logs/poll.log
-            # 仍调用 poll：无 key 时 Stage1 会失败并记入 actions，不中断整个 job 的建站
-            python -m pipeline poll 2>&1 | tee -a logs/poll.log || echo "::warning::poll 在无 key 时部分失败（预期）"
-          else
-            python -m pipeline poll 2>&1 | tee logs/poll.log
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "::warning::OPENROUTER_API_KEY 未配置：命中财报窗口时 Stage1/2 会失败"
           fi
-          python -m pipeline build 2>&1 | tee -a logs/poll.log
+          # poll 内部已按「财报窗口 + 财报日附近 + 近期 8-K + 失败上限 + 文字稿时限」过滤，
+          # 不在窗口时几秒内退出，不调用 LLM
+          python -m pipeline poll 2>&1 | tee logs/poll.log
+
+      - name: Build site
+        if: steps.poll.outputs.did_work == 'true'
+        run: python -m pipeline build 2>&1 | tee -a logs/poll.log
 
       - name: Commit
+        id: commit
+        if: steps.poll.outputs.did_work == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # 先提交流水线产物，再 rebase；否则 unstaged 改动会阻断 pull --rebase
           git add data site || true
-          git diff --staged --quiet || git commit -m "chore: poll update"
-          git pull --rebase --autostash
-          git push
+          if git diff --staged --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: poll update"
+            git pull --rebase --autostash
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload logs
-        if: always()
+        if: always() && steps.poll.outputs.did_work == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: poll-llm-logs
           path: logs/
           retention-days: 30
           if-no-files-found: ignore
+
+  deploy:
+    needs: poll
+    if: needs.poll.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

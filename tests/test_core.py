@@ -377,20 +377,15 @@ def test_next_day_reaction_amc_logic_unit():
     assert abs(bmo["next_day_pct"] - 0.1) < 1e-9
 
 
-def test_chartjs_sri_matches_cdn():
-    """错误 SRI 会让浏览器拦截 Chart.js，页面出现三块空白图。"""
-    import base64
+def test_chartjs_vendored_locally():
+    """Chart.js 随站点发布，不依赖 CDN / SRI（错误 SRI 曾导致三块空白图）。"""
     import hashlib
-    import re
-    import urllib.request
 
-    html = (ROOT / "builder" / "templates" / "base.html").read_text(encoding="utf-8")
-    m = re.search(
-        r'src="(https://cdnjs\.cloudflare\.com/ajax/libs/Chart\.js/[^"]+)"\s+integrity="(sha512-[^"]+)"',
-        html,
-    )
-    assert m, "base.html 缺少 Chart.js script + integrity"
-    url, declared = m.group(1), m.group(2)
-    data = urllib.request.urlopen(url, timeout=30).read()
-    actual = "sha512-" + base64.b64encode(hashlib.sha512(data).digest()).decode()
-    assert declared == actual, f"Chart.js SRI 不匹配：declared={declared} actual={actual}"
+    js = ROOT / "builder" / "static" / "vendor" / "chart.umd.min.js"
+    assert js.exists()
+    # 与 npm chart.js@4.4.1 dist/chart.umd.js 逐字节一致
+    assert hashlib.sha256(js.read_bytes()).hexdigest() == "74401d738dd3e03ee5dfb3b6841210fe2c4ead8a960c4011ca4ba0b78a9fd8f3"
+    tpl = (ROOT / "builder" / "templates" / "period.html").read_text(encoding="utf-8")
+    assert "static/vendor/chart.umd.min.js" in tpl
+    base = (ROOT / "builder" / "templates" / "base.html").read_text(encoding="utf-8")
+    assert "cdnjs" not in base and "fonts.googleapis" not in base

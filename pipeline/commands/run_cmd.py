@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from pipeline.commands.snapshot_cmd import load_pre_earnings_snapshot
+from pipeline.compute.comparatives import apply_press_comparatives
 from pipeline.compute.metrics import build_metric_block, ratio, ytd_to_quarterly
 from pipeline.compute.periods import build_period_info, prior_fiscal_period, yoy_fiscal_period
 from pipeline.compute.scorecard import build_scorecard
@@ -21,6 +22,8 @@ from pipeline.sources.transcripts import fetch_transcript
 from pipeline.sources.yfinance_src import estimate_row
 from pipeline.state import (
     add_processed,
+    load_failures,
+    record_filing_failure,
     empty_period_doc,
     load_period_json,
     load_processed,
@@ -29,7 +32,7 @@ from pipeline.state import (
     save_period_json,
 )
 from pipeline.validate import validate_extraction
-from pipeline.extract.guidance import parse_guidance_item
+from pipeline.extract.guidance import normalize_period, parse_guidance_item
 from pipeline.compute.guidance_review import change_vs_prior, position_in_range
 from pipeline.analyze.drivers import analyze_drivers, strip_driver_warnings
 from pipeline.analyze.qa import structure_qa
@@ -40,12 +43,14 @@ from pipeline.notify import format_scorecard_text, maybe_notify
 def _guidance_merge_key(item: dict[str, Any]) -> tuple:
     """合并键：other 类按标签区分，避免「全年展望」与「出货锁定」被当成同一条冲突。"""
     mk = item.get("metric_key") or ""
-    period = (item.get("period") or "").strip().lower()
+    period = normalize_period(item.get("period"))
+    # 数值指引与方向性表述分开：同 metric_key 的「R&D 将上升」不能并进「运营费用 $2.31B」
+    numeric = _numeric_mid(item) is not None
     if mk == "other":
         label = (item.get("metric_label") or item.get("statement") or "").strip().lower()
         label = re.sub(r"\s+", " ", label)[:80]
-        return (mk, period, label)
-    return (mk, period)
+        return (mk, period, numeric, label)
+    return (mk, period, numeric)
 
 
 def _numeric_mid(item: dict[str, Any]) -> float | None:
@@ -75,6 +80,40 @@ def _guidance_conflict_warning(press: dict[str, Any], call: dict[str, Any]) -> s
 from pipeline.compute.revisions import compute_analyst_revisions
 
 
+def merge_guidance_items(
+    base_items: list[dict[str, Any]],
+    new_items: list[dict[str, Any]],
+    warnings: list[str],
+) -> list[dict[str, Any]]:
+    """把电话会指引并入新闻稿指引：同指标同期间只保留一条（新闻稿数值优先）。"""
+    merged: dict[tuple, dict[str, Any]] = {}
+    for item in base_items:
+        merged.setdefault(_guidance_merge_key(item), item)
+    for ci in new_items:
+        key = _guidance_merge_key(ci)
+        if key not in merged:
+            merged[key] = ci
+            continue
+        base = merged[key]
+        warn = _guidance_conflict_warning(base, ci)
+        if warn:
+            base["call_variant"] = ci
+            if warn not in warnings:
+                warnings.append(warn)
+            continue
+        # 同键但无数值冲突：用电话会内容丰富字段（保留新闻稿来源优先的数值）
+        if base.get("source") != ci.get("source"):
+            base["confirmed_by"] = ci.get("source")
+        for field in ("statement", "source_quote", "direction", "metric_label"):
+            if not base.get(field) and ci.get(field):
+                base[field] = ci.get(field)
+        if _numeric_mid(base) is None and _numeric_mid(ci) is not None:
+            for field in ("low", "mid", "high", "type", "basis", "source"):
+                if ci.get(field) is not None:
+                    base[field] = ci.get(field)
+    return list(merged.values())
+
+
 ET = ZoneInfo("America/New_York")
 
 
@@ -93,25 +132,67 @@ def _in_window(timing: str, now: datetime | None = None) -> bool:
     return (sh * 60 + sm) <= minutes <= (eh * 60 + em)
 
 
-def detect_new_filings(ticker: str) -> list[dict[str, Any]]:
+def _accepted_dt(raw: str) -> datetime | None:
+    try:
+        dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def detect_new_filings(ticker: str, *, now: datetime | None = None) -> list[dict[str, Any]]:
+    """只返回「近期」且未处理、未超失败上限的 Item 2.02 8-K。
+
+    历史 8-K 不在 processed.json 里是常态（新加股票时尤其如此）；若不按发布时间过滤，
+    poll 每天财报窗口都会逐份回溯历史新闻稿并调用 LLM。历史数据请走 backfill。
+    """
     cfg = load_ticker_config(ticker)
     if not cfg.get("cik"):
         raise RuntimeError(f"{ticker} 尚未 init（缺少 CIK）")
+    polling = load_settings().get("polling") or {}
+    max_age = timedelta(days=float(polling.get("new_filing_max_age_days", 4)))
+    max_fail = int(polling.get("max_retries", 5))
+    now = now or datetime.now(timezone.utc)
     client = SecEdgarClient()
     processed = load_processed(ticker)
-    filings = client.find_earnings_8k(cfg["cik"])
-    return [f for f in filings if f["accessionNumber"] not in processed]
+    failures = load_failures(ticker)
+    out = []
+    for f in client.find_earnings_8k(cfg["cik"]):
+        acc = f["accessionNumber"]
+        if acc in processed or failures.get(acc, 0) >= max_fail:
+            continue
+        accepted = _accepted_dt(f.get("acceptanceDateTime") or "")
+        if accepted is None or now - accepted > max_age:
+            continue
+        out.append(f)
+    return out
 
 
 def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | None = None) -> dict[str, Any]:
     cfg = load_ticker_config(ticker)
     client = SecEdgarClient()
-    filings = detect_new_filings(ticker)
     if accession:
         filings = [f for f in client.find_earnings_8k(cfg["cik"]) if f["accessionNumber"] == accession]
+    else:
+        filings = detect_new_filings(ticker)
     if not filings:
-        raise RuntimeError("未发现可处理的 8-K Item 2.02")
+        raise RuntimeError("未发现可处理的近期 8-K Item 2.02（历史季度请用 backfill 或 --accession）")
     filing = filings[0]
+    try:
+        return _run_stage1_filing(ticker, cfg, client, filing, fiscal_period)
+    except Exception:
+        # 失败计数：poll 每 15 分钟一次，若不封顶会对同一份 8-K 反复调用 LLM
+        record_filing_failure(ticker, filing["accessionNumber"])
+        raise
+
+
+def _run_stage1_filing(
+    ticker: str,
+    cfg: dict[str, Any],
+    client: SecEdgarClient,
+    filing: dict[str, Any],
+    fiscal_period: str | None,
+) -> dict[str, Any]:
     acc = filing["accessionNumber"]
     release_at = filing["acceptanceDateTime"]
     if release_at.endswith("Z") is False and "T" in release_at:
@@ -262,6 +343,9 @@ def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | N
         "kpis": extracted.get("kpis") or {},
     }
 
+    # 没有历史季度 JSON 时，用新闻稿表格里的上季 / 去年同季列补同比、环比（不调用 LLM）
+    apply_press_comparatives(financials, extracted, capex_definition=capex_def)
+
     # guidance from press release (module C stage1)
     g_prompt = llm.load_prompt("extract_guidance.md", guidance_keys=", ".join(load_guidance_keys()))
     g_user = g_prompt + "\n\n----\n" + parsed["combined"][:80000]
@@ -329,13 +413,15 @@ def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | N
     doc["guidance"]["items"] = guidance_items
     doc["drivers"] = {"stage": 1, "metrics": [], "status": "等待变动原因分析"}
 
-    # stage1 drivers from press only (optional if LLM available)
-    try:
-        drivers = analyze_drivers(financials, parsed["combined"], stage=1)
-        doc["drivers"] = {"stage": 1, "metrics": drivers.get("metrics", [])}
-        doc["status"]["warnings"].extend(drivers.get("warnings") or [])
-    except Exception as e:
-        doc["status"]["warnings"].append(f"Stage1 drivers 跳过: {e}")
+    # stage1 drivers from press only：Stage2 拿到文字稿后会整体重算，
+    # 只想要最终版解读、进一步省钱时可在 settings.yaml 关掉 llm.stage1_drivers
+    if (load_settings().get("llm") or {}).get("stage1_drivers", True):
+        try:
+            drivers = analyze_drivers(financials, parsed["combined"], stage=1)
+            doc["drivers"] = {"stage": 1, "metrics": drivers.get("metrics", [])}
+            doc["status"]["warnings"].extend(drivers.get("warnings") or [])
+        except Exception as e:
+            doc["status"]["warnings"].append(f"Stage1 drivers 跳过: {e}")
 
     save_period_json(ticker, period, doc)
     add_processed(ticker, acc)
@@ -356,13 +442,15 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
     qa_items = ((doc.get("qa") or {}).get("items")) or []
     driver_metrics = ((doc.get("drivers") or {}).get("metrics")) or []
     # 已完成且产物齐全时默认跳过，避免 oneshot/误触重跑长时间烧 OpenRouter
-    if (
-        not force
-        and stage_now in {"stage2_done", "stage3_done"}
+    complete = (
+        stage_now in {"stage2_done", "stage3_done"}
         and qa_items
         and driver_metrics
         and (doc.get("summary") or {}).get("headline")
-    ):
+    )
+    if not force and complete and any(q.get("parse_failed") for q in qa_items):
+        return _repair_failed_qa(ticker, fiscal_period, cfg, doc)
+    if not force and complete:
         print(
             f"[stage2] 跳过：{ticker} {fiscal_period} 已是 {stage_now} "
             f"(qa={len(qa_items)}, drivers={len(driver_metrics)})。需要重跑请加 --force",
@@ -414,27 +502,9 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
         doc["status"]["warnings"].append(f"电话会指引抽取失败: {e}")
     _done("extract_guidance", t0)
 
-    merged = {_guidance_merge_key(i): i for i in doc.get("guidance", {}).get("items", [])}
-    for ci in call_items:
-        key = _guidance_merge_key(ci)
-        if key in merged:
-            warn = _guidance_conflict_warning(merged[key], ci)
-            if warn:
-                merged[key]["call_variant"] = ci
-                doc["status"]["warnings"].append(warn)
-            else:
-                # 同键但无数值冲突：用电话会内容丰富字段（保留新闻稿来源优先的数值）
-                base = merged[key]
-                for field in ("statement", "source_quote", "direction", "metric_label"):
-                    if not base.get(field) and ci.get(field):
-                        base[field] = ci.get(field)
-                if _numeric_mid(base) is None and _numeric_mid(ci) is not None:
-                    for field in ("low", "mid", "high", "type", "basis", "source"):
-                        if ci.get(field) is not None:
-                            base[field] = ci.get(field)
-        else:
-            merged[key] = ci
-    doc["guidance"]["items"] = list(merged.values())
+    doc["guidance"]["items"] = merge_guidance_items(
+        doc.get("guidance", {}).get("items", []), call_items, doc["status"]["warnings"]
+    )
 
     # Q&A
     press_nums = {
@@ -484,6 +554,36 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
     save_period_json(ticker, fiscal_period, doc)
     mark_stage(ticker, fiscal_period, "stage2_done")
     maybe_notify(f"{ticker} {fiscal_period} Stage2 完成")
+    return doc
+
+
+def _repair_failed_qa(ticker: str, fiscal_period: str, cfg: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]:
+    """Stage2 已完成但有问答轮次结构化失败：只重跑这几轮（通常 1 次调用），其余不动。"""
+    from pipeline.analyze.qa import repair_failed_items
+    from pipeline.compute.topics import compute_topic_stats
+
+    raw_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / fiscal_period
+    text, _source = fetch_transcript(
+        cfg, raw_dir, fiscal_period=fiscal_period, release_at=(doc.get("meta") or {}).get("release_at_utc")
+    )
+    if not text:
+        raise RuntimeError("文字稿未取得，无法修复失败的问答")
+    items = doc["qa"]["items"]
+    n_failed = sum(1 for q in items if q.get("parse_failed"))
+    print(f"[stage2] 仅修复 {n_failed} 轮失败的问答（其余结果保留；全量重跑请加 --force）", flush=True)
+    press_nums = {
+        "revenue": (doc.get("financials") or {}).get("revenue", {}).get("value"),
+        "eps": next((c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "eps"), None),
+    }
+    new_items, repaired = repair_failed_items(text, items, press_nums)
+    prior = load_period_json(ticker, prior_fiscal_period(fiscal_period))
+    stats = compute_topic_stats(new_items, (prior or {}).get("qa", {}).get("items"))
+    doc["qa"] = {
+        "items": new_items,
+        **{k: stats[k] for k in ["topic_stats", "new_topics", "dropped_topics", "hot_topics", "evasive_list"]},
+    }
+    save_period_json(ticker, fiscal_period, doc)
+    print(f"[stage2] 已修复 {repaired}/{n_failed} 轮", flush=True)
     return doc
 
 
@@ -562,7 +662,9 @@ def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
             "close_after": None,
             "note": f"股价反应计算失败: {e}",
         }
-        doc["status"]["warnings"].append(f"股价反应失败: {e}")
+        warn = f"股价反应失败: {e}"
+        if warn not in doc["status"]["warnings"]:
+            doc["status"]["warnings"].append(warn)
 
     points: dict[str, dict[str, Any]] = {
         "t_minus_1": {},
@@ -621,10 +723,62 @@ def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
         "T+1/3/7 需对应日期之后的 snapshot 才会填入。"
     )
     doc.setdefault("guidance", {})["analyst_revisions"] = revisions
-    doc["status"]["stage"] = "stage3_done"
-    save_period_json(ticker, fiscal_period, doc)
-    mark_stage(ticker, fiscal_period, "stage3_done")
+    # 仍在等文字稿（stage1_done）时不推进阶段，否则 poll 会认为 Stage2 已完成而不再尝试
+    if doc["status"].get("stage") in {"stage2_done", "stage3_done"}:
+        doc["status"]["stage"] = "stage3_done"
+        save_period_json(ticker, fiscal_period, doc)
+        mark_stage(ticker, fiscal_period, "stage3_done")
+    else:
+        save_period_json(ticker, fiscal_period, doc)
     return doc
+
+
+def refresh_comparatives(ticker: str | None = None) -> dict[str, Any]:
+    """对已有季度 JSON 重算新闻稿对比列的同比 / 环比。幂等，不联网、不调用 LLM。"""
+    from pipeline.config import data_dir, list_tickers
+
+    out: dict[str, list[str]] = {}
+    for t in [ticker.upper()] if ticker else list_tickers():
+        cfg = load_ticker_config(t)
+        for path in sorted(data_dir(t).glob("FY*.json")):
+            extracted_path = data_dir(t) / "raw" / path.stem / "extracted_financials.json"
+            if not extracted_path.exists():
+                continue
+            doc = json.loads(path.read_text(encoding="utf-8"))
+            extracted = json.loads(extracted_path.read_text(encoding="utf-8"))
+            filled = apply_press_comparatives(
+                doc.get("financials") or {},
+                extracted,
+                capex_definition=cfg.get("capex_definition") or "gross",
+            )
+            if filled:
+                save_period_json(t, path.stem, doc)
+                out[f"{t} {path.stem}"] = filled
+    return {"filled": out}
+
+
+def refresh_recent_stage3(now: datetime | None = None) -> dict[str, Any]:
+    """daily 调用：发布后 N 天内的季度重算 Stage3，让 T+1/T+3/T+7 随快照自动补齐。不调用 LLM。"""
+    from pipeline.config import data_dir, list_tickers
+
+    now = now or datetime.now(timezone.utc)
+    days = float((load_settings().get("polling") or {}).get("stage3_refresh_days", 10))
+    out: list[dict[str, Any]] = []
+    for ticker in list_tickers():
+        for path in sorted(data_dir(ticker).glob("FY*.json")):
+            doc = json.loads(path.read_text(encoding="utf-8"))
+            stage = (doc.get("status") or {}).get("stage")
+            if stage not in {"stage1_done", "stage2_done", "stage3_done"}:
+                continue
+            release = _accepted_dt((doc.get("meta") or {}).get("release_at_utc") or "")
+            if release is None or not (timedelta(0) <= now - release <= timedelta(days=days)):
+                continue
+            try:
+                run_stage3(ticker, path.stem)
+                out.append({"ticker": ticker, "period": path.stem, "ok": True})
+            except Exception as e:
+                out.append({"ticker": ticker, "period": path.stem, "ok": False, "error": str(e)})
+    return {"refreshed": out}
 
 
 def run_pipeline(

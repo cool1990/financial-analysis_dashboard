@@ -31,6 +31,13 @@ class LLMTimeoutError(LLMError):
     pass
 
 
+class LLMTruncatedError(LLMError):
+    """输出被 max_tokens 截断（常见于推理模型把额度花在思考上，content 为空）。
+
+    同样的请求重发只会得到同样的结果并再付一次钱，调用方应缩小输入或放弃，不要原样重试。
+    """
+
+
 _SENSITIVE_RE = re.compile(
     r"(?i)(Bearer\s+)[A-Za-z0-9._\-]+|(OPENROUTER_API_KEY\s*[=:]\s*)\S+|(sk-[A-Za-z0-9_\-]{8,})"
 )
@@ -84,17 +91,46 @@ def _loads_json_payload(content: str) -> Any:
         raise
 
 
-class RunCostTracker:
-    """单次进程内累计 LLM 花费。"""
+def _has_complete_json(content: str) -> bool:
+    try:
+        _loads_json_payload(content)
+        return True
+    except (json.JSONDecodeError, ValueError):
+        return False
 
-    def __init__(self, max_cost_usd: float):
+
+class RunCostTracker:
+    """单次进程内累计 LLM 花费，并在超出金额 / token / 超时次数上限后熔断后续调用。"""
+
+    def __init__(self, max_cost_usd: float, max_tokens: int = 0, max_timeouts: int = 0):
         self.max_cost_usd = max_cost_usd
+        self.max_tokens = int(max_tokens or 0)
+        self.max_timeouts = int(max_timeouts or 0)
         self.prompt_tokens = 0
         self.completion_tokens = 0
         self.calls = 0
+        self.timeouts = 0
         self.estimated_cost_usd = 0.0
         self.model = ""
         self.warnings: list[str] = []
+        self.tripped: str | None = None
+
+    def check(self) -> None:
+        """每次发请求前调用：已熔断则直接拒绝，不再花钱。"""
+        if self.tripped:
+            raise CostLimitExceeded(self.tripped)
+
+    def _trip(self, reason: str) -> None:
+        # 本次结果已付费，照常使用并写缓存；从下一次请求起拒绝
+        if not self.tripped:
+            self.tripped = reason
+            self.warnings.append(reason)
+
+    def add_timeout(self, model: str) -> None:
+        self.timeouts += 1
+        if self.max_timeouts and self.timeouts >= self.max_timeouts and not self.tripped:
+            self.tripped = f"本轮已有 {self.timeouts} 次 LLM 超时，熔断后续调用（模型 {model}）"
+            self.warnings.append(self.tripped)
 
     def add(self, *, model: str, usage: dict[str, Any], pricing: dict[str, float] | None) -> None:
         self.model = model or self.model
@@ -107,10 +143,13 @@ class RunCostTracker:
             cost = pt * pricing.get("prompt", 0.0) + ct * pricing.get("completion", 0.0)
             self.estimated_cost_usd += cost
             if self.estimated_cost_usd > self.max_cost_usd:
-                raise CostLimitExceeded(
+                self._trip(
                     f"本轮估算花费 ${self.estimated_cost_usd:.4f} 超过上限 "
                     f"${self.max_cost_usd:.2f}（模型 {model}）"
                 )
+        total = self.prompt_tokens + self.completion_tokens
+        if self.max_tokens and total > self.max_tokens:
+            self._trip(f"本轮累计 {total} token 超过上限 {self.max_tokens}（模型 {model}）")
 
     def summary(self) -> dict[str, Any]:
         return {
@@ -119,6 +158,7 @@ class RunCostTracker:
             "prompt_tokens": self.prompt_tokens,
             "completion_tokens": self.completion_tokens,
             "estimated_cost_usd": round(self.estimated_cost_usd, 6),
+            "timeouts": self.timeouts,
             "warnings": list(self.warnings),
         }
 
@@ -127,18 +167,25 @@ _RUN_TRACKER: RunCostTracker | None = None
 _MODEL_PRICING_CACHE: dict[str, dict[str, Any]] = {}
 
 
+def _new_tracker() -> RunCostTracker:
+    settings = load_settings().get("llm") or {}
+    return RunCostTracker(
+        float(settings.get("max_cost_per_run_usd", 2)),
+        max_tokens=int(settings.get("max_tokens_per_run", 0) or 0),
+        max_timeouts=int(settings.get("max_timeouts_per_run", 0) or 0),
+    )
+
+
 def get_run_tracker() -> RunCostTracker:
     global _RUN_TRACKER
     if _RUN_TRACKER is None:
-        settings = load_settings().get("llm") or {}
-        _RUN_TRACKER = RunCostTracker(float(settings.get("max_cost_per_run_usd", 2)))
+        _RUN_TRACKER = _new_tracker()
     return _RUN_TRACKER
 
 
 def reset_run_tracker() -> RunCostTracker:
     global _RUN_TRACKER
-    settings = load_settings().get("llm") or {}
-    _RUN_TRACKER = RunCostTracker(float(settings.get("max_cost_per_run_usd", 2)))
+    _RUN_TRACKER = _new_tracker()
     return _RUN_TRACKER
 
 
@@ -157,6 +204,7 @@ def write_github_step_summary(extra_warnings: list[str] | None = None) -> None:
         f"- 输入 token: {s['prompt_tokens']}",
         f"- 输出 token: {s['completion_tokens']}",
         f"- 估算花费: ${s['estimated_cost_usd']:.4f}",
+        f"- 超时次数: {s['timeouts']}",
         "",
         "### Warnings",
     ]
@@ -220,6 +268,8 @@ class LLMClient:
         self.max_retries = int(settings.get("max_retries", 1))
         self.max_tokens = int(settings.get("max_tokens", 4096))
         self.request_timeout_sec = float(settings.get("request_timeout_sec", 90))
+        # 推理模型的思考 token 计入 max_tokens 且计费；抽取 / 摘要类任务不需要长推理
+        self.reasoning_effort = settings.get("reasoning_effort")
         self.max_cost = float(settings.get("max_cost_per_run_usd", 2))
         self.use_cache = use_cache
         self.api_key = openrouter_api_key()
@@ -301,6 +351,7 @@ class LLMClient:
     def _post_chat(self, messages: list[dict[str, str]], *, json_object: bool = True) -> tuple[str, dict[str, Any], float]:
         if not self.api_key:
             raise LLMError("缺少 OPENROUTER_API_KEY，无法调用 LLM")
+        get_run_tracker().check()
         body: dict[str, Any] = {
             "model": self.model,
             "temperature": self.temperature,
@@ -309,6 +360,8 @@ class LLMClient:
         }
         if json_object:
             body["response_format"] = {"type": "json_object"}
+        if self.reasoning_effort:
+            body["reasoning"] = {"effort": str(self.reasoning_effort), "exclude": True}
         # httpx 的 read timeout 会在每个 chunk 间重置；流式长输出可拖到数十分钟。
         # 用线程池施加墙钟上限，超时即放弃本次调用。
         deadline = max(1.0, float(self.request_timeout_sec))
@@ -330,7 +383,9 @@ class LLMClient:
                 try:
                     resp = fut.result(timeout=deadline)
                 except FuturesTimeout:
-                    # 不 wait 卡住的请求线程，避免超时后仍阻塞到 httpx 读完
+                    # 不 wait 卡住的请求线程，避免超时后仍阻塞到 httpx 读完。
+                    # 服务端仍会把这次生成算钱，所以计入熔断计数。
+                    get_run_tracker().add_timeout(self.model)
                     raise LLMTimeoutError(
                         f"LLM 请求超过墙钟上限 {deadline:.0f}s（model={self.model}）"
                     ) from None
@@ -346,8 +401,16 @@ class LLMClient:
                 f"LLM HTTP {resp.status_code}: {redact_secrets(resp.text[:500], self.api_key)}"
             )
         payload = resp.json()
-        content = payload["choices"][0]["message"]["content"]
+        choice = (payload.get("choices") or [{}])[0]
+        content = (choice.get("message") or {}).get("content") or ""
         usage = payload.get("usage") or {}
+        if choice.get("finish_reason") == "length" and not _has_complete_json(content):
+            # 已付费：先记账，再让调用方决定拆小重试还是放弃
+            self._log_usage("truncated", usage, latency, False)
+            raise LLMTruncatedError(
+                f"LLM 输出被 max_tokens={self.max_tokens} 截断"
+                f"（completion_tokens={usage.get('completion_tokens')}，content {len(content)} 字符）"
+            )
         return content, usage, latency
 
     def complete_json(
@@ -369,7 +432,8 @@ class LLMClient:
 
         last_err: Exception | None = None
         content = ""
-        for attempt in range(self.max_retries + 2):
+        # 总尝试次数 = 1 + max_retries；每次重试都会重发整段原文，务必保持很小
+        for attempt in range(self.max_retries + 1):
             messages = [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user_content},
@@ -378,23 +442,19 @@ class LLMClient:
                 messages.append(
                     {
                         "role": "user",
-                        "content": f"上次输出未通过校验：{redact_secrets(str(last_err), self.api_key)}。请只输出修正后的 JSON。",
+                        "content": f"上次输出未通过校验：{redact_secrets(str(last_err)[:500], self.api_key)}。请只输出修正后的 JSON。",
                     }
                 )
-            try:
-                content, usage, latency = self._post_chat(messages, json_object=True)
-            except LLMError:
-                raise
+            content, usage, latency = self._post_chat(messages, json_object=True)
             self._log_usage(prompt_name, usage, latency, False)
             try:
-                data = json.loads(content)
+                # 容忍 markdown 围栏 / 前后多余文字，避免为格式问题付费重试
+                data = _loads_json_payload(content)
                 model = schema.model_validate(data)
                 self._write_cache(key, {"data": data, "usage": usage})
                 return model
             except (json.JSONDecodeError, ValidationError) as e:
                 last_err = e
-                if attempt >= self.max_retries:
-                    break
         raise LLMError(
             f"LLM JSON 校验失败: {redact_secrets(str(last_err), self.api_key)}; "
             f"raw={redact_secrets(content[:500], self.api_key)}"
@@ -418,7 +478,7 @@ class LLMClient:
 
         last_err: Exception | None = None
         content = ""
-        for attempt in range(self.max_retries + 2):
+        for attempt in range(self.max_retries + 1):
             messages = [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user_content},
@@ -428,20 +488,13 @@ class LLMClient:
                     {
                         "role": "user",
                         "content": (
-                            f"上次输出无法解析：{redact_secrets(str(last_err), self.api_key)}。"
+                            f"上次输出无法解析：{redact_secrets(str(last_err)[:500], self.api_key)}。"
                             "请只输出 JSON 数组，不要其它文字。"
                         ),
                     }
                 )
-            try:
-                # 优先 json_object，兼容模型返回 {"items":[...]}；失败再试纯数组模式
-                use_obj = attempt == 0 or attempt % 2 == 0
-                content, usage, latency = self._post_chat(
-                    messages,
-                    json_object=use_obj,
-                )
-            except LLMError:
-                raise
+            # 优先 json_object，兼容模型返回 {"items":[...]}；重试时改用纯文本模式
+            content, usage, latency = self._post_chat(messages, json_object=attempt == 0)
             self._log_usage(prompt_name, usage, latency, False)
             try:
                 data = _loads_json_payload(content)
@@ -454,8 +507,6 @@ class LLMClient:
                 return models
             except (json.JSONDecodeError, ValidationError, LLMError) as e:
                 last_err = e
-                if attempt >= self.max_retries + 1:
-                    break
         raise LLMError(
             f"LLM JSON 数组校验失败: {redact_secrets(str(last_err), self.api_key)}; "
             f"raw={redact_secrets(content[:500], self.api_key)}"
