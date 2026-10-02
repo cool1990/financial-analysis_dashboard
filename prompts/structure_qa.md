@@ -10,5 +10,6 @@
 - tone：positive / neutral / cautious（管理层回答的语气）
 - answer_quote：最能代表管理层态度的一句原话，不超过 30 个英文单词
 规则：只根据输入文本，不要补充外部知识。必须输出非空 JSON 数组；若某轮信息不足，仍返回该 exchange_id 的对象，question_summary/answer_summary 用中文说明「文本不足」。
+输出务必紧凑：整段 JSON 尽量短，不要复述原文，不要加额外字段。
 话题清单：{topics}
 新闻稿已披露的数字：{press_release_numbers}
