@@ -6,7 +6,7 @@ from typing import Any
 
 from pipeline.compute.topics import compute_topic_stats
 from pipeline.config import load_topics
-from pipeline.llm import LLMClient, LLMError
+from pipeline.llm import CostLimitExceeded, LLMClient, LLMTruncatedError
 from pipeline.schemas import QAItem
 from pipeline.sources.transcripts import split_prepared_and_qa
 
@@ -52,8 +52,10 @@ def _fallback_item(ex: dict[str, Any], reason: str) -> dict[str, Any]:
         "analyst": ex.get("analyst"),
         "firm": ex.get("firm"),
         "topic": "其他",
-        "question_summary": f"本轮问答未能自动结构化（{reason}）。",
-        "answer_summary": excerpt or "原文片段不足，请重跑 Stage2 或查看文字稿。",
+        "question_summary": "",
+        "answer_summary": "",
+        "raw_excerpt": excerpt,
+        "failure_reason": reason,
         "new_numbers": [],
         # 结构化失败不代表回避：不能填 partial，否则会被计入「部分回答 / 回避」
         "directness": None,
@@ -64,18 +66,82 @@ def _fallback_item(ex: dict[str, Any], reason: str) -> dict[str, Any]:
     }
 
 
-def _structure_batch(llm: LLMClient, prompt_tmpl: str, batch: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _failure_reason(e: Exception) -> str:
+    msg = str(e)
+    if isinstance(e, LLMTruncatedError):
+        return "模型输出被截断"
+    if isinstance(e, CostLimitExceeded):
+        return "本轮 LLM 额度已用完"
+    if "HTTP" in msg or "超时" in msg or "timeout" in msg.lower():
+        return "模型调用失败"
+    if "Expecting value" in msg:
+        return "模型返回空内容"
+    return "解析失败"
+
+
+def _structure_batch(
+    llm: LLMClient,
+    prompt_tmpl: str,
+    batch: list[dict[str, Any]],
+    *,
+    split: bool = True,
+) -> list[dict[str, Any]]:
     user = prompt_tmpl + "\n\n" + json.dumps(batch, ensure_ascii=False)
     try:
         models = llm.complete_json_list("structure_qa.md", user, QAItem)
         return [m.model_dump() for m in models]
     except Exception as e:
-        # 不再逐条重试：单次调用可达数分钟，逐条会把 Stage2 拖到十几分钟并重复烧额度。
-        # 批次失败则整批用占位，由人工或 --force 重跑补齐。
-        reason = "模型返回空或非 JSON" if "Expecting value" in str(e) else "解析失败"
-        if isinstance(e, LLMError):
-            reason = "模型调用失败" if ("HTTP" in str(e) or "超时" in str(e) or "timeout" in str(e).lower()) else reason
-        return [_fallback_item(ex, reason) for ex in batch]
+        # 失败多因一批输出太长被截断 / 返回空：拆成两半各试一次（只拆一层，调用次数有上限）。
+        # 熔断或额度用完时不再尝试。
+        if split and len(batch) > 1 and not isinstance(e, CostLimitExceeded):
+            mid = (len(batch) + 1) // 2
+            print(f"[stage2/qa] 批次失败（{_failure_reason(e)}），拆成 {mid}+{len(batch) - mid} 重试", flush=True)
+            return _structure_batch(llm, prompt_tmpl, batch[:mid], split=False) + _structure_batch(
+                llm, prompt_tmpl, batch[mid:], split=False
+            )
+        return [_fallback_item(ex, _failure_reason(e)) for ex in batch]
+
+
+def _prompt(llm: LLMClient, press_release_numbers: dict[str, Any] | None) -> str:
+    topics = load_topics()
+    topic_list = topics.get("approved", []) + topics.get("pending_review", [])
+    return llm.load_prompt(
+        "structure_qa.md",
+        topics=json.dumps(topic_list, ensure_ascii=False),
+        press_release_numbers=json.dumps(press_release_numbers or {}, ensure_ascii=False),
+    )
+
+
+def repair_failed_items(
+    transcript: str,
+    items: list[dict[str, Any]],
+    press_release_numbers: dict[str, Any] | None = None,
+) -> tuple[list[dict[str, Any]], int]:
+    """只重跑结构化失败的那几轮问答，其余结果原样保留。返回 (新列表, 修复轮数)。"""
+    failed_ids = {str(i.get("exchange_id")) for i in items if i.get("parse_failed")}
+    if not failed_ids:
+        return items, 0
+    _, qa = split_prepared_and_qa(transcript)
+    exchanges = [ex for ex in (_split_exchanges(qa) if qa else []) if ex["exchange_id"] in failed_ids]
+    if not exchanges:
+        return items, 0
+    llm = LLMClient()
+    fresh = _structure_batch(llm, _prompt(llm, press_release_numbers), exchanges)
+    by_id: dict[str, list[dict[str, Any]]] = {}
+    for f in fresh:
+        by_id.setdefault(str(f.get("exchange_id")), []).append(f)
+    out: list[dict[str, Any]] = []
+    repaired = 0
+    for item in items:
+        eid = str(item.get("exchange_id"))
+        if item.get("parse_failed") and eid in by_id:
+            new_items = by_id.pop(eid)
+            if not any(n.get("parse_failed") for n in new_items):
+                repaired += 1
+            out.extend(new_items)
+        else:
+            out.append(item)
+    return out, repaired
 
 
 def structure_qa(
@@ -84,14 +150,8 @@ def structure_qa(
 ) -> dict[str, Any]:
     prepared, qa = split_prepared_and_qa(transcript)
     exchanges = _split_exchanges(qa) if qa else []
-    topics = load_topics()
-    topic_list = topics.get("approved", []) + topics.get("pending_review", [])
     llm = LLMClient()
-    prompt_tmpl = llm.load_prompt(
-        "structure_qa.md",
-        topics=json.dumps(topic_list, ensure_ascii=False),
-        press_release_numbers=json.dumps(press_release_numbers or {}, ensure_ascii=False),
-    )
+    prompt_tmpl = _prompt(llm, press_release_numbers)
     items: list[dict[str, Any]] = []
     # 更大批次 → 更少次 OpenRouter 往返（原先 batch=2 + 失败逐条重试会放大耗时）
     batch_size = 5

@@ -70,15 +70,83 @@ def test_qa_batch_failure_does_not_per_item_retry(monkeypatch):
             calls["n"] += 1
             raise LLMError("Expecting value")
 
-    batch = [
-        {"exchange_id": "1", "analyst": "A", "firm": "F", "text": "Q1"},
-        {"exchange_id": "2", "analyst": "B", "firm": "G", "text": "Q2"},
-        {"exchange_id": "3", "analyst": "C", "firm": "H", "text": "Q3"},
-    ]
+    batch = [{"exchange_id": str(i), "analyst": "A", "firm": "F", "text": f"Q{i}"} for i in range(1, 6)]
     out = _structure_batch(Boom(), "prompt", batch)  # type: ignore[arg-type]
-    assert calls["n"] == 1  # 整批一次，不再逐条
-    assert len(out) == 3
+    # 整批 1 次 + 拆半各 1 次，上限 3 次，不随批次大小逐条增长
+    assert calls["n"] == 3
+    assert len(out) == 5
     assert all(x.get("parse_failed") for x in out)
+    assert all(x["directness"] is None for x in out)
+
+
+def test_qa_batch_split_recovers_half(monkeypatch):
+    class Half(LLMClient):
+        def __init__(self):  # noqa: D107
+            pass
+
+        def complete_json_list(self, prompt_name, user, item_schema):  # noqa: ANN001
+            import json as _j
+            from pipeline.schemas import QAItem
+
+            batch = _j.loads(user.split("\n\n", 1)[1])
+            if len(batch) > 2:
+                raise LLMError("Expecting value")
+            return [QAItem(exchange_id=b["exchange_id"], question_summary="q") for b in batch]
+
+    batch = [{"exchange_id": str(i), "text": "x"} for i in range(1, 5)]
+    out = _structure_batch(Half(), "prompt", batch)  # type: ignore[arg-type]
+    assert [o["exchange_id"] for o in out] == ["1", "2", "3", "4"]
+    assert not any(o.get("parse_failed") for o in out)
+
+
+def test_truncated_output_not_retried(monkeypatch):
+    from pipeline.llm import LLMTruncatedError
+    from pipeline.schemas import SummaryResult
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-key-for-unit")
+    calls = {"n": 0}
+
+    def fake_post(self, url, headers=None, json=None):  # noqa: A002
+        calls["n"] += 1
+        assert json["reasoning"]["effort"] == "low"
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": None}, "finish_reason": "length"}],
+                  "usage": {"prompt_tokens": 10, "completion_tokens": 4096}},
+            request=httpx.Request("POST", url),
+        )
+
+    monkeypatch.setattr(httpx.Client, "post", fake_post)
+    client = LLMClient(require_key=True, use_cache=False)
+    client.reasoning_effort = "low"
+    with pytest.raises(LLMTruncatedError):
+        client.complete_json("summarize.md", "x", SummaryResult)
+    assert calls["n"] == 1
+
+
+def test_repair_only_failed_qa(monkeypatch):
+    import pipeline.analyze.qa as qa_mod
+
+    transcript = (
+        "Prepared remarks here.\n\nQuestion-and-Answer Session\n\n"
+        "Operator: Our first question comes from Ann Lee with Citi.\nAnn Lee: q1\nCEO: a1\n"
+        "Operator: Next is Bob Ray with UBS.\nBob Ray: q2\nCEO: a2\n"
+    )
+    seen = {}
+
+    def fake_batch(llm, prompt, batch, split=True):  # noqa: ANN001
+        seen["ids"] = [b["exchange_id"] for b in batch]
+        return [{"exchange_id": b["exchange_id"], "question_summary": "fixed"} for b in batch]
+
+    monkeypatch.setattr(qa_mod, "_structure_batch", fake_batch)
+    monkeypatch.setattr(qa_mod, "LLMClient", lambda: None)
+    monkeypatch.setattr(qa_mod, "_prompt", lambda llm, nums: "p")
+    _, qa_text = qa_mod.split_prepared_and_qa(transcript)
+    ids = [e["exchange_id"] for e in qa_mod._split_exchanges(qa_text)]
+    items = [{"exchange_id": ids[0], "question_summary": "ok"}, {"exchange_id": ids[-1], "parse_failed": True}]
+    out, repaired = qa_mod.repair_failed_items(transcript, items)
+    assert seen["ids"] == [ids[-1]]
+    assert repaired == 1 and out[0]["question_summary"] == "ok" and out[1]["question_summary"] == "fixed"
 
 
 def test_stage2_skips_when_already_complete(tmp_path, monkeypatch):

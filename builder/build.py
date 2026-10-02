@@ -391,6 +391,53 @@ def _price_view(doc: dict[str, Any]) -> dict[str, Any]:
     return {"text": f"{pct*100:+.2f}%", "cls": "up" if pct > 0 else "down" if pct < 0 else "flat", "detail": detail}
 
 
+# 指引按指标族合并：GAAP / Non-GAAP 两条并成一格
+GUIDE_FAMILIES = [
+    ("revenue", "营收", ("revenue",)),
+    ("gross_margin", "毛利率", ("gross_margin_nongaap", "gross_margin_gaap", "gross_margin")),
+    ("operating_margin", "营业利润率", ("operating_margin_nongaap", "operating_margin_gaap", "operating_margin")),
+    ("opex", "运营费用", ("opex_nongaap", "opex_gaap")),
+    ("eps", "每股收益", ("eps_nongaap", "eps_gaap", "eps")),
+    ("share_count", "稀释股本", ("share_count",)),
+    ("tax_rate", "税率", ("tax_rate",)),
+]
+_FAMILY_OF = {k: fam for fam, _label, keys in GUIDE_FAMILIES for k in keys}
+
+# 展望分类：先看 metric_key，再看英文标签，最后看中文表述（标签更准，表述里常夹带别的主题词）
+OUTLOOK_CATEGORIES = [
+    ("pricing", "定价", r"\bpric|\basp\b|定价|价格|涨价|降价"),
+    ("margin", "利润率", r"\bmargin|profitab|利润率|毛利|盈利能力"),
+    ("demand", "需求与订单", r"\bdemand|shipment|commit|agreement|customer|backlog|order|需求|出货|订单|协议|锁定|客户"),
+    ("supply", "供需与产能", r"\bsupply|capacity|clean ?room|\bfab|wafer|\bbits?\b|condition|供应|供给|供需|产能|洁净室|位元|晶圆|紧张"),
+    ("invest", "投入：资本开支与研发", r"capex|capital|r&d|expenditure|invest|spend|资本开支|研发|投资|支出"),
+    ("tech", "技术与产品", r"\bnode|ramp|technolog|roadmap|产品|技术|节点|爬坡|量产"),
+    ("results", "整体业绩", r"result|revenue|earnings|业绩|收入|营收|财务表现"),
+]
+_KEY_CATEGORY = {
+    "capex": "invest", "opex_gaap": "invest", "opex_nongaap": "invest",
+    "gross_margin_gaap": "margin", "gross_margin_nongaap": "margin", "gross_margin": "margin",
+    "operating_margin_gaap": "margin", "operating_margin_nongaap": "margin", "operating_margin": "margin",
+    "revenue": "results", "eps_gaap": "results", "eps_nongaap": "results",
+}
+
+
+def _outlook_category(g: dict[str, Any]) -> str:
+    key = g.get("metric_key") or ""
+    if key in _KEY_CATEGORY:
+        return _KEY_CATEGORY[key]
+    for text in (g.get("metric_label") or "", f"{g.get('statement') or ''} {g.get('source_quote') or ''}"):
+        for cat, _label, pattern in OUTLOOK_CATEGORIES:
+            if re.search(pattern, text, re.I):
+                return cat
+    return "other"
+
+
+def _short_statement(text: str) -> str:
+    """去掉「管理层表示」这类开头，保留「预计 / 警告」等动词。"""
+    t = (text or "").strip()
+    return re.sub(r"^(管理层|公司|首席财务官|首席执行官|CFO|CEO)(表示|称|指出)?[，,：:]?\s*", "", t) or t
+
+
 def _guidance_value(g: dict[str, Any]) -> tuple[str, str]:
     """(区间, 中值)。other 类没有统一单位，直接用原文，避免把「75%」显示成 $75.00。"""
     key = g.get("metric_key") or ""
@@ -405,32 +452,83 @@ def _guidance_value(g: dict[str, Any]) -> tuple[str, str]:
     return ("", _fmt_guide(mid if mid is not None else low, key))
 
 
-def _guidance_rows(items: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    quant, qual = [], []
+def _guidance_view(doc: dict[str, Any]) -> dict[str, Any]:
+    """下季数字 → 指标格子；其余前瞻表述（含非标准数字）→ 按主题分类的展望。"""
+    from pipeline.extract.guidance import normalize_period
+
+    items = (doc.get("guidance") or {}).get("items") or []
+    basis = (doc.get("meta") or {}).get("eps_basis") or "non_gaap"
+    std = [g for g in items if _is_quant_guidance(g) and (g.get("metric_key") or "") in _FAMILY_OF]
+    quarters = [normalize_period(g.get("period")) for g in std]
+    quarters = [q for q in quarters if re.fullmatch(r"FY\d{4}Q[1-4]", q)]
+    next_q = max(set(quarters), key=quarters.count) if quarters else None
+
+    sc = {c.get("metric"): c for c in doc.get("scorecard") or []}
+    vs_map = {"revenue": sc.get("next_q_revenue_guidance"), "eps": sc.get("next_q_eps_guidance")}
+
+    used: set[int] = set()
+    tiles = []
+    for fam, label, keys in GUIDE_FAMILIES:
+        rows = [g for g in std if (g.get("metric_key") in keys) and normalize_period(g.get("period")) == next_q]
+        if not rows:
+            continue
+        by_key = {g["metric_key"]: g for g in rows}
+        # 主值取公司的业绩口径（MU 是 Non-GAAP），另一口径放在副行
+        preferred = "_gaap" if basis == "gaap" else "_nongaap"
+        order = sorted(by_key, key=lambda k: 0 if k.endswith(preferred) else 1)
+        primary = by_key[order[0]]
+        rng, mid = _guidance_value(primary)
+        other = [by_key[k] for k in order[1:]]
+        sub = []
+        if rng:
+            sub.append(rng)
+        for o in other:
+            tag = "GAAP" if o["metric_key"].endswith("_gaap") else "Non-GAAP"
+            sub.append(f"{tag} {_guidance_value(o)[1] or _guidance_value(o)[0]}")
+        tag = ""
+        if primary["metric_key"].endswith("_nongaap"):
+            tag = "Non-GAAP"
+        elif primary["metric_key"].endswith("_gaap") and other:
+            tag = "GAAP"
+        vs = vs_map.get(fam)
+        bench = (vs or {}).get("benchmark") or {}
+        tiles.append(
+            {
+                "label": label,
+                "basis": tag,
+                "value": mid or rng,
+                "sub": " · ".join(sub) if rng or other else "",
+                "vs": _change(bench.get("diff_pct")) if bench.get("value") is not None else None,
+                "vs_label": f"一致预期 {_fmt_guide(bench.get('value'), primary['metric_key'])}" if bench.get("value") is not None else "",
+                "confirmed": any(g.get("confirmed_by") for g in rows),
+                "variant": any(g.get("call_variant") for g in rows),
+            }
+        )
+        used.update(id(g) for g in rows)
+
+    cats: dict[str, list[dict[str, Any]]] = {}
     for g in items:
-        key = g.get("metric_key") or ""
-        label = _metric_label(key) if key in METRIC_LABELS else (g.get("metric_label") or "其他")
-        base = {
-            "label": label,
-            "period": _period_zh(g.get("period")),
-            "source": _source_label(g.get("source")),
-            "confirmed": _source_label(g.get("confirmed_by")) if g.get("confirmed_by") else "",
-            "statement": g.get("statement") or g.get("source_quote") or "",
-            "quote": g.get("source_quote") if g.get("source_quote") and g.get("source_quote") != g.get("statement") else "",
-        }
-        if _is_quant_guidance(g):
-            rng, mid = _guidance_value(g)
-            base.update({"range": rng, "mid": mid, "basis": _source_label(g.get("basis"))})
-            if g.get("call_variant"):
-                cv = g["call_variant"]
-                base["variant"] = f"电话会口径：{_guidance_value(cv)[1] or _guidance_value(cv)[0]}"
-            quant.append(base)
-        else:
-            base.update({"direction": g.get("direction") or "", "direction_label": _direction_label(g.get("direction"))})
-            # 中文标题：metric_label 多为英文原文，优先用中文指标名
-            base["title"] = label if key in METRIC_LABELS else (g.get("metric_label") or "其他")
-            qual.append(base)
-    return quant, qual
+        if id(g) in used:
+            continue
+        # 表述里已含数字；不单独列数（非标准指标的数没有统一单位，单列容易误读）
+        cats.setdefault(_outlook_category(g), []).append(
+            {
+                "text": _short_statement(g.get("statement") or g.get("source_quote") or ""),
+                "direction": g.get("direction") or "",
+                "direction_label": _direction_label(g.get("direction")),
+                "period": _period_zh(g.get("period")),
+                "source": _source_label(g.get("source")),
+            }
+        )
+    labels = {c: l for c, l, _ in OUTLOOK_CATEGORIES} | {"other": "其他"}
+    order = [c for c, _l, _p in OUTLOOK_CATEGORIES] + ["other"]
+    outlook = [{"key": c, "label": labels[c], "items": cats[c]} for c in order if c in cats]
+    return {
+        "next_q": _period_zh(next_q.replace("FY", "").replace("Q", "财年Q")) if next_q else "",
+        "tiles": tiles,
+        "outlook": outlook,
+        "outlook_count": sum(len(c["items"]) for c in outlook),
+    }
 
 
 def _revision_rows(doc: dict[str, Any]) -> dict[str, Any]:
@@ -667,7 +765,6 @@ def build_site(ticker: str | None = None) -> list[Path]:
         for period in periods:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
-            quant, qual = _guidance_rows((doc.get("guidance") or {}).get("items") or [])
             html = env.get_template("period.html").render(
                 root="../../",
                 nav=nav,
@@ -686,8 +783,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 key_numbers=_key_numbers(doc),
                 price=_price_view(doc),
                 fin_rows=_fin_rows(doc),
-                quant_guidance=quant,
-                qual_guidance=qual,
+                guidance=_guidance_view(doc),
                 revisions=_revision_rows(doc),
                 qa=_qa_view(doc, bool((prior.get("qa") or {}).get("items"))),
                 watchlist=_watchlist(doc),

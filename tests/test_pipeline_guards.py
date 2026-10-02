@@ -179,3 +179,21 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "财务解读" in html and "revChart" in html and "{{" not in html
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
+
+
+def test_guidance_view_tiles_and_outlook_categories():
+    from builder.build import _guidance_view, _outlook_category
+
+    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    v = _guidance_view(doc)
+    labels = [t["label"] for t in v["tiles"]]
+    assert labels[:2] == ["营收", "毛利率"] and "每股收益" in labels
+    eps = next(t for t in v["tiles"] if t["label"] == "每股收益")
+    assert eps["value"] == "$38.15" and "GAAP $37.84" in eps["sub"] and eps["vs"]["text"] == "+11.1%"
+    # 每条指引只出现一次：要么在格子里，要么在展望里
+    n_items = len(doc["guidance"]["items"])
+    assert v["outlook_count"] < n_items
+    assert _outlook_category({"metric_key": "other", "metric_label": "HBM Pricing", "statement": "盈利差距"}) == "pricing"
+    assert _outlook_category({"metric_key": "other", "metric_label": "1-delta DRAM ramp", "statement": "产能爬坡"}) == "tech"
+    assert _outlook_category({"metric_key": "capex", "statement": "洁净室建设"}) == "invest"
+    assert _outlook_category({"metric_key": "other", "metric_label": "Market conditions", "statement": "市场状况将保持紧张"}) == "supply"

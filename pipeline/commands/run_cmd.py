@@ -442,13 +442,15 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
     qa_items = ((doc.get("qa") or {}).get("items")) or []
     driver_metrics = ((doc.get("drivers") or {}).get("metrics")) or []
     # 已完成且产物齐全时默认跳过，避免 oneshot/误触重跑长时间烧 OpenRouter
-    if (
-        not force
-        and stage_now in {"stage2_done", "stage3_done"}
+    complete = (
+        stage_now in {"stage2_done", "stage3_done"}
         and qa_items
         and driver_metrics
         and (doc.get("summary") or {}).get("headline")
-    ):
+    )
+    if not force and complete and any(q.get("parse_failed") for q in qa_items):
+        return _repair_failed_qa(ticker, fiscal_period, cfg, doc)
+    if not force and complete:
         print(
             f"[stage2] 跳过：{ticker} {fiscal_period} 已是 {stage_now} "
             f"(qa={len(qa_items)}, drivers={len(driver_metrics)})。需要重跑请加 --force",
@@ -552,6 +554,36 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
     save_period_json(ticker, fiscal_period, doc)
     mark_stage(ticker, fiscal_period, "stage2_done")
     maybe_notify(f"{ticker} {fiscal_period} Stage2 完成")
+    return doc
+
+
+def _repair_failed_qa(ticker: str, fiscal_period: str, cfg: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]:
+    """Stage2 已完成但有问答轮次结构化失败：只重跑这几轮（通常 1 次调用），其余不动。"""
+    from pipeline.analyze.qa import repair_failed_items
+    from pipeline.compute.topics import compute_topic_stats
+
+    raw_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / fiscal_period
+    text, _source = fetch_transcript(
+        cfg, raw_dir, fiscal_period=fiscal_period, release_at=(doc.get("meta") or {}).get("release_at_utc")
+    )
+    if not text:
+        raise RuntimeError("文字稿未取得，无法修复失败的问答")
+    items = doc["qa"]["items"]
+    n_failed = sum(1 for q in items if q.get("parse_failed"))
+    print(f"[stage2] 仅修复 {n_failed} 轮失败的问答（其余结果保留；全量重跑请加 --force）", flush=True)
+    press_nums = {
+        "revenue": (doc.get("financials") or {}).get("revenue", {}).get("value"),
+        "eps": next((c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "eps"), None),
+    }
+    new_items, repaired = repair_failed_items(text, items, press_nums)
+    prior = load_period_json(ticker, prior_fiscal_period(fiscal_period))
+    stats = compute_topic_stats(new_items, (prior or {}).get("qa", {}).get("items"))
+    doc["qa"] = {
+        "items": new_items,
+        **{k: stats[k] for k in ["topic_stats", "new_topics", "dropped_topics", "hot_topics", "evasive_list"]},
+    }
+    save_period_json(ticker, fiscal_period, doc)
+    print(f"[stage2] 已修复 {repaired}/{n_failed} 轮", flush=True)
     return doc
 
 

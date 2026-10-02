@@ -157,62 +157,62 @@
 <!-- 业绩指引 -->
 <section class="dim" id="guide">
   <h2>业绩指引</h2>
-  <p class="layer-sub">定量指引是管理层给出的数字或区间；定性展望只有方向或文字，用来理解语气与中长期叙事，不当作精确指引。</p>
+  <p class="layer-sub">上面是管理层对下一季给出的具体数字；下面是新闻稿、管理层发言和问答里对未来的表述，按主题归类，用来理解语气与中长期叙事，不当作精确指引。</p>
 
-  {% if quant_guidance %}
-  <div class="group-title">定量指引</div>
-  <div class="card" style="padding:4px 16px 8px">
-    <div class="table-wrap">
-    <table class="data">
-      <thead><tr><th>指标</th><th>期间</th><th>区间</th><th>中值</th><th>口径</th><th>来源</th></tr></thead>
-      <tbody>
-      {% for g in quant_guidance %}
-        <tr>
-          <td class="wrap">{{ g.label }}<span class="sub-line" title="{{ g.statement }}">{{ g.statement }}</span></td>
-          <td>{{ g.period }}</td>
-          <td>{{ g.range or '—' }}</td>
-          <td><b>{{ g.mid or '—' }}</b>{% if g.variant %}<span class="sub-line">{{ g.variant }}</span>{% endif %}</td>
-          <td>{{ g.basis }}</td>
-          <td>{{ g.source }}{% if g.confirmed %}<span class="basis">· {{ g.confirmed }}确认</span>{% endif %}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+  {% if guidance.tiles %}
+  <div class="group-title">下季指引 <span class="muted small">{{ guidance.next_q }}</span></div>
+  <div class="gtiles">
+    {% for t in guidance.tiles %}
+    <div class="card gtile">
+      <div class="g-k">{{ t.label }}{% if t.basis %}<span class="basis">{{ t.basis }}</span>{% endif %}</div>
+      <div class="g-v">{{ t.value }}</div>
+      {% if t.sub %}<div class="g-s">{{ t.sub }}</div>{% endif %}
+      {% if t.vs %}<div class="g-s">{{ t.vs_label }} · <b class="c-{{ t.vs.cls }}">{{ t.vs.text }}</b></div>{% endif %}
+      {% if t.variant %}<div class="g-s"><span class="pill warn">电话会口径不同</span></div>{% endif %}
     </div>
+    {% endfor %}
   </div>
   {% endif %}
 
-  {% if qual_guidance %}
-  <div class="group-title">定性展望 <span class="muted small">{{ qual_guidance|length }} 条</span></div>
-  <div class="card">
-    <ul class="qual">
-      {% for g in qual_guidance[:6] %}{% include "_qual_item.html" %}{% endfor %}
-    </ul>
-    {% if qual_guidance|length > 6 %}
-    <details class="more">
-      <summary>展开其余 {{ qual_guidance|length - 6 }} 条</summary>
-      <ul class="qual">
-        {% for g in qual_guidance[6:] %}{% include "_qual_item.html" %}{% endfor %}
+  {% if guidance.outlook %}
+  <div class="group-title">管理层展望 <span class="muted small">{{ guidance.outlook_count }} 条，按主题归类</span></div>
+  <div class="outlook">
+    {% for c in guidance.outlook %}
+    <div class="card ol-card">
+      <h3>{{ c.label }}<span class="muted small">{{ c['items']|length }}</span></h3>
+      {% macro ol_items(rows) %}
+      <ul>
+        {% for g in rows %}
+        <li>
+          <p>{% if g.direction_label %}<span class="pill dir-{{ g.direction }}">{{ g.direction_label }}</span> {% endif %}{{ g.text }}</p>
+          <span class="ol-meta">{{ g.period }} · {{ g.source }}</span>
+        </li>
+        {% endfor %}
       </ul>
-    </details>
-    {% endif %}
+      {% endmacro %}
+      {{ ol_items(c['items'][:2]) }}
+      {% if c['items']|length > 2 %}
+      <details><summary>再看 {{ c['items']|length - 2 }} 条</summary>{{ ol_items(c['items'][2:]) }}</details>
+      {% endif %}
+    </div>
+    {% endfor %}
   </div>
   {% endif %}
 
-  {% if not quant_guidance and not qual_guidance %}
+  {% if not guidance.tiles and not guidance.outlook %}
   <div class="card placeholder">指引数据生成中或尚未抽取。</div>
   {% endif %}
 
   <div class="group-title">分析师修正</div>
   {% if revisions.has %}
   <div class="card" style="padding:4px 16px 10px">
-    <p class="layer-sub" style="margin-top:8px">财报后一致预期如何移动。T-1 为发布前对「下季」的预期，T+N 为发布后第 N 天的下季预期；没有对应日期快照时显示「待补」，daily 会自动补齐。
+    <p class="layer-sub" style="margin-top:8px">财报后一致预期如何移动：T-1 为发布前对「下季」的预期，T+N 为发布后第 N 天的下季预期。
       {% if revisions.current_q %}财报前对本季的预期：每股收益 {{ revisions.current_q.eps }} · 营收 {{ revisions.current_q.rev }}（{{ revisions.current_q.date }}）。{% endif %}</p>
     <div class="table-wrap">
     <table class="data">
       <thead><tr><th>时点</th><th>日期</th><th>每股收益预期</th><th>较 T-1</th><th>营收预期</th><th>较 T-1</th></tr></thead>
       <tbody>
-      {% for r in revisions.rows %}
+      {% for r in revisions.rows if r.date != '待补' %}
         <tr>
           <td>{{ r.label }}</td><td>{{ r.date }}</td>
           <td>{{ r.eps }}</td><td class="c-{{ r.eps_chg.cls }}">{{ r.eps_chg.text }}</td>
@@ -222,6 +222,8 @@
       </tbody>
     </table>
     </div>
+    {% set pending = revisions.rows|selectattr('date', 'equalto', '待补')|map(attribute='label')|list %}
+    {% if pending %}<p class="small muted" style="margin-top:6px">{{ pending|join('、') }} 待补：发布后满对应天数、daily 拍到快照后自动填入。</p>{% endif %}
   </div>
   {% else %}
   <div class="card placeholder">尚无发布前后的一致预期快照。daily 每天拍摄，财报后会自动补齐 T+1/T+3/T+7。</div>
@@ -250,15 +252,19 @@
     <details class="qa{% if q.failed %} failed{% endif %}" data-evasive="{{ 'true' if q.evasive else 'false' }}">
       <summary>
         <span class="qa-who">{{ q.analyst or '分析师' }}{% if q.firm %}<small>{{ q.firm }}</small>{% endif %}</span>
-        <span class="qa-q">{{ q.question_summary }}</span>
+        <span class="qa-q">{% if q.failed %}这一轮的摘要没有生成（{{ q.failure_reason or '模型返回空内容' }}）；在 Actions → manual 跑一次 Stage2 即可只补这几轮{% else %}{{ q.question_summary }}{% endif %}</span>
         <span class="qa-tags">
-          {% if q.topic %}<span class="pill">{{ q.topic }}</span>{% endif %}
+          {% if q.failed %}<span class="pill warn">摘要缺失</span>{% elif q.topic %}<span class="pill">{{ q.topic }}</span>{% endif %}
           {% if q.directness == 'evasive' %}<span class="pill alert">回避</span>{% elif q.directness == 'partial' %}<span class="pill warn">部分回答</span>{% endif %}
           {% if q.tone and q.tone != 'neutral' %}<span class="pill">{{ q.tone|tone }}</span>{% endif %}
         </span>
       </summary>
       <div class="qa-body">
+        {% if q.failed %}
+        {% if q.raw_excerpt %}<blockquote>{{ q.raw_excerpt }}…</blockquote>{% else %}<p class="small">原文未保存在页面数据中，修复后显示问答摘要。</p>{% endif %}
+        {% else %}
         <p><b>答：</b>{{ q.answer_summary or '—' }}</p>
+        {% endif %}
         {% if q.note %}<p class="small">未回答的部分：{{ q.note }}</p>{% endif %}
         {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}
         {% if q.new_numbers %}

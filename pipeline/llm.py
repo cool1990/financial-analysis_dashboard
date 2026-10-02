@@ -31,6 +31,13 @@ class LLMTimeoutError(LLMError):
     pass
 
 
+class LLMTruncatedError(LLMError):
+    """输出被 max_tokens 截断（常见于推理模型把额度花在思考上，content 为空）。
+
+    同样的请求重发只会得到同样的结果并再付一次钱，调用方应缩小输入或放弃，不要原样重试。
+    """
+
+
 _SENSITIVE_RE = re.compile(
     r"(?i)(Bearer\s+)[A-Za-z0-9._\-]+|(OPENROUTER_API_KEY\s*[=:]\s*)\S+|(sk-[A-Za-z0-9_\-]{8,})"
 )
@@ -82,6 +89,14 @@ def _loads_json_payload(content: str) -> Any:
             except json.JSONDecodeError:
                 continue
         raise
+
+
+def _has_complete_json(content: str) -> bool:
+    try:
+        _loads_json_payload(content)
+        return True
+    except (json.JSONDecodeError, ValueError):
+        return False
 
 
 class RunCostTracker:
@@ -253,6 +268,8 @@ class LLMClient:
         self.max_retries = int(settings.get("max_retries", 1))
         self.max_tokens = int(settings.get("max_tokens", 4096))
         self.request_timeout_sec = float(settings.get("request_timeout_sec", 90))
+        # 推理模型的思考 token 计入 max_tokens 且计费；抽取 / 摘要类任务不需要长推理
+        self.reasoning_effort = settings.get("reasoning_effort")
         self.max_cost = float(settings.get("max_cost_per_run_usd", 2))
         self.use_cache = use_cache
         self.api_key = openrouter_api_key()
@@ -343,6 +360,8 @@ class LLMClient:
         }
         if json_object:
             body["response_format"] = {"type": "json_object"}
+        if self.reasoning_effort:
+            body["reasoning"] = {"effort": str(self.reasoning_effort), "exclude": True}
         # httpx 的 read timeout 会在每个 chunk 间重置；流式长输出可拖到数十分钟。
         # 用线程池施加墙钟上限，超时即放弃本次调用。
         deadline = max(1.0, float(self.request_timeout_sec))
@@ -382,8 +401,16 @@ class LLMClient:
                 f"LLM HTTP {resp.status_code}: {redact_secrets(resp.text[:500], self.api_key)}"
             )
         payload = resp.json()
-        content = payload["choices"][0]["message"]["content"]
+        choice = (payload.get("choices") or [{}])[0]
+        content = (choice.get("message") or {}).get("content") or ""
         usage = payload.get("usage") or {}
+        if choice.get("finish_reason") == "length" and not _has_complete_json(content):
+            # 已付费：先记账，再让调用方决定拆小重试还是放弃
+            self._log_usage("truncated", usage, latency, False)
+            raise LLMTruncatedError(
+                f"LLM 输出被 max_tokens={self.max_tokens} 截断"
+                f"（completion_tokens={usage.get('completion_tokens')}，content {len(content)} 字符）"
+            )
         return content, usage, latency
 
     def complete_json(
