@@ -5,7 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from pipeline.config import data_dir
+from pipeline.schemas import validate_period_doc
 
 
 def state_path(ticker: str, fiscal_period: str) -> Path:
@@ -76,15 +79,25 @@ def load_period_json(ticker: str, fiscal_period: str) -> dict[str, Any] | None:
 
 
 def save_period_json(ticker: str, fiscal_period: str, data: dict[str, Any]) -> Path:
+    """写入前必须通过 PeriodDoc 校验。"""
+    meta = dict(data.get("meta") or {})
+    meta["schema_version"] = 1
+    data = {**data, "meta": meta}
+    try:
+        doc = validate_period_doc(data)
+    except ValidationError as e:
+        raise ValueError(f"PeriodDoc 校验失败 ({ticker} {fiscal_period}): {e}") from e
     path = data_dir(ticker) / f"{fiscal_period}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    payload = doc.model_dump(mode="json")
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return path
 
 
 def empty_period_doc(ticker: str, fiscal_period: str, **meta: Any) -> dict[str, Any]:
     return {
         "meta": {
+            "schema_version": 1,
             "ticker": ticker.upper(),
             "fiscal_period": fiscal_period,
             "calendar_quarter": meta.get("calendar_quarter"),

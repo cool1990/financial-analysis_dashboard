@@ -25,13 +25,13 @@ python -m pipeline snapshot --ticker MU
 # 按阶段跑某季（需 OPENROUTER_API_KEY）
 export OPENROUTER_API_KEY=...
 python -m pipeline run --ticker MU --stage 1
-python -m pipeline run --ticker MU --period FY2025Q4 --stage 2
+python -m pipeline run --ticker MU --period FY2026Q4 --stage 2
 
 # 生成页面
 python -m pipeline build
 ```
 
-仓库已带 MU 示例季度数据，可直接：
+仓库含 MU 页面骨架；联调可用 mock 夹具 `tests/fixtures/mu_fy2025q4_mock.json`（标明为 mock，非正式数据）。
 
 ```bash
 python -m pipeline build
@@ -45,10 +45,10 @@ python -m pipeline build
 | `python -m pipeline init --ticker MU` | CIK + `eps_basis` |
 | `python -m pipeline snapshot` | 全部股票预期快照 |
 | `python -m pipeline poll` | 财报窗口检测 / 文字稿 |
-| `python -m pipeline run --ticker MU --period FY2025Q4 --stage 1` | 重跑阶段 |
+| `python -m pipeline run --ticker MU --period FY2026Q4 --stage 1` | 重跑阶段 |
 | `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补 |
 | `python -m pipeline build` | 生成 `site/` |
-| `python -m pipeline validate --ticker MU --period FY2025Q4` | 查看状态 |
+| `python -m pipeline validate --ticker MU --period FY2026Q4` | 查看状态 |
 
 ## Secrets
 
@@ -58,6 +58,7 @@ python -m pipeline build
 
 ## 说明
 
-- `data/*/raw/` 不入库（新闻稿/文字稿原文），公开页只含摘要与短引文。
+- `data/*/raw/*/transcript*` 不入库（电话会文字稿）；SEC 新闻稿 HTML 与 API 原始响应需提交。
 - 新增股票：复制 `config/tickers/MU.yaml`，改配置后 `init`，无需改代码。
+- 单季 JSON 经 `PeriodDoc`（`schema_version: 1`）校验后写入。
 - 需求细节见项目内开发文档。

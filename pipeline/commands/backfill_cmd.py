@@ -43,8 +43,24 @@ def backfill(ticker: str, from_period: str | None = None, limit: int = 8) -> lis
         )
         rev = by_end.get(end)
         doc["financials"] = {
-            "revenue": {"value": rev.get("val") if rev else None, "yoy": None, "qoq": None, "benchmark": {}, "source_quote": "xbrl"},
-            "eps_gaap": {"value": row.get("val"), "yoy": None, "qoq": None, "benchmark": {}, "source_quote": "xbrl"},
+            "revenue": {
+                "value": rev.get("val") if rev else None,
+                "yoy_pct": None,
+                "qoq_pct": None,
+                "yoy_pp": None,
+                "qoq_pp": None,
+                "benchmark": {"value": None, "source": "none", "diff": None, "diff_pct": None, "diff_pp": None},
+                "source_quote": "xbrl",
+            },
+            "eps_gaap": {
+                "value": row.get("val"),
+                "yoy_pct": None,
+                "qoq_pct": None,
+                "yoy_pp": None,
+                "qoq_pp": None,
+                "benchmark": {"value": None, "source": "none", "diff": None, "diff_pct": None, "diff_pp": None},
+                "source_quote": "xbrl",
+            },
         }
         doc["status"]["stage"] = "backfill_gaap"
         doc["status"]["warnings"].append("历史回补：仅 GAAP XBRL，Non-GAAP/KPI 需新闻稿补全")

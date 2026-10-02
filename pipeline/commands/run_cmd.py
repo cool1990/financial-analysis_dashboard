@@ -28,11 +28,13 @@ from pipeline.state import (
     save_period_json,
 )
 from pipeline.validate import validate_extraction
-from pipeline.compute.guidance_review import parse_guidance_item, change_vs_prior, position_in_range
+from pipeline.extract.guidance import parse_guidance_item
+from pipeline.compute.guidance_review import change_vs_prior, position_in_range
 from pipeline.analyze.drivers import analyze_drivers
 from pipeline.analyze.qa import structure_qa
 from pipeline.analyze.summary import summarize_period
 from pipeline.notify import format_scorecard_text, maybe_notify
+from pipeline.compute.revisions import compute_analyst_revisions
 
 
 ET = ZoneInfo("America/New_York")
@@ -384,41 +386,41 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
 def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
     """股价反应 + 分析师修正骨架 + 延迟校验占位。"""
     from pipeline.sources.yfinance_src import YFinanceSource
-    from pipeline.compute.revisions import compute_analyst_revisions
 
     doc = load_period_json(ticker, fiscal_period)
     if not doc:
         raise RuntimeError("缺少季度数据")
     release = doc["meta"].get("release_at_utc") or ""
     yf = YFinanceSource(ticker)
-    # next day reaction: crude using history around release date
     try:
         day = release[:10]
-        hist = yf.history(start=day, end=day)
-        # leave null if insufficient; detailed calc can refine
+        yf.history(start=day, end=day)
         doc["price_reaction"] = doc.get("price_reaction") or {}
         doc["price_reaction"]["note"] = "详细次日涨跌在 daily 任务中根据盘前/盘后规则补全"
     except Exception as e:
         doc["status"]["warnings"].append(f"股价反应失败: {e}")
 
-    # analyst revisions if snapshots exist
+    # commands 负责读 snapshot / sources，compute 只吃已对齐数据
     snap_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "snapshots"
-    snaps = {}
+    points: dict[str, dict[str, Any]] = {
+        "t_minus_1": {},
+        "t_plus_1": {},
+        "t_plus_3": {},
+        "t_plus_7": {},
+    }
     if snap_dir.exists():
-        for p in snap_dir.glob("*.json"):
-            try:
-                snaps[p.stem[:10]] = json.loads(p.read_text(encoding="utf-8"))
-            except Exception:
-                pass
-    doc["guidance"]["analyst_revisions"] = compute_analyst_revisions(
-        snaps,
-        t_dates={
-            "t_minus_1": "",
-            "t_plus_1": "",
-            "t_plus_3": "",
-            "t_plus_7": "",
-        },
-    )
+        # 占位：按日期取最新可用快照行；真实对齐在 daily Stage3 补全
+        files = sorted(snap_dir.glob("*.json"))
+        if files:
+            snap = json.loads(files[-1].read_text(encoding="utf-8"))
+            ee = estimate_row(snap.get("earnings_estimate") or {}, "0q") or {}
+            re = estimate_row(snap.get("revenue_estimate") or {}, "0q") or {}
+            points["t_minus_1"] = {
+                "eps": ee.get("avg"),
+                "revenue": re.get("avg"),
+                "date": files[-1].stem[:10],
+            }
+    doc["guidance"]["analyst_revisions"] = compute_analyst_revisions(points)
     doc["status"]["stage"] = "stage3_done"
     save_period_json(ticker, fiscal_period, doc)
     mark_stage(ticker, fiscal_period, "stage3_done")

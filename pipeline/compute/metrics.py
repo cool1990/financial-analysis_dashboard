@@ -48,7 +48,6 @@ def verdict_eps(
 ) -> Verdict:
     if diff is None:
         return "unknown"
-    # 微利/亏损：绝对值判定
     if estimate is not None and abs(estimate) < 0.05:
         if abs(diff) <= inline_abs:
             return "inline"
@@ -63,10 +62,6 @@ def verdict_eps(
 def verdict_margin(pp: float | None, inline_pp: float = 0.5) -> Verdict:
     if pp is None:
         return "unknown"
-    # inline_pp is in percentage points on 0-100 scale or 0-1?
-    # We store margins as fractions (0.42). Convert threshold.
-    thr = inline_pp / 100.0 if inline_pp > 1 else inline_pp
-    # Doc says ±0.5 个百分点 → 0.5 on percent scale = 0.005 fraction
     thr = inline_pp * 0.01
     if abs(pp) <= thr:
         return "inline"
@@ -88,6 +83,31 @@ def ytd_to_quarterly(
     return current_ytd - prior_ytd
 
 
+def make_benchmark(
+    actual: float | None,
+    benchmark: float | None,
+    *,
+    source: str = "none",
+    is_ratio: bool = False,
+) -> dict[str, Any]:
+    if actual is None or benchmark is None:
+        return {
+            "value": benchmark,
+            "source": source if benchmark is not None else "none",
+            "diff": None,
+            "diff_pct": None,
+            "diff_pp": None,
+        }
+    diff = actual - benchmark
+    return {
+        "value": benchmark,
+        "source": source,
+        "diff": diff,
+        "diff_pct": None if is_ratio else pct_change(actual, benchmark),
+        "diff_pp": pp_change(actual, benchmark) if is_ratio else None,
+    }
+
+
 def build_metric_block(
     value: float | None,
     *,
@@ -99,22 +119,21 @@ def build_metric_block(
     source_quote: str | None = None,
 ) -> dict[str, Any]:
     if is_ratio:
-        yoy = pp_change(value, yoy_base)
-        qoq = pp_change(value, qoq_base)
-        vs = pp_change(value, benchmark) if benchmark is not None else None
-    else:
-        yoy = pct_change(value, yoy_base)
-        qoq = pct_change(value, qoq_base)
-        vs = pct_change(value, benchmark) if benchmark is not None else None
+        return {
+            "value": value,
+            "yoy_pct": None,
+            "qoq_pct": None,
+            "yoy_pp": pp_change(value, yoy_base),
+            "qoq_pp": pp_change(value, qoq_base),
+            "benchmark": make_benchmark(value, benchmark, source=benchmark_source, is_ratio=True),
+            "source_quote": source_quote,
+        }
     return {
         "value": value,
-        "yoy": yoy,
-        "qoq": qoq,
-        "benchmark": {
-            "value": benchmark,
-            "source": benchmark_source,
-            "diff": (value - benchmark) if value is not None and benchmark is not None else None,
-            "pct_or_pp": vs,
-        },
+        "yoy_pct": pct_change(value, yoy_base),
+        "qoq_pct": pct_change(value, qoq_base),
+        "yoy_pp": None,
+        "qoq_pp": None,
+        "benchmark": make_benchmark(value, benchmark, source=benchmark_source, is_ratio=False),
         "source_quote": source_quote,
     }
