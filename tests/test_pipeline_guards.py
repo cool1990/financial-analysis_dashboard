@@ -259,61 +259,74 @@ def test_benchmark_reaction_excess(monkeypatch):
     assert run_cmd._benchmark_reaction({}, "x", "amc", own2)["excess_pct"] is None
 
 
-def test_thesis_view_pending_and_auto_checks():
-    from builder.build import _thesis_view
+# ---- 仓位档案 -------------------------------------------------------------------------
+
+def test_load_position_stages():
+    from pipeline.config import load_position
+
+    mu, sndk, mcd = load_position("MU"), load_position("SNDK"), load_position("MCD")
+    assert (mu["stage"], mu["stage_label"]) == ("watch", "观察仓") and mu["questions"] and not mu["theses"]
+    assert sndk["stage"] == "hold" and len(sndk["theses"]) == 2 and {t["name"] for t in sndk["triggers"]} == {"加仓", "卖出"}
+    assert mcd["stage"] == "wait" and mcd["triggers"][0]["name"] == "买入"
+    assert sndk["draft"] and not mu["draft"]  # 还有「【请填写】」的档案提示未定稿
+    assert load_position("NOPE") is None
+
+
+def test_position_view_watch_shows_questions_and_facts():
+    from builder.build import _position_view
 
     doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     doc.pop("thesis_review", None)
-    v = _thesis_view("MU", "FY2026Q4", {"FY2026Q4": doc}, date(2026, 10, 2))
-    assert v and not v["reviewed"] and v["counts"]["待评估"] == len(v["items"])
-    hbm = next(t for t in v["items"] if t["id"] == "hbm_ai_demand")
-    # 下季条件不能用本季数据判
-    assert hbm["checks"][0]["status"] == "pending" and "FY2027Q1" in hbm["checks"][0]["text"]
-    assert hbm["deadline"]["left"] == "还有 82 天"
-    capex = next(t for t in v["items"] if t["id"] == "capex_returns")
-    assert capex["checks"][0]["status"] == "ok"  # 20.5% <= 25%
+    v = _position_view("MU", doc, date(2026, 10, 2))
+    assert v["stage"] == "watch" and len(v["questions"]) == 3 and not v["reviewed"]
+    assert any("75%" in f["number"] for f in v["facts"])  # 问答里管理层新给出的数字，不调用 LLM
 
 
-def test_thesis_view_with_review_marks_hits():
-    from builder.build import _thesis_view, _verdict_chips
+def test_position_view_hold_with_review(monkeypatch):
+    from builder import build
+    from builder.build import _position_view, _verdict_chips
 
-    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
-    doc["thesis_review"] = {
-        "reviews": [
-            {"id": "margin_durability", "status": "weakened", "evidence": "毛利率指引回落", "confirm_hits": [], "falsify_hits": [0]},
-            {"id": "hbm_ai_demand", "status": "strengthened", "evidence": "HBM 提价", "quote": "x", "quote_unverified": True},
-        ],
-        "new_concerns": [{"concern": "NAND 份额", "raised_by": "Mehdi Hosseini"}],
-        "reviewed_at": "2026-10-02T00:00:00+00:00",
-    }
-    v = _thesis_view("MU", "FY2026Q4", {"FY2026Q4": doc}, date(2026, 10, 2))
-    m = next(t for t in v["items"] if t["id"] == "margin_durability")
-    assert m["status"] == "削弱" and m["falsify"][0]["hit"]
-    h = next(t for t in v["items"] if t["id"] == "hbm_ai_demand")
-    assert h["quote"] == "" and h["quote_unverified"]  # 未核实的引文不展示
-    chips = [c["text"] for c in _verdict_chips(doc, [], {"stance": None, "price": {"text": "—"}}, [], v)]
-    assert chips[0] == "论点：1 强化 · 1 削弱"
+    pos = {"stage": "hold", "stage_label": "持仓", "updated": "", "draft": False,
+           "theses": [{"bull": "a", "bear": "b", "falsify": "营收 < 60B（2026-12-23）"}, {"bull": "c", "bear": "d", "falsify": "e"}],
+           "triggers": [{"name": "加仓", "text": "x"}, {"name": "卖出", "text": "y"}], "questions": []}
+    monkeypatch.setattr(build, "load_position", lambda t: pos)
+    doc = {"thesis_review": {"stage": "hold", "fingerprint": "f", "reviewed_at": "2026-10-02T00:00:00",
+                             "theses": [{"index": 0, "status": "strengthened", "evidence": "ok"},
+                                        {"index": 1, "status": "weakened", "falsified": True, "quote": "q", "quote_unverified": True}],
+                             "triggers": [{"name": "卖出", "state": "triggered", "reason": "证伪出现"}]}}
+    v = _position_view("X", doc, date(2026, 10, 2))
+    assert [t["status"] for t in v["theses"]] == ["强化", "已证伪"]
+    assert v["theses"][0]["deadline"]["left"] == "还有 82 天" and v["theses"][1]["quote"] == ""
+    sell = next(t for t in v["triggers"] if t["name"] == "卖出")
+    assert sell["state"] == "已触发" and sell["cls"] == "bad"
+    chips = [c["text"] for c in _verdict_chips({}, [], {"stance": None, "price": {"text": "—"}}, [], v)]
+    assert "论点：1 强化 · 1 已证伪" in chips and "卖出条件已触发" in chips
+    # 旧格式评估（没有 stage）不算已评估
+    doc["thesis_review"].pop("stage")
+    assert _position_view("X", doc, date(2026, 10, 2))["reviewed"] is False
 
 
-def test_thesis_review_skipped_when_unchanged(monkeypatch):
+def test_position_review_skips_when_unchanged_or_nothing_to_ask(monkeypatch):
     from pipeline.analyze import thesis as th
     from pipeline.commands import run_cmd
-    from pipeline.config import load_theses
+    from pipeline import config
 
     doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     calls = []
-    monkeypatch.setattr(th, "review_theses", lambda theses, d: calls.append(1) or {"fingerprint": th.review_fingerprint(theses, d)})
+    monkeypatch.setattr(th, "review_position", lambda pos, d: calls.append(1) or {"fingerprint": th.review_fingerprint(pos, d)})
     assert run_cmd._apply_thesis_review("MU", doc) is True
-    assert run_cmd._apply_thesis_review("MU", doc) is False  # 论点与数据都没变：不再调用
+    assert run_cmd._apply_thesis_review("MU", doc) is False  # 档案和数据都没变：不调用
     assert run_cmd._apply_thesis_review("MU", doc, force=True) is True
+    # 观察仓没写问题：不调用
+    monkeypatch.setattr(config, "load_position", lambda t: {"stage": "watch", "theses": [], "triggers": [], "questions": []})
+    assert run_cmd._apply_thesis_review("MU", doc, force=True) is False
     assert len(calls) == 2
-    assert load_theses("NOPE") is None
 
 
-def test_review_theses_filters_ids_and_checks_quotes(monkeypatch):
+def test_review_position_filters_and_checks_quotes(monkeypatch):
     from pipeline.analyze import thesis as th
-    from pipeline.config import load_theses
-    from pipeline.schemas import ThesisReviewResult
+    from pipeline.config import load_position
+    from pipeline.schemas import PositionReviewResult
 
     doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     real_quote = next(q["answer_quote"] for q in doc["qa"]["items"] if q.get("answer_quote"))
@@ -323,23 +336,23 @@ def test_review_theses_filters_ids_and_checks_quotes(monkeypatch):
         model = "fake"
 
         def load_prompt(self, name, **kw):
-            return "P " + kw["theses"]
+            return "P " + kw["position"]
 
         def complete_json(self, name, user, schema):
             captured["user"] = user
-            return ThesisReviewResult.model_validate({
-                "reviews": [
-                    {"id": "hbm_ai_demand", "status": "strengthened", "evidence": "e", "quote": real_quote},
-                    {"id": "margin_durability", "status": "weakened", "evidence": "e", "quote": "管理层从未说过这句话的编造引文"},
-                    {"id": "made_up", "status": "weakened", "evidence": "e"},
+            return PositionReviewResult.model_validate({
+                "answers": [
+                    {"index": 0, "answered": True, "answer": "a", "quote": real_quote},
+                    {"index": 1, "answered": True, "answer": "b", "quote": "完全编造的引文不在原文里"},
+                    {"index": 9, "answered": True, "answer": "越界"},
                 ],
-                "new_concerns": [],
+                "triggers": [{"name": "不存在的条件", "state": "triggered"}],
             })
 
     monkeypatch.setattr(th, "LLMClient", FakeLLM)
-    out = th.review_theses(load_theses("MU"), doc)
-    ids = [r["id"] for r in out["reviews"]]
-    assert ids == ["hbm_ai_demand", "margin_durability"]
-    assert out["reviews"][0]["quote_unverified"] is False and out["reviews"][1]["quote_unverified"] is True
-    # 输入不含文字稿全文，只有结构化结果
-    assert "transcript" not in captured["user"] and len(captured["user"]) < 60000
+    out = th.review_position(load_position("MU"), doc)
+    assert [a["index"] for a in out["answers"]] == [0, 1]
+    assert out["answers"][0]["quote_unverified"] is False and out["answers"][1]["quote_unverified"] is True
+    assert out["triggers"] == [] and out["stage"] == "watch"
+    assert "观察仓" in captured["user"] and len(captured["user"]) < 60000
+

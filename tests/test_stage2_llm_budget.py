@@ -108,7 +108,7 @@ def test_truncated_output_not_retried(monkeypatch):
 
     def fake_post(self, url, headers=None, json=None):  # noqa: A002
         calls["n"] += 1
-        assert json["reasoning"]["effort"] == "low"
+        assert json["reasoning"] == {"enabled": False}
         return httpx.Response(
             200,
             json={"choices": [{"message": {"content": None}, "finish_reason": "length"}],
@@ -118,7 +118,7 @@ def test_truncated_output_not_retried(monkeypatch):
 
     monkeypatch.setattr(httpx.Client, "post", fake_post)
     client = LLMClient(require_key=True, use_cache=False)
-    client.reasoning_effort = "low"
+    client.reasoning_effort = "off"
     with pytest.raises(LLMTruncatedError):
         client.complete_json("summarize.md", "x", SummaryResult)
     assert calls["n"] == 1
@@ -234,3 +234,19 @@ def test_truncation_splits_down_to_single_rounds():
     out = _structure_batch(Trunc(), "prompt", batch)  # type: ignore[arg-type]
     assert not any(o.get("parse_failed") for o in out) and len(out) == 4
     assert len(calls) <= 2 * len(batch)
+
+
+def test_reasoning_param_mapping():
+    from pipeline.llm import _reasoning_param
+
+    assert _reasoning_param("off") == {"enabled": False}
+    assert _reasoning_param(False) == {"enabled": False}  # YAML 里不加引号的 off 会被解析成 False
+    assert _reasoning_param("high") == {"effort": "high", "exclude": True}
+    assert _reasoning_param(None) is None
+
+
+def test_settings_disable_reasoning_by_default():
+    from pipeline.config import load_settings
+    from pipeline.llm import _reasoning_param
+
+    assert _reasoning_param(load_settings()["llm"]["reasoning_effort"]) == {"enabled": False}

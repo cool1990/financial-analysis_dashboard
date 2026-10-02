@@ -570,23 +570,23 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
 
 
 def _apply_thesis_review(ticker: str, doc: dict[str, Any], *, force: bool = False) -> bool:
-    """有论点文件时评估论点；论点和本季数据都没变则跳过（不花钱）。返回是否调用了 LLM。"""
-    from pipeline.analyze.thesis import review_fingerprint, review_theses
-    from pipeline.config import load_theses
+    """按仓位档案评估本季；档案和本季数据都没变、或观察仓没写问题时跳过（不花钱）。返回是否调用了 LLM。"""
+    from pipeline.analyze.thesis import needs_review, review_fingerprint, review_position
+    from pipeline.config import load_position
 
-    theses = load_theses(ticker)
-    if not theses:
+    position = load_position(ticker)
+    if not needs_review(position):
         return False
     old = doc.get("thesis_review") or {}
-    if not force and old.get("fingerprint") == review_fingerprint(theses, doc):
-        print("[thesis] 论点与本季数据都没变，跳过评估", flush=True)
+    if not force and old.get("fingerprint") == review_fingerprint(position, doc):
+        print("[thesis] 仓位档案与本季数据都没变，跳过评估", flush=True)
         return False
-    doc["thesis_review"] = review_theses(theses, doc)
+    doc["thesis_review"] = review_position(position, doc)
     return True
 
 
 def run_thesis_review(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[str, Any]:
-    """只做论点评估（1 次小调用）：用于已完成的季度，或修改论点文件之后。"""
+    """只做仓位评估（1 次小调用）：用于已完成的季度，或修改仓位档案之后。"""
     doc = load_period_json(ticker, fiscal_period)
     if not doc:
         raise RuntimeError(f"缺少 {ticker} {fiscal_period} 数据")

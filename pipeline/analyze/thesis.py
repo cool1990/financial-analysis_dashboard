@@ -1,7 +1,11 @@
-"""投资论点评估：每季一次小调用，判断每条论点被强化 / 未变 / 削弱，并找出论点没覆盖的新担忧。
+"""仓位评估：每季一次小调用，按仓位阶段回答不同的问题。
+
+- 观察仓：用本季事实回答「想搞清楚的问题」
+- 等待仓 / 持仓：论点被强化 / 不变 / 削弱，证伪是否出现，买卖条件是否触发
+- 所有阶段：分析师问到、但档案没覆盖的新担忧
 
 输入只用已经结构化的结果（不含文字稿全文），控制 token；
-评估结果按「论点文件内容 + 本季数据」做指纹，两者都没变时不再调用。
+按「档案内容 + 本季数据」做指纹，两者都没变时不再调用。
 """
 
 from __future__ import annotations
@@ -12,22 +16,22 @@ from datetime import datetime, timezone
 from typing import Any
 
 from pipeline.llm import LLMClient
-from pipeline.schemas import ThesisReviewResult
+from pipeline.schemas import PositionReviewResult
 from pipeline.validate import fuzzy_quote_ok
 
 
-def _thesis_payload(theses: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
-        {
-            "id": t.get("id"),
-            "name": t.get("name"),
-            "bull": t.get("bull"),
-            "bear": t.get("bear"),
-            "confirm": t.get("confirm") or [],
-            "falsify": t.get("falsify") or [],
-        }
-        for t in theses.get("theses") or []
-    ]
+def _position_payload(position: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "阶段": position.get("stage_label"),
+        "论点": [{"看好": t["bull"], "担心": t["bear"], "证伪": t["falsify"]} for t in position.get("theses") or []],
+        "条件": {t["name"]: t["text"] for t in position.get("triggers") or []},
+        "问题": position.get("questions") or [],
+    }
+
+
+def needs_review(position: dict[str, Any] | None) -> bool:
+    """观察仓没写问题时只看事实，不需要调用。"""
+    return bool(position and (position.get("theses") or position.get("triggers") or position.get("questions")))
 
 
 def _evidence_payload(doc: dict[str, Any]) -> dict[str, Any]:
@@ -52,6 +56,10 @@ def _evidence_payload(doc: dict[str, Any]) -> dict[str, Any]:
             for q in (doc.get("qa") or {}).get("items") or []
             if not q.get("parse_failed")
         ],
+        "price_reaction": {
+            k: (doc.get("price_reaction") or {}).get(k)
+            for k in ("next_day_pct", "close_before", "close_after", "benchmark", "benchmark_pct", "excess_pct")
+        },
         "drivers": [
             {
                 "metric": m.get("metric"),
@@ -63,9 +71,9 @@ def _evidence_payload(doc: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def review_fingerprint(theses: dict[str, Any], doc: dict[str, Any]) -> str:
+def review_fingerprint(position: dict[str, Any], doc: dict[str, Any]) -> str:
     h = hashlib.sha256()
-    h.update(json.dumps(_thesis_payload(theses), ensure_ascii=False, sort_keys=True).encode())
+    h.update(json.dumps(_position_payload(position), ensure_ascii=False, sort_keys=True).encode())
     h.update(json.dumps(_evidence_payload(doc), ensure_ascii=False, sort_keys=True).encode())
     return h.hexdigest()[:16]
 
@@ -81,29 +89,36 @@ def _quote_corpus(evidence: dict[str, Any]) -> str:
     return "\n".join(p for p in parts if p)
 
 
-def review_theses(theses: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]:
+def review_position(position: dict[str, Any], doc: dict[str, Any]) -> dict[str, Any]:
     llm = LLMClient()
     evidence = _evidence_payload(doc)
     prompt = llm.load_prompt(
         "review_theses.md",
-        theses=json.dumps(_thesis_payload(theses), ensure_ascii=False, indent=1),
+        position=json.dumps(_position_payload(position), ensure_ascii=False, indent=1),
     )
     user = prompt + "\n" + json.dumps(evidence, ensure_ascii=False)
-    result = llm.complete_json("review_theses.md", user, ThesisReviewResult).model_dump()
+    result = llm.complete_json("review_theses.md", user, PositionReviewResult).model_dump()
 
-    known = {t.get("id") for t in theses.get("theses") or []}
     corpus = _quote_corpus(evidence)
-    reviews = []
-    for r in result.get("reviews") or []:
-        if r.get("id") not in known:
-            continue
-        # 与变动原因同样的做法：引文在原材料里找不到就标出来，不当作证据展示
-        r["quote_unverified"] = bool(r.get("quote")) and not fuzzy_quote_ok(r["quote"], corpus)
-        reviews.append(r)
+
+    def checked(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+        out = []
+        for r in rows:
+            if not 0 <= int(r.get("index", -1)) < limit:
+                continue
+            # 引文在原材料里找不到就标出来，页面不当作证据展示
+            r["quote_unverified"] = bool(r.get("quote")) and not fuzzy_quote_ok(r["quote"], corpus)
+            out.append(r)
+        return out
+
+    names = {t["name"] for t in position.get("triggers") or []}
     return {
-        "reviews": reviews,
+        "stage": position.get("stage"),
+        "theses": checked(result.get("theses") or [], len(position.get("theses") or [])),
+        "answers": checked(result.get("answers") or [], len(position.get("questions") or [])),
+        "triggers": [t for t in result.get("triggers") or [] if t.get("name") in names],
         "new_concerns": result.get("new_concerns") or [],
-        "fingerprint": review_fingerprint(theses, doc),
+        "fingerprint": review_fingerprint(position, doc),
         "reviewed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "model": llm.model,
     }

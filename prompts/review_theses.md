@@ -1,34 +1,39 @@
 你是买方分析师的助手。下面给你两部分材料：
-A. 投资者事先写下的投资论点（每条有 id、看好理由 bull、市场担心 bear、证实条件 confirm、证伪条件 falsify）；
-B. 本季财报的结构化结果（记分卡、财务、指引、电话会问答摘要与原话、变动原因）。
+A. 投资者对这只股票的仓位档案：阶段（观察 / 等待 / 持仓），以及按阶段写下的论点、买卖条件或想搞清楚的问题；
+B. 本季财报的结构化结果（记分卡、财务、指引、电话会问答摘要与原话、变动原因、次日股价）。
 
-请逐条评估论点在本季是被强化、没有变化还是被削弱，只输出 JSON：
+只根据 B 回答，只输出 JSON：
 
 {
-  "reviews": [
-    {
-      "id": "论点 id，与 A 中一致",
-      "status": "strengthened | unchanged | weakened",
-      "evidence": "一句中文说明本季哪个事实让你这么判断，不超过 60 字",
-      "quote": "支撑判断的原文，必须从 B 中的 source_quote / answer_quote / evidence_quote 逐字复制；没有合适原文填 null",
-      "source": "press_release | prepared_remarks | qa | guidance",
-      "confirm_hits": [本季已满足的 confirm 条件序号，从 0 开始],
-      "falsify_hits": [本季已出现的 falsify 条件序号，从 0 开始]
-    }
+  "theses": [
+    {"index": 论点序号（从 0 开始）, "status": "strengthened | unchanged | weakened",
+     "evidence": "一句中文说明本季哪个事实让你这么判断，不超过 60 字",
+     "quote": "支撑判断的原文，从 B 的 source_quote / answer_quote / evidence_quote 逐字复制；没有填 null",
+     "source": "press_release | prepared_remarks | qa | guidance",
+     "falsified": 本季是否已经出现该论点的「证伪」情形（true / false）}
+  ],
+  "triggers": [
+    {"name": "条件名，与 A 中一致（买入 / 加仓 / 卖出）", "state": "triggered | not_triggered | unknown",
+     "reason": "一句中文说明；需要 B 里没有的信息（如持仓成本、实时股价）时填 unknown 并说明缺什么"}
+  ],
+  "answers": [
+    {"index": 问题序号（从 0 开始）, "answered": 本季材料是否给出了答案（true / false）,
+     "answer": "用本季事实回答，不超过 80 字；没有信息就写「本季没有相关信息」",
+     "quote": "原文，规则同上；没有填 null", "source": "同上"}
   ],
   "new_concerns": [
-    {"concern": "分析师问到、但 A 中所有论点都没覆盖的担忧，一句话", "raised_by": "提问的分析师和机构", "why": "为什么值得跟踪，一句话"}
+    {"concern": "分析师问到、但 A 没有覆盖的担忧，一句话", "raised_by": "提问的分析师和机构", "why": "为什么值得跟踪，一句话"}
   ]
 }
 
 规则：
-1. 只根据 B 判断，不使用 B 以外的信息；数字以 B 为准，不得改写。
-2. 本季没有相关信息时 status 填 unchanged，evidence 写「本季没有相关信息」，不要硬找理由。
-3. 只有在 B 中有明确事实时才判 strengthened 或 weakened；管理层的乐观表态本身不算证据，要有数字、合同、指引或具体事实。
-4. confirm_hits / falsify_hits 只列本季已经能判断的条件；需要等下季数据的条件不要列。
+1. A 中没有的部分输出空数组（例如观察仓没有论点，theses 为 []）。
+2. 数字以 B 为准，不得改写；不使用 B 以外的信息。
+3. 只有 B 中有明确事实（数字、合同、指引、具体事件）时才判 strengthened / weakened；管理层的乐观表态本身不算证据。
+4. 没有相关信息时，论点判 unchanged，问题判 answered=false，不要硬找理由。
 5. new_concerns 最多 3 条，没有就给空数组。
 
-A. 投资论点：
-{theses}
+A. 仓位档案：
+{position}
 
 B. 本季结构化结果：

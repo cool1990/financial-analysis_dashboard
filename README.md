@@ -49,7 +49,8 @@ python -m pipeline build
 | `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补 |
 | `python -m pipeline build` | 生成 `site/` |
 | `python -m pipeline stage3-recent` | 近期财报的股价反应 + T+1/3/7 分析师修正（daily 自动跑，无 LLM） |
-| `python -m pipeline thesis --ticker MU` | 评估投资论点（1 次小调用；论点和本季数据都没变时跳过） |
+| `python -m pipeline thesis --ticker MU` | 按仓位档案评估本季（1 次小调用；档案和数据都没变时跳过） |
+| `python -m pipeline init-missing` | 给缺 CIK 的股票自动初始化（daily 自动跑，无 LLM） |
 | `python -m pipeline comparatives` | 用新闻稿对比列补算同比 / 环比（无 LLM、不联网） |
 | `python -m pipeline validate --ticker MU --period FY2026Q4` | 查看状态 |
 
@@ -64,13 +65,15 @@ python -m pipeline build
 本地无 key 时可运行：`pytest`、`python -m pipeline build`、`python -m pipeline snapshot`（无 LLM）。
 LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Actions → `manual` / `eval`。
 
-## 投资论点与增长质量
+## 仓位档案与增长质量
 
-- `config/theses/{TICKER}.yaml`：每条论点写「我看好 / 市场担心 / 证实条件 / 证伪条件 / 验证时点」，可选 `metric` 自动核对
-  （写 `period` 的只用该财季实际数据核对）。Stage2 完成时自动评估；改了论点后用 manual → `thesis` 重评。
+- `config/theses/{TICKER}.yaml`：每只股票一个仓位档案，`阶段` 为 观察 / 等待 / 持仓。
+  - 观察：只写想搞清楚的 `问题`（可不写），每季用事实回答；页面同时列出管理层在问答里新给出的数字。
+  - 等待 / 持仓：`论点` 每条三行（看好 / 担心 / 证伪，证伪里写日期会显示倒计时），`条件` 写买入或加仓 / 卖出。
+  - Stage2 完成时自动评估（1 次小调用，档案和数据都没变时跳过；观察仓没写问题时不调用）；改了档案后用 manual → `thesis` 重评。
 - 增长质量 = 通用层（`settings.yaml` 的 `quality.defaults`，会计质量类）+ 公司层（股票配置 `quality_checks`，同 key 覆盖通用阈值）。
-  可用指标见 `pipeline/compute/derived.py`。
 - 次日涨跌同时计算相对对照指数（股票配置 `benchmark`，默认 SPY）的超额涨跌。
+- 新增股票：加 `config/tickers/{TICKER}.yaml` 和仓位档案即可，daily 会自动补 CIK（`init-missing`）。
 
 ## LLM 成本护栏
 
@@ -81,7 +84,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 - 文字稿超过 `polling.transcript_max_hours` 仍未取到时停止自动重试 Stage2。
 - 每轮进程有金额上限 `max_cost_per_run_usd`、token 上限 `max_tokens_per_run`（拿不到单价时依然生效）和超时熔断 `max_timeouts_per_run`；单次请求有 `max_tokens` 与墙钟超时。
 - Actions 的 LLM 缓存每次运行都会回写（key 带 run_id），重跑同样输入不再重复付费；Stage2 已完成时默认跳过，`--force` 才重跑。
-- `llm.reasoning_effort`（默认 low）限制推理模型的思考 token：思考 token 计入 max_tokens 且计费，曾把输出额度耗尽导致问答整批返回空；输出被截断时不原样重试。
+- `llm.reasoning_effort`（默认 off）关闭推理模型的思考：思考 token 计入 max_tokens 且计费，曾把 4096 额度耗尽导致正文为空（DeepSeek V4 Pro 不支持 low 档）；输出被截断时不原样重试。
 - 问答批次失败时拆半各试一次（每批最多 3 次调用）；Stage2 已完成但有失败轮次时，不加 `--force` 重跑只补失败的几轮。
 - `llm.stage1_drivers: false` 可省掉 Stage1 的变动原因调用（Stage2 会重算）。
 

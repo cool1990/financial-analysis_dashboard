@@ -13,7 +13,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pipeline import ROOT
 from pipeline.compute.periods import prior_fiscal_period, yoy_fiscal_period
 from pipeline.compute.derived import derived_metrics, evaluate, merge_checks
-from pipeline.config import data_dir, list_tickers, load_settings, load_theses, load_ticker_config, site_dir
+from pipeline.config import data_dir, list_tickers, load_position, load_settings, load_ticker_config, site_dir
 
 ET = ZoneInfo("America/New_York")
 BJ = ZoneInfo("Asia/Shanghai")
@@ -623,9 +623,11 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
         v = (sc.get(metric) or {}).get("verdict") or ""
         return {"verdict": v, "label": _verdict_label(v) if v else "—"}
 
+    pos = load_position(t)
     return {
         "ticker": t,
         "name": cfg.get("name"),
+        "pos_stage": (pos or {}).get("stage") or "watch",
         "period": period or "—",
         "revenue": chip("revenue"),
         "eps": chip("eps"),
@@ -735,70 +737,78 @@ THESIS_STATUS = {
     "unchanged": ("不变", ""),
     "weakened": ("削弱", "bad"),
 }
+TRIGGER_STATE = {
+    "triggered": ("已触发", "bad"),
+    "not_triggered": ("未触发", ""),
+    "unknown": ("需人工判断", "muted"),
+}
 
 
 def _deadline_view(text: str | None, today: date) -> dict[str, str]:
-    """「预计 2026-12-23」→ 还有 N 天；过期提示重新评估。只有月份时照原文显示。"""
-    text = text or ""
-    m = re.search(r"(\d{4})-(\d{2})-(\d{2})", text)
+    """证伪条件里写了日期（YYYY-MM-DD）就显示倒计时；过期提示重新评估。"""
+    m = re.search(r"(\d{4})-(\d{2})-(\d{2})", text or "")
     if not m:
-        return {"text": text, "left": "", "cls": ""}
-    d = date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-    days = (d - today).days
+        return {"left": "", "cls": ""}
+    days = (date(int(m.group(1)), int(m.group(2)), int(m.group(3))) - today).days
     if days < 0:
-        return {"text": text, "left": f"已过 {-days} 天，需重新评估", "cls": "warn"}
-    return {"text": text, "left": f"还有 {days} 天", "cls": ""}
+        return {"left": f"已过 {-days} 天", "cls": "warn"}
+    return {"left": f"还有 {days} 天", "cls": ""}
 
 
-def _thesis_view(ticker: str, period: str, docs: dict[str, dict[str, Any]], today: date) -> dict[str, Any] | None:
-    theses = load_theses(ticker)
-    if not theses:
+def _quote_of(r: dict[str, Any] | None) -> str:
+    return (r or {}).get("quote") or "" if r and not r.get("quote_unverified") else ""
+
+
+def _position_view(ticker: str, doc: dict[str, Any], today: date) -> dict[str, Any] | None:
+    """仓位卡：观察仓看问题和事实，等待仓 / 持仓看论点和买卖条件。"""
+    pos = load_position(ticker)
+    if not pos:
         return None
-    doc = docs[period]
     review = doc.get("thesis_review") or {}
-    by_id = {r.get("id"): r for r in review.get("reviews") or []}
-    cur_metrics = derived_metrics(doc)
-    items = []
-    for t in theses.get("theses") or []:
-        r = by_id.get(t.get("id"))
+    th = {int(r.get("index", -1)): r for r in review.get("theses") or []}
+    an = {int(r.get("index", -1)): r for r in review.get("answers") or []}
+    tr = {r.get("name"): r for r in review.get("triggers") or []}
+
+    theses = []
+    for i, t in enumerate(pos["theses"]):
+        r = th.get(i)
         word, cls = THESIS_STATUS.get((r or {}).get("status"), ("待评估", "muted"))
-        checks = []
-        for spec in t.get("metric") or []:
-            target = str(spec.get("period") or "")
-            if target and target not in docs:
-                state = "待验证" if target > period else "缺数据"
-                checks.append({"status": "pending", "text": f"{spec.get('note') or spec.get('key')}：{state}（{target} 财报）"})
-                continue
-            res = evaluate(spec, derived_metrics(docs[target]) if target else cur_metrics)
-            checks.append({"status": res["status"] if res["status"] != "na" else "pending",
-                           "text": f"{res['label']}{'（' + target + '）' if target else ''}：{res['text']}"})
-        confirm_hits = set((r or {}).get("confirm_hits") or [])
-        falsify_hits = set((r or {}).get("falsify_hits") or [])
-        items.append(
-            {
-                "id": t.get("id"),
-                "name": t.get("name"),
-                "status": word,
-                "cls": cls,
-                "evidence": (r or {}).get("evidence") or "",
-                "quote": (r or {}).get("quote") if r and not r.get("quote_unverified") else "",
-                "quote_unverified": bool(r and r.get("quote_unverified")),
-                "source": _source_label((r or {}).get("source")) if r and r.get("source") else "",
-                "bull": t.get("bull") or "",
-                "bear": t.get("bear") or "",
-                "confirm": [{"text": c, "hit": i in confirm_hits} for i, c in enumerate(t.get("confirm") or [])],
-                "falsify": [{"text": c, "hit": i in falsify_hits} for i, c in enumerate(t.get("falsify") or [])],
-                "checks": checks,
-                "deadline": _deadline_view(t.get("deadline"), today),
-            }
-        )
-    counts = {w: sum(1 for x in items if x["status"] == w) for w in ("强化", "不变", "削弱", "待评估")}
+        if r and r.get("falsified"):
+            word, cls = "已证伪", "bad"
+        theses.append({**t, "status": word, "cls": cls, "evidence": (r or {}).get("evidence") or "",
+                       "quote": _quote_of(r), "deadline": _deadline_view(t["falsify"], today)})
+    triggers = []
+    for t in pos["triggers"]:
+        r = tr.get(t["name"])
+        word, cls = TRIGGER_STATE.get((r or {}).get("state"), ("待评估", "muted"))
+        # 买入 / 加仓触发是好事，卖出触发才是警示
+        if r and r.get("state") == "triggered" and t["name"] != "卖出":
+            cls = "ok"
+        triggers.append({**t, "state": word, "cls": cls, "reason": (r or {}).get("reason") or ""})
+    questions = []
+    for i, q in enumerate(pos["questions"]):
+        r = an.get(i)
+        questions.append({"text": q, "answered": bool(r and r.get("answered")),
+                          "answer": (r or {}).get("answer") or "", "quote": _quote_of(r)})
+
+    # 观察仓的「本季事实」：管理层在问答里新给出的数字，直接来自已有数据，不调用 LLM
+    facts = []
+    if pos["stage"] == "watch":
+        for q in (doc.get("qa") or {}).get("items") or []:
+            for n in q.get("new_numbers") or []:
+                if isinstance(n, dict) and n.get("number"):
+                    facts.append({"number": n["number"], "meaning": n.get("meaning") or "", "who": q.get("analyst") or ""})
+    counts = {w: sum(1 for x in theses if x["status"] == w) for w in ("强化", "不变", "削弱", "已证伪")}
     return {
-        "items": items,
+        **{k: pos[k] for k in ("stage", "stage_label", "updated", "draft")},
+        "theses": theses,
+        "triggers": triggers,
+        "questions": questions,
+        "facts": facts[:6],
         "counts": counts,
-        "reviewed": bool(by_id),
+        # 只认按仓位档案生成的评估（带 stage）；旧版论点评估不算，避免显示过期的评估日期
+        "reviewed": bool(review.get("fingerprint") and review.get("stage")),
         "reviewed_at": (review.get("reviewed_at") or "")[:10],
-        "draft": (theses.get("status") or "") == "draft",
         "concerns": review.get("new_concerns") or [],
     }
 
@@ -808,13 +818,17 @@ def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict
     """判断条上的状态标签：每个标签把一块内容压成一句，数据缺口也直说。"""
     chips: list[dict[str, str]] = []
     if thesis:
-        c = thesis["counts"]
-        if thesis["reviewed"]:
-            parts = [f"{c[w]} {w}" for w in ("强化", "不变", "削弱") if c[w]]
-            cls = "bad" if c["削弱"] > c["强化"] else "ok" if c["强化"] > c["削弱"] else ""
-            chips.append({"text": "论点：" + " · ".join(parts), "cls": cls})
-        else:
-            chips.append({"text": "论点待评估", "cls": "muted"})
+        if thesis["stage"] != "watch" and thesis["reviewed"]:
+            c = thesis["counts"]
+            parts = [f"{c[w]} {w}" for w in ("强化", "不变", "削弱", "已证伪") if c[w]]
+            bad = c["削弱"] + c["已证伪"]
+            chips.append({"text": "论点：" + " · ".join(parts), "cls": "bad" if bad > c["强化"] else "ok" if c["强化"] > bad else ""})
+        for t in thesis["triggers"]:
+            if t["state"] == "已触发":
+                chips.append({"text": f"{t['name']}条件已触发", "cls": t["cls"]})
+        if thesis["stage"] == "watch" and thesis["questions"]:
+            n = sum(1 for q in thesis["questions"] if q["answered"])
+            chips.append({"text": f"问题有答案 {n}/{len(thesis['questions'])}" if thesis["reviewed"] else "问题待回答", "cls": "muted"})
     cls_of = {"beat": "ok", "miss": "bad", "inline": "", "unknown": "warn"}
     for g in gaps:
         if g["has"]:
@@ -889,9 +903,13 @@ def build_site(ticker: str | None = None) -> list[Path]:
     only = ticker.upper() if ticker else None
     if only and only not in tickers:
         tickers.append(only)
+    # 导航和首页都按 持仓 → 等待仓 → 观察仓 排
+    order = {"hold": 0, "wait": 1, "watch": 2}
+    tickers.sort(key=lambda x: (order.get((load_position(x) or {}).get("stage", "watch"), 3), x))
     nav = [{"ticker": t, "href": f"stocks/{t}/index.html"} for t in tickers]
     index_rows: list[dict[str, Any]] = []
     pages: list[Path] = []
+    today = datetime.now(BJ).date()
 
     for t in tickers:
         cfg = load_ticker_config(t)
@@ -905,20 +923,20 @@ def build_site(ticker: str | None = None) -> list[Path]:
         stock_dir.mkdir(parents=True, exist_ok=True)
         if not periods:
             html = env.get_template("placeholder.html").render(
-                ticker=t, company=cfg.get("name"), nav=nav, active=t, root="../../"
+                ticker=t, company=cfg.get("name"), nav=nav, active=t, root="../../",
+                thesis=_position_view(t, {}, today),
             )
             (stock_dir / "index.html").write_text(html, encoding="utf-8")
             pages.append(stock_dir / "index.html")
             continue
         history = _history(docs)[-8:]
-        today = datetime.now(BJ).date()
         for period in periods:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
             gaps = _gap_rows(doc)
             market = _market_view(doc)
             checks = _quality_checks(doc, cfg)
-            thesis = _thesis_view(t, period, docs, today)
+            thesis = _position_view(t, doc, today)
             html = env.get_template("period.html").render(
                 gaps=gaps,
                 market=market,
@@ -953,7 +971,13 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 (stock_dir / "index.html").write_text(html, encoding="utf-8")
                 pages.append(stock_dir / "index.html")
 
-    index_html = env.get_template("index.html").render(rows=index_rows, nav=nav, active=None, root="")
+    groups = [
+        {"label": label, "rows": [r for r in index_rows if r["pos_stage"] == key]}
+        for key, label in (("hold", "持仓"), ("wait", "等待仓"), ("watch", "观察仓"))
+    ]
+    index_html = env.get_template("index.html").render(
+        groups=[g for g in groups if g["rows"]], nav=nav, active=None, root=""
+    )
     index_path = out_dir / "index.html"
     index_path.write_text(index_html, encoding="utf-8")
     pages.append(index_path)

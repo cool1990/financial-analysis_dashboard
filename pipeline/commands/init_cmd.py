@@ -99,3 +99,19 @@ def init_ticker(ticker: str, *, force: bool = False) -> dict[str, Any]:
     }
     save_ticker_config(ticker, cfg)
     return cfg
+
+
+def init_missing() -> dict[str, Any]:
+    """daily 调用：给还没有 CIK 的股票做初始化（SEC + Yahoo，不调用 LLM）。新加股票无需手动 init。"""
+    from pipeline.config import list_tickers, load_ticker_config
+
+    out: dict[str, Any] = {}
+    for t in list_tickers():
+        if load_ticker_config(t).get("cik"):
+            continue
+        try:
+            cfg = init_ticker(t)
+            out[t] = {"ok": True, "cik": cfg.get("cik"), "eps_basis": cfg.get("eps_basis")}
+        except Exception as e:
+            out[t] = {"ok": False, "error": str(e)}
+    return out
