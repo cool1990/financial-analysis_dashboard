@@ -806,7 +806,8 @@ def _position_view(ticker: str, doc: dict[str, Any], today: date) -> dict[str, A
         "questions": questions,
         "facts": facts[:6],
         "counts": counts,
-        "reviewed": bool(review.get("fingerprint")),
+        # 只认按仓位档案生成的评估（带 stage）；旧版论点评估不算，避免显示过期的评估日期
+        "reviewed": bool(review.get("fingerprint") and review.get("stage")),
         "reviewed_at": (review.get("reviewed_at") or "")[:10],
         "concerns": review.get("new_concerns") or [],
     }
