@@ -70,6 +70,7 @@ class DriverItem(BaseModel):
     source: Optional[str] = None
     is_inference: bool = False
     reasoning: Optional[str] = None
+    quote_unverified: bool = False
 
 
 class MetricDrivers(BaseModel):

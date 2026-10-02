@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from datetime import datetime
 from typing import Any
 
@@ -78,12 +79,48 @@ def validate_extraction(
     return {"needs_review": needs_review, "warnings": warnings}
 
 
+_QUOTE_TRANSLATE = str.maketrans(
+    {
+        "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u2032": "'",
+        "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u2033": '"',
+        "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-", "\u2212": "-",
+        "\u00a0": " ", "\u2009": " ", "\u202f": " ",
+    }
+)
+_ELLIPSIS_RE = re.compile(r"\s*(?:\.{3,}|\u2026|\[\.\.\.\])\s*")
+
+
+def normalize_for_quote_match(text: str) -> str:
+    """统一引号/破折号/空白、`$ 1,234` 与 `$1,234`、`90 %` 与 `90%`，并转小写。"""
+    text = unicodedata.normalize("NFKC", text).translate(_QUOTE_TRANSLATE).lower()
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\$\s+(?=[\d(.])", "$", text)
+    text = re.sub(r"(?<=[\d)])\s+%", "%", text)
+    text = re.sub(r"\(\s+", "(", text)
+    text = re.sub(r"\s+\)", ")", text)
+    return text.strip(" \"'")
+
+
 def fuzzy_quote_ok(quote: str | None, corpus: str, threshold: float = 0.9) -> bool:
-    if not quote:
+    """引文是否出自 corpus。
+
+    先做规范化后的精确子串匹配；不行再用 partial_ratio 容忍少量改字。
+    LLM 用省略号拼接的引文，按片段逐段校验（每段都须命中）。
+    """
+    if not quote or not corpus:
         return False
-    # rapidfuzz ratio is 0-100
-    score = fuzz.partial_ratio(quote, corpus) / 100.0
-    return score >= threshold
+    hay = normalize_for_quote_match(corpus)
+    parts = [normalize_for_quote_match(p) for p in _ELLIPSIS_RE.split(quote)]
+    parts = [p for p in parts if len(p) >= 8] or [normalize_for_quote_match(quote)]
+    for part in parts:
+        if not part:
+            return False
+        if part in hay:
+            continue
+        # rapidfuzz ratio is 0-100
+        if fuzz.partial_ratio(part, hay) / 100.0 < threshold:
+            return False
+    return True
 
 
 def classify_eps_basis(

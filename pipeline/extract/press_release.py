@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import re
-from io import StringIO
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
 from bs4 import BeautifulSoup
 
 NON_GAAP_EPS_PATTERNS = [
@@ -26,32 +24,56 @@ RECONCILIATION_PATTERNS = [
 ]
 
 
+def _join_cells(cells: list[str]) -> str:
+    """把一行单元格拼成一行文本；合并 `$` / `%` / `)` 等被拆到独立单元格的符号。"""
+    line = " ".join(c for c in cells if c)
+    line = re.sub(r"\$\s+(?=[\d(.])", "$", line)
+    line = re.sub(r"(?<=[\d)])\s+%", "%", line)
+    line = re.sub(r"(?<=\d)\s+\)", ")", line)
+    line = re.sub(r"\(\s+(?=[\d$])", "(", line)
+    return line
+
+
+def _table_rows(table: Any) -> list[str]:
+    rows: list[str] = []
+    for tr in table.find_all("tr"):
+        cells = [c.get_text(" ", strip=True) for c in tr.find_all(["td", "th"])]
+        line = _join_cells(cells)
+        if line:
+            rows.append(line)
+    return rows
+
+
 def html_to_text_and_tables(html: str | bytes) -> dict[str, Any]:
+    """HTML → 纯文本。
+
+    表格按"一行一条"展开到正文中（单元格以空格连接），这样：
+    - LLM 看到的表格行与校验用的正文完全一致，引用表格行可以被精确匹配；
+    - 不再额外拼接 pandas markdown 表（含大量重复列 / nan，体积约为正文 6 倍，
+      会把后半部分报表挤出 80k 截断窗口）。
+    """
     if isinstance(html, bytes):
         html = html.decode("utf-8", errors="ignore")
     soup = BeautifulSoup(html, "lxml")
     for tag in soup(["script", "style"]):
         tag.decompose()
-    body_text = soup.get_text("\n", strip=True)
 
     tables_md: list[str] = []
-    try:
-        dfs = pd.read_html(StringIO(html if isinstance(html, str) else html.decode("utf-8", errors="ignore")))
-    except Exception:
-        dfs = []
-    for i, df in enumerate(dfs):
-        # Preserve unit hints from column names / first rows
-        md = df.fillna("").to_string(index=False)
-        try:
-            md = df.to_markdown(index=False)
-        except Exception:
-            pass
-        tables_md.append(f"### Table {i+1}\n{md}")
+    # 先处理最内层表格，避免嵌套表格被重复展开
+    for i, table in enumerate(reversed(soup.find_all("table"))):
+        rows = _table_rows(table)
+        if rows:
+            tables_md.append(f"### Table {i+1}\n" + "\n".join(rows))
+        table.replace_with(soup.new_string("\n" + "\n".join(rows) + "\n"))
+    tables_md.reverse()
+
+    body_text = soup.get_text("\n", strip=True)
+    body_text = re.sub(r"[ \t\u00a0]+", " ", body_text)
 
     return {
         "text": body_text,
         "tables_markdown": tables_md,
-        "combined": body_text + "\n\n" + "\n\n".join(tables_md),
+        "combined": body_text,
     }
 
 

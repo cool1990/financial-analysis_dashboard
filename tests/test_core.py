@@ -215,3 +215,41 @@ def test_sources_and_extract_do_not_import_upper_layers():
     offenders += _forbidden_imports(ROOT / "pipeline" / "sources", forbidden)
     offenders += _forbidden_imports(ROOT / "pipeline" / "extract", forbidden)
     assert offenders == [], "禁止向上依赖:\n" + "\n".join(offenders)
+
+
+def test_press_release_table_rows_on_one_line():
+    from pipeline.extract.press_release import html_to_text_and_tables
+
+    html = (
+        "<p>Results</p><table>"
+        "<tr><td>Gross margin</td><td>90</td><td>%</td><td>87</td><td>%</td></tr>"
+        "<tr><td>Non-GAAP gross margin</td><td>$</td><td>47,204</td><td>$</td><td>35,199</td></tr>"
+        "<tr><td>Patent license charges</td><td>(500</td><td>)</td><td>—</td></tr>"
+        "</table>"
+    )
+    text = html_to_text_and_tables(html)["combined"]
+    assert "Gross margin 90% 87%" in text
+    assert "Non-GAAP gross margin $47,204 $35,199" in text
+    assert "Patent license charges (500) —" in text
+
+
+def test_fuzzy_quote_tolerates_formatting():
+    from pipeline.validate import fuzzy_quote_ok
+
+    corpus = "Revenue was up.\nNon-GAAP gross margin $47,204 $35,199\nour customers’ platforms\nPatent license charges (500) — —"
+    assert fuzzy_quote_ok("Non-GAAP gross margin $ 47,204 $ 35,199", corpus)
+    assert fuzzy_quote_ok("our customers' platforms", corpus)
+    assert fuzzy_quote_ok("Patent license charges (500) - -", corpus)
+    assert fuzzy_quote_ok("Revenue was up ... Non-GAAP gross margin $47,204", corpus)
+    assert not fuzzy_quote_ok("营收大幅增长，毛利率创新高", corpus)
+    assert not fuzzy_quote_ok("Revenue was up ... DRAM pricing declined sharply this quarter", corpus)
+    assert not fuzzy_quote_ok("anything", "")
+
+
+def test_guidance_plus_minus_inside_point_raw():
+    item = parse_guidance_item({"point_raw": "$61.5 billion ± $1.5 billion", "plus_minus_raw": None, "metric_key": "revenue"})
+    assert (item["low"], item["mid"], item["high"]) == (60e9, 61.5e9, 63e9)
+    item = parse_guidance_item({"point_raw": "$38.15 ± $1.00", "metric_key": "eps_nongaap"})
+    assert abs(item["low"] - 37.15) < 1e-9 and abs(item["high"] - 39.15) < 1e-9
+    low, mid, high = parse_plus_minus("$6.2 ± 0.2 billion")
+    assert (low, mid, high) == (6.0e9, 6.2e9, 6.4e9)
