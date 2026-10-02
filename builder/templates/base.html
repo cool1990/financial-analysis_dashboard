@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}财报解读{% endblock %}</title>
+  <link rel="stylesheet" href="{{ root|default('') }}static/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-Zo0JQxn9A2/FqzWx5WJmOaodijMzCKGq/S5YsQdnqzTjlFAKeQxZK+kRlTYfQ/4b17k+qYpGgy/gYpO6RiFubA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ root|default('') }}index.html">财报解读</a>
+    <nav>{% block nav %}{% endblock %}</nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">数据来自 SEC EDGAR / yfinance · 仅供研究</footer>
+</body>
+</html>

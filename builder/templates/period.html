@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% set root = "../../" %}
+{% block title %}{{ ticker }} {{ current_period }} · 财报解读{% endblock %}
+{% block nav %}
+<label class="period-switch">财季
+  <select onchange="location.href=this.value">
+    {% for p in periods %}
+      <option value="{{ p }}.html" {% if p==current_period %}selected{% endif %}>{{ p }}</option>
+    {% endfor %}
+  </select>
+</label>
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">{{ ticker }} · {{ company }}</p>
+    <h1>{{ current_period }}{% if doc.meta.period_start %}（{{ doc.meta.period_start[5:7] }}–{{ doc.meta.period_end[5:7] }} 月）{% endif %}</h1>
+    <p class="muted">发布 {{ doc.meta.release_at_utc or "—" }} · 更新阶段 {{ doc.status.stage }} · 口径 {{ doc.meta.eps_basis }}</p>
+  </div>
+</section>
+
+{% if doc.status.needs_review or doc.status.warnings %}
+<div class="banner warn">
+  {% if doc.status.needs_review %}<strong>需要人工复核。</strong>{% endif %}
+  <ul>{% for w in doc.status.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<section class="scorecard">
+  <h2>记分卡</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>指标</th><th>实际</th><th>基准</th><th>来源</th><th>差异</th><th>判定</th></tr></thead>
+    <tbody>
+    {% for row in doc.scorecard %}
+      <tr>
+        <td>{{ row.metric }}{% if row.basis %} <span class="tag">{{ row.basis }}</span>{% endif %}</td>
+        <td>{% if row.metric in ['gross_margin','operating_margin'] %}{% if row.actual is not none %}{{ '%.1f'|format(row.actual*100) }}%{% else %}—{% endif %}{% elif 'eps' in row.metric %}{% if row.actual is not none %}${{ '%.2f'|format(row.actual) }}{% else %}—{% endif %}{% else %}{{ row.actual|money }}{% endif %}</td>
+        <td>{% if row.metric in ['gross_margin','operating_margin'] %}{% if row.benchmark is not none %}{{ '%.1f'|format(row.benchmark*100) }}%{% else %}—{% endif %}{% elif 'eps' in row.metric %}{% if row.benchmark is not none %}${{ '%.2f'|format(row.benchmark) }}{% else %}—{% endif %}{% else %}{{ row.benchmark|money }}{% endif %}</td>
+        <td>{{ row.benchmark_source }}</td>
+        <td>{% if row.pct is not none %}{{ row.pct|pct }}{% else %}—{% endif %}</td>
+        <td><span class="v {{ row.verdict }}">{{ row.verdict|verdict }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="muted">次日股价反应：{% if doc.price_reaction.next_day_pct is not none %}{{ '%.2f'|format(doc.price_reaction.next_day_pct*100) }}%{% else %}等待 Stage 3{% endif %}</p>
+</section>
+
+{% if doc.summary and doc.summary.headline %}
+<section>
+  <h2>{{ doc.summary.headline }}</h2>
+  <ol class="findings">
+    {% for f in doc.summary.key_findings %}<li>{{ f if f is string else f.get('text', f) }}</li>{% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+<section>
+  <h2>① 财报解读</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>指标</th><th>本季</th><th>同比</th><th>环比</th><th>vs 基准</th></tr></thead>
+    <tbody>
+    {% for key, label, is_ratio in [
+      ('revenue','营收', false),
+      ('gross_margin_nongaap','毛利率 Non-GAAP', true),
+      ('gross_margin_gaap','毛利率 GAAP', true),
+      ('operating_margin_nongaap','营业利润率 Non-GAAP', true),
+      ('operating_margin_gaap','营业利润率 GAAP', true),
+      ('eps_nongaap','稀释 EPS Non-GAAP', false),
+      ('eps_gaap','稀释 EPS GAAP', false),
+      ('fcf','自由现金流', false)
+    ] %}
+      {% set m = doc.financials.get(key) if doc.financials else None %}
+      {% if m %}
+      <tr>
+        <td>{{ label }}</td>
+        <td>{% if is_ratio and m.value is not none %}{{ '%.1f'|format(m.value*100) }}%{% elif 'eps' in key and m.value is not none %}${{ '%.2f'|format(m.value) }}{% else %}{{ m.value|money }}{% endif %}</td>
+        <td>{{ m.yoy|pct(pp=is_ratio) }}</td>
+        <td>{{ m.qoq|pct(pp=is_ratio) }}</td>
+        <td>{{ (m.benchmark.get('pct_or_pp') if m.benchmark else none)|pct(pp=is_ratio) }}</td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <div class="charts">
+    <canvas id="revChart" height="120"></canvas>
+    <canvas id="marginChart" height="120"></canvas>
+    <canvas id="fcfChart" height="120"></canvas>
+  </div>
+
+  {% if doc.drivers and doc.drivers.metrics %}
+  <div class="cards">
+    {% for d in doc.drivers.metrics %}
+    <details class="driver">
+      <summary><strong>{{ d.metric }}</strong> — {{ d.summary }}</summary>
+      <ul>
+        {% for drv in d.drivers %}
+        <li class="{% if drv.is_inference %}inference{% endif %}">
+          <span class="tag">{{ drv.type }}</span> {{ drv.description }}
+          {% if drv.is_inference %}<em>推测</em>{% endif %}
+          {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if d.conflicts %}<div class="conflict">冲突：{{ d.conflicts }}</div>{% endif %}
+    </details>
+    {% endfor %}
+  </div>
+  {% elif waiting_transcript %}
+  <p class="placeholder">变动原因分析将在电话会文字稿到位后更新。</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>② 业绩指引</h2>
+  {% if doc.guidance.get('items') %}
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>指标</th><th>期间</th><th>低</th><th>中</th><th>高</th><th>口径</th><th>来源</th></tr></thead>
+    <tbody>
+    {% for g in doc.guidance.get('items') %}
+      <tr>
+        <td>{{ g.metric_label or g.metric_key }}</td>
+        <td>{{ g.period }}</td>
+        <td>{{ g.low }}</td><td>{{ g.mid }}</td><td>{{ g.high }}</td>
+        <td>{{ g.basis }}</td>
+        <td>{{ g.source }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="placeholder">指引数据生成中或尚未抽取。</p>
+  {% endif %}
+
+  <h3>分析师修正</h3>
+  {% if doc.guidance.get('analyst_revisions') and doc.guidance.analyst_revisions.get('t_minus_1') %}
+  <pre class="muted">{{ doc.guidance.analyst_revisions | tojson }}</pre>
+  {% else %}
+  <p class="placeholder">等待 Stage 3（T+1 / T+3 / T+7）快照。</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>③ 互动交流</h2>
+  {% if doc.qa.get('items') %}
+  <p>新话题：{{ doc.qa.new_topics|join('、') or '—' }} · 热门：{{ doc.qa.hot_topics|join('、') or '—' }}</p>
+  <div class="qa-list">
+    {% for q in doc.qa.get('items') %}
+    <article class="qa {% if q.directness in ['partial','evasive'] %}warn{% endif %}">
+      <header>{{ q.analyst or '分析师' }}{% if q.firm %} · {{ q.firm }}{% endif %} · <span class="tag">{{ q.topic }}</span></header>
+      <p><strong>问：</strong>{{ q.question_summary }}</p>
+      <p><strong>答：</strong>{{ q.answer_summary }}</p>
+      {% if q.evasion_note %}<p class="muted">未答清：{{ q.evasion_note }}</p>{% endif %}
+      {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="placeholder">等待电话会文字稿</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>跟踪清单</h2>
+  {% if doc.summary.get('next_watchlist') %}
+  <ul>{% for w in doc.summary.next_watchlist %}<li>{{ w if w is string else w.get('text', w) }}</li>{% endfor %}</ul>
+  {% else %}
+  <p class="placeholder">Stage 2 完成后生成。</p>
+  {% endif %}
+</section>
+
+<section class="sources">
+  <h2>来源</h2>
+  <ul>
+    <li>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}">EDGAR</a>{% else %}—{% endif %}</li>
+    <li>文字稿来源：{{ doc.meta.transcript_source or "—" }}</li>
+    <li>accession：{{ doc.meta.accession or "—" }}</li>
+  </ul>
+</section>
+
+<script>
+const history = {{ history|tojson }};
+const labels = history.map(h => h.period);
+new Chart(document.getElementById('revChart'), {
+  data: {
+    labels,
+    datasets: [
+      {type:'bar', label:'营收', data: history.map(h => h.revenue), yAxisID:'y'},
+      {type:'line', label:'同比', data: history.map(h => h.revenue_yoy == null ? null : h.revenue_yoy*100), yAxisID:'y1'}
+    ]
+  },
+  options: {responsive:true, scales:{y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}}}}
+});
+new Chart(document.getElementById('marginChart'), {
+  type:'line',
+  data:{labels, datasets:[
+    {label:'毛利率', data: history.map(h => h.gross_margin == null ? null : h.gross_margin*100)},
+    {label:'营业利润率', data: history.map(h => h.operating_margin == null ? null : h.operating_margin*100)}
+  ]},
+  options:{responsive:true}
+});
+new Chart(document.getElementById('fcfChart'), {
+  type:'bar',
+  data:{labels, datasets:[{label:'FCF', data: history.map(h => h.fcf)}]},
+  options:{responsive:true}
+});
+</script>
+{% endblock %}

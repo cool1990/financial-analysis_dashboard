@@ -1,0 +1,38 @@
+llm:
+  provider: openrouter
+  model: "deepseek/deepseek-chat"
+  temperature: 0
+  base_url: "https://openrouter.ai/api/v1"
+  max_retries: 1
+
+thresholds:
+  revenue_inline_pct: 0.01
+  eps_inline_pct: 0.02
+  eps_inline_abs: 0.01
+  margin_inline_pp: 0.5
+  guidance_change_pct: 0.005
+  guidance_change_pp: 0.25
+
+validation:
+  eps_provider_tolerance: 0.02
+  snapshot_max_age_days: 3
+  min_analysts: 3
+  quote_similarity: 0.9
+
+polling:
+  amc_window_et: ["16:00", "20:00"]
+  bmo_window_et: ["06:00", "09:30"]
+  transcript_max_hours: 36
+  max_retries: 5
+
+sec:
+  max_rps: 5
+  max_retries: 3
+
+paths:
+  data: data
+  site: site
+  cache: cache
+  logs: logs
+  config: config
+  prompts: prompts
