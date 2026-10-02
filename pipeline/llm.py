@@ -91,6 +91,19 @@ def _loads_json_payload(content: str) -> Any:
         raise
 
 
+def _reasoning_param(effort: Any) -> dict[str, Any] | None:
+    """OpenRouter 统一的 reasoning 参数。
+
+    DeepSeek V4 Pro 只接受 high / xhigh 两档 effort，写 low 并不会减少思考；
+    抽取和摘要不需要推理，默认关闭：{"enabled": false}。未配置时不传，沿用模型默认。
+    """
+    if effort is None or effort == "":
+        return None
+    if effort is False or str(effort).strip().lower() in {"off", "none", "false", "disabled"}:
+        return {"enabled": False}
+    return {"effort": str(effort), "exclude": True}
+
+
 def _has_complete_json(content: str) -> bool:
     try:
         _loads_json_payload(content)
@@ -269,6 +282,7 @@ class LLMClient:
         self.max_tokens = int(settings.get("max_tokens", 4096))
         self.request_timeout_sec = float(settings.get("request_timeout_sec", 90))
         # 推理模型的思考 token 计入 max_tokens 且计费；抽取 / 摘要类任务不需要长推理
+        # off（YAML 里也可能被解析成 False）= 关闭推理；其它值作为 reasoning.effort 传给 OpenRouter
         self.reasoning_effort = settings.get("reasoning_effort")
         self.max_cost = float(settings.get("max_cost_per_run_usd", 2))
         self.use_cache = use_cache
@@ -360,8 +374,9 @@ class LLMClient:
         }
         if json_object:
             body["response_format"] = {"type": "json_object"}
-        if self.reasoning_effort:
-            body["reasoning"] = {"effort": str(self.reasoning_effort), "exclude": True}
+        reasoning = _reasoning_param(self.reasoning_effort)
+        if reasoning is not None:
+            body["reasoning"] = reasoning
         # httpx 的 read timeout 会在每个 chunk 间重置；流式长输出可拖到数十分钟。
         # 用线程池施加墙钟上限，超时即放弃本次调用。
         deadline = max(1.0, float(self.request_timeout_sec))
@@ -410,6 +425,7 @@ class LLMClient:
             raise LLMTruncatedError(
                 f"LLM 输出被 max_tokens={self.max_tokens} 截断"
                 f"（completion_tokens={usage.get('completion_tokens')}，content {len(content)} 字符）"
+                + ("；正文为空多半是推理 token 耗尽额度，检查 llm.reasoning_effort" if not content else "")
             )
         return content, usage, latency
 

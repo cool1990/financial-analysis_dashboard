@@ -6,9 +6,10 @@ llm:
   max_retries: 1
   # 限制单次输出，避免模型啰嗦写出上万 token（实测可单次 5–6 分钟）
   max_tokens: 4096
-  # OpenRouter reasoning.effort：推理 token 计入 max_tokens 且计费。曾出现思考耗尽额度、
-  # content 为空导致问答整批失败。low ≈ 20% 预算；none 关闭推理（最省）
-  reasoning_effort: low
+  # 推理模型的思考 token 计入 max_tokens 且计费。实测 low 档对 DeepSeek V4 Pro 无效
+  # （它只支持 high / xhigh），思考耗尽 4096 额度后正文为空。抽取 / 摘要不需要推理，默认关闭。
+  # 可选：off（关闭，最省）/ high / xhigh；删掉这一行则沿用模型默认
+  reasoning_effort: "off"
   # 整次请求墙钟上限（含流式吐字）；httpx read timeout 会随 chunk 重置，不能单靠它
   request_timeout_sec: 90
   max_cost_per_run_usd: 2
