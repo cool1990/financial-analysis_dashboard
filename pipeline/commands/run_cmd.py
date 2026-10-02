@@ -445,44 +445,140 @@ def run_stage2(ticker: str, fiscal_period: str) -> dict[str, Any]:
     return doc
 
 
+def _snapshot_at(data: dict[str, Any]) -> datetime | None:
+    raw = data.get("snapshot_at")
+    if not raw:
+        return None
+    try:
+        return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _iter_snapshots(ticker: str) -> list[tuple[datetime, dict[str, Any], str]]:
+    snap_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "snapshots"
+    if not snap_dir.exists():
+        return []
+    rows: list[tuple[datetime, dict[str, Any], str]] = []
+    for path in snap_dir.glob("*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        ts = _snapshot_at(data)
+        if ts is None:
+            continue
+        rows.append((ts, data, path.name))
+    rows.sort(key=lambda x: x[0])
+    return rows
+
+
+def _point_from_snap(data: dict[str, Any], *, row: str) -> dict[str, Any]:
+    ee = estimate_row(data.get("earnings_estimate") or {}, row) or {}
+    re = estimate_row(data.get("revenue_estimate") or {}, row) or {}
+    ts = _snapshot_at(data)
+    return {
+        "eps": ee.get("avg"),
+        "revenue": re.get("avg"),
+        "date": ts.date().isoformat() if ts else None,
+        "row": row,
+    }
+
+
+def _first_snap_on_or_after(
+    rows: list[tuple[datetime, dict[str, Any], str]], threshold: datetime
+) -> dict[str, Any] | None:
+    for ts, data, _ in rows:
+        if ts >= threshold:
+            return data
+    return None
+
+
 def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
-    """股价反应 + 分析师修正骨架 + 延迟校验占位。"""
+    """股价反应 + 分析师修正（按发布前后快照对齐）。"""
+    from datetime import timedelta
+
     from pipeline.sources.yfinance_src import YFinanceSource
 
     doc = load_period_json(ticker, fiscal_period)
     if not doc:
         raise RuntimeError("缺少季度数据")
     release = doc["meta"].get("release_at_utc") or ""
+    if not release:
+        raise RuntimeError("缺少 release_at_utc，无法对齐分析师修正")
+    release_dt = datetime.fromisoformat(release.replace("Z", "+00:00"))
+
     yf = YFinanceSource(ticker)
+    cfg = load_ticker_config(ticker)
+    timing = cfg.get("release_timing") or "amc"
     try:
-        day = release[:10]
-        yf.history(start=day, end=day)
-        doc["price_reaction"] = doc.get("price_reaction") or {}
-        doc["price_reaction"]["note"] = "详细次日涨跌在 daily 任务中根据盘前/盘后规则补全"
+        doc["price_reaction"] = yf.next_day_reaction(release, release_timing=timing)
     except Exception as e:
+        doc["price_reaction"] = {
+            "next_day_pct": None,
+            "close_before": None,
+            "close_after": None,
+            "note": f"股价反应计算失败: {e}",
+        }
         doc["status"]["warnings"].append(f"股价反应失败: {e}")
 
-    # commands 负责读 snapshot / sources，compute 只吃已对齐数据
-    snap_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "snapshots"
     points: dict[str, dict[str, Any]] = {
         "t_minus_1": {},
         "t_plus_1": {},
         "t_plus_3": {},
         "t_plus_7": {},
     }
-    if snap_dir.exists():
-        # 占位：按日期取最新可用快照行；真实对齐在 daily Stage3 补全
-        files = sorted(snap_dir.glob("*.json"))
-        if files:
-            snap = json.loads(files[-1].read_text(encoding="utf-8"))
-            ee = estimate_row(snap.get("earnings_estimate") or {}, "0q") or {}
-            re = estimate_row(snap.get("revenue_estimate") or {}, "0q") or {}
-            points["t_minus_1"] = {
-                "eps": ee.get("avg"),
-                "revenue": re.get("avg"),
-                "date": files[-1].stem[:10],
-            }
-    doc["guidance"]["analyst_revisions"] = compute_analyst_revisions(points)
+    notes: list[str] = []
+
+    # 财报前：本季一致预期用 0q；发布后 Yahoo 会把 0q 滚到下季，
+    # 因此 T+N 用发布后快照的 0q 追踪「下季」预期变化（对应发布前的 +1q）。
+    pre = load_pre_earnings_snapshot(ticker, release)
+    if pre:
+        points["t_minus_1"] = _point_from_snap(pre, row="0q")
+        points["t_minus_1"]["next_q"] = _point_from_snap(pre, row="+1q")
+    else:
+        notes.append("缺少财报前快照，T-1 一致预期为空")
+
+    snaps = _iter_snapshots(ticker)
+    for key, days in [("t_plus_1", 1), ("t_plus_3", 3), ("t_plus_7", 7)]:
+        data = _first_snap_on_or_after(snaps, release_dt + timedelta(days=days))
+        if data:
+            # 发布后 0q ≈ 发布前 +1q（下季）
+            points[key] = _point_from_snap(data, row="0q")
+        else:
+            notes.append(f"缺少发布后 T+{days} 快照")
+
+    nq_eps = next(
+        (c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "next_q_eps_guidance"),
+        None,
+    )
+    nq_rev = next(
+        (c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "next_q_revenue_guidance"),
+        None,
+    )
+    # gap_closure 更适合看「下季」预期是否向指引靠拢：用发布前 +1q 作为 T-1
+    gap_points = dict(points)
+    if pre:
+        gap_points["t_minus_1"] = _point_from_snap(pre, row="+1q")
+    revisions = compute_analyst_revisions(
+        gap_points,
+        guidance_mid_eps=float(nq_eps) if nq_eps is not None else None,
+        guidance_mid_rev=float(nq_rev) if nq_rev is not None else None,
+    )
+    # 页面同时保留「本季」发布前 0q，避免只显示下季造成误解
+    if points.get("t_minus_1"):
+        revisions["t_minus_1_current_quarter"] = {
+            "eps": points["t_minus_1"].get("eps"),
+            "revenue": points["t_minus_1"].get("revenue"),
+            "date": points["t_minus_1"].get("date"),
+            "note": "财报前对本季（当时 0q）的一致预期",
+        }
+    revisions["status_notes"] = notes
+    revisions["methodology"] = (
+        "T-1 本季=发布前 0q；下季轨迹用发布前 +1q 与发布后 0q 对齐。"
+        "T+1/3/7 需对应日期之后的 snapshot 才会填入。"
+    )
+    doc.setdefault("guidance", {})["analyst_revisions"] = revisions
     doc["status"]["stage"] = "stage3_done"
     save_period_json(ticker, fiscal_period, doc)
     mark_stage(ticker, fiscal_period, "stage3_done")
