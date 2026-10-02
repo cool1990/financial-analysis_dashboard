@@ -3,20 +3,38 @@ name: manual
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: "run / llm-ping / backfill"
+        required: true
+        default: run
+        type: choice
+        options: [run, llm-ping, backfill]
       ticker:
         description: Ticker
         required: true
         default: MU
       period:
-        description: Fiscal period e.g. FY2026Q4
+        description: "Fiscal period 或 latest"
         required: false
+        default: latest
       stage:
-        description: Stage 1/2/3
-        required: true
+        description: Stage 1/2/3（action=run 时）
+        required: false
         default: "1"
+      model:
+        description: "覆盖 settings.yaml 模型；留空则用配置"
+        required: false
+        default: ""
       accession:
         description: Optional 8-K accession
         required: false
+        default: ""
+      dry_run:
+        description: "backfill 时仅估算花费"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
 concurrency:
   group: earnings-pipeline
@@ -34,23 +52,82 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Run
+
+      - name: Restore LLM cache
+        uses: actions/cache@v4
+        with:
+          path: cache/llm
+          key: llm-cache-${{ hashFiles('prompts/**') }}-${{ runner.os }}
+          restore-keys: |
+            llm-cache-${{ hashFiles('prompts/**') }}-
+
+      - name: Require OPENROUTER_API_KEY
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ACTION: ${{ inputs.action }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$ACTION" = "backfill" ] && [ "$DRY_RUN" = "true" ]; then
+            echo "backfill --dry-run 不需要 API key"
+            exit 0
+          fi
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "::error::缺少 GitHub Secret OPENROUTER_API_KEY。请在仓库 Settings → Secrets and variables → Actions 中配置后再运行 manual/${ACTION}。"
+            exit 1
+          fi
+
+      - name: Run action
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PIPELINE_LLM_MODEL: ${{ inputs.model }}
         run: |
-          ARGS=(--ticker "${{ inputs.ticker }}" --stage "${{ inputs.stage }}")
-          if [ -n "${{ inputs.period }}" ]; then ARGS+=(--period "${{ inputs.period }}"); fi
-          if [ -n "${{ inputs.accession }}" ]; then ARGS+=(--accession "${{ inputs.accession }}"); fi
-          python -m pipeline run "${ARGS[@]}"
-          python -m pipeline build --ticker "${{ inputs.ticker }}"
-      - name: Commit
+          set -euo pipefail
+          mkdir -p logs
+          MODEL_ARGS=()
+          if [ -n "${{ inputs.model }}" ]; then
+            MODEL_ARGS+=(--model "${{ inputs.model }}")
+            export PIPELINE_LLM_MODEL="${{ inputs.model }}"
+          fi
+          case "${{ inputs.action }}" in
+            llm-ping)
+              python -m pipeline llm-ping "${MODEL_ARGS[@]}" 2>&1 | tee logs/manual.log
+              ;;
+            backfill)
+              BF=(--ticker "${{ inputs.ticker }}" "${MODEL_ARGS[@]}")
+              if [ "${{ inputs.dry_run }}" = "true" ]; then BF+=(--dry-run); fi
+              python -m pipeline backfill "${BF[@]}" 2>&1 | tee logs/manual.log
+              ;;
+            run)
+              ARGS=(--ticker "${{ inputs.ticker }}" --stage "${{ inputs.stage }}" "${MODEL_ARGS[@]}")
+              if [ -n "${{ inputs.period }}" ]; then ARGS+=(--period "${{ inputs.period }}"); fi
+              if [ -n "${{ inputs.accession }}" ]; then ARGS+=(--accession "${{ inputs.accession }}"); fi
+              python -m pipeline run "${ARGS[@]}" 2>&1 | tee logs/manual.log
+              python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
+              ;;
+            *)
+              echo "未知 action: ${{ inputs.action }}"; exit 1
+              ;;
+          esac
+
+      - name: Commit results
+        if: ${{ inputs.action == 'run' || (inputs.action == 'backfill' && inputs.dry_run == 'false') }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase
           git add data site config || true
-          git diff --staged --quiet || git commit -m "chore: manual ${{ inputs.ticker }} stage ${{ inputs.stage }}"
+          git diff --staged --quiet || git commit -m "chore: manual ${{ inputs.action }} ${{ inputs.ticker }}"
           git push
+
+      - name: Upload logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-llm-logs
+          path: |
+            logs/
+          retention-days: 30
+          if-no-files-found: ignore
