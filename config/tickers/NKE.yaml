@@ -1,24 +1,48 @@
 ticker: NKE
 name: NIKE, Inc.
-cik: null
+cik: 0000320187
 fiscal_year_end_month: 5
 release_timing: amc
-eps_basis: null
+eps_basis: gaap
 eps_basis_override: null
-eps_basis_evidence: []
+eps_basis_evidence:
+  has_nongaap_eps: false
+  gaap_match_ratio: 1.0
+  paired_quarters: 3
+  pairs:
+  - period_end: '2025-11-30'
+    provider_reported: 0.53
+    gaap_xbrl: 0.53
+    abs_diff: 0.0
+    match: true
+  - period_end: '2026-02-28'
+    provider_reported: 0.35
+    gaap_xbrl: 0.35
+    abs_diff: 0.0
+    match: true
+  - period_end: '2026-08-31'
+    provider_reported: 0.48
+    gaap_xbrl: 0.48
+    abs_diff: 0.0
+    match: true
+  notes:
+  - 新闻稿无 Non-GAAP EPS，且数据商与 GAAP 匹配度≥75%
 capex_definition: gross
 kpis:
-  - key: wholesale_revenue
-    name: 批发营收
-    unit: USD
-    source: press_release
-    hint: "Wholesale revenues"
-  - key: nike_direct_revenue
-    name: NIKE Direct 营收
-    unit: USD
-    source: press_release
-    hint: "NIKE Direct revenues"
-transcript_sources: [motley_fool, ir_page, manual]
+- key: wholesale_revenue
+  name: 批发营收
+  unit: USD
+  source: press_release
+  hint: Wholesale revenues
+- key: nike_direct_revenue
+  name: NIKE Direct 营收
+  unit: USD
+  source: press_release
+  hint: NIKE Direct revenues
+transcript_sources:
+- motley_fool
+- ir_page
+- manual
 webcast_audio_url: null
 management_aliases: []
 ir_transcript_url: null
