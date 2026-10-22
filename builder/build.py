@@ -272,7 +272,7 @@ def _metric_sections(doc: dict[str, Any]) -> list[dict[str, Any]]:
         sections.append(
             {
                 "key": key,
-                "label": label,
+                "label": (metric or {}).get("display_label") or label,
                 "is_ratio": is_ratio,
                 "is_eps": "eps" in key,
                 "metric": metric,
@@ -314,7 +314,7 @@ def _fin_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
                 if has_bench
                 else {"text": "—", "cls": "na"},
                 "vs_source": _source_label(bench.get("source")) if has_bench else "",
-                "summary": drv.get("summary") or "",
+                "summary": drv.get("summary") or m.get("basis_note") or "",
                 "drivers": drv.get("drivers") or [],
                 "conflicts": drv.get("conflicts") or [],
                 "from_press": m.get("comparatives_source") == "press_release",
@@ -701,6 +701,8 @@ def _score_lines(
 
     def vs(metric: str, label: str) -> dict[str, str]:
         row = sc.get(metric) or {}
+        if metric == "eps" and row.get("basis") == "ex_legal":
+            label = "每股 EPS（剔诉讼费用后）"
         verdict = row.get("verdict") or "unknown"
         diff = _num((row.get("benchmark") or {}).get("diff_pct"))
         gap = _change(diff)["text"] if diff is not None else ""
@@ -729,6 +731,10 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
         v = (sc.get(metric) or {}).get("verdict") or ""
         return {"verdict": v, "label": _verdict_label(v) if v else "—"}
 
+    eps = chip("eps")
+    if (sc.get("eps") or {}).get("basis") == "ex_legal" and eps["label"] not in ("", "—"):
+        eps = {**eps, "label": f"{eps['label']} · 剔诉讼费用后"}
+
     guide = chip("next_q_eps_guidance")
     if (sc.get("next_q_eps_guidance") or {}).get("actual") is None:
         company = _company_revenue_guide(doc)
@@ -742,7 +748,7 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
         "pos_stage": (pos or {}).get("stage") or "watch",
         "period": period or "—",
         "revenue": chip("revenue"),
-        "eps": chip("eps"),
+        "eps": eps,
         "guide": guide,
         "price": _price_view(doc) if doc else {"text": "—", "cls": "na", "detail": ""},
         "stage": _stage_label((doc.get("status") or {}).get("stage") if doc else "scheduled"),
@@ -773,13 +779,21 @@ def _gap_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
         if not row or row.get("actual") is None:
             continue
         b = row.get("benchmark") or {}
+        ex_legal = key == "eps" and row.get("basis") == "ex_legal"
+        if ex_legal:
+            label = "本季 EPS（剔诉讼费用后）"
         fmt_key = "eps" if "eps" in key else key
         actual = _fmt_value(row.get("actual"), fmt_key)
         diff = _num(b.get("diff_pct"))
         if b.get("value") is None or diff is None:
-            rows.append({"label": label, "has": False, "detail": f"{'指引中值' if 'guidance' in key else '实际'} {actual}"})
+            prefix = "剔诉讼费用后" if ex_legal else ("指引中值" if "guidance" in key else "实际")
+            rows.append({"label": label, "has": False, "detail": f"{prefix} {actual}"})
             continue
         clipped = max(-GAP_SCALE, min(GAP_SCALE, diff))
+        if ex_legal:
+            detail = f"剔诉讼费用后 {actual} · 一致预期 {_fmt_value(b.get('value'), fmt_key)}"
+        else:
+            detail = f"{'指引中值' if 'guidance' in key else '实际'} {actual} · 预期 {_fmt_value(b.get('value'), fmt_key)}"
         rows.append(
             {
                 "label": label,
@@ -788,7 +802,7 @@ def _gap_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
                 "clipped": abs(diff) > GAP_SCALE,
                 "gap": _change(diff),
                 "verdict": row.get("verdict") or "",
-                "detail": f"{'指引中值' if 'guidance' in key else '实际'} {actual} · 预期 {_fmt_value(b.get('value'), fmt_key)}",
+                "detail": detail,
             }
         )
     return rows

@@ -48,14 +48,16 @@
           "note": "已报告行的分析师预期。没有 revenue_forecast_fq 标量。"
         },
         {
-          "dashboard_field": "scorecard.eps.benchmark / financials.eps_gaap.benchmark",
+          "dashboard_field": "scorecard.eps.benchmark / financials.eps_nongaap.benchmark",
           "endpoint": "https://scanner.tradingview.com/america/scan",
           "column": "earnings_fq_h",
           "fiscal_period": "2026-Q3",
           "series_field": "Estimate",
           "value": 6.538606,
           "rounded": 6.54,
-          "note": "与 earnings_per_share_forecast_fq 相同，是刚报告这一季的预期，不是下一季。页面每股收益用 round_eps。"
+          "note": "earnings_fq_h 2026-Q3 Estimate 等于 earnings_per_share_forecast_fq 6.538606，round_eps 后为 $6.54。该预期是 street/adjusted 口径。同一行 Actual 3.83 是 GAAP 稀释每股收益，不与 $6.54 对比。页面把该预期对比新闻稿剔除诉讼费用后的稀释每股收益 $7.40。TradingView 与 Alpha Vantage 都没有可填的 GAAP 一致预期；Yahoo 约 $5.46 未采用。",
+          "comparable_actual": 7.4,
+          "comparable_basis": "ex_legal"
         },
         {
           "dashboard_field": "scorecard.next_q_revenue_guidance.benchmark",
@@ -165,7 +167,7 @@
     "warnings": [
       "问答是从 Motley Fool 文字稿逐轮摘出的，没有调用模型。仍待 Stage 2：变动原因、语气、模型总结和论点复核。当前环境没有 OPENROUTER_API_KEY。",
       "未找到 Obsidian 收集箱/财报/META。公司指引以仓库里的 SEC Exhibit 99.1 为准，并用已下载的电话会文字稿核对；1 拆 2 只在电话会。",
-      "分析师一致预期来自 POST https://scanner.tradingview.com/america/scan，代码 NASDAQ:META。本季营收和每股收益用 revenues_fq_h、earnings_fq_h 里 2026-Q3 已报告行的 Estimate；下一季用 revenue_forecast_next_fq 与 earnings_per_share_forecast_next_fq，并已核对等于 2026-Q4 未报告行。",
+      "分析师一致预期来自 POST https://scanner.tradingview.com/america/scan，代码 NASDAQ:META。本季营收用 revenues_fq_h 2026-Q3 已报告行的 Estimate。下一季用 revenue_forecast_next_fq 与 earnings_per_share_forecast_next_fq，并已核对等于 2026-Q4 未报告行。本季每股收益的 $6.54 来自 earnings_fq_h 2026-Q3 Estimate，等于 earnings_per_share_forecast_fq 6.538606，round_eps 后 $6.54，是 street/adjusted 口径，不是 GAAP。同一行 Actual 3.83 是 GAAP 稀释每股收益，不与 $6.54 对比。页面用新闻稿剔除 98.9 亿美元诉讼费用后的稀释每股收益 $7.40 对比 $6.54。没有来自 TradingView 或 Alpha Vantage 的 GAAP 一致预期；Yahoo 约 $5.46 未采用。",
       "Alpha Vantage EARNINGS_ESTIMATES 没有调用：没有 API key。分析师人数、高低值、7/30/60/90 日前预期和上调下调次数为空。",
       "FY2016Q1 至 FY2026Q2 来自 SEC companyfacts。第四季稀释每股收益没有单季事实，没有用全年减前三季倒挤。FY2026Q3 的环比对照 FY2026Q2 的 XBRL，同比仍是新闻稿。",
       "管道自由现金流等于经营现金流减购建固定资产绝对值，为 -11.56 亿美元。公司口径还减融资租赁本金；电话会称资本开支 349 亿美元、自由现金流为负 21 亿美元。",
@@ -188,16 +190,16 @@
     },
     {
       "metric": "eps",
-      "actual": 3.83,
+      "actual": 7.4,
       "benchmark": {
         "value": 6.54,
         "source": "consensus",
-        "diff": -2.71,
-        "diff_pct": -0.41437308868501527,
+        "diff": 0.86,
+        "diff_pct": 0.13149847094801229,
         "diff_pp": null
       },
-      "verdict": "miss",
-      "basis": "gaap"
+      "verdict": "beat",
+      "basis": "ex_legal"
     },
     {
       "metric": "gross_margin",
@@ -351,30 +353,33 @@
       "yoy_pp": null,
       "qoq_pp": null,
       "benchmark": {
-        "value": 6.54,
-        "source": "consensus",
-        "diff": -2.71,
-        "diff_pct": -0.41437308868501527,
-        "diff_pp": null
-      },
-      "source_quote": "Diluted $3.83 $1.05 $20.44 $14.62",
-      "year_ago": 1.05,
-      "comparatives_source": "press_release"
-    },
-    "eps_nongaap": {
-      "value": null,
-      "yoy_pct": null,
-      "qoq_pct": null,
-      "yoy_pp": null,
-      "qoq_pp": null,
-      "benchmark": {
         "value": null,
         "source": "none",
         "diff": null,
         "diff_pct": null,
         "diff_pp": null
       },
-      "source_quote": null
+      "source_quote": "Diluted $3.83 $1.05 $20.44 $14.62",
+      "year_ago": 1.05,
+      "comparatives_source": "press_release",
+      "basis_note": "GAAP $3.83。TradingView $6.54 不是 GAAP 一致预期，不在这一行对比。"
+    },
+    "eps_nongaap": {
+      "value": 7.4,
+      "yoy_pct": null,
+      "qoq_pct": null,
+      "yoy_pp": null,
+      "qoq_pp": null,
+      "benchmark": {
+        "value": 6.54,
+        "source": "consensus",
+        "diff": 0.86,
+        "diff_pct": 0.13149847094801229,
+        "diff_pp": null
+      },
+      "source_quote": "Diluted EPS of $3.83 would have increased by $3.57 to $7.40.",
+      "display_label": "稀释每股收益（剔诉讼费用后）",
+      "basis_note": "新闻稿：剔除 98.9 亿美元诉讼费用后，稀释每股收益由 $3.83 增加 $3.57 至 $7.40。对照 TradingView earnings_fq_h 2026-Q3 Estimate $6.54（street/adjusted 口径）。"
     },
     "operating_cash_flow": {
       "value": 32786000000.0,
