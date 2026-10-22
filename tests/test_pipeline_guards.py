@@ -174,11 +174,68 @@ def test_structure_qa_prompt_asks_for_a_full_answer():
     assert "30 个英文单词" not in text
     assert "输出务必紧凑" not in text
     assert "3 到 6 句" in text
+    assert "可以到 8 句" in text
+    assert "不要退回一两句" in text
     assert "不要用「文本不足」" in text
+    # 每段点名发言人；职务已知才写。能对上名字时不用「管理层表示」带过。
+    assert "Mark（CEO）" in text and "Susan（CFO）" in text
+    assert "能对上名字时不要写成「管理层表示」" in text
+    assert "用换行符 \\n 分开" in text
+    # 投资者能读的复述，不要硬译 compute-intensive。
+    assert "不要把英文术语硬译" in text
+    assert "服务计算密集" in text
+    assert "算力消耗大" in text
+    assert "商业化是否要和降本同步" in text
+    assert "不要编造数字、产品或表态" in text
     from pipeline.analyze.qa import _is_placeholder_qa
 
     assert _is_placeholder_qa({"question_summary": "文本不足", "answer_summary": "文本不足"})
     assert not _is_placeholder_qa({"question_summary": "问成本", "answer_summary": "今天没有具体数字，降本要靠闲置算力和更小的模型。"})
+
+
+def test_qa_template_shows_full_speaker_lines():
+    """多位发言人的摘要按行完整展示，不截断、不丢掉名字。"""
+    from builder.build import _env, _qa_answer_lines
+
+    text = (
+        "Mark（CEO）：最大约束之一是产品算力消耗大，所以还没有全球上线。"
+        "一部分要针对各地优化接入，一部分要先把运行效率做上去才能放量。"
+        "算力要能服务十亿以上用户，这是未来一年的限制因素之一。\n"
+        "- Susan（CFO）补充：商业化要和降本同步，目前没有单位成本数字。"
+    )
+    lines = _qa_answer_lines(text)
+    assert lines == [
+        "Mark（CEO）：最大约束之一是产品算力消耗大，所以还没有全球上线。一部分要针对各地优化接入，一部分要先把运行效率做上去才能放量。算力要能服务十亿以上用户，这是未来一年的限制因素之一。",
+        "Susan（CFO）补充：商业化要和降本同步，目前没有单位成本数字。",
+    ]
+    assert _qa_answer_lines("  ") == []
+    assert _qa_answer_lines("管理层：只有一位，整段都要留下，包括 1000 万用户。") == [
+        "管理层：只有一位，整段都要留下，包括 1000 万用户。"
+    ]
+
+    tpl = (ROOT / "builder" / "templates" / "period.html").read_text(encoding="utf-8")
+    qa_body = tpl.split('class="qa-body"', 1)[1].split("{% if q.note %}", 1)[0]
+    assert "qa_lines" in qa_body
+    assert "truncate" not in qa_body
+    assert "[:" not in qa_body
+    css = (ROOT / "builder" / "static" / "style.css").read_text(encoding="utf-8")
+    qa_css = css.split("/* ---- 问答 ---- */", 1)[1].split("/* ---- 跟踪 ---- */", 1)[0]
+    assert "qa-speakers" in qa_css
+    assert "line-clamp" not in qa_css
+
+    start = tpl.index("{% set answer_lines")
+    end = tpl.index("{% endif %}", start) + len("{% endif %}")
+    snippet = tpl[start:end]
+    render = _env().from_string(snippet).render
+    html = render(q={"answer_summary": text})
+    assert "Mark（CEO）" in html and "Susan（CFO）" in html
+    assert "十亿以上用户" in html and "商业化要和降本同步" in html
+    assert "<li>" in html
+    assert "…" not in html and "服务计算密集" not in html
+    one = render(q={"answer_summary": "Mark（CEO）：整段回答都要显示，不要截成两句。"})
+    assert "Mark（CEO）：整段回答都要显示，不要截成两句。" in one
+    assert "<li>" not in one
+    assert one.endswith("</p>") or "</p>" in one
 
 
 def test_clean_firm_and_failed_items_not_evasive():

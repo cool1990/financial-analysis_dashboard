@@ -273,7 +273,12 @@
         {% if q.failed %}
         {% if q.raw_excerpt %}<blockquote>{{ q.raw_excerpt }}…</blockquote>{% else %}<p class="small">原文未保存在页面数据中，修复后显示问答摘要。</p>{% endif %}
         {% else %}
-        <p class="qa-answer"><b>答：</b>{{ q.answer_summary or '—' }}</p>
+        {% set answer_lines = (q.answer_summary or '')|qa_lines %}
+        {% if answer_lines|length > 1 %}
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers">{% for line in answer_lines %}<li>{{ line }}</li>{% endfor %}</ul></div>
+        {% else %}
+        <p class="qa-answer"><b>答：</b>{{ answer_lines[0] if answer_lines else '—' }}</p>
+        {% endif %}
         {% endif %}
         {% if q.note %}<p class="small">未回答的部分：{{ q.note }}</p>{% endif %}
         {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}

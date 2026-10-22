@@ -859,6 +859,22 @@ def _revision_rows(doc: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_QA_BULLET_RE = re.compile(r"^(?:[-*•・]|—)\s+")
+
+
+def _qa_answer_lines(text: str | None) -> list[str]:
+    """按发言人分行。不截断、不改写句子；单段原文仍是一行。"""
+    raw = (text or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not raw:
+        return []
+    lines: list[str] = []
+    for line in raw.split("\n"):
+        line = _QA_BULLET_RE.sub("", line.strip())
+        if line:
+            lines.append(line)
+    return lines
+
+
 def _qa_view(doc: dict[str, Any], has_prior_qa: bool) -> dict[str, Any]:
     qa = doc.get("qa") or {}
     items = []
@@ -1731,6 +1747,7 @@ def _env() -> Environment:
     env.filters["tone"] = _tone_label
     env.filters["period_zh"] = _period_zh
     env.filters["warn_zh"] = _humanize_warning
+    env.filters["qa_lines"] = _qa_answer_lines
     env.policies["json.dumps_kwargs"] = {"sort_keys": True, "ensure_ascii": False}
     return env
 
