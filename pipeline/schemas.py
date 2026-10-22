@@ -91,10 +91,14 @@ class QAItem(BaseModel):
     topic: Optional[str] = None
     is_new_topic: bool = False
     question_summary: Optional[str] = None
-    # 多句中文，覆盖该回答的主要论点和关键数字。流水线不截断这段文字。
+    # 多句中文，点名发言人并写成投资者能读的复述。流水线不截断这段文字。
     answer_summary: Optional[str] = Field(
         default=None,
-        description="多句中文，覆盖管理层回答的主要论点和关键数字；不要用「文本不足」占位",
+        description=(
+            "多句中文。每段以发言人起头，职务已知时写成 Mark（CEO）/ Susan（CFO）；"
+            "多位发言人用换行分开。按生意含义复述，保留数字、产品名和明确表态。"
+            "不要硬译术语，不要用「文本不足」占位，不要压成一两句。"
+        ),
     )
     new_numbers: list[Any] = Field(default_factory=list)
     directness: Optional[str] = None
