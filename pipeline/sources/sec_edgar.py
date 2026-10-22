@@ -134,7 +134,14 @@ class SecEdgarClient:
             name = item.get("name", "")
             desc = (item.get("description") or "").upper()
             name_u = name.upper()
-            if "EX-99" in name_u or "EX99" in name_u or "EXHIBIT 99" in desc or "PRESS" in desc:
+            # 有的 8-K 把 Exhibit 99.1 写成 exhibit991.htm（没有 EX-99 / EX99）
+            if (
+                "EX-99" in name_u
+                or "EX99" in name_u
+                or "EXHIBIT99" in name_u
+                or "EXHIBIT 99" in desc
+                or "PRESS" in desc
+            ):
                 if name_u.endswith((".HTM", ".HTML", ".TXT")):
                     matches.append(name)
         # Prefer EX-99.1

@@ -43,6 +43,27 @@ def test_detect_new_filings_ignores_old_and_failed(monkeypatch, tmp_path):
     assert data["accessions"] == ["new-1"] and data["failures"] == {"failed-1": 3}
 
 
+def test_press_release_matches_exhibit991_filename():
+    """META 最新 8-K 的新闻稿文件名是 exhibit991.htm，不是 EX-99.1。"""
+    from pipeline.sources.sec_edgar import SecEdgarClient
+
+    client = SecEdgarClient.__new__(SecEdgarClient)
+    client.filing_index = lambda cik, accession: {
+        "directory": {
+            "item": [
+                {"name": "meta-20261019.htm"},
+                {"name": "meta10202026-ex101.htm"},
+                {"name": "meta-09302026xexhibit991.htm"},
+                {"name": "ex99_1.htm"},
+            ]
+        }
+    }
+    assert client.find_press_release_files("0001326801", "0001628280-26-066700") == [
+        "ex99_1.htm",
+        "meta-09302026xexhibit991.htm",
+    ]
+
+
 def test_near_earnings_gate(monkeypatch):
     from pipeline.commands import poll_cmd
 
@@ -265,7 +286,9 @@ def test_load_position_stages():
     from pipeline.config import load_position
 
     mu, sndk, mcd = load_position("MU"), load_position("SNDK"), load_position("MCD")
+    meta = load_position("META")
     assert (mu["stage"], mu["stage_label"]) == ("watch", "观察仓") and mu["questions"] and not mu["theses"]
+    assert meta["stage"] == "watch" and len(meta["questions"]) == 3 and not meta["theses"] and not meta["draft"]
     assert sndk["stage"] == "hold" and len(sndk["theses"]) == 2 and {t["name"] for t in sndk["triggers"]} == {"加仓", "卖出"}
     assert mcd["stage"] == "wait" and mcd["triggers"][0]["name"] == "买入"
     assert sndk["draft"] and not mu["draft"]  # 还有「【请填写】」的档案提示未定稿
