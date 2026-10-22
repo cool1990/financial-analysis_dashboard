@@ -32,7 +32,7 @@ from pipeline.state import (
     save_period_json,
 )
 from pipeline.validate import validate_extraction
-from pipeline.extract.guidance import normalize_period, parse_guidance_item
+from pipeline.extract.guidance import guidance_topic, normalize_period, parse_guidance_item
 from pipeline.compute.guidance_review import change_vs_prior, position_in_range
 from pipeline.analyze.drivers import analyze_drivers, strip_driver_warnings
 from pipeline.analyze.qa import structure_qa
@@ -41,16 +41,14 @@ from pipeline.notify import format_scorecard_text, maybe_notify
 
 
 def _guidance_merge_key(item: dict[str, Any]) -> tuple:
-    """合并键：other 类按标签区分，避免「全年展望」与「出货锁定」被当成同一条冲突。"""
-    mk = item.get("metric_key") or ""
+    """合并键：按主题而不是原句。中英文标签、full year / fiscal year 视为同一条。
+
+    数值和方向性表述仍分开，避免「研发支出将上升」并进「运营费用 $2.31B」。
+    认不出的 other 主题带上标签，避免两件不同的事被当成冲突。
+    """
     period = normalize_period(item.get("period"))
-    # 数值指引与方向性表述分开：同 metric_key 的「R&D 将上升」不能并进「运营费用 $2.31B」
     numeric = _numeric_mid(item) is not None
-    if mk == "other":
-        label = (item.get("metric_label") or item.get("statement") or "").strip().lower()
-        label = re.sub(r"\s+", " ", label)[:80]
-        return (mk, period, numeric, label)
-    return (mk, period, numeric)
+    return (guidance_topic(item), period, numeric)
 
 
 def _numeric_mid(item: dict[str, Any]) -> float | None:
@@ -416,6 +414,9 @@ def _run_stage1_filing(
     doc["scorecard"] = scorecard
     doc["financials"] = financials
     doc["guidance"]["items"] = guidance_items
+    from builder.build import stamp_management_eps
+
+    stamp_management_eps(doc, period)
     doc["drivers"] = {"stage": 1, "metrics": [], "status": "等待变动原因分析"}
 
     # stage1 drivers from press only：Stage2 拿到文字稿后会整体重算，
@@ -510,6 +511,9 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
     doc["guidance"]["items"] = merge_guidance_items(
         doc.get("guidance", {}).get("items", []), call_items, doc["status"]["warnings"]
     )
+    from builder.build import stamp_management_eps
+
+    stamp_management_eps(doc, fiscal_period)
 
     # Q&A
     press_nums = {

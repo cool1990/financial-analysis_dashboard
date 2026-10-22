@@ -379,12 +379,13 @@ _FINANCIAL_GUIDE_KEYS = {
 }
 _CAPEX_RE = re.compile(r"资本开支|capital expenditure|\bcapex\b", re.I)
 _RETURNS_RE = re.compile(
-    r"回购|分红|股息|股东回报|buyback|repurchase|\bdividend\b|capital return|shareholder return",
+    r"回购|分红|股息|股东回报|buyback|repurchase|\bdividend\b|capital return|shareholder return|"
+    r"拆股|无投票权|stock split|non-?voting",
     re.I,
 )
 _OPERATING_RE = re.compile(
     r"\bdau\b|\bmau\b|\barpu\b|impression|engagement|subscriber|shipment|出货|日活|月活|"
-    r"广告展示|用户数|位元|\bbits?\b|\bpric|\basp\b|定价|价格",
+    r"广告展示|用户数|每用户|数十亿|位元|\bbits?\b|\bpric|\basp\b|定价|价格",
     re.I,
 )
 _RESULTS_RE = re.compile(
@@ -392,21 +393,6 @@ _RESULTS_RE = re.compile(
     r"\brevenue\b|\bearnings\b|\bmargin\b|\beps\b|\bopex\b|tax rate",
     re.I,
 )
-_EMPTY_KPI_RE = re.compile(r"^(no\b|not found|没有|未找到|暂无|none\b)", re.I)
-KPI_LABELS = {
-    "advertising_revenue": "广告收入",
-    "reality_labs_revenue": "Reality Labs 收入",
-    "dram_revenue": "DRAM 收入",
-    "nand_revenue": "NAND 收入",
-    "ad_impressions": "广告展示",
-    "impressions": "广告展示",
-    "dau": "日活用户",
-    "mau": "月活用户",
-    "family_dap": "家庭日活",
-    "arpu": "每用户收入",
-}
-
-
 def _guide_dimension(g: dict[str, Any]) -> str:
     """把一条已抽取的指引放进五档之一。没有对应字段的档不出现在页面上。"""
     key = (g.get("metric_key") or "").lower()
@@ -425,50 +411,6 @@ def _guide_dimension(g: dict[str, Any]) -> str:
     if _RESULTS_RE.search(blob):
         return "results"
     return "other"
-
-
-def _kpi_value(item: dict[str, Any]) -> str:
-    raw = item.get("raw")
-    unit = (item.get("unit") or "").lower()
-    if raw in (None, ""):
-        return (item.get("qualitative") or "").strip()
-    text = str(raw).strip()
-    num = _num(text.replace(",", ""))
-    if num is None:
-        return text
-    if unit in {"millions", "million", "usd_millions"}:
-        return _fmt_money(num * 1_000_000)
-    if unit in {"billions", "billion"}:
-        return _fmt_money(num * 1_000_000_000)
-    if unit in {"usd", "dollars"}:
-        return _fmt_money(num)
-    if unit in {"percent", "pct", "%"}:
-        return f"{num:.1f}%"
-    if unit and unit != "text":
-        return f"{text} {item.get('unit')}"
-    return text
-
-
-def _kpi_entries(doc: dict[str, Any]) -> list[dict[str, str]]:
-    """经营指标只展示已经抽到的 KPI。空值和「未找到」不算数据。"""
-    kpis = (doc.get("financials") or {}).get("kpis") or {}
-    rows: list[dict[str, str]] = []
-    for key, item in kpis.items():
-        if not isinstance(item, dict):
-            continue
-        qualitative = (item.get("qualitative") or "").strip()
-        has_raw = item.get("raw") not in (None, "", "null")
-        has_note = bool(qualitative) and not _EMPTY_KPI_RE.search(qualitative)
-        if not has_raw and not has_note:
-            continue
-        rows.append(
-            {
-                "label": KPI_LABELS.get(key, str(key).replace("_", " ")),
-                "value": _kpi_value(item),
-                "quote": item.get("source_quote") or "",
-            }
-        )
-    return rows
 
 
 def _short_statement(text: str) -> str:
@@ -491,9 +433,269 @@ def _guidance_value(g: dict[str, Any]) -> tuple[str, str]:
     return ("", _fmt_guide(mid if mid is not None else low, key))
 
 
+_RANGE = " \u2013 "
+_LEVEL_KEYS = set(_FAMILY_OF) | {"capex", "tax_rate", "fcf", "operating_cash_flow"}
+_TOPIC_TITLES = {
+    "revenue": "营收",
+    "gross_margin": "毛利率",
+    "operating_margin": "营业利润率",
+    "opex": "运营费用",
+    "eps": "每股收益",
+    "share_count": "稀释股本",
+    "tax_rate": "税率",
+    "capex": "资本开支",
+    "rd": "研发支出",
+    "rl_loss": "Reality Labs 亏损",
+    "fx": "汇率",
+    "oi": "营业利润",
+    "split": "拆股",
+    "muse_eff": "Muse 算力效率",
+    "muse_users": "Muse 用户规模",
+    "muse_arpu": "Muse 每用户收入",
+    "muse_profit": "Muse 盈利",
+    "ai_return": "AI 投资回报",
+    "legal": "监管与诉讼",
+    "rev_growth": "营收增长",
+    "pricing": "定价",
+}
+_TOPIC_DIM = {
+    "revenue": "results",
+    "gross_margin": "results",
+    "operating_margin": "results",
+    "opex": "results",
+    "eps": "results",
+    "share_count": "results",
+    "tax_rate": "results",
+    "fcf": "results",
+    "operating_cash_flow": "results",
+    "rd": "results",
+    "rl_loss": "results",
+    "fx": "results",
+    "oi": "results",
+    "rev_growth": "results",
+    "capex": "capex",
+    "split": "returns",
+    "muse_users": "operating",
+    "muse_arpu": "operating",
+    "pricing": "operating",
+}
+_CALL_SOURCES = {"prepared_remarks", "qa"}
+_PERIOD_ALIASES = {
+    "next year": "明年",
+    "long-term": "长期",
+    "long term": "长期",
+    "next few years": "未来几年",
+    "coming months": "未来数月",
+    "late january 2027": "2027年1月下旬",
+}
+
+
+def _period_label(period: str | None) -> str:
+    """归一后的期间写成短中文。认不出的原文仍走原来的替换。"""
+    text = (period or "").strip()
+    if not text:
+        return ""
+    alias = _PERIOD_ALIASES.get(text.lower())
+    if alias:
+        return alias
+    m = re.fullmatch(r"FY(\d{4})Q([1-4])", text)
+    if m:
+        return f"{m.group(1)}财年Q{m.group(2)}"
+    m = re.fullmatch(r"FY(\d{4})", text)
+    if m:
+        return f"{m.group(1)}财年"
+    shown = _period_zh(text)
+    return "" if shown == "—" else shown
+
+
+def _is_percent_item(g: dict[str, Any]) -> bool:
+    key = g.get("metric_key") or ""
+    raw = " ".join(str(g.get(name) or "") for name in ("low_raw", "high_raw", "point_raw"))
+    return "margin" in key or "rate" in key or "%" in raw
+
+
+def _looks_like_money(raw: str | None) -> bool:
+    return bool(raw) and bool(re.search(r"\$|billion|million|亿", str(raw), re.I))
+
+
+def _fmt_raw_money(raw: str | None) -> str | None:
+    if not _looks_like_money(raw):
+        return None
+    from pipeline.extract.numbers import parse_number
+
+    num = parse_number(str(raw))
+    if num is None or abs(num) < 1_000_000:
+        return None
+    return _fmt_money(num)
+
+
+def _fmt_pct_value(value: float) -> str:
+    shown = value * 100 if abs(value) <= 1 else value
+    if abs(shown - round(shown)) < 0.05:
+        return f"{shown:.0f}%"
+    text = f"{shown:.2f}".rstrip("0").rstrip(".")
+    return f"{text}%"
+
+
+def _is_delta(g: dict[str, Any]) -> bool:
+    """「增加超过 10 亿美元」是变动额，不是费用水平。已给出上下限的区间仍是水平值。"""
+    if g.get("low_raw") and g.get("high_raw"):
+        return False
+    blob = f"{g.get('statement') or ''} {g.get('metric_label') or ''} {g.get('point_raw') or ''}"
+    return bool(re.search(r"增加|上升|提高|上调|削减|下降|减少|increase|decrease|higher by|lower by", blob, re.I))
+
+
+def _approx(g: dict[str, Any]) -> bool:
+    blob = f"{g.get('statement') or ''} {g.get('point_raw') or ''} {g.get('source_quote') or ''}"
+    return bool(re.search(r"约|大约|around|approximately|about", blob, re.I))
+
+
+def _range_text(g: dict[str, Any]) -> str | None:
+    if not (g.get("low_raw") and g.get("high_raw")):
+        return None
+    low, high = g.get("low"), g.get("high")
+    if low is None or high is None or low == high:
+        return None
+    if _is_percent_item(g):
+        return f"{_fmt_pct_value(low)}{_RANGE}{_fmt_pct_value(high)}"
+    if _looks_like_money(g.get("low_raw")) or abs(float(low)) >= 1_000_000:
+        return f"{_fmt_money(low)}{_RANGE}{_fmt_money(high)}"
+    return None
+
+
+def _point_text(g: dict[str, Any]) -> str | None:
+    """水平值。± 区间用中值；other 里的 10x、1% 不换成美元。"""
+    if _is_delta(g):
+        return None
+    key = g.get("metric_key") or ""
+    if g.get("plus_minus_raw") and g.get("mid") is not None and key in _LEVEL_KEYS:
+        return _fmt_guide(g["mid"], key)
+    if key in _LEVEL_KEYS and g.get("mid") is not None and not (g.get("low_raw") and g.get("high_raw")):
+        if _is_percent_item(g):
+            return _fmt_pct_value(float(g["mid"]))
+        return _fmt_guide(g["mid"], key)
+    money = _fmt_raw_money(g.get("point_raw"))
+    if money:
+        return ("约 " if _approx(g) else "") + money
+    return None
+
+
+def _delta_text(rows: list[dict[str, Any]]) -> str | None:
+    for g in rows:
+        if not _is_delta(g):
+            continue
+        money = None
+        mid = g.get("mid")
+        if mid is not None and abs(float(mid)) >= 1_000_000:
+            money = _fmt_money(mid)
+        else:
+            money = _fmt_raw_money(g.get("point_raw"))
+        if not money:
+            continue
+        blob = f"{g.get('statement') or ''} {g.get('point_raw') or ''}"
+        if re.search(r"下降|减少|decrease|lower", blob, re.I):
+            verb = "下降"
+        elif re.search(r"超过|more than|over", blob, re.I):
+            verb = "增加超过"
+        else:
+            verb = "增加"
+        return f"{verb} {money}"
+    return None
+
+
+def _descriptive_raw(rows: list[dict[str, Any]]) -> str:
+    found: list[str] = []
+    for g in rows:
+        raw = str(g.get("point_raw") or "").strip()
+        if not raw or _looks_like_money(raw) or re.fullmatch(r"[\d.,]+%?", raw):
+            continue
+        found.append(raw)
+    if not found:
+        return ""
+    return max(found, key=len)
+
+
+def _compact_statement(text: str) -> str:
+    """没有可用数字时，把已有中文表述收成一行。不新增原文里没有的数字。"""
+    raw = text or ""
+    if re.search(r"1\s*拆\s*2|2-for-1", raw, re.I):
+        return "1 拆 2"
+    higher = re.search(r"高于\s*(20\d{2})", raw)
+    if higher:
+        extra = "（剔除法律费用）" if "剔除" in raw and "法律" in raw else ""
+        return f"高于 {higher.group(1)} 年{extra}"
+    if re.search(r"强劲增长|strong overall revenue", raw, re.I):
+        return "强劲增长"
+    if re.search(r"数十亿|billions of people", raw, re.I):
+        return "扩展到数十亿人"
+    if re.search(r"每用户|revenue per user", raw, re.I):
+        return "高于现有应用"
+    t = _short_statement(raw)
+    t = re.sub(r"^(预计|将|仍|警告|认为|计划)\s*", "", t)
+    t = re.split(r"[。；]", t)[0].strip("，, ")
+    if len(t) > 32:
+        t = t[:32].rstrip("，, ") + "…"
+    return t or "—"
+
+
+def _is_textual(value: str) -> bool:
+    if re.search(r"\$|%|×", value) and len(value) <= 32:
+        return False
+    if re.fullmatch(r"[\d.]+x", value, re.I):
+        return False
+    return True
+
+
+def _best_statement(rows: list[dict[str, Any]]) -> str:
+    def rank(g: dict[str, Any]) -> tuple:
+        text = g.get("statement") or ""
+        return (
+            0 if g.get("source") == "press_release" else 1,
+            0 if re.search(r"[\u4e00-\u9fff]", text) else 1,
+            -len(text),
+        )
+
+    chosen = sorted(rows, key=rank)[0]
+    return chosen.get("statement") or chosen.get("source_quote") or ""
+
+
+def _guide_sources(rows: list[dict[str, Any]]) -> str:
+    sources = {g.get("source") for g in rows if g.get("source")}
+    for g in rows:
+        if g.get("confirmed_by"):
+            sources.add(g["confirmed_by"])
+    has_press = "press_release" in sources
+    has_call = bool(sources & _CALL_SOURCES)
+    if has_press and has_call:
+        return "新闻稿 · 电话会"
+    if has_press:
+        return "新闻稿"
+    if has_call:
+        return "电话会"
+    return _source_label(next(iter(sources), None))
+
+
+def _card_title(topic: str, period: str, rows: list[dict[str, Any]]) -> str:
+    if topic == "opex" and re.fullmatch(r"FY\d{4}", period or ""):
+        return "全年费用"
+    if topic in _TOPIC_TITLES:
+        return _TOPIC_TITLES[topic]
+    for g in rows:
+        label = (g.get("metric_label") or "").strip()
+        if re.search(r"[\u4e00-\u9fff]", label):
+            return label[:18]
+    return (rows[0].get("metric_label") or "其他").strip() or "其他"
+
+
+def _card_dimension(topic: str, rows: list[dict[str, Any]]) -> str:
+    if topic in _TOPIC_DIM:
+        return _TOPIC_DIM[topic]
+    return _guide_dimension(rows[0])
+
+
 def _guidance_view(doc: dict[str, Any]) -> dict[str, Any]:
-    """下季数字 → 指标格子；其余前瞻表述（含非标准数字）→ 按主题分类的展望。"""
-    from pipeline.extract.guidance import normalize_period
+    """每条不同的指引一张卡片：短标题 + 一行数字。同一指标的新闻稿和电话会并成一张。"""
+    from pipeline.extract.guidance import guidance_topic, normalize_period
 
     items = (doc.get("guidance") or {}).get("items") or []
     basis = (doc.get("meta") or {}).get("eps_basis") or "non_gaap"
@@ -505,83 +707,122 @@ def _guidance_view(doc: dict[str, Any]) -> dict[str, Any]:
     sc = {c.get("metric"): c for c in doc.get("scorecard") or []}
     vs_map = {"revenue": sc.get("next_q_revenue_guidance"), "eps": sc.get("next_q_eps_guidance")}
 
-    used: set[int] = set()
-    tiles = []
-    for fam, label, keys in GUIDE_FAMILIES:
-        rows = [g for g in std if (g.get("metric_key") in keys) and normalize_period(g.get("period")) == next_q]
-        if not rows:
-            continue
-        by_key = {g["metric_key"]: g for g in rows}
-        # 主值取公司的业绩口径（MU 是 Non-GAAP），另一口径放在副行
-        preferred = "_gaap" if basis == "gaap" else "_nongaap"
-        order = sorted(by_key, key=lambda k: 0 if k.endswith(preferred) else 1)
-        primary = by_key[order[0]]
-        rng, mid = _guidance_value(primary)
-        other = [by_key[k] for k in order[1:]]
-        sub = []
-        if rng:
-            sub.append(rng)
-        for o in other:
-            tag = "GAAP" if o["metric_key"].endswith("_gaap") else "Non-GAAP"
-            sub.append(f"{tag} {_guidance_value(o)[1] or _guidance_value(o)[0]}")
-        tag = ""
-        if primary["metric_key"].endswith("_nongaap"):
-            tag = "Non-GAAP"
-        elif primary["metric_key"].endswith("_gaap") and other:
-            tag = "GAAP"
-        vs = vs_map.get(fam)
-        bench = (vs or {}).get("benchmark") or {}
-        tiles.append(
-            {
-                "label": label,
-                "basis": tag,
-                "value": mid or rng,
-                "sub": " · ".join(sub) if rng or other else "",
-                "vs": _change(bench.get("diff_pct")) if bench.get("value") is not None else None,
-                "vs_label": f"一致预期 {_fmt_guide(bench.get('value'), primary['metric_key'])}" if bench.get("value") is not None else "",
-                "confirmed": any(g.get("confirmed_by") for g in rows),
-                "variant": any(g.get("call_variant") for g in rows),
-            }
-        )
-        used.update(id(g) for g in rows)
-
-    buckets: dict[str, list[dict[str, Any]]] = {key: [] for key, _label in GUIDE_DIMENSIONS}
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    order: list[tuple[str, str]] = []
     for g in items:
-        if id(g) in used:
-            continue
-        # 表述里已含数字；不单独列数（非标准指标的数没有统一单位，单列容易误读）
-        buckets[_guide_dimension(g)].append(
+        key = (guidance_topic(g), normalize_period(g.get("period")))
+        if key not in grouped:
+            grouped[key] = []
+            order.append(key)
+        grouped[key].append(g)
+
+    dim_index = {key: i for i, (key, _label) in enumerate(GUIDE_DIMENSIONS)}
+    fam_index = {fam: i for i, (fam, _label, _keys) in enumerate(GUIDE_FAMILIES)}
+    cards: list[dict[str, Any]] = []
+    for seen, key in enumerate(order):
+        topic, period = key
+        rows = grouped[key]
+        preferred = "_gaap" if basis == "gaap" else "_nongaap"
+
+        def _rank(g: dict[str, Any]) -> tuple:
+            metric = g.get("metric_key") or ""
+            return (
+                0 if metric.endswith(preferred) else 1,
+                0 if g.get("source") == "press_release" else 1,
+                0 if g.get("low_raw") and g.get("high_raw") else 1,
+            )
+
+        ranked = sorted(rows, key=_rank)
+        value = ""
+        for g in ranked:
+            value = _range_text(g) or ""
+            if value:
+                break
+        if not value:
+            for g in ranked:
+                value = _point_text(g) or ""
+                if value:
+                    break
+        if not value:
+            value = _descriptive_raw(rows) or _delta_text(rows) or _compact_statement(_best_statement(rows))
+        if re.fullmatch(r"10x", value or "", re.I) and any(
+            re.search(r"超过|more than", f"{g.get('statement') or ''} {g.get('source_quote') or ''}", re.I) for g in rows
+        ):
+            value = "超过 10×"
+        textual = _is_textual(value)
+
+        sub: list[str] = []
+        period_label = _period_label(period)
+        if period_label:
+            sub.append(period_label)
+        primary_key = (ranked[0].get("metric_key") or "") if value and not textual else ""
+        # ± 形式的主值是中值，区间放在副行，避免和显式 low–high 的卡片混成两种样式以外的第三种
+        if any(g.get("plus_minus_raw") for g in rows):
+            band = next((g for g in ranked if g.get("plus_minus_raw") and g.get("low") is not None and g.get("high") is not None and g["low"] != g["high"]), None)
+            if band is not None:
+                sub.append(f"{_fmt_guide(band['low'], band.get('metric_key'))}{_RANGE}{_fmt_guide(band['high'], band.get('metric_key'))}")
+        seen_basis: set[str] = set()
+        for g in rows:
+            metric = g.get("metric_key") or ""
+            if metric == primary_key or not (metric.endswith("_gaap") or metric.endswith("_nongaap")):
+                continue
+            tag = "GAAP" if metric.endswith("_gaap") else "Non-GAAP"
+            if tag in seen_basis:
+                continue
+            alt = _point_text(g) or _range_text(g)
+            if alt:
+                seen_basis.add(tag)
+                sub.append(f"{tag} {alt}")
+        basis_tag = ""
+        primary_metric = ranked[0].get("metric_key") or ""
+        if primary_metric.endswith("_nongaap") and seen_basis:
+            basis_tag = "Non-GAAP"
+        elif primary_metric.endswith("_gaap") and seen_basis:
+            basis_tag = "GAAP"
+
+        vs = vs_map.get(topic) if period == next_q else None
+        bench = (vs or {}).get("benchmark") or {}
+        metric_for_bench = next((g.get("metric_key") for g in ranked if g.get("metric_key") in _FAMILY_OF), topic)
+        cards.append(
             {
-                "text": _short_statement(g.get("statement") or g.get("source_quote") or ""),
-                "direction": g.get("direction") or "",
-                "direction_label": _direction_label(g.get("direction")),
-                "period": _period_zh(g.get("period")),
-                "source": _source_label(g.get("source")),
+                "topic": topic,
+                "label": _card_title(topic, period, rows),
+                "value": value,
+                "textual": textual,
+                "source": _guide_sources(rows),
+                "basis": basis_tag,
+                "sub": " · ".join(sub),
+                "vs": _change(bench.get("diff_pct")) if bench.get("value") is not None else None,
+                "vs_label": (
+                    f"一致预期 {_fmt_guide(bench.get('value'), metric_for_bench)}"
+                    if bench.get("value") is not None
+                    else ""
+                ),
+                "variant": any(g.get("call_variant") for g in rows),
+                "_dim": _card_dimension(topic, rows),
+                "_sort": (dim_index.get(_card_dimension(topic, rows), 9), fam_index.get(topic, 50), seen),
             }
         )
-    kpis = _kpi_entries(doc)
+
+    cards.sort(key=lambda c: c["_sort"])
+    buckets: dict[str, list[dict[str, Any]]] = {key: [] for key, _label in GUIDE_DIMENSIONS}
+    for card in cards:
+        dim = card.pop("_dim")
+        card.pop("_sort", None)
+        buckets[dim].append(card)
     dimensions = []
     for key, label in GUIDE_DIMENSIONS:
-        dim_tiles = tiles if key == "results" else []
-        dim_items = buckets[key]
-        dim_kpis = kpis if key == "operating" else []
-        if not dim_tiles and not dim_items and not dim_kpis:
+        dim_cards = buckets[key]
+        if not dim_cards:
             continue
-        dimensions.append(
-            {
-                "key": key,
-                "label": label,
-                "tiles": dim_tiles,
-                "items": dim_items,
-                "kpis": dim_kpis,
-            }
-        )
-    outlook = [{"key": d["key"], "label": d["label"], "items": d["items"]} for d in dimensions if d["items"]]
+        dimensions.append({"key": key, "label": label, "cards": dim_cards})
+    flat = [c for d in dimensions for c in d["cards"]]
     return {
-        "next_q": _period_zh(next_q.replace("FY", "").replace("Q", "财年Q")) if next_q else "",
-        "tiles": tiles,
-        "outlook": outlook,
-        "outlook_count": sum(len(c["items"]) for c in outlook),
+        "next_q": _period_label(next_q) if next_q else "",
+        "tiles": flat,
+        "outlook": [],
+        "outlook_count": len(flat),
+        "card_count": len(flat),
         "dimensions": dimensions,
     }
 
@@ -622,6 +863,9 @@ def _qa_view(doc: dict[str, Any], has_prior_qa: bool) -> dict[str, Any]:
     qa = doc.get("qa") or {}
     items = []
     for q in qa.get("items") or []:
+        # 旧提示要求信息不足时写「文本不足」。那不是回答，页面上不占一轮。
+        if (q.get("question_summary") or "").strip() == "文本不足" or (q.get("answer_summary") or "").strip() == "文本不足":
+            continue
         failed = bool(q.get("parse_failed")) or any(
             k in (q.get("question_summary") or "") for k in ("结构化失败", "解析失败", "未能自动结构化")
         )
@@ -1176,6 +1420,162 @@ def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]],
 # ---------------------------------------------------------------- 渲染
 
 
+def _is_management_nongaap_eps(g: dict[str, Any]) -> bool:
+    """只要管理层自己给出的 Non-GAAP / adjusted EPS。GAAP、营收和费用都不算。"""
+    key = (g.get("metric_key") or "").strip().lower()
+    if key not in {"eps", "eps_nongaap"}:
+        return False
+    basis = re.sub(r"[\s_\-]", "", (g.get("basis") or "").lower())
+    if basis == "gaap":
+        return False
+    if key == "eps_nongaap":
+        return True
+    return "nongaap" in basis or "adjusted" in basis
+
+
+def _eps_scale_ok(value: float | None) -> bool:
+    return value is not None and abs(value) < 10000
+
+
+def _eps_figure(g: dict[str, Any]) -> str | None:
+    """管理层写明的每股数字或区间。没有数字、或只是方向性表述，就不显示。"""
+    kind = g.get("type") or ""
+    if kind in {"qualitative", "directional"} and g.get("mid") is None and not (g.get("low_raw") and g.get("high_raw")):
+        return None
+    key = g.get("metric_key") or "eps"
+    low, high, mid = _num(g.get("low")), _num(g.get("high")), _num(g.get("mid"))
+    if g.get("low_raw") and g.get("high_raw") and low is not None and high is not None and low != high:
+        if _eps_scale_ok(low) and _eps_scale_ok(high):
+            return f"{_fmt_guide(low, key)}{_RANGE}{_fmt_guide(high, key)}"
+        return None
+    if _eps_scale_ok(mid):
+        return _fmt_guide(mid, key)
+    return None
+
+
+def _eps_source_caption(g: dict[str, Any]) -> str:
+    """来源写回格子：新闻稿按 Exhibit 99.1，电话会单独标，并带上原文。"""
+    from pipeline.extract.guidance import normalize_period
+
+    src = g.get("source") or ""
+    origin = g.get("guidance_origin") or ""
+    if src == "press_release" or origin == "sec_exhibit_99_1":
+        where = "新闻稿 Exhibit 99.1"
+    elif src in _CALL_SOURCES:
+        where = "电话会"
+    else:
+        where = _source_label(src)
+    if g.get("confirmed_by") in _CALL_SOURCES and where != "电话会":
+        where = f"{where} · 电话会"
+    period = _period_label(normalize_period(g.get("period")))
+    parts = [where, "Non-GAAP"]
+    if period:
+        parts.append(period)
+    quote = " ".join(str(g.get("source_quote") or "").split())
+    text = " · ".join(parts)
+    if quote:
+        text = f"{text}。原文：{quote}"
+    return text
+
+
+def _prefer_guidance_source(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not candidates:
+        return None
+
+    def rank(pair: tuple[int, dict[str, Any]]) -> tuple:
+        i, g = pair
+        return (
+            0 if g.get("source") == "press_release" else 1,
+            0 if g.get("guidance_origin") == "sec_exhibit_99_1" else 1,
+            i,
+        )
+
+    return min(enumerate(candidates), key=rank)[1]
+
+
+def _eps_cell(label: str, chosen: dict[str, Any] | None, looked_period: str | None) -> dict[str, Any]:
+    """一格的展示值和来源记录。没有管理层数字时价值为「无」，来源留空。"""
+    from pipeline.extract.guidance import normalize_period
+
+    if chosen is None:
+        return {
+            "label": label,
+            "value": "无",
+            "source": "管理层未提供该 Non-GAAP EPS 数字。不用营收或费用倒推，也不采用分析师一致预期。",
+            "record": {
+                "basis": "non-GAAP",
+                "provided": False,
+                "source": None,
+                "guidance_origin": None,
+                "source_quote": None,
+                "period": looked_period,
+                "metric_key": None,
+            },
+        }
+    return {
+        "label": label,
+        "value": _eps_figure(chosen) or "无",
+        "source": _eps_source_caption(chosen),
+        "record": {
+            "basis": "non-GAAP",
+            "provided": True,
+            "source": chosen.get("source"),
+            "guidance_origin": chosen.get("guidance_origin"),
+            "source_quote": chosen.get("source_quote"),
+            "period": normalize_period(chosen.get("period")),
+            "metric_key": chosen.get("metric_key"),
+        },
+    }
+
+
+def _management_eps_cells(doc: dict[str, Any], fiscal_period: str) -> list[dict[str, Any]]:
+    """页头两格：下季度、年度的 Non-GAAP EPS 指引。只读 guidance.items 里管理层原文。"""
+    from pipeline.extract.guidance import normalize_period
+
+    items = (doc.get("guidance") or {}).get("items") or []
+    usable = [g for g in items if _is_management_nongaap_eps(g) and _eps_figure(g)]
+
+    m = re.fullmatch(r"FY(\d{4})Q([1-4])", fiscal_period or "")
+    next_q = full_year = None
+    if m:
+        year, quarter = int(m.group(1)), int(m.group(2))
+        next_q = f"FY{year + 1}Q1" if quarter == 4 else f"FY{year}Q{quarter + 1}"
+        full_year = f"FY{year + 1}" if quarter == 4 else f"FY{year}"
+
+    next_hit = _prefer_guidance_source(
+        [g for g in usable if next_q and normalize_period(g.get("period")) == next_q]
+    )
+
+    by_year: dict[str, list[dict[str, Any]]] = {}
+    for g in usable:
+        period = normalize_period(g.get("period"))
+        if re.fullmatch(r"FY\d{4}", period):
+            by_year.setdefault(period, []).append(g)
+    if full_year and full_year in by_year:
+        year_hit = _prefer_guidance_source(by_year[full_year])
+    elif len(by_year) == 1:
+        year_hit = _prefer_guidance_source(next(iter(by_year.values())))
+    else:
+        year_hit = None
+
+    return [
+        _eps_cell("下季度EPS指引", next_hit, next_q),
+        _eps_cell("年度EPS指引", year_hit, full_year),
+    ]
+
+
+def stamp_management_eps(doc: dict[str, Any], fiscal_period: str) -> dict[str, Any]:
+    """把页头两格的来源写进 guidance.management_eps。数字仍只来自管理层 Non-GAAP 条目。"""
+    cells = _management_eps_cells(doc, fiscal_period)
+    record = {
+        "basis": "non-GAAP",
+        "next_quarter": {**cells[0]["record"], "display": cells[0]["value"]},
+        "full_year": {**cells[1]["record"], "display": cells[1]["value"]},
+    }
+    doc.setdefault("guidance", {})["management_eps"] = record
+    return record
+
+
 def _market_quotes(ticker: str) -> dict[str, Any] | None:
     """右上角四个行情指标。只读已保存的 TradingView scanner 列，缺列就留空。"""
     path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
@@ -1228,6 +1628,23 @@ def _market_quotes(ticker: str) -> dict[str, Any] | None:
         "items": items,
         "fetched_at": quote.get("fetched_at") or "",
         "note": quote.get("note") or "Alpha Vantage 没有调用：当前环境没有 API key。",
+    }
+
+
+def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: bool) -> dict[str, Any] | None:
+    """最新财季页头右上角：行情四格，再加上管理层 Non-GAAP EPS 指引两格。"""
+    if not is_latest:
+        return None
+    market = _market_quotes(ticker)
+    items = list((market or {}).get("items") or [])
+    items.extend(_management_eps_cells(doc, period))
+    if not items:
+        return None
+    return {
+        "items": items,
+        "fetched_at": (market or {}).get("fetched_at") or "",
+        "note": (market or {}).get("note") or "",
+        "market": bool(market),
     }
 
 
@@ -1316,7 +1733,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 thesis=thesis,
                 chips=_verdict_chips(doc, gaps, checks, thesis),
                 drivers_pending=_drivers_pending(doc),
-                quotes=_market_quotes(t) if period == latest else None,
+                quotes=_header_quotes(t, doc, period, period == latest),
                 root="../../",
                 nav=nav,
                 active=t,
