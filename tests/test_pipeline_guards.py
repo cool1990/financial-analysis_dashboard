@@ -197,11 +197,41 @@ def test_build_site_renders(tmp_path, monkeypatch):
     monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
     pages = b.build_site()
     html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
-    assert "预期差" in html and "增长质量" in html and "{{" not in html
+    assert "盈利预期" in html and "增长质量" in html and "{{" not in html
+    assert "预期差" not in html and 'class="v-lines"' not in html and 'class="v-head"' not in html
     # 明细默认折叠在证据层，图表随「财务」块展开时绘制
-    assert '<details class="ev" id="fin">' in html and "revChart" in html
+    assert '<details class="ev" id="fin">' in html and 'data-series="level"' in html
+    assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
+    assert 'id="epsSurprise"' not in html
+    meta_html = (tmp_path / "stocks" / "META" / "FY2026Q3.html").read_text(encoding="utf-8")
+    assert 'id="epsSurprise"' in meta_html and "超预期 $0.86" in meta_html
+    assert "实际 $3.83 · 预期 $6.54" not in meta_html and "GAAP $3.83" in meta_html
+    assert 'class="v-lines"' not in meta_html and 'class="v-head"' not in meta_html
+    assert "问题待回答" in meta_html and "本季营收 超预期 +2.0%" in meta_html
+    assert "本季 EPS（Non-GAAP） 超预期 +13.1%" in meta_html
+    assert "股息率（TTM）" in meta_html
+    assert "Forward EPS" in meta_html and "$32.03" in meta_html
+    assert "Forward PE" in meta_html and "21.8×" in meta_html
+    assert "股息率" in meta_html and "0.30%" in meta_html and "RSI" in meta_html and "47.4" in meta_html
+    assert "eps_estimate_ntm" in meta_html and "price_earnings_forward 为空" in meta_html
+    assert "dividend_yield_ttm" in meta_html
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
+
+
+def test_meta_quote_card_divides_tradingview_columns():
+    from builder.build import _market_quotes
+
+    snap = json.loads((ROOT / "data" / "META" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
+    cols = snap["quote"]["columns"]
+    assert cols["price_earnings_forward"] is None and cols["dividend_yield_ttm"] is None
+    quote = _market_quotes("META")
+    by = {item["label"]: item for item in quote["items"]}
+    assert by["Forward EPS"]["value"] == f"${cols['eps_estimate_ntm']:.2f}"
+    assert by["Forward PE"]["value"] == f"{cols['close'] / cols['eps_estimate_ntm']:.1f}×"
+    assert by["股息率（TTM）"]["value"] == f"{cols['dividends_yield']:.2f}%"
+    assert by["RSI"]["value"] == f"{cols['RSI']:.1f}"
+    assert "Alpha Vantage" in quote["note"]
 
 
 def test_guidance_view_tiles_and_outlook_categories():
@@ -243,6 +273,81 @@ def test_judgment_layer_rules():
     assert checks["资本开支环比 − 营收环比"][0] == "warn"
     chips = [c["text"] for c in _verdict_chips(doc, gaps, market, checks=qc)]
     assert any("缺一致预期" in c for c in chips) and any(c.startswith("市场认可") for c in chips)
+
+
+def test_meta_eps_uses_ex_charge_against_street_consensus():
+    """TradingView $6.54 is street/adjusted. Compare it to press ex-charge $7.40, not GAAP $3.83."""
+    from builder.build import _fin_rows, _gap_rows, _index_row, _score_lines
+    from pipeline.config import load_ticker_config
+
+    doc = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    eps = next(row for row in doc["scorecard"] if row["metric"] == "eps")
+    assert eps["actual"] == 7.40 and eps["basis"] == "non_gaap" and eps["verdict"] == "beat"
+    assert eps["benchmark"]["value"] == 6.54 and eps["benchmark"]["source"] == "consensus"
+    assert doc["financials"]["eps_gaap"]["value"] == 3.83
+    assert doc["financials"]["eps_gaap"]["benchmark"]["value"] is None
+    assert doc["financials"]["eps_nongaap"]["value"] == 7.40
+    assert doc["financials"]["eps_nongaap"]["display_label"] == "稀释每股收益（Non-GAAP）"
+
+    lines = [c["text"] for c in _score_lines("META", doc, {"price": {"text": "—", "cls": "na"}}, {"release_timing": "amc"})]
+    assert any("每股 EPS（Non-GAAP） 超预期 +13.1%" == c for c in lines)
+    assert all("不及预期" not in c for c in lines)
+
+    gap = next(g for g in _gap_rows(doc) if g["label"].startswith("本季 EPS"))
+    assert gap["label"] == "本季 EPS（Non-GAAP）"
+    assert gap["detail"] == "Non-GAAP $7.40 · 一致预期 $6.54"
+    assert gap["gap"]["text"] == "+13.1%"
+
+    rows = {r["label"]: r for r in _fin_rows(doc)}
+    assert rows["稀释每股收益（GAAP）"]["value"] == "$3.83"
+    assert rows["稀释每股收益（GAAP）"]["vs"]["text"] == "—"
+    assert rows["稀释每股收益（Non-GAAP）"]["value"] == "$7.40"
+    assert rows["稀释每股收益（Non-GAAP）"]["vs"]["text"] == "+13.1%"
+
+    index = _index_row("META", load_ticker_config("META"), "FY2026Q3", doc)
+    assert index["eps"]["verdict"] == "beat"
+    assert index["eps"]["label"] == "超预期 · Non-GAAP"
+
+    from builder.build import _quality_checks
+
+    names = [c["name"] for c in _quality_checks(doc, load_ticker_config("META"))]
+    assert "Non-GAAP 比 GAAP EPS 高出" in names
+
+    from builder.build import _eps_chart
+
+    chart = _eps_chart(doc)
+    assert chart is not None and [q["label"] for q in chart["quarters"]] == [
+        "FQ4 2025", "FQ1 2026", "FQ2 2026", "FQ3 2026",
+        "FQ4 2026", "FQ1 2027", "FQ2 2027", "FQ3 2027",
+    ]
+    by_q = {q["label"]: q for q in chart["quarters"]}
+    assert by_q["FQ3 2026"]["actual"] == 7.40 and by_q["FQ3 2026"]["consensus"] == 6.54
+    assert by_q["FQ3 2026"]["note"] == "超预期 $0.86" and by_q["FQ3 2026"]["basis"] == "Non-GAAP"
+    assert by_q["FQ1 2026"]["actual"] == 7.31 and by_q["FQ1 2026"]["basis"] == "Non-GAAP"
+    assert by_q["FQ4 2025"]["actual"] == 8.88 and by_q["FQ4 2025"]["basis"] == "Non-GAAP"
+    q2 = by_q["FQ2 2026"]
+    derived = (15848 + (2400 + 1180) * (1 - 0.16)) / 2566
+    assert q2["actual"] == round(derived, 2) == 7.35
+    assert q2["note"] == "超预期 $0.16" and q2["basis"] == "Non-GAAP"
+    assert by_q["FQ4 2026"]["actual"] is None and by_q["FQ4 2026"]["consensus"] == 8.29
+    assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((7.867106 / 7.35 - 1) * 100)
+    assert all(q["actual"] != 3.83 for q in chart["quarters"])
+    assert all(q["basis"] == "Non-GAAP" for q in chart["quarters"] if q["actual"] is not None)
+
+    from builder.build import _history
+
+    hist_docs = {
+        period: json.loads((ROOT / "data" / "META" / f"{period}.json").read_text(encoding="utf-8"))
+        for period in ("FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3")
+    }
+    hist = {point["period"]: point for point in _history(hist_docs)}
+    assert hist["FY2026Q2"]["eps_nongaap"] == 7.35
+    assert hist["FY2025Q3"]["eps_nongaap"] == 7.25
+    assert hist["FY2026Q1"]["eps_nongaap"] == 7.31
+    assert hist["FY2026Q3"]["eps"] == 3.83
+    assert hist["FY2026Q3"]["eps_nongaap"] == 7.40
+    assert any("营收" in s["text"] for s in chart["sides"])
+    assert all("EPS" not in s["text"] for s in chart["sides"])
 
 
 def test_gap_row_clips_outside_scale():

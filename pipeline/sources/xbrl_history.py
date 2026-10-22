@@ -118,6 +118,7 @@ REVENUE_TAGS = [
     "Revenues",
     "SalesRevenueNet",
 ]
+COST_OF_REVENUE_TAGS = ["CostOfRevenue", "CostOfGoodsAndServicesSold"]
 OI_TAGS = ["OperatingIncomeLoss"]
 NI_TAGS = ["NetIncomeLoss"]
 EPS_TAGS = ["EarningsPerShareDiluted"]
@@ -128,16 +129,25 @@ CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment"]
 def quarterly_statements(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
     """合并各科目。键是季度结束日。"""
     revenue = quarterly_values(facts, REVENUE_TAGS, "USD")
+    cost = quarterly_values(facts, COST_OF_REVENUE_TAGS, "USD")
     oi = quarterly_values(facts, OI_TAGS, "USD")
     ni = quarterly_values(facts, NI_TAGS, "USD")
     eps = quarterly_values(facts, EPS_TAGS, "USD/shares", allow_residual=False)
     ocf = quarterly_values(facts, OCF_TAGS, "USD")
     capex = quarterly_values(facts, CAPEX_TAGS, "USD")
-    ends = set(revenue) | set(oi) | set(ni) | set(eps) | set(ocf) | set(capex)
+    ends = set(revenue) | set(cost) | set(oi) | set(ni) | set(eps) | set(ocf) | set(capex)
     out: dict[date, dict[str, Any]] = {}
     for end in sorted(ends):
         rev = revenue.get(end)
+        cogs = cost.get(end)
         oper = oi.get(end)
+        gross = None
+        if rev and cogs and rev["value"]:
+            gross = {
+                "value": (rev["value"] - cogs["value"]) / rev["value"],
+                "source_quote": f"({rev['source_quote']} − {cogs['source_quote']}) / {rev['source_quote']}",
+                "derived": True,
+            }
         margin = None
         margin_quote = None
         if rev and oper and rev["value"]:
@@ -153,6 +163,8 @@ def quarterly_statements(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
             fcf_quote = f"{cash['source_quote']} − abs({cap['source_quote']})"
         out[end] = {
             "revenue": rev,
+            "cost_of_revenue": cogs,
+            "gross_margin": gross,
             "operating_income": oper,
             "operating_margin": None
             if margin is None

@@ -1,0 +1,19 @@
+<div class="card mkt">
+  <h2>市场怎么判{% if market.stance %} <span class="vchip {{ market.stance.cls }}">{{ market.stance.text }}</span>{% endif %}</h2>
+  <div class="kv">
+    <span>次日股价</span><b class="c-{{ market.price.cls }}">{{ market.price.text }}</b>
+    {% if market.price.detail %}<small>{{ market.price.detail }}</small>{% endif %}
+  </div>
+  {% if market.bench.excess %}
+  <div class="kv">
+    <span>相对 {{ market.bench.symbol }}（扣除板块波动）</span><b class="c-{{ market.bench.excess.cls }}">{{ market.bench.excess.text }}</b>
+    <small>{{ market.bench.symbol }} 同期 {{ market.bench.pct.text }}</small>
+  </div>
+  {% endif %}
+  <div class="kv">
+    <span>下季 EPS 一致预期{% if market.revision %}（{{ market.revision.label }}）{% endif %}</span>
+    <b class="c-{{ market.revision.chg.cls if market.revision else 'na' }}">{{ market.revision.chg.text if market.revision else '待补' }}</b>
+    <small>{% if market.revision %}{{ market.revision.detail }}，财报后分析师对下季的预期变化{% else %}财报后快照到位后自动补{% endif %}</small>
+  </div>
+  <p class="small muted">股价{% if market.bench.excess %}（相对 {{ market.bench.symbol }}）{% endif %}和预期修正同向，说明市场采信了这份财报；方向相反时值得多看一眼。</p>
+</div>
