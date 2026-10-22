@@ -12,8 +12,129 @@ from pipeline.extract.numbers import ParsedAmount
 from pipeline.extract.press_release import load_press_release
 from pipeline.llm import LLMClient, LLMError, get_run_tracker, reset_run_tracker
 from pipeline.schemas import ExtractFinancials, GuidanceItem, QAItem
+from pipeline.compute.metrics import build_metric_block
 from pipeline.sources.sec_edgar import SecEdgarClient, extract_quarterly_gaap_eps, extract_quarterly_revenue
-from pipeline.state import empty_period_doc, save_period_json
+from pipeline.sources.xbrl_history import quarterly_statements
+from pipeline.state import empty_period_doc, load_period_json, save_period_json
+
+
+_PROTECTED_STAGES = {"stage1_done", "stage2_done", "stage3_done", "transcript_found"}
+
+
+def _block(node: dict[str, Any] | None, *, yoy: float | None, qoq: float | None, is_ratio: bool = False) -> dict[str, Any] | None:
+    if not node or node.get("value") is None:
+        return None
+    block = build_metric_block(
+        node["value"],
+        yoy_base=yoy,
+        qoq_base=qoq,
+        is_ratio=is_ratio,
+        source_quote=node.get("source_quote"),
+    )
+    block["comparatives_source"] = "xbrl"
+    return block
+
+
+def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, Any]:
+    """用 companyfacts 回补单季 GAAP。不覆盖已经跑过新闻稿阶段的季度。"""
+    cfg = load_ticker_config(ticker)
+    if not cfg.get("cik"):
+        raise RuntimeError("请先运行 init")
+    start_d = date.fromisoformat(start)
+    facts = SecEdgarClient().company_facts(cfg["cik"])
+    series = quarterly_statements(facts)
+    ends = sorted(end for end in series if end >= start_d)
+    by_end = {end: series[end] for end in ends}
+    written: list[str] = []
+    skipped: list[str] = []
+    eps_gaps: list[str] = []
+    fye = int(cfg["fiscal_year_end_month"])
+
+    def _val(end: date | None, key: str) -> float | None:
+        if end is None or end not in by_end:
+            return None
+        node = by_end[end].get(key)
+        if not node:
+            return None
+        return node.get("value")
+
+    for end in ends:
+        info = build_period_info(end, fye)
+        period = info.fiscal_period
+        existing = load_period_json(ticker, period)
+        stage = ((existing or {}).get("status") or {}).get("stage")
+        if existing and stage in _PROTECTED_STAGES:
+            skipped.append(period)
+            continue
+        row = by_end[end]
+        yoy_end = _match_end(ends, end.year - 1, end.month)
+        prior_cands = [e for e in ends if e < end]
+        prior_end = prior_cands[-1] if prior_cands else None
+        # 只把紧邻的上一季当环比，避免中间缺季时跨季相减
+        if prior_end is not None and (end - prior_end).days > 120:
+            prior_end = None
+
+        fin: dict[str, Any] = {}
+        rev = _block(row.get("revenue"), yoy=_val(yoy_end, "revenue"), qoq=_val(prior_end, "revenue"))
+        if rev:
+            fin["revenue"] = rev
+        oi = _block(row.get("operating_income"), yoy=_val(yoy_end, "operating_income"), qoq=_val(prior_end, "operating_income"))
+        if oi:
+            fin["operating_income_gaap"] = oi
+        om = _block(
+            row.get("operating_margin"),
+            yoy=_val(yoy_end, "operating_margin"),
+            qoq=_val(prior_end, "operating_margin"),
+            is_ratio=True,
+        )
+        if om:
+            fin["operating_margin_gaap"] = om
+        ni = _block(row.get("net_income"), yoy=_val(yoy_end, "net_income"), qoq=_val(prior_end, "net_income"))
+        if ni:
+            fin["net_income_gaap"] = ni
+        eps = _block(row.get("eps"), yoy=_val(yoy_end, "eps"), qoq=_val(prior_end, "eps"))
+        if eps:
+            fin["eps_gaap"] = eps
+        elif end.month == fye:
+            eps_gaps.append(period)
+        ocf = _block(row.get("ocf"), yoy=_val(yoy_end, "ocf"), qoq=_val(prior_end, "ocf"))
+        if ocf:
+            fin["operating_cash_flow"] = ocf
+        capex = _block(row.get("capex"), yoy=_val(yoy_end, "capex"), qoq=_val(prior_end, "capex"))
+        if capex:
+            fin["capex"] = capex
+        fcf = _block(row.get("fcf"), yoy=_val(yoy_end, "fcf"), qoq=_val(prior_end, "fcf"))
+        if fcf:
+            fin["fcf"] = fcf
+        if not fin:
+            continue
+        doc = empty_period_doc(
+            ticker,
+            period,
+            calendar_quarter=info.calendar_quarter,
+            period_start=info.period_start.isoformat(),
+            period_end=info.period_end.isoformat(),
+            eps_basis=cfg.get("eps_basis") or "gaap",
+        )
+        doc["financials"] = fin
+        warnings = [
+            "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。"
+            "收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。"
+            "经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。"
+            "第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
+        ]
+        doc["status"] = {"stage": "backfill_gaap", "needs_review": False, "warnings": warnings}
+        doc["drivers"] = {"stage": 0, "metrics": [], "status": "历史回补不含变动原因"}
+        save_period_json(ticker, period, doc)
+        written.append(period)
+    return {"written": written, "skipped": skipped, "eps_gaps": eps_gaps, "start": start}
+
+
+def _match_end(ends: list[date], year: int, month: int) -> date | None:
+    cands = [e for e in ends if e.year == year and e.month == month]
+    if not cands:
+        return None
+    return cands[-1]
 
 
 def backfill(
@@ -23,11 +144,16 @@ def backfill(
     *,
     dry_run: bool = False,
     model: str | None = None,
+    xbrl_only: bool = False,
+    start: str = "2016-01-01",
 ) -> dict[str, Any]:
     """历史回补：GAAP 优先 XBRL；Non-GAAP/KPI 走新闻稿抽取。
 
     dry_run=True 时不调用 LLM，只统计将发生的调用与粗略 token/花费。
+    xbrl_only=True 时只写 companyfacts 单季 GAAP，不调用模型。
     """
+    if xbrl_only:
+        return write_xbrl_history(ticker, start=start)
     cfg = load_ticker_config(ticker)
     if not cfg.get("cik"):
         raise RuntimeError("请先运行 init")

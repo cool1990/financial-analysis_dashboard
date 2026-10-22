@@ -55,6 +55,8 @@ def main(argv: list[str] | None = None) -> int:
     p_bf.add_argument("--from", dest="from_period", default=None)
     p_bf.add_argument("--limit", type=int, default=8)
     p_bf.add_argument("--dry-run", action="store_true", help="只统计 LLM 调用与预估花费")
+    p_bf.add_argument("--xbrl-only", action="store_true", help="只写 SEC companyfacts 单季 GAAP，不调用模型")
+    p_bf.add_argument("--start", default="2016-01-01", help="xbrl-only 的起始季度结束日")
     p_bf.add_argument("--model", default=None)
 
     p_val = sub.add_parser("validate", help="校验已有季度 JSON")
@@ -134,9 +136,17 @@ def main(argv: list[str] | None = None) -> int:
             write_github_step_summary(doc["status"].get("warnings"))
             return 0
         if args.cmd == "backfill":
-            if not args.dry_run:
+            if not args.dry_run and not args.xbrl_only:
                 require_openrouter_key(context="backfill")
-            out = backfill(args.ticker, args.from_period, limit=args.limit, dry_run=args.dry_run, model=args.model)
+            out = backfill(
+                args.ticker,
+                args.from_period,
+                limit=args.limit,
+                dry_run=args.dry_run,
+                model=args.model,
+                xbrl_only=args.xbrl_only,
+                start=args.start,
+            )
             print(json.dumps(out, ensure_ascii=False, indent=2))
             write_github_step_summary()
             return 0
