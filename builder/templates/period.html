@@ -14,26 +14,25 @@
   <div>
     <h1>{{ ticker }} · {{ company }} · {{ current_period }}{% if thesis %} <span class="stage-badge s-{{ thesis.stage }}">{{ thesis.stage_label }}</span>{% endif %}</h1>
     <div class="sub">
-      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }} · {{ doc.status.stage|stage }}
+      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }}
     </div>
   </div>
 </div>
 
 <nav class="section-nav" aria-label="分区">
   <div class="chips">
-    <a href="#top">判断</a>
-    {% if thesis %}<a href="#thesis">{{ thesis.stage_label }}</a>{% endif %}
+    <a href="#expect">盈利预期</a>
+    <a href="#fin">财报分析</a>
+    <a href="#guide">指引展望</a>
     <a href="#quality">质量与验证</a>
-    <a href="#fin">财务</a>
-    <a href="#guide">指引</a>
+    {% if thesis %}<a href="#thesis">{{ thesis.stage_label }}</a>{% endif %}
     <a href="#qa">问答{% if qa.evasive_count %}<b>{{ qa.evasive_count }}</b>{% endif %}</a>
     <a href="#notes">来源{% if warnings %}<b>{{ warnings|length }}</b>{% endif %}</a>
   </div>
 </nav>
 
-<!-- ① 页首：左盈利预期，右行情；色块单独一行，不放长文和编号依据 -->
-<section class="dim" id="top">
-  <div class="judge lead">
+<section class="dim" id="expect">
+  <div class="judge lead{% if not quotes %} solo{% endif %}">
     <div class="card gapcard{% if eps_chart %} charted{% endif %}">
       {% if eps_chart %}
       <h2>盈利预期 <small>深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比</small></h2>
@@ -76,8 +75,6 @@
       </div>
       {% if quotes.note %}<p class="small muted">{{ quotes.note }}</p>{% endif %}
     </div>
-    {% else %}
-    {% include "_market_card.html" %}
     {% endif %}
   </div>
 
@@ -88,62 +85,14 @@
     </div>
   </div>
   {% endif %}
-  {% if quotes %}
-  <div class="market-row">
-    {% include "_market_card.html" %}
-  </div>
-  {% endif %}
 </section>
 
-{% if thesis %}
-<!-- ④ 仓位卡：按观察 / 等待 / 持仓显示不同内容 -->
-<section class="dim" id="thesis">
-  {% set has_data = true %}
-  {% include "_position.html" %}
-</section>
-{% endif %}
 
-<!-- ⑤ 增长质量 + ⑧ 验证清单 -->
-<section class="dim" id="quality">
-  <div class="judge even">
-    <div class="card qcard">
-      <h2>增长质量 <small>通用规则 + 本公司规则，阈值写在配置里</small></h2>
-      {% if checks %}
-      <ul class="checks">
-        {% for c in checks %}
-        <li><i class="ck {{ c.status }}" aria-label="{{ {'ok':'通过','warn':'注意','info':'中性'}[c.status] }}">{{ {'ok':'✓','warn':'!','info':'·'}[c.status] }}</i><b>{{ c.name }}<small>{{ c.layer }}</small></b><span>{{ c.text }}</span></li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="muted">财务数据不足，暂不检查。</p>
-      {% endif %}
-    </div>
-    <div class="card wcard">
-      <h2>下季验证清单 <small>下次财报逐条核对</small></h2>
-      {% if watchlist %}
-      <ul class="wl">
-        {% for w in watchlist %}
-        <li><span>{{ w.text }}</span><span class="w-th">{{ w.threshold }}</span></li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="muted">阶段2完成后生成。</p>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-<div class="ev-head">
-  <h2>证据</h2>
-  <p class="layer-sub">上面每个判断的出处。点开查看明细、原文引用和逐轮问答。</p>
-</div>
-
-
-<!-- 财务解读 -->
-<details class="ev" id="fin">
-  <summary><span class="ev-t">财务解读</span><span class="ev-meta">{{ fin_rows|length }} 项指标 · 同比 / 环比 · 变动原因与原文{% if history %} · 趋势图{% endif %}</span></summary>
+<details class="ev" id="fin" open>
+  <summary><span class="ev-t">财报分析</span><span class="ev-meta">{{ fin_rows|length }} 项指标 · 同比 / 环比 · 变动原因与原文{% if history %} · 趋势图{% endif %}</span></summary>
   <div class="ev-body">
-  <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开驱动因素与原文引用；标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开水平值、环比、同比三张图；有原文时同时展开驱动因素。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  {% if drivers_pending %}<p class="pending-note">{{ drivers_pending }}</p>{% endif %}
   <div class="card rows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     {% for r in fin_rows %}
@@ -154,7 +103,7 @@
         <span class="num"><i class="m-label">同比</i><span class="c-{{ r.yoy.cls }}">{{ r.yoy.text }}</span></span>
         <span class="num"><i class="m-label">环比</i><span class="c-{{ r.qoq.cls }}">{{ r.qoq.text }}</span></span>
         <span class="num"><i class="m-label">对比预期</i><span class="c-{{ r.vs.cls }}">{{ r.vs.text }}</span></span>
-        <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif waiting_transcript and not doc.meta.transcript_source %}<span class="muted">待电话会文字稿</span>{% elif waiting_transcript %}<span class="muted">变动原因仍待模型</span>{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif drivers_pending %}<span class="muted">变动原因待生成</span>{% else %}<span class="muted">—</span>{% endif %}</span>
       </summary>
       <div class="m-body">
         {% if history %}
@@ -189,7 +138,7 @@
           {% if drv.is_inference and drv.reasoning %}<p class="small muted">依据：{{ drv.reasoning }}</p>{% endif %}
         </div>
         {% else %}
-        <p class="muted">暂无单独解读。</p>
+        <p class="muted">{% if drivers_pending %}{{ drivers_pending }}{% else %}暂无单独解读。{% endif %}</p>
         {% endfor %}
         {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
         {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
@@ -204,16 +153,26 @@
   </div>
 </details>
 
-<!-- 业绩指引 -->
 <details class="ev" id="guide">
-  <summary><span class="ev-t">业绩指引</span><span class="ev-meta">{% if guidance.tiles %}下季 {{ guidance.tiles|length }} 项数字 · {% endif %}管理层展望 {{ guidance.outlook_count }} 条 · 分析师预期修正</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">{% if guidance.dimensions %}{{ guidance.dimensions|map(attribute='label')|join(' · ') }}{% else %}暂无分项{% endif %}{% if guidance.outlook_count %} · {{ guidance.outlook_count }} 条表述{% endif %}</span></summary>
   <div class="ev-body">
-  <p class="layer-sub">上面是管理层对下一季给出的具体数字；下面是新闻稿、管理层发言和问答里对未来的表述，按主题归类，用来理解语气与中长期叙事，不当作精确指引。</p>
+  <p class="layer-sub">只列出这份财报已经抽到的指引。没有数据的维度不显示，也不补写数字。</p>
+  {% macro ol_items(rows) %}
+  <ul>
+    {% for g in rows %}
+    <li>
+      <p>{% if g.direction_label %}<span class="pill dir-{{ g.direction }}">{{ g.direction_label }}</span> {% endif %}{{ g.text }}</p>
+      <span class="ol-meta">{{ g.period }} · {{ g.source }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endmacro %}
 
-  {% if guidance.tiles %}
-  <div class="group-title">下季指引 <span class="muted small">{{ guidance.next_q }}</span></div>
+  {% for d in guidance.dimensions %}
+  <div class="group-title">{{ d.label }}{% if d.tiles and guidance.next_q %} <span class="muted small">下季 {{ guidance.next_q }}</span>{% endif %}</div>
+  {% if d.tiles %}
   <div class="gtiles">
-    {% for t in guidance.tiles %}
+    {% for t in d.tiles %}
     <div class="card gtile">
       <div class="g-k">{{ t.label }}{% if t.basis %}<span class="basis">{{ t.basis }}</span>{% endif %}</div>
       <div class="g-v">{{ t.value }}</div>
@@ -224,33 +183,28 @@
     {% endfor %}
   </div>
   {% endif %}
-
-  {% if guidance.outlook %}
-  <div class="group-title">管理层展望 <span class="muted small">{{ guidance.outlook_count }} 条，按主题归类</span></div>
-  <div class="outlook">
-    {% for c in guidance.outlook %}
-    <div class="card ol-card">
-      <h3>{{ c.label }}<span class="muted small">{{ c['items']|length }}</span></h3>
-      {% macro ol_items(rows) %}
-      <ul>
-        {% for g in rows %}
-        <li>
-          <p>{% if g.direction_label %}<span class="pill dir-{{ g.direction }}">{{ g.direction_label }}</span> {% endif %}{{ g.text }}</p>
-          <span class="ol-meta">{{ g.period }} · {{ g.source }}</span>
-        </li>
-        {% endfor %}
-      </ul>
-      {% endmacro %}
-      {{ ol_items(c['items'][:2]) }}
-      {% if c['items']|length > 2 %}
-      <details><summary>再看 {{ c['items']|length - 2 }} 条</summary>{{ ol_items(c['items'][2:]) }}</details>
-      {% endif %}
+  {% if d.kpis %}
+  <div class="gtiles">
+    {% for k in d.kpis %}
+    <div class="card gtile">
+      <div class="g-k">{{ k.label }}<span class="basis">本季已披露</span></div>
+      <div class="g-v">{{ k.value }}</div>
+      {% if k.quote %}<div class="g-s">{{ k.quote }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>
   {% endif %}
+  {% if d['items'] %}
+  <div class="card ol-card">
+    {{ ol_items(d['items'][:3]) }}
+    {% if d['items']|length > 3 %}
+    <details><summary>再看 {{ d['items']|length - 3 }} 条</summary>{{ ol_items(d['items'][3:]) }}</details>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
 
-  {% if not guidance.tiles and not guidance.outlook %}
+  {% if not guidance.dimensions %}
   <div class="card placeholder">指引数据生成中或尚未抽取。</div>
   {% endif %}
 
@@ -282,7 +236,42 @@
   </div>
 </details>
 
-<!-- 电话会问答 -->
+<section class="dim" id="quality">
+  <div class="judge even">
+    <div class="card qcard">
+      <h2>增长质量 <small>通用规则 + 本公司规则，阈值写在配置里</small></h2>
+      {% if checks %}
+      <ul class="checks">
+        {% for c in checks %}
+        <li><i class="ck {{ c.status }}" aria-label="{{ {'ok':'通过','warn':'注意','info':'中性'}[c.status] }}">{{ {'ok':'✓','warn':'!','info':'·'}[c.status] }}</i><b>{{ c.name }}<small>{{ c.layer }}</small></b><span>{{ c.text }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">财务数据不足，暂不检查。</p>
+      {% endif %}
+    </div>
+    <div class="card wcard">
+      <h2>下季验证清单 <small>下次财报逐条核对</small></h2>
+      {% if watchlist %}
+      <ul class="wl">
+        {% for w in watchlist %}
+        <li><span>{{ w.text }}</span><span class="w-th">{{ w.threshold }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">总结生成后填写。</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if thesis %}
+<section class="dim" id="thesis">
+  {% set has_data = true %}
+  {% include "_position.html" %}
+</section>
+{% endif %}
+
 <details class="ev" id="qa">
   <summary><span class="ev-t">电话会问答</span><span class="ev-meta">{% if qa['items'] %}{{ qa['items']|length }} 轮{% if qa.evasive_count %} · 部分回答 / 回避 {{ qa.evasive_count }}{% endif %}{% else %}等待文字稿{% endif %}</span></summary>
   <div class="ev-body">
