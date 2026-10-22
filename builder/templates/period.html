@@ -537,8 +537,10 @@ function drawRowCharts() {
               var q = quarters[ctx.dataIndex] || {};
               if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
               if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
-              var basis = q.basis ? '（' + q.basis + '）' : '';
-              return ctx.dataset.label + basis + ' $' + ctx.parsed.y.toFixed(2);
+              if (ctx.dataset.label === '实际') {
+                return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' $' + ctx.parsed.y.toFixed(2);
+              }
+              return ctx.dataset.label + ' $' + ctx.parsed.y.toFixed(2);
             }
           }
         }
