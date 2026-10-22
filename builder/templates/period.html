@@ -61,7 +61,13 @@
 
   <div class="judge">
     <!-- ② 预期差 -->
-    <div class="card gapcard">
+    <div class="card gapcard{% if eps_chart %} charted{% endif %}">
+      {% if eps_chart %}
+      <h2>预期差 <small>深灰柱 = street 一致预期，浅蓝柱 = 可比实际，橙线 = 同比</small></h2>
+      {% if eps_chart.sides %}<div class="eps-side">{% for s in eps_chart.sides %}<span class="vchip {{ s.cls }}">{{ s.text }}</span>{% endfor %}</div>{% endif %}
+      <div class="eps-chart"><canvas id="epsSurprise" aria-label="每股收益预期差"></canvas></div>
+      <p class="eps-note">{{ eps_chart.note }}</p>
+      {% else %}
       <h2>预期差 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
       <div class="gap-rows">
         {% for g in gaps %}
@@ -80,6 +86,7 @@
         {% endfor %}
         {% if gaps %}<div class="gap axis"><span></span><div><span>-15%</span><span>0</span><span>+15%</span></div><span></span></div>{% endif %}
       </div>
+      {% endif %}
     </div>
 
     <!-- ③ 市场怎么判 -->
@@ -493,6 +500,92 @@ function drawRowCharts() {
     draw();
   });
 }
+</script>
+{% endif %}
+{% if eps_chart %}
+<script>
+(function () {
+  var spec = {{ eps_chart|tojson }};
+  var canvas = document.getElementById('epsSurprise');
+  if (!canvas || typeof Chart === 'undefined' || !spec) return;
+  var css = getComputedStyle(document.documentElement);
+  var color = function (name) { return css.getPropertyValue(name).trim(); };
+  Chart.defaults.font.family = color('--font') || 'system-ui';
+  Chart.defaults.font.size = 12;
+  var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
+  var quarters = spec.quarters || [];
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: quarters.map(function (q) { return q.label; }),
+      datasets: [
+        { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
+        { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
+        { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 18, bottom: 22 } },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+        tooltip: {
+          callbacks: {
+            label: function (ctx) {
+              var q = quarters[ctx.dataIndex] || {};
+              if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+              if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+              var basis = q.basis ? '（' + q.basis + '）' : '';
+              return ctx.dataset.label + basis + ' $' + ctx.parsed.y.toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
+        y: { beginAtZero: true, position: 'left', title: { display: true, text: '美元' }, grid: { color: color('--grid') } },
+        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
+      }
+    },
+    plugins: [{
+      id: 'epsMarks',
+      afterDatasetsDraw: function (chart) {
+        var ctx = chart.ctx;
+        chart.data.datasets.forEach(function (ds, di) {
+          if (ds.type !== 'bar') return;
+          var meta = chart.getDatasetMeta(di);
+          meta.data.forEach(function (bar, i) {
+            var val = ds.data[i];
+            if (val == null) return;
+            ctx.save();
+            ctx.fillStyle = color('--ink-2') || '#52514e';
+            ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('$' + Number(val).toFixed(2), bar.x, bar.y - 2);
+            ctx.restore();
+          });
+        });
+      },
+      afterDraw: function (chart) {
+        var ctx = chart.ctx;
+        var x = chart.scales.x;
+        quarters.forEach(function (q, i) {
+          if (!q.note) return;
+          ctx.save();
+          ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
+          ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+})();
 </script>
 {% endif %}
 {% endblock %}
