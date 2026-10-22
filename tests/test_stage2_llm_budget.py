@@ -134,12 +134,12 @@ def test_repair_only_failed_qa(monkeypatch):
     )
     seen = {}
 
-    def fake_batch(llm, prompt, batch, split=True):  # noqa: ANN001
-        seen["ids"] = [b["exchange_id"] for b in batch]
-        return [{"exchange_id": b["exchange_id"], "question_summary": "fixed"} for b in batch]
+    def fake_exchange(llm, prompt, ex):  # noqa: ANN001
+        seen["ids"] = [ex["exchange_id"]]
+        return [{"exchange_id": ex["exchange_id"], "question_summary": "fixed"}], []
 
-    monkeypatch.setattr(qa_mod, "_structure_batch", fake_batch)
-    monkeypatch.setattr(qa_mod, "LLMClient", lambda: None)
+    monkeypatch.setattr(qa_mod, "_structure_exchange", fake_exchange)
+    monkeypatch.setattr(qa_mod, "_qa_client", lambda: None)
     monkeypatch.setattr(qa_mod, "_prompt", lambda llm, nums: "p")
     _, qa_text = qa_mod.split_prepared_and_qa(transcript)
     ids = [e["exchange_id"] for e in qa_mod._split_exchanges(qa_text)]

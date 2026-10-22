@@ -10,6 +10,12 @@ llm:
   # （它只支持 high / xhigh），思考耗尽 4096 额度后正文为空。抽取 / 摘要不需要推理，默认关闭。
   # 可选：off（关闭，最省）/ high / xhigh；删掉这一行则沿用模型默认
   reasoning_effort: "off"
+  # 问答单独用更强的模型。摘要、指引、变动原因仍用上面的 model。留空则回退到 model。
+  # Sonnet 5.5 不能关闭思考，所以问答用 low，并单独放宽输出上限，避免思考占满 4096。
+  qa_model: "anthropic/claude-sonnet-5.5"
+  qa_reasoning_effort: low
+  qa_max_tokens: 8192
+  qa_request_timeout_sec: 120
   # 整次请求墙钟上限（含流式吐字）；httpx read timeout 会随 chunk 重置，不能单靠它
   request_timeout_sec: 90
   max_cost_per_run_usd: 2

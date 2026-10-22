@@ -173,19 +173,23 @@ def test_structure_qa_prompt_asks_for_a_full_answer():
     assert "不超过两句" not in text
     assert "30 个英文单词" not in text
     assert "输出务必紧凑" not in text
-    assert "3 到 6 句" in text
-    assert "可以到 8 句" in text
-    assert "不要退回一两句" in text
+    assert "3 到 6 句" not in text
+    assert "可以到 8 句" not in text
+    assert "最多 8 句" not in text
+    assert "不要设总句数上限" in text
     assert "不要用「文本不足」" in text
     # 每段点名发言人；职务已知才写。能对上名字时不用「管理层表示」带过。
     assert "Mark（CEO）" in text and "Susan（CFO）" in text
     assert "能对上名字时不要写成「管理层表示」" in text
-    assert "用换行符 \\n 分开" in text
+    assert "用换行符 \\n" in text
+    assert "每个独立问题" in text or "互不相关的问题" in text
+    assert "现实实验室" in text
+    assert "six weeks" in text
     # 投资者能读的复述，不要硬译 compute-intensive。
     assert "不要把英文术语硬译" in text
     assert "服务计算密集" in text
     assert "算力消耗大" in text
-    assert "商业化是否要和降本同步" in text
+    assert "商业化是否和降本同步" in text
     assert "不要编造数字、产品或表态" in text
     from pipeline.analyze.qa import _is_placeholder_qa
 
@@ -236,6 +240,11 @@ def test_qa_template_shows_full_speaker_lines():
     assert "Mark（CEO）：整段回答都要显示，不要截成两句。" in one
     assert "<li>" not in one
     assert one.endswith("</p>") or "</p>" in one
+    flag_at = tpl.index("{% if q.review_flags %}")
+    flag_end = tpl.index("{% endif %}", flag_at) + len("{% endif %}")
+    flagged = _env().from_string(tpl[flag_at:flag_end]).render(q={"review_flags": ["漏了 6 weeks"]})
+    assert "核对：" in flagged and "6 weeks" in flagged
+    assert "核对" not in render(q={"answer_summary": "Mark（CEO）：只有一段。", "review_flags": []})
 
 
 def test_clean_firm_and_failed_items_not_evasive():
