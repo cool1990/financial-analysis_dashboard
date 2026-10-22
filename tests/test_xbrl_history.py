@@ -53,6 +53,20 @@ def test_quarterly_prefers_single_quarter_and_does_not_residual_eps():
     assert series[date(2016, 6, 30)]["ocf"]["derived"] is True
 
 
+def test_gross_margin_is_revenue_minus_cost_over_revenue():
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "Revenues": {"units": {"USD": [_row("2016-01-01", "2016-03-31", 200)]}},
+                "CostOfRevenue": {"units": {"USD": [_row("2016-01-01", "2016-03-31", 50)]}},
+            }
+        }
+    }
+    node = quarterly_statements(facts)[date(2016, 3, 31)]["gross_margin"]
+    assert node["value"] == 0.75
+    assert "CostOfRevenue" in node["source_quote"]
+
+
 def test_latest_filing_wins_same_span():
     facts = {
         "facts": {

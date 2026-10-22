@@ -34,6 +34,11 @@
 <!-- ① 判断条：一句话 + 状态标签 -->
 <section class="dim" id="top">
   <div class="card verdict">
+    {% if score_lines %}
+    <div class="vchips">
+      {% for c in score_lines %}<span class="vchip {{ c.cls }}">{{ c.text }}</span>{% endfor %}
+    </div>
+    {% else %}
     {% if doc.summary and doc.summary.headline %}
     <h2 class="v-head">{{ doc.summary.headline }}</h2>
     {% elif waiting_transcript %}
@@ -50,6 +55,7 @@
     <ol class="v-lines">
       {% for f in findings %}<li><span>{{ f }}</span></li>{% endfor %}
     </ol>
+    {% endif %}
     {% endif %}
   </div>
 
@@ -162,9 +168,22 @@
       </summary>
       <div class="m-body">
         {% if history %}
-        <div class="m-chart">
-          <p class="c-sub">柱为水平值，折线为同比和环比。点图例可单独开关。</p>
-          <div class="c-body"><canvas data-metric="{{ r.key }}" aria-label="{{ r.label }} 历史、同比、环比"></canvas></div>
+        <div class="charts">
+          <div class="card chart">
+            <h3>水平值</h3>
+            <p class="c-sub">本季水平</p>
+            <div class="c-body"><canvas data-metric="{{ r.key }}" data-series="level" aria-label="{{ r.label }} 水平值"></canvas></div>
+          </div>
+          <div class="card chart">
+            <h3>环比</h3>
+            <p class="c-sub">较上一季</p>
+            <div class="c-body"><canvas data-metric="{{ r.key }}" data-series="qoq" aria-label="{{ r.label }} 环比"></canvas></div>
+          </div>
+          <div class="card chart">
+            <h3>同比</h3>
+            <p class="c-sub">较去年同季</p>
+            <div class="c-body"><canvas data-metric="{{ r.key }}" data-series="yoy" aria-label="{{ r.label }} 同比"></canvas></div>
+          </div>
         </div>
         {% endif %}
         {% for drv in r.drivers %}
@@ -191,14 +210,7 @@
     {% endfor %}
   </div>
 
-  {% if history %}
-  <div class="charts">
-    <div class="card chart"><h3>营收</h3><p class="c-sub">柱：营收（十亿美元）</p><div class="c-body"><canvas id="revChart" aria-label="营收趋势"></canvas></div></div>
-    <div class="card chart"><h3>利润率</h3><p class="c-sub">毛利率与营业利润率（%）</p><div class="c-body"><canvas id="marginChart" aria-label="利润率趋势"></canvas></div></div>
-    <div class="card chart"><h3>自由现金流</h3><p class="c-sub">十亿美元</p><div class="c-body"><canvas id="fcfChart" aria-label="自由现金流趋势"></canvas></div></div>
-  </div>
   {% if history_derived %}<p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>{% endif %}
-  {% endif %}
   </div>
 </details>
 
@@ -373,7 +385,6 @@ openFromHash();
   draw();
 })();
 function drawCharts() {
-  var history = {{ history|tojson }};
   if (typeof Chart === 'undefined') {
     document.querySelectorAll('.chart .c-body').forEach(function (el) { el.innerHTML = '<p class="placeholder">图表库未能加载。</p>'; });
     return;
@@ -384,47 +395,6 @@ function drawCharts() {
   Chart.defaults.font.size = 12;
   Chart.defaults.color = v('--ink-2');
   Chart.defaults.borderColor = v('--grid');
-  var labels = history.map(function (h) { return h.period; });
-  var bn = function (x) { return x == null ? null : x / 1e9; };
-  var pct = function (x) { return x == null ? null : x * 100; };
-  var yearTicks = {
-    maxRotation: 0, autoSkip: false,
-    callback: function (_val, i) {
-      var lab = labels[i] || '';
-      return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
-    }
-  };
-  var base = {
-    responsive: true, maintainAspectRatio: false, animation: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: { legend: { display: false } },
-    scales: { x: { grid: { display: false }, ticks: yearTicks }, y: { border: { display: false } } }
-  };
-  var opts = function (extra) {
-    extra = extra || {};
-    return Object.assign({}, base, extra, {
-      plugins: Object.assign({}, base.plugins, extra.plugins || {}),
-      scales: Object.assign({}, base.scales, extra.scales || {})
-    });
-  };
-  new Chart(document.getElementById('revChart'), {
-    type: 'bar',
-    data: { labels: labels, datasets: [{ label: '营收（十亿美元）', data: history.map(function (h) { return bn(h.revenue); }), backgroundColor: v('--s1'), borderRadius: 3, maxBarThickness: 18 }] },
-    options: opts()
-  });
-  new Chart(document.getElementById('marginChart'), {
-    type: 'line',
-    data: { labels: labels, datasets: [
-      { label: '毛利率 %', data: history.map(function (h) { return pct(h.gross_margin); }), borderColor: v('--s1'), backgroundColor: v('--s1'), tension: .25, spanGaps: true },
-      { label: '营业利润率 %', data: history.map(function (h) { return pct(h.operating_margin); }), borderColor: v('--s2'), backgroundColor: v('--s2'), tension: .25, spanGaps: true }
-    ] },
-    options: opts({ plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, boxHeight: 3 } } } })
-  });
-  new Chart(document.getElementById('fcfChart'), {
-    type: 'bar',
-    data: { labels: labels, datasets: [{ label: '自由现金流（十亿美元）', data: history.map(function (h) { return bn(h.fcf); }), backgroundColor: v('--s3'), borderRadius: 3, maxBarThickness: 18 }] },
-    options: opts()
-  });
   drawRowCharts();
 }
 var ROW_SERIES = {
@@ -444,18 +414,56 @@ function drawRowCharts() {
   if (typeof Chart === 'undefined') return;
   var css = getComputedStyle(document.documentElement);
   var color = function (name) { return css.getPropertyValue(name).trim(); };
+  var labels = history.map(function (h) { return h.period; });
+  var yearTicks = {
+    maxRotation: 0, autoSkip: false,
+    callback: function (_val, i) {
+      var lab = labels[i] || '';
+      return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
+    }
+  };
+  function paint(canvas, series, kind, unit, hue) {
+    var has = series.some(function (x) { return x != null; });
+    if (!has) {
+      canvas.parentNode.innerHTML = '<p class="placeholder">这条指标没有这段历史。</p>';
+      return;
+    }
+    var isLine = kind === 'line';
+    new Chart(canvas, {
+      type: isLine ? 'line' : 'bar',
+      data: {
+        labels: labels,
+        datasets: [isLine ? {
+          label: unit, data: series, borderColor: color(hue), backgroundColor: color(hue),
+          tension: .25, spanGaps: true, pointRadius: 0, borderWidth: 1.5
+        } : {
+          label: unit, data: series, backgroundColor: color(hue), borderRadius: 3, maxBarThickness: 18
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: yearTicks },
+          y: { border: { display: false } }
+        }
+      }
+    });
+  }
   document.querySelectorAll('details.mrow').forEach(function (row) {
     function draw() {
       if (!row.open || row.dataset.charted) return;
-      var canvas = row.querySelector('canvas[data-metric]');
-      if (!canvas) return;
-      var spec = ROW_SERIES[canvas.getAttribute('data-metric')];
+      var canvases = row.querySelectorAll('canvas[data-metric]');
+      if (!canvases.length) return;
+      var spec = ROW_SERIES[canvases[0].getAttribute('data-metric')];
       if (!spec) {
-        canvas.parentNode.innerHTML = '<p class="placeholder">这条指标没有历史图。</p>';
+        canvases.forEach(function (canvas) {
+          canvas.parentNode.innerHTML = '<p class="placeholder">这条指标没有历史图。</p>';
+        });
         row.dataset.charted = '1';
         return;
       }
-      var labels = history.map(function (h) { return h.period; });
       var level = history.map(function (h) {
         var x = h[spec.v];
         if (x == null) return null;
@@ -464,39 +472,22 @@ function drawRowCharts() {
         return x;
       });
       var asPct = function (x) { return x == null ? null : x * 100; };
-      var yoy = history.map(function (h) { return asPct(h[spec.v + '_yoy']); });
       var qoq = history.map(function (h) { return asPct(h[spec.v + '_qoq']); });
-      if (!level.some(function (x) { return x != null; })) {
-        canvas.parentNode.innerHTML = '<p class="placeholder">这条指标没有历史序列。</p>';
-        row.dataset.charted = '1';
-        return;
-      }
+      var yoy = history.map(function (h) { return asPct(h[spec.v + '_yoy']); });
       var unit = spec.kind === 'money' ? '十亿美元' : (spec.kind === 'ratio' ? '%' : '美元');
       var changeUnit = spec.kind === 'ratio' ? '百分点' : '%';
-      row.dataset.charted = '1';
-      new Chart(canvas, {
-        data: {
-          labels: labels,
-          datasets: [
-            { type: 'bar', label: '水平（' + unit + '）', data: level, yAxisID: 'y', backgroundColor: color('--s1'), borderRadius: 2, maxBarThickness: 18, order: 2 },
-            { type: 'line', label: '同比（' + changeUnit + '）', data: yoy, yAxisID: 'y1', borderColor: color('--s2'), backgroundColor: color('--s2'), tension: .25, spanGaps: true, pointRadius: 0, borderWidth: 1.5, order: 1 },
-            { type: 'line', label: '环比（' + changeUnit + '）', data: qoq, yAxisID: 'y1', borderColor: color('--s3'), backgroundColor: color('--s3'), tension: .25, spanGaps: true, pointRadius: 0, borderWidth: 1.5, borderDash: [4, 3], order: 1 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, animation: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, boxHeight: 3 } } },
-          scales: {
-            x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, callback: function (val, i) {
-              var lab = labels[i] || '';
-              return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
-            } } },
-            y: { position: 'left', title: { display: true, text: unit }, border: { display: false } },
-            y1: { position: 'right', title: { display: true, text: changeUnit }, grid: { drawOnChartArea: false }, border: { display: false } }
-          }
-        }
+      var cards = row.querySelectorAll('.chart');
+      if (cards[0]) cards[0].querySelector('.c-sub').textContent = unit;
+      if (cards[1]) cards[1].querySelector('.c-sub').textContent = changeUnit;
+      if (cards[2]) cards[2].querySelector('.c-sub').textContent = changeUnit;
+      var bySeries = { level: level, qoq: qoq, yoy: yoy };
+      var hue = { level: '--s1', qoq: '--s3', yoy: '--s2' };
+      var shape = { level: spec.kind === 'ratio' ? 'line' : 'bar', qoq: 'line', yoy: 'line' };
+      canvases.forEach(function (canvas) {
+        var name = canvas.getAttribute('data-series');
+        paint(canvas, bySeries[name] || [], shape[name] || 'bar', name === 'level' ? unit : changeUnit, hue[name] || '--s1');
       });
+      row.dataset.charted = '1';
     }
     row.addEventListener('toggle', draw);
     draw();

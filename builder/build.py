@@ -661,6 +661,66 @@ def _next_earnings(ticker: str) -> str:
     return d.isoformat() if d else ""
 
 
+def _billions_label(value: float) -> str:
+    n = value / 1_000_000_000
+    if abs(n - round(n)) < 0.05:
+        return f"{round(n):.0f}"
+    return f"{n:.1f}"
+
+
+def _company_revenue_guide(doc: dict[str, Any]) -> str:
+    """下一季营收指引区间。没有区间时返回空字符串。"""
+    from pipeline.extract.guidance import normalize_period
+
+    chosen = None
+    for item in (doc.get("guidance") or {}).get("items") or []:
+        if item.get("metric_key") != "revenue":
+            continue
+        if item.get("low") is None or item.get("high") is None:
+            continue
+        if not re.fullmatch(r"FY\d{4}Q[1-4]", normalize_period(item.get("period"))):
+            continue
+        chosen = item
+    if not chosen:
+        return ""
+    return f"${_billions_label(float(chosen['low']))}–{_billions_label(float(chosen['high']))}B"
+
+
+def _score_lines(
+    ticker: str,
+    doc: dict[str, Any],
+    market: dict[str, Any],
+    cfg: dict[str, Any],
+) -> list[dict[str, str]]:
+    """META 判断条只留五句：营收、每股收益、公司下季指引、次日涨跌、下次财报。"""
+    if ticker != "META" or not (doc.get("scorecard") or []):
+        return []
+    sc = {c.get("metric"): c for c in doc.get("scorecard") or []}
+    words = {"beat": "超预期", "miss": "不及预期", "inline": "符合预期"}
+    cls_of = {"beat": "ok", "miss": "bad", "inline": ""}
+
+    def vs(metric: str, label: str) -> dict[str, str]:
+        row = sc.get(metric) or {}
+        verdict = row.get("verdict") or "unknown"
+        diff = _num((row.get("benchmark") or {}).get("diff_pct"))
+        gap = _change(diff)["text"] if diff is not None else ""
+        text = f"{label} {words.get(verdict, '待核对')}"
+        if gap and gap != "—":
+            text += f" {gap}"
+        return {"text": text, "cls": cls_of.get(verdict, "muted")}
+
+    guide = _company_revenue_guide(doc)
+    when = _next_earnings(ticker)
+    timing = "盘后" if (cfg.get("release_timing") or "amc") == "amc" else "盘前"
+    return [
+        vs("revenue", "营收"),
+        vs("eps", "每股 EPS"),
+        {"text": f"下季指引 {guide}" if guide else "下季指引待定", "cls": ""},
+        {"text": f"次日涨跌 {market['price']['text']}", "cls": market["price"]["cls"]},
+        {"text": f"下次财报 {when} {timing}" if when else "下次财报时间待定", "cls": "muted" if not when else ""},
+    ]
+
+
 def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, Any] | None) -> dict[str, Any]:
     doc = doc or {}
     sc = {c["metric"]: c for c in doc.get("scorecard") or []}
@@ -668,6 +728,12 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
     def chip(metric: str) -> dict[str, str]:
         v = (sc.get(metric) or {}).get("verdict") or ""
         return {"verdict": v, "label": _verdict_label(v) if v else "—"}
+
+    guide = chip("next_q_eps_guidance")
+    if (sc.get("next_q_eps_guidance") or {}).get("actual") is None:
+        company = _company_revenue_guide(doc)
+        if company:
+            guide = {"verdict": "", "label": company}
 
     pos = load_position(t)
     return {
@@ -677,7 +743,7 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
         "period": period or "—",
         "revenue": chip("revenue"),
         "eps": chip("eps"),
-        "guide": chip("next_q_eps_guidance"),
+        "guide": guide,
         "price": _price_view(doc) if doc else {"text": "—", "cls": "na", "detail": ""},
         "stage": _stage_label((doc.get("status") or {}).get("stage") if doc else "scheduled"),
         "headline": (doc.get("summary") or {}).get("headline") or "",
@@ -989,6 +1055,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 checks=checks,
                 thesis=thesis,
                 chips=_verdict_chips(doc, gaps, market, checks, thesis),
+                score_lines=_score_lines(t, doc, market, cfg),
                 root="../../",
                 nav=nav,
                 active=t,
