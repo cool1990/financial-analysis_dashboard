@@ -147,21 +147,38 @@ def repair_failed_items(
     return out, repaired
 
 
+def _is_placeholder_qa(item: dict[str, Any]) -> bool:
+    """模型按旧提示用「文本不足」占位时丢掉，不在页面上显示空轮次。"""
+    question = (item.get("question_summary") or "").strip()
+    answer = (item.get("answer_summary") or "").strip()
+    return question == "文本不足" or answer == "文本不足"
+
+
+def _exchange_worth_structuring(ex: dict[str, Any]) -> bool:
+    """没有分析师、也没有问号的结尾寒暄不送给模型。"""
+    text = ex.get("text") or ""
+    if (ex.get("analyst") or "").strip():
+        return True
+    return "?" in text or "？" in text
+
+
 def structure_qa(
     transcript: str,
     press_release_numbers: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     prepared, qa = split_prepared_and_qa(transcript)
-    exchanges = _split_exchanges(qa) if qa else []
+    exchanges = [ex for ex in (_split_exchanges(qa) if qa else []) if _exchange_worth_structuring(ex)]
     llm = LLMClient()
     prompt_tmpl = _prompt(llm, press_release_numbers)
     items: list[dict[str, Any]] = []
-    # 更大批次 → 更少次 OpenRouter 往返（原先 batch=2 + 失败逐条重试会放大耗时）
-    batch_size = 5
+    # 每轮要写多句摘要加一段原话。5 轮一起塞进 max_tokens=4096 时，模型会把回答压成一句，
+    # 或者输出被截断。两轮一批，截断时仍会再对半拆。
+    batch_size = 2
     for i in range(0, len(exchanges), batch_size):
         batch = exchanges[i : i + batch_size]
         print(f"[stage2/qa] batch {i // batch_size + 1}/{(len(exchanges) + batch_size - 1) // batch_size} size={len(batch)}", flush=True)
         items.extend(_structure_batch(llm, prompt_tmpl, batch))
+    items = [item for item in items if not _is_placeholder_qa(item)]
     stats = compute_topic_stats(items)
     return {
         "prepared_remarks": prepared,

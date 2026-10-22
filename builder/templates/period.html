@@ -63,17 +63,16 @@
 
     {% if quotes %}
     <div class="card quote-card">
-      <h2>估值与技术 <small>TradingView scanner{% if quotes.fetched_at %} · {{ quotes.fetched_at }}{% endif %}</small></h2>
+      <h2>估值与技术</h2>
       <div class="quote-grid">
         {% for q in quotes["items"] %}
-        <div>
+        <div{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
           <span>{{ q.label }}</span>
           <b>{{ q.value }}</b>
-          <small>{{ q.source }}</small>
         </div>
         {% endfor %}
       </div>
-      {% if quotes.note %}<p class="small muted">{{ quotes.note }}</p>{% endif %}
+      {% if quotes.line %}<p class="quote-asof">{{ quotes.line }}</p>{% endif %}
     </div>
     {% endif %}
   </div>
@@ -154,54 +153,23 @@
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">{% if guidance.dimensions %}{{ guidance.dimensions|map(attribute='label')|join(' · ') }}{% else %}暂无分项{% endif %}{% if guidance.outlook_count %} · {{ guidance.outlook_count }} 条表述{% endif %}</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">{% if guidance.dimensions %}{{ guidance.dimensions|map(attribute='label')|join(' · ') }}{% else %}暂无分项{% endif %}{% if guidance.card_count %} · {{ guidance.card_count }} 项{% endif %}</span></summary>
   <div class="ev-body">
-  <p class="layer-sub">只列出这份财报已经抽到的指引。没有数据的维度不显示，也不补写数字。</p>
-  {% macro ol_items(rows) %}
-  <ul>
-    {% for g in rows %}
-    <li>
-      <p>{% if g.direction_label %}<span class="pill dir-{{ g.direction }}">{{ g.direction_label }}</span> {% endif %}{{ g.text }}</p>
-      <span class="ol-meta">{{ g.period }} · {{ g.source }}</span>
-    </li>
-    {% endfor %}
-  </ul>
-  {% endmacro %}
+  <p class="layer-sub">同一指标只留一张卡片。来源标在卡片上。没有抽到的维度不显示，也不补写数字。</p>
 
   {% for d in guidance.dimensions %}
-  <div class="group-title">{{ d.label }}{% if d.tiles and guidance.next_q %} <span class="muted small">下季 {{ guidance.next_q }}</span>{% endif %}</div>
-  {% if d.tiles %}
+  <div class="group-title">{{ d.label }}</div>
   <div class="gtiles">
-    {% for t in d.tiles %}
+    {% for t in d.cards %}
     <div class="card gtile">
-      <div class="g-k">{{ t.label }}{% if t.basis %}<span class="basis">{{ t.basis }}</span>{% endif %}</div>
-      <div class="g-v">{{ t.value }}</div>
+      <div class="g-k">{{ t.label }}{% if t.basis %}<span class="basis">{{ t.basis }}</span>{% endif %}{% if t.source %}<span class="basis">{{ t.source }}</span>{% endif %}</div>
+      <div class="g-v{% if t.textual %} textual{% endif %}">{{ t.value }}</div>
       {% if t.sub %}<div class="g-s">{{ t.sub }}</div>{% endif %}
       {% if t.vs %}<div class="g-s">{{ t.vs_label }} · <b class="c-{{ t.vs.cls }}">{{ t.vs.text }}</b></div>{% endif %}
       {% if t.variant %}<div class="g-s"><span class="pill warn">电话会口径不同</span></div>{% endif %}
     </div>
     {% endfor %}
   </div>
-  {% endif %}
-  {% if d.kpis %}
-  <div class="gtiles">
-    {% for k in d.kpis %}
-    <div class="card gtile">
-      <div class="g-k">{{ k.label }}<span class="basis">本季已披露</span></div>
-      <div class="g-v">{{ k.value }}</div>
-      {% if k.quote %}<div class="g-s">{{ k.quote }}</div>{% endif %}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% if d['items'] %}
-  <div class="card ol-card">
-    {{ ol_items(d['items'][:3]) }}
-    {% if d['items']|length > 3 %}
-    <details><summary>再看 {{ d['items']|length - 3 }} 条</summary>{{ ol_items(d['items'][3:]) }}</details>
-    {% endif %}
-  </div>
-  {% endif %}
   {% endfor %}
 
   {% if not guidance.dimensions %}
@@ -305,7 +273,7 @@
         {% if q.failed %}
         {% if q.raw_excerpt %}<blockquote>{{ q.raw_excerpt }}…</blockquote>{% else %}<p class="small">原文未保存在页面数据中，修复后显示问答摘要。</p>{% endif %}
         {% else %}
-        <p><b>答：</b>{{ q.answer_summary or '—' }}</p>
+        <p class="qa-answer"><b>答：</b>{{ q.answer_summary or '—' }}</p>
         {% endif %}
         {% if q.note %}<p class="small">未回答的部分：{{ q.note }}</p>{% endif %}
         {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}

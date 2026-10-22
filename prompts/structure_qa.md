@@ -1,15 +1,21 @@
-下面是业绩电话会 Q&A 的若干轮问答。将每个问题拆解为一条记录，只输出 JSON 数组。每条包含：
+下面是业绩电话会 Q&A 的若干轮问答。把分析师的每个独立问题拆成一条记录，只输出 JSON 数组。同一轮里如果有两个互不相关的问题，输出两条，不要并成一句。
+
+每条包含：
 - exchange_id：输入中给出的编号
 - analyst、firm
 - topic：从话题清单中选；都不匹配时新建一个简短中文话题名，并把 is_new_topic 设为 true
-- question_summary：一句话中文，写清分析师真正想知道什么
-- answer_summary：不超过两句中文
+- question_summary：一到两句中文，写清分析师真正想知道什么
+- answer_summary：管理层回答的实质内容，用中文写完整。按回答的顺序覆盖主要论点；管理层说出的数字、区间、时间点和明确表态都要写上，并保留口径（例如 GAAP、全年、下季）。通常 3 到 6 句，最多 8 句。不要压成一句空话，也不要逐字翻译整段原文，不要编造输入里没有的数字。
 - new_numbers：回答中给出、但新闻稿里没有的数字，每项含数字原文和含义；没有则为空数组
 - directness：direct（直接回答）/ partial（部分回答）/ evasive（回避）
-- evasion_note：directness 不是 direct 时，写明没回答的是什么
+- evasion_note：directness 不是 direct 时，写明没回答的是什么；direct 时为空字符串
 - tone：positive / neutral / cautious（管理层回答的语气）
-- answer_quote：最能代表管理层态度的一句原话，不超过 30 个英文单词
-规则：只根据输入文本，不要补充外部知识。必须输出非空 JSON 数组；若某轮信息不足，仍返回该 exchange_id 的对象，question_summary/answer_summary 用中文说明「文本不足」。
-输出务必紧凑：整段 JSON 尽量短，不要复述原文，不要加额外字段。
+- answer_quote：从该回答里逐字摘 1 到 2 句连续原话，读得懂、能代表表态，优先保留关键数字。不要改写，不要截成半句，不超过 80 个英文单词。
+
+规则：
+1. 只根据输入文本，不要补充外部知识，不要编造数字。
+2. 没有分析师提问的开场、转接或结束语不要输出记录。
+3. 某一轮如果确实无法概括，跳过该轮。不要用「文本不足」占位，question_summary 和 answer_summary 都不要写这四个字。
+4. 输出 JSON 数组。这一批里如果没有任何可概括的问答，输出空数组 []。有真实提问时，每个提问都要有一条记录。
 话题清单：{topics}
 新闻稿已披露的数字：{press_release_numbers}

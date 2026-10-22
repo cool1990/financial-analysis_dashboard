@@ -91,12 +91,20 @@ class QAItem(BaseModel):
     topic: Optional[str] = None
     is_new_topic: bool = False
     question_summary: Optional[str] = None
-    answer_summary: Optional[str] = None
+    # 多句中文，覆盖该回答的主要论点和关键数字。流水线不截断这段文字。
+    answer_summary: Optional[str] = Field(
+        default=None,
+        description="多句中文，覆盖管理层回答的主要论点和关键数字；不要用「文本不足」占位",
+    )
     new_numbers: list[Any] = Field(default_factory=list)
     directness: Optional[str] = None
     evasion_note: Optional[str] = None
     tone: Optional[str] = None
-    answer_quote: Optional[str] = None
+    # 回答里连续的一两句原文，保留数字。不要为了短截成半句。
+    answer_quote: Optional[str] = Field(
+        default=None,
+        description="回答中连续的一两句原文，可以包含数字，不要截成半句",
+    )
 
 
 class SummaryResult(BaseModel):
