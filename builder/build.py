@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -1453,6 +1453,18 @@ def _eps_figure(g: dict[str, Any]) -> str | None:
     return None
 
 
+def _eps_source_names(g: dict[str, Any]) -> list[str]:
+    """页头来源只写短名。新闻稿和电话会可以同时出现。"""
+    names: list[str] = []
+    src = g.get("source") or ""
+    origin = g.get("guidance_origin") or ""
+    if src == "press_release" or origin == "sec_exhibit_99_1":
+        names.append("新闻稿")
+    if src in _CALL_SOURCES or g.get("confirmed_by") in _CALL_SOURCES:
+        names.append("电话会")
+    return names
+
+
 def _eps_source_caption(g: dict[str, Any]) -> str:
     """来源写回格子：新闻稿按 Exhibit 99.1，电话会单独标，并带上原文。"""
     from pipeline.extract.guidance import normalize_period
@@ -1501,6 +1513,7 @@ def _eps_cell(label: str, chosen: dict[str, Any] | None, looked_period: str | No
         return {
             "label": label,
             "value": "无",
+            "sources": [],
             "source": "管理层未提供该 Non-GAAP EPS 数字。不用营收或费用倒推，也不采用分析师一致预期。",
             "record": {
                 "basis": "non-GAAP",
@@ -1515,6 +1528,7 @@ def _eps_cell(label: str, chosen: dict[str, Any] | None, looked_period: str | No
     return {
         "label": label,
         "value": _eps_figure(chosen) or "无",
+        "sources": _eps_source_names(chosen),
         "source": _eps_source_caption(chosen),
         "record": {
             "basis": "non-GAAP",
@@ -1595,12 +1609,14 @@ def _market_quotes(ticker: str) -> dict[str, Any] | None:
         items.append({
             "label": "Forward EPS",
             "value": f"${ntm:.2f}",
+            "vendor": "TradingView",
             "source": f"TradingView eps_estimate_ntm = {ntm:.6f}，未来 12 个月一致预期。下一财年是另一列，不放在这一格。",
         })
     if close is not None and ntm not in (None, 0):
         items.append({
             "label": "Forward PE",
             "value": f"{close / ntm:.1f}×",
+            "vendor": "TradingView",
             "source": (
                 f"close {close:.2f} ÷ eps_estimate_ntm {ntm:.6f}。"
                 "scanner 的 price_earnings_forward 为空，这一格是两列相除，不是现成的远期市盈率。"
@@ -1610,6 +1626,7 @@ def _market_quotes(ticker: str) -> dict[str, Any] | None:
         items.append({
             "label": "股息率（TTM）",
             "value": f"{div:.2f}%",
+            "vendor": "TradingView",
             "source": (
                 "全年普通股股息 dps_common_stock_prim_issue_fy $2.10 ÷ close，与 TradingView dividends_yield 一致。"
                 "名为 dividend_yield_ttm 的列为空，这一格用全年股息除以收盘价。季度股息 dividends_per_share_fq = $0.525。"
@@ -1619,6 +1636,7 @@ def _market_quotes(ticker: str) -> dict[str, Any] | None:
         items.append({
             "label": "RSI",
             "value": f"{rsi:.1f}",
+            "vendor": "TradingView",
             "source": "TradingView 列 RSI。名为 RSI14 的列为空，页面不把周期写成 14。",
         })
     if not items:
@@ -1631,6 +1649,49 @@ def _market_quotes(ticker: str) -> dict[str, Any] | None:
     }
 
 
+_QUOTE_SOURCE_ORDER = ("TradingView", "Alpha Vantage", "新闻稿", "电话会")
+
+
+def _session_date(raw: str | None) -> str:
+    """行情时点写成美东交易日。开盘前取到的是上一交易日收盘。"""
+    if not raw:
+        return ""
+    text = str(raw).strip()
+    try:
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        match = re.match(r"(\d{4}-\d{2}-\d{2})", text)
+        return match.group(1) if match else ""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ET)
+    local = dt.astimezone(ET)
+    if local.hour < 9 or (local.hour == 9 and local.minute < 30):
+        local -= timedelta(days=1)
+    while local.weekday() >= 5:
+        local -= timedelta(days=1)
+    return local.strftime("%Y-%m-%d")
+
+
+def _quote_line(items: list[dict[str, Any]], as_of: str) -> str:
+    """盒子底部一行：数据时间和实际用到的来源，不写解释。"""
+    found: list[str] = []
+    for item in items:
+        names = list(item.get("sources") or [])
+        vendor = item.get("vendor")
+        if vendor:
+            names.append(vendor)
+        for name in names:
+            if name not in found:
+                found.append(name)
+    found.sort(key=lambda name: _QUOTE_SOURCE_ORDER.index(name) if name in _QUOTE_SOURCE_ORDER else len(_QUOTE_SOURCE_ORDER))
+    parts = []
+    if as_of:
+        parts.append(f"数据时间 {as_of}")
+    if found:
+        parts.append("来源 " + " / ".join(found))
+    return " · ".join(parts)
+
+
 def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: bool) -> dict[str, Any] | None:
     """最新财季页头右上角：行情四格，再加上管理层 Non-GAAP EPS 指引两格。"""
     if not is_latest:
@@ -1640,10 +1701,12 @@ def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: boo
     items.extend(_management_eps_cells(doc, period))
     if not items:
         return None
+    as_of = _session_date((market or {}).get("fetched_at"))
+    if not as_of:
+        as_of = _session_date(((doc.get("meta") or {}).get("release_at_utc")))
     return {
         "items": items,
-        "fetched_at": (market or {}).get("fetched_at") or "",
-        "note": (market or {}).get("note") or "",
+        "line": _quote_line(items, as_of),
         "market": bool(market),
     }
 

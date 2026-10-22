@@ -63,17 +63,16 @@
 
     {% if quotes %}
     <div class="card quote-card">
-      <h2>估值与技术 <small>{% if quotes.market %}TradingView scanner{% if quotes.fetched_at %} · {{ quotes.fetched_at }}{% endif %}{% else %}管理层 Non-GAAP EPS 指引{% endif %}</small></h2>
+      <h2>估值与技术</h2>
       <div class="quote-grid">
         {% for q in quotes["items"] %}
         <div{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
           <span>{{ q.label }}</span>
           <b>{{ q.value }}</b>
-          <small>{{ q.source }}</small>
         </div>
         {% endfor %}
       </div>
-      {% if quotes.note %}<p class="small muted">{{ quotes.note }}</p>{% endif %}
+      {% if quotes.line %}<p class="quote-asof">{{ quotes.line }}</p>{% endif %}
     </div>
     {% endif %}
   </div>

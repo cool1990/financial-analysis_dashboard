@@ -248,19 +248,21 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "Forward EPS" in meta_html and "$32.03" in meta_html
     assert "Forward PE" in meta_html and "21.8×" in meta_html
     assert "股息率" in meta_html and "0.30%" in meta_html and "RSI" in meta_html and "47.4" in meta_html
-    assert "eps_estimate_ntm" in meta_html and "price_earnings_forward 为空" in meta_html
-    assert "dividend_yield_ttm" in meta_html
     quote = meta_html.split('class="card quote-card"', 1)[1].split('class="card verdict"', 1)[0]
     assert "下季度EPS指引" in quote and "年度EPS指引" in quote
     assert quote.count(">无<") == 2
     assert quote.count("$32.03") == 1
     assert 'data-provided="0"' in quote and 'data-basis="non-GAAP"' in quote
     assert 'data-source-period="FY2026Q4"' in quote and 'data-source-period="FY2026"' in quote
+    assert "数据时间 2026-10-21 · 来源 TradingView" in quote
+    assert "eps_estimate_ntm" not in quote and "price_earnings_forward" not in quote
+    assert "Alpha Vantage" not in quote and "未来 12 个月" not in quote
     mu_quote = html.split('class="card quote-card"', 1)[1].split('class="card verdict"', 1)[0]
     assert "下季度EPS指引" in mu_quote and "$38.15" in mu_quote
     assert "年度EPS指引" in mu_quote and ">无<" in mu_quote
     assert 'data-source-kind="press_release"' in mu_quote and 'data-metric-key="eps_nongaap"' in mu_quote
-    assert "$37.84" not in mu_quote and "8.29" not in mu_quote
+    assert "数据时间 2026-09-30 · 来源 新闻稿 / 电话会" in mu_quote
+    assert "$37.84" not in mu_quote and "8.29" not in mu_quote and "Exhibit 99.1" not in mu_quote
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
 
@@ -299,6 +301,7 @@ def test_header_eps_guidance_uses_only_management_nongaap():
     assert by["Forward EPS"]["value"] == "$32.03"
     assert by["下季度EPS指引"]["value"] == "无" and by["年度EPS指引"]["value"] == "无"
     assert header["market"] is True
+    assert header["line"] == "数据时间 2026-10-21 · 来源 TradingView"
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_cells = {c["label"]: c for c in _management_eps_cells(mu, "FY2026Q4")}
@@ -313,6 +316,9 @@ def test_header_eps_guidance_uses_only_management_nongaap():
     assert "$37.84" not in nq["value"]
     assert mu_cells["年度EPS指引"]["value"] == "无"
     assert mu_cells["年度EPS指引"]["record"]["period"] == "FY2027"
+    mu_header = _header_quotes("MU", mu, "FY2026Q4", True)
+    assert mu_header["market"] is False
+    assert mu_header["line"] == "数据时间 2026-09-30 · 来源 新闻稿 / 电话会"
     assert meta["guidance"]["management_eps"]["next_quarter"]["display"] == "无"
     assert meta["guidance"]["management_eps"]["next_quarter"]["source"] is None
     assert mu["guidance"]["management_eps"]["next_quarter"]["display"] == "$38.15"
