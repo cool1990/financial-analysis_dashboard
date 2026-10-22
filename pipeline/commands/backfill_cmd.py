@@ -78,6 +78,14 @@ def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, A
         rev = _block(row.get("revenue"), yoy=_val(yoy_end, "revenue"), qoq=_val(prior_end, "revenue"))
         if rev:
             fin["revenue"] = rev
+        gm = _block(
+            row.get("gross_margin"),
+            yoy=_val(yoy_end, "gross_margin"),
+            qoq=_val(prior_end, "gross_margin"),
+            is_ratio=True,
+        )
+        if gm:
+            fin["gross_margin_gaap"] = gm
         oi = _block(row.get("operating_income"), yoy=_val(yoy_end, "operating_income"), qoq=_val(prior_end, "operating_income"))
         if oi:
             fin["operating_income_gaap"] = oi
@@ -121,6 +129,7 @@ def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, A
             "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。"
             "收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。"
             "经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。"
+            "毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。"
             "第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
         ]
         doc["status"] = {"stage": "backfill_gaap", "needs_review": False, "warnings": warnings}

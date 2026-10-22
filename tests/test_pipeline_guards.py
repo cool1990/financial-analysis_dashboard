@@ -199,7 +199,8 @@ def test_build_site_renders(tmp_path, monkeypatch):
     html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
     assert "预期差" in html and "增长质量" in html and "{{" not in html
     # 明细默认折叠在证据层，图表随「财务」块展开时绘制
-    assert '<details class="ev" id="fin">' in html and "revChart" in html
+    assert '<details class="ev" id="fin">' in html and 'data-series="level"' in html
+    assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
 
