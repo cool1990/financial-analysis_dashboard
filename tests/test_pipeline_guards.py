@@ -246,6 +246,46 @@ def test_judgment_layer_rules():
     assert any("缺一致预期" in c for c in chips) and any(c.startswith("市场认可") for c in chips)
 
 
+def test_meta_eps_uses_ex_charge_against_street_consensus():
+    """TradingView $6.54 is street/adjusted. Compare it to press ex-charge $7.40, not GAAP $3.83."""
+    from builder.build import _fin_rows, _gap_rows, _index_row, _score_lines
+    from pipeline.config import load_ticker_config
+
+    doc = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    eps = next(row for row in doc["scorecard"] if row["metric"] == "eps")
+    assert eps["actual"] == 7.40 and eps["basis"] == "ex_legal" and eps["verdict"] == "beat"
+    assert eps["benchmark"]["value"] == 6.54 and eps["benchmark"]["source"] == "consensus"
+    assert doc["financials"]["eps_gaap"]["value"] == 3.83
+    assert doc["financials"]["eps_gaap"]["benchmark"]["value"] is None
+    assert doc["financials"]["eps_nongaap"]["value"] == 7.40
+    assert "剔诉讼费用后" in doc["financials"]["eps_nongaap"]["display_label"]
+
+    lines = [c["text"] for c in _score_lines("META", doc, {"price": {"text": "—", "cls": "na"}}, {"release_timing": "amc"})]
+    assert any("每股 EPS（剔诉讼费用后） 超预期 +13.1%" == c for c in lines)
+    assert all("不及预期" not in c for c in lines)
+
+    gap = next(g for g in _gap_rows(doc) if g["label"].startswith("本季 EPS"))
+    assert gap["label"] == "本季 EPS（剔诉讼费用后）"
+    assert gap["detail"] == "剔诉讼费用后 $7.40 · 一致预期 $6.54"
+    assert gap["gap"]["text"] == "+13.1%"
+
+    rows = {r["label"]: r for r in _fin_rows(doc)}
+    assert rows["稀释每股收益（GAAP）"]["value"] == "$3.83"
+    assert rows["稀释每股收益（GAAP）"]["vs"]["text"] == "—"
+    assert rows["稀释每股收益（剔诉讼费用后）"]["value"] == "$7.40"
+    assert rows["稀释每股收益（剔诉讼费用后）"]["vs"]["text"] == "+13.1%"
+
+    index = _index_row("META", load_ticker_config("META"), "FY2026Q3", doc)
+    assert index["eps"]["verdict"] == "beat"
+    assert index["eps"]["label"] == "超预期 · 剔诉讼费用后"
+
+    from builder.build import _quality_checks
+
+    names = [c["name"] for c in _quality_checks(doc, load_ticker_config("META"))]
+    assert "剔诉讼费用后比 GAAP EPS 高出" in names
+    assert all("Non-GAAP" not in name for name in names)
+
+
 def test_gap_row_clips_outside_scale():
     from builder.build import _gap_rows
 
