@@ -701,8 +701,8 @@ def _score_lines(
 
     def vs(metric: str, label: str) -> dict[str, str]:
         row = sc.get(metric) or {}
-        if metric == "eps" and row.get("basis") == "ex_legal":
-            label = "每股 EPS（剔诉讼费用后）"
+        if metric == "eps" and row.get("basis") in {"ex_legal", "non_gaap"}:
+            label = "每股 EPS（Non-GAAP）"
         verdict = row.get("verdict") or "unknown"
         diff = _num((row.get("benchmark") or {}).get("diff_pct"))
         gap = _change(diff)["text"] if diff is not None else ""
@@ -732,8 +732,8 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
         return {"verdict": v, "label": _verdict_label(v) if v else "—"}
 
     eps = chip("eps")
-    if (sc.get("eps") or {}).get("basis") == "ex_legal" and eps["label"] not in ("", "—"):
-        eps = {**eps, "label": f"{eps['label']} · 剔诉讼费用后"}
+    if (sc.get("eps") or {}).get("basis") in {"ex_legal", "non_gaap"} and eps["label"] not in ("", "—"):
+        eps = {**eps, "label": f"{eps['label']} · Non-GAAP"}
 
     guide = chip("next_q_eps_guidance")
     if (sc.get("next_q_eps_guidance") or {}).get("actual") is None:
@@ -779,19 +779,19 @@ def _gap_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
         if not row or row.get("actual") is None:
             continue
         b = row.get("benchmark") or {}
-        ex_legal = key == "eps" and row.get("basis") == "ex_legal"
-        if ex_legal:
-            label = "本季 EPS（剔诉讼费用后）"
+        comparable = key == "eps" and row.get("basis") in {"ex_legal", "non_gaap"}
+        if comparable:
+            label = "本季 EPS（Non-GAAP）"
         fmt_key = "eps" if "eps" in key else key
         actual = _fmt_value(row.get("actual"), fmt_key)
         diff = _num(b.get("diff_pct"))
         if b.get("value") is None or diff is None:
-            prefix = "剔诉讼费用后" if ex_legal else ("指引中值" if "guidance" in key else "实际")
+            prefix = "Non-GAAP" if comparable else ("指引中值" if "guidance" in key else "实际")
             rows.append({"label": label, "has": False, "detail": f"{prefix} {actual}"})
             continue
         clipped = max(-GAP_SCALE, min(GAP_SCALE, diff))
-        if ex_legal:
-            detail = f"剔诉讼费用后 {actual} · 一致预期 {_fmt_value(b.get('value'), fmt_key)}"
+        if comparable:
+            detail = f"Non-GAAP {actual} · 一致预期 {_fmt_value(b.get('value'), fmt_key)}"
         else:
             detail = f"{'指引中值' if 'guidance' in key else '实际'} {actual} · 预期 {_fmt_value(b.get('value'), fmt_key)}"
         rows.append(
@@ -1031,6 +1031,61 @@ def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict
 # ---------------------------------------------------------------- 渲染
 
 
+def _market_quotes(ticker: str) -> dict[str, Any] | None:
+    """右上角四个行情指标。只读已保存的 TradingView scanner 列，缺列就留空。"""
+    path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
+    if not path.exists():
+        return None
+    try:
+        snap = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    cols = (snap.get("quote") or {}).get("columns") or {}
+    close = _num(cols.get("close"))
+    ntm = _num(cols.get("eps_estimate_ntm"))
+    div = _num(cols.get("dividends_yield"))
+    rsi = _num(cols.get("RSI"))
+    items: list[dict[str, str]] = []
+    if ntm is not None:
+        items.append({
+            "label": "Forward EPS",
+            "value": f"${ntm:.2f}",
+            "source": f"TradingView eps_estimate_ntm = {ntm:.6f}，未来 12 个月一致预期。下一财年是另一列，不放在这一格。",
+        })
+    if close is not None and ntm not in (None, 0):
+        items.append({
+            "label": "Forward PE",
+            "value": f"{close / ntm:.1f}×",
+            "source": (
+                f"close {close:.2f} ÷ eps_estimate_ntm {ntm:.6f}。"
+                "scanner 的 price_earnings_forward 为空，这一格是两列相除，不是现成的远期市盈率。"
+            ),
+        })
+    if div is not None:
+        items.append({
+            "label": "股息率（TTM）",
+            "value": f"{div:.2f}%",
+            "source": (
+                "全年普通股股息 dps_common_stock_prim_issue_fy $2.10 ÷ close，与 TradingView dividends_yield 一致。"
+                "名为 dividend_yield_ttm 的列为空，这一格用全年股息除以收盘价。季度股息 dividends_per_share_fq = $0.525。"
+            ),
+        })
+    if rsi is not None:
+        items.append({
+            "label": "RSI",
+            "value": f"{rsi:.1f}",
+            "source": "TradingView 列 RSI。名为 RSI14 的列为空，页面不把周期写成 14。",
+        })
+    if not items:
+        return None
+    quote = snap.get("quote") or {}
+    return {
+        "items": items,
+        "fetched_at": quote.get("fetched_at") or "",
+        "note": quote.get("note") or "Alpha Vantage 没有调用：当前环境没有 API key。",
+    }
+
+
 def _env() -> Environment:
     env = Environment(
         loader=FileSystemLoader(str(ROOT / "builder" / "templates")),
@@ -1118,6 +1173,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 thesis=thesis,
                 chips=_verdict_chips(doc, gaps, market, checks, thesis),
                 score_lines=_score_lines(t, doc, market, cfg),
+                quotes=_market_quotes(t) if period == latest else None,
                 root="../../",
                 nav=nav,
                 active=t,

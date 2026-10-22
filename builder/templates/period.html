@@ -31,44 +31,17 @@
   </div>
 </nav>
 
-<!-- ① 判断条：一句话 + 状态标签 -->
+<!-- ① 页首：左盈利预期，右行情；色块单独一行，不放长文和编号依据 -->
 <section class="dim" id="top">
-  <div class="card verdict">
-    {% if score_lines %}
-    <div class="vchips">
-      {% for c in score_lines %}<span class="vchip {{ c.cls }}">{{ c.text }}</span>{% endfor %}
-    </div>
-    {% else %}
-    {% if doc.summary and doc.summary.headline %}
-    <h2 class="v-head">{{ doc.summary.headline }}</h2>
-    {% elif waiting_transcript %}
-    <h2 class="v-head muted">新闻稿已解读，结论将在电话会文字稿到位后生成</h2>
-    {% else %}
-    <h2 class="v-head muted">尚未生成结论</h2>
-    {% endif %}
-    {% if chips %}
-    <div class="vchips">
-      {% for c in chips %}<span class="vchip {{ c.cls }}">{{ c.text }}</span>{% endfor %}
-    </div>
-    {% endif %}
-    {% if findings %}
-    <ol class="v-lines">
-      {% for f in findings %}<li><span>{{ f }}</span></li>{% endfor %}
-    </ol>
-    {% endif %}
-    {% endif %}
-  </div>
-
-  <div class="judge">
-    <!-- ② 预期差 -->
+  <div class="judge lead">
     <div class="card gapcard{% if eps_chart %} charted{% endif %}">
       {% if eps_chart %}
-      <h2>预期差 <small>深灰柱 = street 一致预期，浅蓝柱 = 可比实际，橙线 = 同比</small></h2>
+      <h2>盈利预期 <small>深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比</small></h2>
       {% if eps_chart.sides %}<div class="eps-side">{% for s in eps_chart.sides %}<span class="vchip {{ s.cls }}">{{ s.text }}</span>{% endfor %}</div>{% endif %}
-      <div class="eps-chart"><canvas id="epsSurprise" aria-label="每股收益预期差"></canvas></div>
+      <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
       <p class="eps-note">{{ eps_chart.note }}</p>
       {% else %}
-      <h2>预期差 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
+      <h2>盈利预期 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
       <div class="gap-rows">
         {% for g in gaps %}
         <div class="gap">
@@ -89,27 +62,37 @@
       {% endif %}
     </div>
 
-    <!-- ③ 市场怎么判 -->
-    <div class="card mkt">
-      <h2>市场怎么判{% if market.stance %} <span class="vchip {{ market.stance.cls }}">{{ market.stance.text }}</span>{% endif %}</h2>
-      <div class="kv">
-        <span>次日股价</span><b class="c-{{ market.price.cls }}">{{ market.price.text }}</b>
-        {% if market.price.detail %}<small>{{ market.price.detail }}</small>{% endif %}
+    {% if quotes %}
+    <div class="card quote-card">
+      <h2>估值与技术 <small>TradingView scanner{% if quotes.fetched_at %} · {{ quotes.fetched_at }}{% endif %}</small></h2>
+      <div class="quote-grid">
+        {% for q in quotes["items"] %}
+        <div>
+          <span>{{ q.label }}</span>
+          <b>{{ q.value }}</b>
+          <small>{{ q.source }}</small>
+        </div>
+        {% endfor %}
       </div>
-      {% if market.bench.excess %}
-      <div class="kv">
-        <span>相对 {{ market.bench.symbol }}（扣除板块波动）</span><b class="c-{{ market.bench.excess.cls }}">{{ market.bench.excess.text }}</b>
-        <small>{{ market.bench.symbol }} 同期 {{ market.bench.pct.text }}</small>
-      </div>
-      {% endif %}
-      <div class="kv">
-        <span>下季 EPS 一致预期{% if market.revision %}（{{ market.revision.label }}）{% endif %}</span>
-        <b class="c-{{ market.revision.chg.cls if market.revision else 'na' }}">{{ market.revision.chg.text if market.revision else '待补' }}</b>
-        <small>{% if market.revision %}{{ market.revision.detail }}，财报后分析师对下季的预期变化{% else %}财报后快照到位后自动补{% endif %}</small>
-      </div>
-      <p class="small muted">股价{% if market.bench.excess %}（相对 {{ market.bench.symbol }}）{% endif %}和预期修正同向，说明市场采信了这份财报；方向相反时值得多看一眼。</p>
+      {% if quotes.note %}<p class="small muted">{{ quotes.note }}</p>{% endif %}
+    </div>
+    {% else %}
+    {% include "_market_card.html" %}
+    {% endif %}
+  </div>
+
+  {% if chips %}
+  <div class="card verdict">
+    <div class="vchips">
+      {% for c in chips %}<span class="vchip {{ c.cls }}">{{ c.text }}</span>{% endfor %}
     </div>
   </div>
+  {% endif %}
+  {% if quotes %}
+  <div class="market-row">
+    {% include "_market_card.html" %}
+  </div>
+  {% endif %}
 </section>
 
 {% if thesis %}

@@ -164,7 +164,7 @@
       "endpoint": "https://scanner.tradingview.com/america/scan",
       "ticker": "NASDAQ:META",
       "column": "earnings_fq_h",
-      "note": "浅蓝柱只使用和 TradingView street 预期可比的实际。FQ4 2025 是新闻稿稀释每股收益 $8.88，当季没有写出剔除项。FQ1 2026 是 GAAP $10.44 减去新闻稿所写的「EPS 会低 $3.13」，即 $7.31（剔除 80.3 亿美元税额优惠）。FQ2 2026 新闻稿给出 GAAP $6.18，并写明 24 亿美元法律费用和 11.8 亿美元遣散费，但没有给出剔除后的每股收益，所以不画实际柱，也不把 $6.18 和预期放在一起。FQ3 2026 是剔除 98.9 亿美元诉讼费用后的 $7.40，不是 GAAP $3.83。灰柱全部是 earnings_fq_h 的 Estimate。未来四季只有预期。橙线同比用同一口径；FQ3 2026 的基数是 2025 年第三季度新闻稿剔除一次性税费后的 $7.25。FQ2 2026 与 FQ2 2027 没有可比基数。",
+      "note": "浅蓝柱是 Non-GAAP 实际，灰柱是 TradingView earnings_fq_h 的 street 一致预期。FQ4 2025 新闻稿没有每股收益剔除项，Non-GAAP 等于稀释每股收益 $8.88。FQ1 2026 是 GAAP $10.44 减去新闻稿所写的 $3.13，即 $7.31。FQ2 2026 公司没有公布剔除后的每股收益；按净利润 158.48 亿美元、稀释股本 25.66 亿股、法律费用 24 亿美元、遣散费 11.8 亿美元，并以当季 16% 有效税率税后加回，得到 $7.35。FQ3 2026 是新闻稿剔除诉讼费用后的 $7.40，不是 GAAP $3.83。未来四季只有预期。橙线同比用同一 Non-GAAP 口径。",
       "quarters": [
         {
           "fiscal_period": "2025-Q4",
@@ -173,8 +173,8 @@
           "consensus": 8.212159,
           "consensus_source": "TradingView earnings_fq_h 2025-Q4 Estimate",
           "actual": 8.88,
-          "basis_label": "稀释每股收益",
-          "actual_source": "Meta 2025Q4 新闻稿稀释每股收益 $8.88。当季没有写出剔除项。https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx",
+          "basis_label": "Non-GAAP",
+          "actual_source": "2025 年第四季新闻稿稀释每股收益 $8.88。当季没有写出每股收益剔除项，Non-GAAP 等于稀释每股收益 $8.88。",
           "actual_quote": "Diluted earnings per share (EPS) $8.88",
           "yoy": 0.10723192019950141,
           "yoy_base": 8.02,
@@ -187,8 +187,8 @@
           "consensus": 6.69723,
           "consensus_source": "TradingView earnings_fq_h 2026-Q1 Estimate",
           "actual": 7.31,
-          "basis_label": "剔税额优惠后",
-          "actual_source": "Meta 2026Q1 新闻稿：GAAP 稀释每股收益 $10.44，剔除 80.3 亿美元税额优惠后 EPS 低 $3.13，即 $7.31。不使用 GAAP $10.44。https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-First-Quarter-2026-Results/default.aspx",
+          "basis_label": "Non-GAAP",
+          "actual_source": "2026 年第一季新闻稿：GAAP 稀释每股收益 $10.44。Excluding this tax benefit, diluted EPS would have been $3.13 lower，即 Non-GAAP $7.31。",
           "actual_quote": "Excluding this tax benefit, our effective tax rate would have been 37 percentage points higher and our diluted earnings per share (EPS) would have been $3.13 lower.",
           "yoy": 0.1368584758942457,
           "yoy_base": 6.43,
@@ -200,13 +200,13 @@
           "reported": true,
           "consensus": 7.187405,
           "consensus_source": "TradingView earnings_fq_h 2026-Q2 Estimate",
-          "actual": null,
-          "basis_label": "",
-          "missing_actual_label": "未公布剔除后",
-          "actual_source": "Meta 2026Q2 新闻稿稀释每股收益为 GAAP $6.18，并写明 24 亿美元法律费用和 11.8 亿美元遣散费，但没有给出剔除后的每股收益。GAAP $6.18 不与 street 预期对照。https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/default.aspx",
+          "actual": 7.35,
+          "basis_label": "Non-GAAP",
+          "actual_source": "公司没有公布剔除后每股收益。新闻稿：净利润 158.48 亿美元，稀释股本 25.66 亿股，法律费用 24 亿美元，遣散费 11.8 亿美元，有效税率 16%。Non-GAAP = (15848 + (2400+1180)×(1-0.16)) / 2566 = 7.35。2026 年第三季电话会说当季法律费用有不可抵扣部分；第二季新闻稿没有拆开抵扣比例。",
           "actual_quote": "This includes $2.40 billion of charges related to legal proceedings and $1.18 billion of severance expenses in connection with the May 2026 headcount reduction.",
-          "yoy": null,
-          "gaap_not_plotted": 6.18
+          "yoy": 0.02941176470588235,
+          "yoy_base": 7.14,
+          "yoy_base_source": "2026 年第二季新闻稿去年同季稀释每股收益 $7.14。该列没有每股收益剔除项，Non-GAAP 等于稀释每股收益 $7.14。"
         },
         {
           "fiscal_period": "2026-Q3",
@@ -215,8 +215,8 @@
           "consensus": 6.538606,
           "consensus_source": "TradingView earnings_fq_h 2026-Q3 Estimate，等于 earnings_per_share_forecast_fq",
           "actual": 7.4,
-          "basis_label": "剔诉讼费用后",
-          "actual_source": "Meta 2026Q3 Exhibit 99.1：剔除 98.9 亿美元诉讼费用后稀释每股收益 $7.40。同一 TradingView 行 Actual 3.83 是 GAAP，不用于对比。",
+          "basis_label": "Non-GAAP",
+          "actual_source": "Meta 2026Q3 Exhibit 99.1：剔除 98.9 亿美元诉讼费用后稀释每股收益 $7.40，页面标为 Non-GAAP。同一 TradingView 行 Actual 3.83 是 GAAP，不用于对比。",
           "actual_quote": "Diluted EPS of $3.83 would have increased by $3.57 to $7.40.",
           "yoy": 0.02068965517241384,
           "yoy_base": 7.25,
@@ -233,7 +233,7 @@
           "basis_label": "一致预期",
           "yoy": -0.06633997747747758,
           "yoy_base": 8.88,
-          "yoy_base_source": "对比 FQ4 2025 新闻稿稀释每股收益 $8.88"
+          "yoy_base_source": "对比 FQ4 2025 Non-GAAP $8.88（新闻稿没有每股收益剔除项）"
         },
         {
           "fiscal_period": "2027-Q1",
@@ -245,7 +245,7 @@
           "basis_label": "一致预期",
           "yoy": 0.04312640218878254,
           "yoy_base": 7.31,
-          "yoy_base_source": "对比 FQ1 2026 剔税额优惠后 $7.31"
+          "yoy_base_source": "对比 FQ1 2026 Non-GAAP $7.31"
         },
         {
           "fiscal_period": "2027-Q2",
@@ -255,9 +255,9 @@
           "consensus_source": "TradingView earnings_fq_h 2027-Q2 Estimate",
           "actual": null,
           "basis_label": "一致预期",
-          "missing_yoy_label": "同比缺基数",
-          "yoy": null,
-          "yoy_base_source": "FQ2 2026 没有公司写明的剔除后每股收益，不能作同比基数。"
+          "yoy": 0.07035455782312926,
+          "yoy_base_source": "对比 FQ2 2026 Non-GAAP $7.35（按新闻稿费用和 16% 有效税率计算）",
+          "yoy_base": 7.35
         },
         {
           "fiscal_period": "2027-Q3",
@@ -269,7 +269,7 @@
           "basis_label": "一致预期",
           "yoy": 0.10885405405405399,
           "yoy_base": 7.4,
-          "yoy_base_source": "对比 FQ3 2026 剔诉讼费用后 $7.40"
+          "yoy_base_source": "对比 FQ3 2026 Non-GAAP $7.40"
         }
       ]
     }
@@ -280,7 +280,7 @@
     "warnings": [
       "问答是从 Motley Fool 文字稿逐轮摘出的，没有调用模型。仍待 Stage 2：变动原因、语气、模型总结和论点复核。当前环境没有 OPENROUTER_API_KEY。",
       "未找到 Obsidian 收集箱/财报/META。公司指引以仓库里的 SEC Exhibit 99.1 为准，并用已下载的电话会文字稿核对；1 拆 2 只在电话会。",
-      "分析师一致预期来自 POST https://scanner.tradingview.com/america/scan，代码 NASDAQ:META。本季营收用 revenues_fq_h 2026-Q3 已报告行的 Estimate。下一季用 revenue_forecast_next_fq 与 earnings_per_share_forecast_next_fq，并已核对等于 2026-Q4 未报告行。本季每股收益的 $6.54 来自 earnings_fq_h 2026-Q3 Estimate，等于 earnings_per_share_forecast_fq 6.538606，round_eps 后 $6.54，是 street/adjusted 口径，不是 GAAP。同一行 Actual 3.83 是 GAAP 稀释每股收益，不与 $6.54 对比。页面用新闻稿剔除 98.9 亿美元诉讼费用后的稀释每股收益 $7.40 对比 $6.54。没有来自 TradingView 或 Alpha Vantage 的 GAAP 一致预期；Yahoo 约 $5.46 未采用。",
+      "分析师一致预期来自 POST https://scanner.tradingview.com/america/scan，代码 NASDAQ:META。本季营收用 revenues_fq_h 2026-Q3 已报告行的 Estimate。下一季用 revenue_forecast_next_fq 与 earnings_per_share_forecast_next_fq，并已核对等于 2026-Q4 未报告行。本季每股收益的 $6.54 来自 earnings_fq_h 2026-Q3 Estimate，等于 earnings_per_share_forecast_fq 6.538606，round_eps 后 $6.54，是 street/adjusted 口径，不是 GAAP。同一行 Actual 3.83 是 GAAP 稀释每股收益，不与 $6.54 对比。页面用 Non-GAAP $7.40 对比 $6.54。2026Q2 的 Non-GAAP $7.35 由新闻稿净利润、股本、法律费用、遣散费和 16% 有效税率算出，公司没有单列这个数字。没有来自 TradingView 或 Alpha Vantage 的 GAAP 一致预期；Yahoo 约 $5.46 未采用。",
       "Alpha Vantage EARNINGS_ESTIMATES 没有调用：没有 API key。分析师人数、高低值、7/30/60/90 日前预期和上调下调次数为空。",
       "FY2016Q1 至 FY2026Q2 来自 SEC companyfacts。第四季稀释每股收益没有单季事实，没有用全年减前三季倒挤。FY2026Q3 的环比对照 FY2026Q2 的 XBRL，同比仍是新闻稿。",
       "管道自由现金流等于经营现金流减购建固定资产绝对值，为 -11.56 亿美元。公司口径还减融资租赁本金；电话会称资本开支 349 亿美元、自由现金流为负 21 亿美元。",
@@ -312,7 +312,7 @@
         "diff_pp": null
       },
       "verdict": "beat",
-      "basis": "ex_legal"
+      "basis": "non_gaap"
     },
     {
       "metric": "gross_margin",
@@ -479,8 +479,8 @@
     },
     "eps_nongaap": {
       "value": 7.4,
-      "yoy_pct": null,
-      "qoq_pct": null,
+      "yoy_pct": 0.02068965517241384,
+      "qoq_pct": 0.006802721088435471,
       "yoy_pp": null,
       "qoq_pp": null,
       "benchmark": {
@@ -491,8 +491,8 @@
         "diff_pp": null
       },
       "source_quote": "Diluted EPS of $3.83 would have increased by $3.57 to $7.40.",
-      "display_label": "稀释每股收益（剔诉讼费用后）",
-      "basis_note": "新闻稿：剔除 98.9 亿美元诉讼费用后，稀释每股收益由 $3.83 增加 $3.57 至 $7.40。对照 TradingView earnings_fq_h 2026-Q3 Estimate $6.54（street/adjusted 口径）。"
+      "display_label": "稀释每股收益（Non-GAAP）",
+      "basis_note": "Non-GAAP。新闻稿剔除 98.9 亿美元诉讼费用后，稀释每股收益由 $3.83 增加 $3.57 至 $7.40。对照 TradingView street 一致预期 $6.54。"
     },
     "operating_cash_flow": {
       "value": 32786000000.0,
