@@ -563,8 +563,38 @@ def _findings(doc: dict[str, Any]) -> list[str]:
     return out
 
 
+# 行内图用的序列。ratio=True 时同比/环比是百分点差，否则是变化率。
+_HISTORY_SPECS: tuple[tuple[str, str, bool], ...] = (
+    ("revenue", "revenue", False),
+    ("gross_margin", "gross_margin_nongaap", True),
+    ("gross_margin_gaap", "gross_margin_gaap", True),
+    ("gross_margin_nongaap", "gross_margin_nongaap", True),
+    ("operating_margin", "operating_margin_nongaap", True),
+    ("operating_margin_gaap", "operating_margin_gaap", True),
+    ("operating_margin_nongaap", "operating_margin_nongaap", True),
+    ("eps", "eps_gaap", False),
+    ("eps_nongaap", "eps_nongaap", False),
+    ("ocf", "operating_cash_flow", False),
+    ("capex", "capex", False),
+    ("fcf", "fcf", False),
+)
+
+
+def _rel(cur: float | None, base: float | None, ratio: bool) -> float | None:
+    if cur is None or base is None:
+        return None
+    if ratio:
+        return cur - base
+    if base == 0:
+        return None
+    return (cur - base) / abs(base)
+
+
 def _history(docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
-    """趋势图序列：季度 JSON 为准；缺失季度用新闻稿对比列（上季 / 去年同季）补点。"""
+    """趋势图序列：季度 JSON 为准；缺失季度用新闻稿对比列（上季 / 去年同季）补点。
+
+    同比 / 环比优先用季度 JSON 里已经算好的字段；缺了再用相邻季度的水平值补。
+    """
 
     def pick(fin: dict[str, Any], *keys: str, field: str = "value") -> float | None:
         for k in keys:
@@ -585,7 +615,6 @@ def _history(docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
             points[target] = {
                 "period": target,
                 "revenue": rev,
-                "revenue_yoy": None,
                 "gross_margin": pick(fin, "gross_margin_nongaap", "gross_margin_gaap", field=which),
                 "operating_margin": pick(fin, "operating_margin_nongaap", "operating_margin_gaap", field=which),
                 "fcf": pick(fin, "fcf", field=which),
@@ -593,16 +622,33 @@ def _history(docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
             }
     for period, doc in docs.items():
         fin = doc.get("financials") or {}
-        points[period] = {
-            "period": period,
-            "revenue": pick(fin, "revenue"),
-            "revenue_yoy": pick(fin, "revenue", field="yoy_pct"),
-            "gross_margin": pick(fin, "gross_margin_nongaap", "gross_margin_gaap"),
-            "operating_margin": pick(fin, "operating_margin_nongaap", "operating_margin_gaap"),
-            "fcf": pick(fin, "fcf"),
-            "derived": False,
-        }
-    return [points[p] for p in sorted(points)]
+        point: dict[str, Any] = {"period": period, "derived": False}
+        for series_key, fin_key, ratio in _HISTORY_SPECS:
+            change_field = "yoy_pp" if ratio else "yoy_pct"
+            qoq_field = "qoq_pp" if ratio else "qoq_pct"
+            # 底部利润率图沿用「非 GAAP 优先」；gaap / nongaap 行则各自取自己的键
+            if series_key in {"gross_margin", "operating_margin"}:
+                alt = fin_key.replace("_nongaap", "_gaap")
+                point[series_key] = pick(fin, fin_key, alt)
+                point[f"{series_key}_yoy"] = pick(fin, fin_key, alt, field=change_field)
+                point[f"{series_key}_qoq"] = pick(fin, fin_key, alt, field=qoq_field)
+            else:
+                point[series_key] = pick(fin, fin_key)
+                point[f"{series_key}_yoy"] = pick(fin, fin_key, field=change_field)
+                point[f"{series_key}_qoq"] = pick(fin, fin_key, field=qoq_field)
+        points[period] = point
+
+    ordered = [points[p] for p in sorted(points)]
+    by_period = {p["period"]: p for p in ordered}
+    for point in ordered:
+        prev = by_period.get(prior_fiscal_period(point["period"]))
+        base = by_period.get(yoy_fiscal_period(point["period"]))
+        for series_key, _fin_key, ratio in _HISTORY_SPECS:
+            if point.get(f"{series_key}_qoq") is None and prev is not None:
+                point[f"{series_key}_qoq"] = _rel(point.get(series_key), prev.get(series_key), ratio)
+            if point.get(f"{series_key}_yoy") is None and base is not None:
+                point[f"{series_key}_yoy"] = _rel(point.get(series_key), base.get(series_key), ratio)
+    return ordered
 
 
 def _next_earnings(ticker: str) -> str:
@@ -929,7 +975,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
             (stock_dir / "index.html").write_text(html, encoding="utf-8")
             pages.append(stock_dir / "index.html")
             continue
-        history = _history(docs)[-8:]
+        history = _history(docs)
         for period in periods:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
