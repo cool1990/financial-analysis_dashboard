@@ -199,16 +199,28 @@ def test_build_site_renders(tmp_path, monkeypatch):
     html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
     assert "盈利预期" in html and "增长质量" in html and "{{" not in html
     assert "预期差" not in html and 'class="v-lines"' not in html and 'class="v-head"' not in html
-    # 明细默认折叠在证据层，图表随「财务」块展开时绘制
-    assert '<details class="ev" id="fin">' in html and 'data-series="level"' in html
+    assert "市场怎么判" not in html and "次日涨跌" not in html
+    # 财报分析默认展开；点指标行才画水平值 / 环比 / 同比
+    assert '<details class="ev" id="fin" open>' in html and 'data-series="level"' in html
+    assert "财报分析" in html and "指引展望" in html
     assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
     assert 'id="epsSurprise"' not in html
     meta_html = (tmp_path / "stocks" / "META" / "FY2026Q3.html").read_text(encoding="utf-8")
     assert 'id="epsSurprise"' in meta_html and "超预期 $0.86" in meta_html
     assert "实际 $3.83 · 预期 $6.54" not in meta_html and "GAAP $3.83" in meta_html
     assert 'class="v-lines"' not in meta_html and 'class="v-head"' not in meta_html
-    assert "问题待回答" in meta_html and "本季营收 超预期 +2.0%" in meta_html
-    assert "本季 EPS（Non-GAAP） 超预期 +13.1%" in meta_html
+    assert "问题待回答" in meta_html and "本季营收 beat 2.0%" in meta_html
+    assert "本季 EPS beat 13.1%" in meta_html
+    assert "本季 EPS（Non-GAAP）" not in meta_html
+    assert "市场怎么判" not in meta_html and "阶段1" not in meta_html
+    assert "财报分析" in meta_html and '<details class="ev" id="fin" open>' in meta_html
+    assert "业绩指标" in meta_html and "经营指标" in meta_html and "资本开支" in meta_html and "其他" in meta_html
+    assert "股东回报" not in meta_html
+    assert "未调用模型，变动原因未生成" in meta_html
+    index_html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "beat 2.0%" in index_html and "beat 13.1%" in index_html
+    assert "超预期 · Non-GAAP" not in index_html and "次日涨跌" not in index_html
+    assert "阶段1 · 新闻稿" not in index_html and "下次财报日待定" in index_html
     assert "股息率（TTM）" in meta_html
     assert "Forward EPS" in meta_html and "$32.03" in meta_html
     assert "Forward PE" in meta_html and "21.8×" in meta_html
@@ -235,7 +247,7 @@ def test_meta_quote_card_divides_tradingview_columns():
 
 
 def test_guidance_view_tiles_and_outlook_categories():
-    from builder.build import _guidance_view, _outlook_category
+    from builder.build import _guidance_view, _guide_dimension
 
     doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     v = _guidance_view(doc)
@@ -246,10 +258,23 @@ def test_guidance_view_tiles_and_outlook_categories():
     # 每条指引只出现一次：要么在格子里，要么在展望里
     n_items = len(doc["guidance"]["items"])
     assert v["outlook_count"] < n_items
-    assert _outlook_category({"metric_key": "other", "metric_label": "HBM Pricing", "statement": "盈利差距"}) == "pricing"
-    assert _outlook_category({"metric_key": "other", "metric_label": "1-delta DRAM ramp", "statement": "产能爬坡"}) == "tech"
-    assert _outlook_category({"metric_key": "capex", "statement": "洁净室建设"}) == "invest"
-    assert _outlook_category({"metric_key": "other", "metric_label": "Market conditions", "statement": "市场状况将保持紧张"}) == "supply"
+    dims = [d["key"] for d in v["dimensions"]]
+    assert dims[0] == "results" and "capex" in dims and "operating" in dims
+    assert _guide_dimension({"metric_key": "other", "metric_label": "HBM Pricing", "statement": "盈利差距"}) == "operating"
+    assert _guide_dimension({"metric_key": "other", "metric_label": "1-delta DRAM ramp", "statement": "产能爬坡"}) == "other"
+    assert _guide_dimension({"metric_key": "capex", "statement": "洁净室建设"}) == "capex"
+    assert _guide_dimension({"metric_key": "other", "metric_label": "Market conditions", "statement": "市场状况将保持紧张"}) == "other"
+    assert _guide_dimension({"metric_key": "other", "metric_label": "buyback", "statement": "加大回购"}) == "returns"
+
+    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    meta_dims = {d["key"]: d for d in _guidance_view(meta)["dimensions"]}
+    assert [k for k in ("results", "operating", "capex", "returns", "other") if k in meta_dims] == [
+        "results", "operating", "capex", "other",
+    ]
+    assert any(t["label"] == "营收" for t in meta_dims["results"]["tiles"])
+    assert {k["label"] for k in meta_dims["operating"]["kpis"]} == {"广告收入", "Reality Labs 收入"}
+    assert meta_dims["capex"]["items"]
+    assert "returns" not in meta_dims
 
 
 def test_judgment_layer_rules():
@@ -261,7 +286,7 @@ def test_judgment_layer_rules():
     assert by["本季营收"]["has"] is False  # 缺一致预期不能当成符合预期
     assert by["下季 EPS 指引"]["gap"]["text"] == "+11.1%" and by["下季 EPS 指引"]["pos"] == pytest.approx(87.1, abs=0.1)
     market = _market_view(doc)
-    assert market["stance"]["text"] == "市场认可" and market["revision"]["label"] == "T+1"
+    assert market["stance"]["text"] == "市场认可" and market["revision"]["label"] == "T+7"
     from pipeline.config import load_ticker_config
 
     qc = _quality_checks(doc, load_ticker_config("MU"))
@@ -271,8 +296,10 @@ def test_judgment_layer_rules():
     assert checks["Non-GAAP 比 GAAP EPS 高出"] == ("ok", "通用")
     assert checks["下季毛利率指引 − 本季毛利率"][0] == "warn"
     assert checks["资本开支环比 − 营收环比"][0] == "warn"
-    chips = [c["text"] for c in _verdict_chips(doc, gaps, market, checks=qc)]
-    assert any("缺一致预期" in c for c in chips) and any(c.startswith("市场认可") for c in chips)
+    chips = [c["text"] for c in _verdict_chips(doc, gaps, checks=qc)]
+    assert any("缺一致预期" in c for c in chips)
+    assert any(c == "本季 EPS beat 3.0%" for c in chips)
+    assert all("市场认可" not in c and "次日" not in c and "Non-GAAP" not in c for c in chips)
 
 
 def test_meta_eps_uses_ex_charge_against_street_consensus():
@@ -290,8 +317,9 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     assert doc["financials"]["eps_nongaap"]["display_label"] == "稀释每股收益（Non-GAAP）"
 
     lines = [c["text"] for c in _score_lines("META", doc, {"price": {"text": "—", "cls": "na"}}, {"release_timing": "amc"})]
-    assert any("每股 EPS（Non-GAAP） 超预期 +13.1%" == c for c in lines)
-    assert all("不及预期" not in c for c in lines)
+    assert any("每股 EPS beat 13.1%" == c for c in lines)
+    assert all("不及预期" not in c and "Non-GAAP" not in c and "次日" not in c for c in lines)
+    assert any(c == "下次财报日待定" for c in lines)
 
     gap = next(g for g in _gap_rows(doc) if g["label"].startswith("本季 EPS"))
     assert gap["label"] == "本季 EPS（Non-GAAP）"
@@ -306,7 +334,9 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
 
     index = _index_row("META", load_ticker_config("META"), "FY2026Q3", doc)
     assert index["eps"]["verdict"] == "beat"
-    assert index["eps"]["label"] == "超预期 · Non-GAAP"
+    assert index["eps"]["label"] == "beat 13.1%"
+    assert index["revenue"]["label"] == "beat 2.0%"
+    assert index["guide"]["label"] == "$73–76B"
 
     from builder.build import _quality_checks
 
@@ -427,7 +457,7 @@ def test_position_view_hold_with_review(monkeypatch):
     assert v["theses"][0]["deadline"]["left"] == "还有 82 天" and v["theses"][1]["quote"] == ""
     sell = next(t for t in v["triggers"] if t["name"] == "卖出")
     assert sell["state"] == "已触发" and sell["cls"] == "bad"
-    chips = [c["text"] for c in _verdict_chips({}, [], {"stance": None, "price": {"text": "—"}}, [], v)]
+    chips = [c["text"] for c in _verdict_chips({}, [], [], v)]
     assert "论点：1 强化 · 1 已证伪" in chips and "卖出条件已触发" in chips
     # 旧格式评估（没有 stage）不算已评估
     doc["thesis_review"].pop("stage")

@@ -350,33 +350,125 @@ GUIDE_FAMILIES = [
 ]
 _FAMILY_OF = {k: fam for fam, _label, keys in GUIDE_FAMILIES for k in keys}
 
-# 展望分类：先看 metric_key，再看英文标签，最后看中文表述（标签更准，表述里常夹带别的主题词）
-OUTLOOK_CATEGORIES = [
-    ("pricing", "定价", r"\bpric|\basp\b|定价|价格|涨价|降价"),
-    ("margin", "利润率", r"\bmargin|profitab|利润率|毛利|盈利能力"),
-    ("demand", "需求与订单", r"\bdemand|shipment|commit|agreement|customer|backlog|order|需求|出货|订单|协议|锁定|客户"),
-    ("supply", "供需与产能", r"\bsupply|capacity|clean ?room|\bfab|wafer|\bbits?\b|condition|供应|供给|供需|产能|洁净室|位元|晶圆|紧张"),
-    ("invest", "投入：资本开支与研发", r"capex|capital|r&d|expenditure|invest|spend|资本开支|研发|投资|支出"),
-    ("tech", "技术与产品", r"\bnode|ramp|technolog|roadmap|产品|技术|节点|爬坡|量产"),
-    ("results", "整体业绩", r"result|revenue|earnings|业绩|收入|营收|财务表现"),
+# 指引展望只按这五档归类。某一档没有抽到的字段就不显示，不补写。
+GUIDE_DIMENSIONS = [
+    ("results", "业绩指标"),
+    ("operating", "经营指标"),
+    ("capex", "资本开支"),
+    ("returns", "股东回报"),
+    ("other", "其他"),
 ]
-_KEY_CATEGORY = {
-    "capex": "invest", "opex_gaap": "invest", "opex_nongaap": "invest",
-    "gross_margin_gaap": "margin", "gross_margin_nongaap": "margin", "gross_margin": "margin",
-    "operating_margin_gaap": "margin", "operating_margin_nongaap": "margin", "operating_margin": "margin",
-    "revenue": "results", "eps_gaap": "results", "eps_nongaap": "results",
+_FINANCIAL_GUIDE_KEYS = {
+    "revenue",
+    "eps",
+    "eps_gaap",
+    "eps_nongaap",
+    "gross_margin",
+    "gross_margin_gaap",
+    "gross_margin_nongaap",
+    "operating_margin",
+    "operating_margin_gaap",
+    "operating_margin_nongaap",
+    "opex",
+    "opex_gaap",
+    "opex_nongaap",
+    "tax_rate",
+    "share_count",
+    "fcf",
+    "operating_cash_flow",
+}
+_CAPEX_RE = re.compile(r"资本开支|capital expenditure|\bcapex\b", re.I)
+_RETURNS_RE = re.compile(
+    r"回购|分红|股息|股东回报|buyback|repurchase|\bdividend\b|capital return|shareholder return",
+    re.I,
+)
+_OPERATING_RE = re.compile(
+    r"\bdau\b|\bmau\b|\barpu\b|impression|engagement|subscriber|shipment|出货|日活|月活|"
+    r"广告展示|用户数|位元|\bbits?\b|\bpric|\basp\b|定价|价格",
+    re.I,
+)
+_RESULTS_RE = re.compile(
+    r"营收|收入|利润率|毛利|每股收益|费用|税率|营业利润|亏损|业绩|"
+    r"\brevenue\b|\bearnings\b|\bmargin\b|\beps\b|\bopex\b|tax rate",
+    re.I,
+)
+_EMPTY_KPI_RE = re.compile(r"^(no\b|not found|没有|未找到|暂无|none\b)", re.I)
+KPI_LABELS = {
+    "advertising_revenue": "广告收入",
+    "reality_labs_revenue": "Reality Labs 收入",
+    "dram_revenue": "DRAM 收入",
+    "nand_revenue": "NAND 收入",
+    "ad_impressions": "广告展示",
+    "impressions": "广告展示",
+    "dau": "日活用户",
+    "mau": "月活用户",
+    "family_dap": "家庭日活",
+    "arpu": "每用户收入",
 }
 
 
-def _outlook_category(g: dict[str, Any]) -> str:
-    key = g.get("metric_key") or ""
-    if key in _KEY_CATEGORY:
-        return _KEY_CATEGORY[key]
-    for text in (g.get("metric_label") or "", f"{g.get('statement') or ''} {g.get('source_quote') or ''}"):
-        for cat, _label, pattern in OUTLOOK_CATEGORIES:
-            if re.search(pattern, text, re.I):
-                return cat
+def _guide_dimension(g: dict[str, Any]) -> str:
+    """把一条已抽取的指引放进五档之一。没有对应字段的档不出现在页面上。"""
+    key = (g.get("metric_key") or "").lower()
+    blob = " ".join(
+        str(g.get(name) or "")
+        for name in ("metric_key", "metric_label", "statement", "source_quote")
+    )
+    if key == "capex" or _CAPEX_RE.search(blob):
+        return "capex"
+    if key in _FINANCIAL_GUIDE_KEYS or key in _FAMILY_OF:
+        return "results"
+    if _RETURNS_RE.search(blob):
+        return "returns"
+    if _OPERATING_RE.search(blob):
+        return "operating"
+    if _RESULTS_RE.search(blob):
+        return "results"
     return "other"
+
+
+def _kpi_value(item: dict[str, Any]) -> str:
+    raw = item.get("raw")
+    unit = (item.get("unit") or "").lower()
+    if raw in (None, ""):
+        return (item.get("qualitative") or "").strip()
+    text = str(raw).strip()
+    num = _num(text.replace(",", ""))
+    if num is None:
+        return text
+    if unit in {"millions", "million", "usd_millions"}:
+        return _fmt_money(num * 1_000_000)
+    if unit in {"billions", "billion"}:
+        return _fmt_money(num * 1_000_000_000)
+    if unit in {"usd", "dollars"}:
+        return _fmt_money(num)
+    if unit in {"percent", "pct", "%"}:
+        return f"{num:.1f}%"
+    if unit and unit != "text":
+        return f"{text} {item.get('unit')}"
+    return text
+
+
+def _kpi_entries(doc: dict[str, Any]) -> list[dict[str, str]]:
+    """经营指标只展示已经抽到的 KPI。空值和「未找到」不算数据。"""
+    kpis = (doc.get("financials") or {}).get("kpis") or {}
+    rows: list[dict[str, str]] = []
+    for key, item in kpis.items():
+        if not isinstance(item, dict):
+            continue
+        qualitative = (item.get("qualitative") or "").strip()
+        has_raw = item.get("raw") not in (None, "", "null")
+        has_note = bool(qualitative) and not _EMPTY_KPI_RE.search(qualitative)
+        if not has_raw and not has_note:
+            continue
+        rows.append(
+            {
+                "label": KPI_LABELS.get(key, str(key).replace("_", " ")),
+                "value": _kpi_value(item),
+                "quote": item.get("source_quote") or "",
+            }
+        )
+    return rows
 
 
 def _short_statement(text: str) -> str:
@@ -453,12 +545,12 @@ def _guidance_view(doc: dict[str, Any]) -> dict[str, Any]:
         )
         used.update(id(g) for g in rows)
 
-    cats: dict[str, list[dict[str, Any]]] = {}
+    buckets: dict[str, list[dict[str, Any]]] = {key: [] for key, _label in GUIDE_DIMENSIONS}
     for g in items:
         if id(g) in used:
             continue
         # 表述里已含数字；不单独列数（非标准指标的数没有统一单位，单列容易误读）
-        cats.setdefault(_outlook_category(g), []).append(
+        buckets[_guide_dimension(g)].append(
             {
                 "text": _short_statement(g.get("statement") or g.get("source_quote") or ""),
                 "direction": g.get("direction") or "",
@@ -467,14 +559,30 @@ def _guidance_view(doc: dict[str, Any]) -> dict[str, Any]:
                 "source": _source_label(g.get("source")),
             }
         )
-    labels = {c: l for c, l, _ in OUTLOOK_CATEGORIES} | {"other": "其他"}
-    order = [c for c, _l, _p in OUTLOOK_CATEGORIES] + ["other"]
-    outlook = [{"key": c, "label": labels[c], "items": cats[c]} for c in order if c in cats]
+    kpis = _kpi_entries(doc)
+    dimensions = []
+    for key, label in GUIDE_DIMENSIONS:
+        dim_tiles = tiles if key == "results" else []
+        dim_items = buckets[key]
+        dim_kpis = kpis if key == "operating" else []
+        if not dim_tiles and not dim_items and not dim_kpis:
+            continue
+        dimensions.append(
+            {
+                "key": key,
+                "label": label,
+                "tiles": dim_tiles,
+                "items": dim_items,
+                "kpis": dim_kpis,
+            }
+        )
+    outlook = [{"key": d["key"], "label": d["label"], "items": d["items"]} for d in dimensions if d["items"]]
     return {
         "next_q": _period_zh(next_q.replace("FY", "").replace("Q", "财年Q")) if next_q else "",
         "tiles": tiles,
         "outlook": outlook,
         "outlook_count": sum(len(c["items"]) for c in outlook),
+        "dimensions": dimensions,
     }
 
 
@@ -686,13 +794,35 @@ def _company_revenue_guide(doc: dict[str, Any]) -> str:
     return f"${_billions_label(float(chosen['low']))}–{_billions_label(float(chosen['high']))}B"
 
 
+def _surprise_text(verdict: str | None, diff_pct: float | None) -> str | None:
+    """beat / miss 用英文加幅度。其他判定返回 None，由调用方保留中文。"""
+    if verdict == "beat":
+        word = "beat"
+    elif verdict == "miss":
+        word = "miss"
+    else:
+        return None
+    shown = _change(diff_pct)["text"].lstrip("+-") if diff_pct is not None else ""
+    if not shown or shown == "—":
+        return word
+    return f"{word} {shown}"
+
+
+def _chip_subject(label: str) -> str:
+    """卡片和页首标签默认按 Non-GAAP 一致预期理解，不再把口径写在 beat/miss 后面。"""
+    text = re.sub(r"[（(]\s*Non-GAAP\s*[）)]", "", label or "")
+    text = re.sub(r"\s*·?\s*Non-GAAP", "", text)
+    return re.sub(r"\s{2,}", " ", text).strip()
+
+
 def _score_lines(
     ticker: str,
     doc: dict[str, Any],
-    market: dict[str, Any],
+    market: dict[str, Any] | None,
     cfg: dict[str, Any],
 ) -> list[dict[str, str]]:
-    """META 判断条只留五句：营收、每股收益、公司下季指引、次日涨跌、下次财报。"""
+    """META 判断条：营收、每股收益、公司下季指引、下次财报。不写次日涨跌，也不标注 Non-GAAP。"""
+    del market  # 次日涨跌已从卡片和页首拿掉，保留参数以免旧调用崩掉
     if ticker != "META" or not (doc.get("scorecard") or []):
         return []
     sc = {c.get("metric"): c for c in doc.get("scorecard") or []}
@@ -701,10 +831,11 @@ def _score_lines(
 
     def vs(metric: str, label: str) -> dict[str, str]:
         row = sc.get(metric) or {}
-        if metric == "eps" and row.get("basis") in {"ex_legal", "non_gaap"}:
-            label = "每股 EPS（Non-GAAP）"
         verdict = row.get("verdict") or "unknown"
         diff = _num((row.get("benchmark") or {}).get("diff_pct"))
+        surprise = _surprise_text(verdict, diff)
+        if surprise:
+            return {"text": f"{label} {surprise}", "cls": cls_of.get(verdict, "muted")}
         gap = _change(diff)["text"] if diff is not None else ""
         text = f"{label} {words.get(verdict, '待核对')}"
         if gap and gap != "—":
@@ -718,8 +849,7 @@ def _score_lines(
         vs("revenue", "营收"),
         vs("eps", "每股 EPS"),
         {"text": f"下季指引 {guide}" if guide else "下季指引待定", "cls": ""},
-        {"text": f"次日涨跌 {market['price']['text']}", "cls": market["price"]["cls"]},
-        {"text": f"下次财报 {when} {timing}" if when else "下次财报时间待定", "cls": "muted" if not when else ""},
+        {"text": f"下次财报 {when} {timing}" if when else "下次财报日待定", "cls": "muted" if not when else ""},
     ]
 
 
@@ -728,12 +858,14 @@ def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, A
     sc = {c["metric"]: c for c in doc.get("scorecard") or []}
 
     def chip(metric: str) -> dict[str, str]:
-        v = (sc.get(metric) or {}).get("verdict") or ""
-        return {"verdict": v, "label": _verdict_label(v) if v else "—"}
+        row = sc.get(metric) or {}
+        verdict = row.get("verdict") or ""
+        surprise = _surprise_text(verdict, _num((row.get("benchmark") or {}).get("diff_pct")))
+        if surprise:
+            return {"verdict": verdict, "label": surprise}
+        return {"verdict": verdict, "label": _verdict_label(verdict) if verdict else "—"}
 
     eps = chip("eps")
-    if (sc.get("eps") or {}).get("basis") in {"ex_legal", "non_gaap"} and eps["label"] not in ("", "—"):
-        eps = {**eps, "label": f"{eps['label']} · Non-GAAP"}
 
     guide = chip("next_q_eps_guidance")
     if (sc.get("next_q_eps_guidance") or {}).get("actual") is None:
@@ -986,7 +1118,23 @@ def _position_view(ticker: str, doc: dict[str, Any], today: date) -> dict[str, A
     }
 
 
-def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict[str, Any],
+def _drivers_pending(doc: dict[str, Any]) -> str:
+    """变动原因没生成时，原样用数据里的状态，不编一句原因。"""
+    drivers = doc.get("drivers") or {}
+    if drivers.get("metrics"):
+        return ""
+    status = str(drivers.get("status") or "").strip()
+    if status:
+        return status
+    stage = (doc.get("status") or {}).get("stage")
+    if stage == "stage1_done" and not (doc.get("meta") or {}).get("transcript_source"):
+        return "待电话会文字稿"
+    if stage == "stage1_done":
+        return "变动原因尚未生成"
+    return ""
+
+
+def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]],
                    checks: list[dict[str, str]], thesis: dict[str, Any] | None = None) -> list[dict[str, str]]:
     """判断条上的状态标签：每个标签把一块内容压成一句，数据缺口也直说。"""
     chips: list[dict[str, str]] = []
@@ -1005,22 +1153,19 @@ def _verdict_chips(doc: dict[str, Any], gaps: list[dict[str, Any]], market: dict
     cls_of = {"beat": "ok", "miss": "bad", "inline": "", "unknown": "warn"}
     for g in gaps:
         if g["has"]:
-            if "指引" in g["label"]:
-                word = {"beat": "高于预期", "miss": "低于预期", "inline": "符合预期"}.get(g["verdict"], "")
+            subject = _chip_subject(g["label"])
+            if g.get("verdict") in {"beat", "miss"}:
+                pct = str((g.get("gap") or {}).get("text") or "").lstrip("+-")
+                word = "beat" if g["verdict"] == "beat" else "miss"
+                text = f"{subject} {word} {pct}".strip() if pct and pct != "—" else f"{subject} {word}"
             else:
-                word = {"beat": "超预期", "miss": "不及预期", "inline": "符合预期"}.get(g["verdict"], "")
-            chips.append({"text": f"{g['label']} {word} {g['gap']['text']}", "cls": cls_of.get(g["verdict"], "")})
-    m = market
-    if m["stance"]:
-        rev = m["revision"]
-        moved = "上修" if rev["raw"] > 0 else "下修"
-        chips.append({"text": f"{m['stance']['text']}：次日 {m['price']['text']}，下季 EPS 预期{moved} {rev['chg']['text'].lstrip('+-')}", "cls": m["stance"]["cls"]})
-    elif m["price"]["text"] != "—":
-        chips.append({"text": f"次日股价 {m['price']['text']}", "cls": ""})
+                word = {"inline": "符合预期", "unknown": "待核对"}.get(g.get("verdict") or "", "")
+                text = f"{subject} {word} {g['gap']['text']}".strip()
+            chips.append({"text": text, "cls": cls_of.get(g["verdict"], "")})
     warns = [c for c in checks if c["status"] == "warn"]
     if warns:
         chips.append({"text": f"增长质量 {len(warns)} 条需注意", "cls": "warn"})
-    missing = [g["label"] for g in gaps if not g["has"]]
+    missing = [_chip_subject(g["label"]) for g in gaps if not g["has"]]
     if missing:
         chips.append({"text": "缺一致预期：" + "、".join(missing), "cls": "muted"})
     if (doc.get("status") or {}).get("needs_review"):
@@ -1162,17 +1307,15 @@ def build_site(ticker: str | None = None) -> list[Path]:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
             gaps = _gap_rows(doc)
-            market = _market_view(doc)
             checks = _quality_checks(doc, cfg)
             thesis = _position_view(t, doc, today)
             html = env.get_template("period.html").render(
                 gaps=gaps,
                 eps_chart=_eps_chart(doc),
-                market=market,
                 checks=checks,
                 thesis=thesis,
-                chips=_verdict_chips(doc, gaps, market, checks, thesis),
-                score_lines=_score_lines(t, doc, market, cfg),
+                chips=_verdict_chips(doc, gaps, checks, thesis),
+                drivers_pending=_drivers_pending(doc),
                 quotes=_market_quotes(t) if period == latest else None,
                 root="../../",
                 nav=nav,
