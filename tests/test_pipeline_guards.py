@@ -201,6 +201,10 @@ def test_build_site_renders(tmp_path, monkeypatch):
     # 明细默认折叠在证据层，图表随「财务」块展开时绘制
     assert '<details class="ev" id="fin">' in html and 'data-series="level"' in html
     assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
+    assert 'id="epsSurprise"' not in html
+    meta_html = (tmp_path / "stocks" / "META" / "FY2026Q3.html").read_text(encoding="utf-8")
+    assert 'id="epsSurprise"' in meta_html and "超预期 $0.86" in meta_html
+    assert "实际 $3.83 · 预期 $6.54" not in meta_html and "GAAP $3.83" in meta_html
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
 
@@ -284,6 +288,25 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     names = [c["name"] for c in _quality_checks(doc, load_ticker_config("META"))]
     assert "剔诉讼费用后比 GAAP EPS 高出" in names
     assert all("Non-GAAP" not in name for name in names)
+
+    from builder.build import _eps_chart
+
+    chart = _eps_chart(doc)
+    assert chart is not None and [q["label"] for q in chart["quarters"]] == [
+        "FQ4 2025", "FQ1 2026", "FQ2 2026", "FQ3 2026",
+        "FQ4 2026", "FQ1 2027", "FQ2 2027", "FQ3 2027",
+    ]
+    by_q = {q["label"]: q for q in chart["quarters"]}
+    assert by_q["FQ3 2026"]["actual"] == 7.40 and by_q["FQ3 2026"]["consensus"] == 6.54
+    assert by_q["FQ3 2026"]["note"] == "超预期 $0.86" and by_q["FQ3 2026"]["basis"] == "剔诉讼费用后"
+    assert by_q["FQ1 2026"]["actual"] == 7.31 and by_q["FQ1 2026"]["note"] == "超预期 $0.61"
+    assert by_q["FQ4 2025"]["actual"] == 8.88 and by_q["FQ4 2025"]["note"] == "超预期 $0.67"
+    assert by_q["FQ2 2026"]["actual"] is None and by_q["FQ2 2026"]["note"] == "未公布剔除后"
+    assert by_q["FQ4 2026"]["actual"] is None and by_q["FQ4 2026"]["consensus"] == 8.29
+    assert by_q["FQ2 2027"]["yoy_pct"] is None and "基数" in by_q["FQ2 2027"]["note"]
+    assert all(q["actual"] != 3.83 for q in chart["quarters"])
+    assert any("营收" in s["text"] for s in chart["sides"])
+    assert all("EPS" not in s["text"] for s in chart["sides"])
 
 
 def test_gap_row_clips_outside_scale():

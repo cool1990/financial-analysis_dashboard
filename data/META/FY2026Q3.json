@@ -159,7 +159,120 @@
         "call": "问答，不是新闻稿指引数字"
       }
     ],
-    "obsidian_transcript_notes": "未找到 /Users/chloe/Obsidian/收集箱/财报/META，Hermes 备份仓库也没有 收集箱/财报/META。指引核对用的是仓库内 Exhibit 99.1 与已下载的 Motley Fool 文字稿。"
+    "obsidian_transcript_notes": "未找到 /Users/chloe/Obsidian/收集箱/财报/META，Hermes 备份仓库也没有 收集箱/财报/META。指引核对用的是仓库内 Exhibit 99.1 与已下载的 Motley Fool 文字稿。",
+    "eps_surprise_chart": {
+      "endpoint": "https://scanner.tradingview.com/america/scan",
+      "ticker": "NASDAQ:META",
+      "column": "earnings_fq_h",
+      "note": "浅蓝柱只使用和 TradingView street 预期可比的实际。FQ4 2025 是新闻稿稀释每股收益 $8.88，当季没有写出剔除项。FQ1 2026 是 GAAP $10.44 减去新闻稿所写的「EPS 会低 $3.13」，即 $7.31（剔除 80.3 亿美元税额优惠）。FQ2 2026 新闻稿给出 GAAP $6.18，并写明 24 亿美元法律费用和 11.8 亿美元遣散费，但没有给出剔除后的每股收益，所以不画实际柱，也不把 $6.18 和预期放在一起。FQ3 2026 是剔除 98.9 亿美元诉讼费用后的 $7.40，不是 GAAP $3.83。灰柱全部是 earnings_fq_h 的 Estimate。未来四季只有预期。橙线同比用同一口径；FQ3 2026 的基数是 2025 年第三季度新闻稿剔除一次性税费后的 $7.25。FQ2 2026 与 FQ2 2027 没有可比基数。",
+      "quarters": [
+        {
+          "fiscal_period": "2025-Q4",
+          "label": "FQ4 2025",
+          "reported": true,
+          "consensus": 8.212159,
+          "consensus_source": "TradingView earnings_fq_h 2025-Q4 Estimate",
+          "actual": 8.88,
+          "basis_label": "稀释每股收益",
+          "actual_source": "Meta 2025Q4 新闻稿稀释每股收益 $8.88。当季没有写出剔除项。https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx",
+          "actual_quote": "Diluted earnings per share (EPS) $8.88",
+          "yoy": 0.10723192019950141,
+          "yoy_base": 8.02,
+          "yoy_base_source": "同一新闻稿去年同季稀释每股收益 $8.02"
+        },
+        {
+          "fiscal_period": "2026-Q1",
+          "label": "FQ1 2026",
+          "reported": true,
+          "consensus": 6.69723,
+          "consensus_source": "TradingView earnings_fq_h 2026-Q1 Estimate",
+          "actual": 7.31,
+          "basis_label": "剔税额优惠后",
+          "actual_source": "Meta 2026Q1 新闻稿：GAAP 稀释每股收益 $10.44，剔除 80.3 亿美元税额优惠后 EPS 低 $3.13，即 $7.31。不使用 GAAP $10.44。https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-First-Quarter-2026-Results/default.aspx",
+          "actual_quote": "Excluding this tax benefit, our effective tax rate would have been 37 percentage points higher and our diluted earnings per share (EPS) would have been $3.13 lower.",
+          "yoy": 0.1368584758942457,
+          "yoy_base": 6.43,
+          "yoy_base_source": "同一新闻稿去年同季稀释每股收益 $6.43。2025Q1 没有对应的税额优惠。"
+        },
+        {
+          "fiscal_period": "2026-Q2",
+          "label": "FQ2 2026",
+          "reported": true,
+          "consensus": 7.187405,
+          "consensus_source": "TradingView earnings_fq_h 2026-Q2 Estimate",
+          "actual": null,
+          "basis_label": "",
+          "missing_actual_label": "未公布剔除后",
+          "actual_source": "Meta 2026Q2 新闻稿稀释每股收益为 GAAP $6.18，并写明 24 亿美元法律费用和 11.8 亿美元遣散费，但没有给出剔除后的每股收益。GAAP $6.18 不与 street 预期对照。https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/default.aspx",
+          "actual_quote": "This includes $2.40 billion of charges related to legal proceedings and $1.18 billion of severance expenses in connection with the May 2026 headcount reduction.",
+          "yoy": null,
+          "gaap_not_plotted": 6.18
+        },
+        {
+          "fiscal_period": "2026-Q3",
+          "label": "FQ3 2026",
+          "reported": true,
+          "consensus": 6.538606,
+          "consensus_source": "TradingView earnings_fq_h 2026-Q3 Estimate，等于 earnings_per_share_forecast_fq",
+          "actual": 7.4,
+          "basis_label": "剔诉讼费用后",
+          "actual_source": "Meta 2026Q3 Exhibit 99.1：剔除 98.9 亿美元诉讼费用后稀释每股收益 $7.40。同一 TradingView 行 Actual 3.83 是 GAAP，不用于对比。",
+          "actual_quote": "Diluted EPS of $3.83 would have increased by $3.57 to $7.40.",
+          "yoy": 0.02068965517241384,
+          "yoy_base": 7.25,
+          "yoy_base_source": "Meta 2025Q3 新闻稿：剔除一次性税费后稀释每股收益 $7.25，不是 GAAP $1.05。https://investor.atmeta.com/investor-news/press-release-details/2025/Meta-Reports-Third-Quarter-2025-Results/default.aspx",
+          "yoy_base_quote": "Diluted EPS would have increased by $6.20 to $7.25, compared to the reported diluted EPS of $1.05."
+        },
+        {
+          "fiscal_period": "2026-Q4",
+          "label": "FQ4 2026",
+          "reported": false,
+          "consensus": 8.290901,
+          "consensus_source": "TradingView earnings_fq_h 2026-Q4 Estimate，等于 earnings_per_share_forecast_next_fq",
+          "actual": null,
+          "basis_label": "一致预期",
+          "yoy": -0.06633997747747758,
+          "yoy_base": 8.88,
+          "yoy_base_source": "对比 FQ4 2025 新闻稿稀释每股收益 $8.88"
+        },
+        {
+          "fiscal_period": "2027-Q1",
+          "label": "FQ1 2027",
+          "reported": false,
+          "consensus": 7.625254,
+          "consensus_source": "TradingView earnings_fq_h 2027-Q1 Estimate",
+          "actual": null,
+          "basis_label": "一致预期",
+          "yoy": 0.04312640218878254,
+          "yoy_base": 7.31,
+          "yoy_base_source": "对比 FQ1 2026 剔税额优惠后 $7.31"
+        },
+        {
+          "fiscal_period": "2027-Q2",
+          "label": "FQ2 2027",
+          "reported": false,
+          "consensus": 7.867106,
+          "consensus_source": "TradingView earnings_fq_h 2027-Q2 Estimate",
+          "actual": null,
+          "basis_label": "一致预期",
+          "missing_yoy_label": "同比缺基数",
+          "yoy": null,
+          "yoy_base_source": "FQ2 2026 没有公司写明的剔除后每股收益，不能作同比基数。"
+        },
+        {
+          "fiscal_period": "2027-Q3",
+          "label": "FQ3 2027",
+          "reported": false,
+          "consensus": 8.20552,
+          "consensus_source": "TradingView earnings_fq_h 2027-Q3 Estimate",
+          "actual": null,
+          "basis_label": "一致预期",
+          "yoy": 0.10885405405405399,
+          "yoy_base": 7.4,
+          "yoy_base_source": "对比 FQ3 2026 剔诉讼费用后 $7.40"
+        }
+      ]
+    }
   },
   "status": {
     "stage": "stage1_done",
@@ -734,7 +847,7 @@
         "firm": "Morgan Stanley",
         "topic": "产品结构",
         "question_summary": "Brian Nowak 问 Muse 用户增长最受哪些约束（能力、模型效率或产能），以及 Meta Enterprise 近期要提供什么。",
-        "answer_summary": "Mark 说 Muse 尚未全球上线，一个原因是这项服务很吃算力；美国和加拿大已有超过 1000 万人设置。近期企业侧主要是模型 API 和 Muse code。",
+        "answer_summary": "Mark 先讲 Muse 的用户增长。美国和加拿大已有超过 1000 万人在上线后的前 6 周完成设置，但这项服务很吃算力，所以还没有全球开放；原因既包括各地要做优化和连接器，也包括必须先把效率做到能够服务他认为有可能超过 10 亿人的规模。他说算力效率会是未来一年的限制因素，业务建设和效率提升要一起做。产品上，免费档目前默认仍是 Muse Spark，付费档已经可以用来表现更好的 Muse Wonder，他们正在做能更广铺开的省算力版本。他预期再迭代两三代表现和价格都会更好，从而释放更多用户价值。",
         "directness": "direct",
         "answer_quote": "we have more than 10 million people in the US and Canada who have set it up"
       },
@@ -748,7 +861,7 @@
         "firm": "Morgan Stanley",
         "topic": "产品结构",
         "question_summary": "同一轮里，Brian Nowak 请 Mark 说明 Meta Enterprise 的产品设想和对企业客户的价值。",
-        "answer_summary": "Mark 说近期主要企业产品是模型 API 和 Muse code，商业 agent 也在增长；更长期才是让 Muse agent 彼此协作。",
+        "answer_summary": "Mark 说近期主要的企业产品是模型 API 和 Muse code，商业 agent 已经做了一段时间，这三块都增长很快。他看到不少人已经用 Muse 经营小企业，因此既想做一个能帮人把开业里费时、但不是核心的工作自动化的 agent，也想做一个可以带进不同公司环境的 Muse。更长期是他所说的 Muse network：不只是每个人自己的 Muse，而是能和亲友的 Muse 协作，购物时直接和企业的 agent 对话。Susan 补充，传统企业软件公司并没有锁死这个市场，一些今天领先的公司几年前还不存在；Meta 同样做了模型投入，并已有 5 亿家企业在用公司的产品。她预计各种规模的企业会把 AI agent 用在软件开发、效率、销售、营销和客服上。公司希望这成为新的、可以多元化的经常性收入，覆盖订阅、按用量计费的 API、消息和其他收入，并按已经验证的客户需求和产品市场匹配来加大投入。她把这看作一个要发展多年的机会。",
         "directness": "direct",
         "answer_quote": "the main enterprise offering in the near term is going to be the model API and Muse code"
       },
@@ -762,7 +875,7 @@
         "firm": "Goldman Sachs",
         "topic": "客户与订单",
         "question_summary": "Eric Sheridan 问，如果平台或供应商不愿让 agent 接入，公司如何降低 agentic commerce 的摩擦。",
-        "answer_summary": "Susan 说市场会走向有授权的结构化交互，并提到公司已与行业伙伴预览个人 agent 协议。她没有点名不愿接入的对象，也没有给时间表。",
+        "answer_summary": "Mark 说眼下看到的是企业普遍很积极，因为这既能提高现有客户的销量和体验，也可能带来新客户。不同企业的采用节奏会不一样，公司的做法会跟着调整。他认为超出预期的是，很多企业不仅想让 Muse 更好地调用自己的服务，还主动来谈接入。Susan 补充，也有企业在意保护自己的客户关系。她预计市场会从 agent 像人一样去浏览每一个界面，转向有授权的结构化交互，包括经过认证的 API、获准的 agent 合作，以及消费者的个人 agent 与企业自己的 agent 直接通信。本月早些时候，公司与 Sierra、Walmart、Stripe、Shopify 等行业伙伴预览了跨 Muse 和 Meta business agents 的个人 agent 协议和开放标准，用来规定两边如何安全、可靠地交互，并给企业和客户保留适当控制。她说采用会不均衡、需要时间，近期很多体验仍会是 AI 辅助而不是完全自主；等可信接入能证明增量需求、并且运行安全，更多企业会愿意参加。她没有点名不愿接入的对象，也没有给时间表。",
         "directness": "partial",
         "answer_quote": "we previewed the personal agent protocol and open standard across Muse and Meta business agents"
       },
@@ -776,7 +889,7 @@
         "firm": "Goldman Sachs",
         "topic": "其他",
         "question_summary": "Eric Sheridan 问新的无投票权股份类别会如何用于融资和资本结构。",
-        "answer_summary": "Susan 说这一类别可用于融资、员工薪酬、收购和其他一般公司用途，同时保留现有 A/B 类股东的投票权。她说目前没有具体融资计划可以宣布。",
+        "answer_summary": "Susan 说设立这一新类别，是为了有一只可公开交易、没有投票权的股票，用于融资、员工薪酬、收购和其他一般公司用途，同时保留现有 A 类和 B 类股东的投票权。她认为这能维持创始人主导的结构，扩大融资工具，并在 AI 推动各项业务的势头下保留投资的灵活性。目前没有具体融资计划可以宣布，但她认为先把资本结构框架立起来是稳妥的，这样公司可以使用更多种类的资金来源。",
         "directness": "partial",
         "answer_quote": "We do not have any specific financing plans to announce at this time."
       },
@@ -790,7 +903,7 @@
         "firm": "JPMorgan",
         "topic": "客户与订单",
         "question_summary": "Douglas Anmuth 追问，更多交易变成经过授权的 agent 对 agent 之后，会解锁什么。",
-        "answer_summary": "Susan 说现在还预测不准，体验会不均衡；她举例认为由企业自己的 agent 接听会比 Muse 代为致电更容易。",
+        "answer_summary": "Susan 说她希望能把这个演变预测得更准，但这需要时间，而且过程会不均衡。她用自己使用 Muse 的体验说明：如果 Muse 必须代她给企业打电话，由代表该企业的 business agent 来接会更容易。她认为 Muse 的特点是主动替用户把任务执行下去，遇到障碍会换一条路径。消费者 agent 和企业 agent 这种主动性，可以让交易和活动比今天更多。今天更多是等潜在需求自己出现；有了 agent，就可以让 Muse 持续寻找并定期更新，她举的例子是一个月发来 10 本新书。她认为企业侧的 agent 也应做类似的事，从而形成更主动的 agent 对 agent 框架。她没有给渗透节奏或规模。",
         "directness": "partial",
         "answer_quote": "I wish I could sort of, predict that more perfectly."
       },
@@ -804,7 +917,7 @@
         "firm": "JPMorgan",
         "topic": "指引与展望",
         "question_summary": "Douglas Anmuth 问 2027 年费用、资本开支和营业利润能否沿用过去的表述来推。",
-        "answer_summary": "Susan 说 2027 年预算和产能计划还早，没有更具体或定量的内容，要等到通常给出下一年指引的第四季度电话会。",
+        "answer_summary": "Susan 说明年的预算和产能计划还很早。他们正在评估很多投资提案，这些提案在不同时间跨度上有吸引力的回报，公司想在总预算和财务目标之内尽量多资助其中的项目。情况变化很快，所以现在没有更具体或定量的内容可以分享，要等到通常给出下一年指引的第四季度电话会。",
         "directness": "partial",
         "answer_quote": "we do not have anything more specific or quantitative to share until we get to the Q4 call"
       },
@@ -818,7 +931,7 @@
         "firm": "Bank of America",
         "topic": "指引与展望",
         "question_summary": "Justin Post 问新模型用到广告系统后，还有多少改进空间。",
-        "answer_summary": "Susan 说广告和互动上的投入让她相信核心业务在 2027 年仍有增长空间，但没有给幅度，也说公司不提供 2027 年展望。",
+        "answer_summary": "这问原本是问 Mark 的，Susan 说两问都由她来答。她把广告系统还能改进的空间分成三块。第一是原有的效果改进路线，也就是日常的机器学习工作，她说这条管线仍然健康；因此虽然公司不提供 2027 年展望，广告和互动上的投入仍让她相信核心业务在 2027 年有实质的增长空间，但她没有给幅度。第二是转向更偏大语言模型的基础设施，用来更深入理解人们对自然内容和推荐的偏好，并期望由此改善排序和推荐。第三是生成式工具继续通过 Advantage Plus 给广告主增加功能，例如由图片生成视频或生成声音，让广告更针对被投放的人。她说这三块都还有空间。",
         "directness": "partial",
         "answer_quote": "we have meaningful runway to grow our core business throughout 2027"
       },
@@ -832,7 +945,7 @@
         "firm": "Bank of America",
         "topic": "指引与展望",
         "question_summary": "Justin Post 问明年所说的强劲收入增长是否包括新增的 AI 收入。",
-        "answer_summary": "Susan 说几项新的 AI 业务有望在 2027 年开始贡献增量收入，更重要的是此后能够放量；近期仍以产品质量和产品市场匹配为主。",
+        "answer_summary": "Susan 说明年对核心广告和互动的预算投入让她放心。与此同时，公司在建几项新的 AI 业务，预计它们可以在 2027 年开始贡献增量收入，更重要的是此后能够放量。这些包括用订阅、交易和广告来变现 AI 产品，以及前面谈到的企业产品。她说很多机会仍然早，近期重点是做出高质量产品、达到并扩大产品市场匹配。她用公司曾经触达数十亿人、并把业务做成规模的记录，来说明 AI 有望逐渐成为有意义的收入多元化来源。",
         "directness": "direct",
         "answer_quote": "we expect that those can begin contributing incremental revenue in 2027"
       },
@@ -846,7 +959,7 @@
         "firm": "Bernstein",
         "topic": "产品结构",
         "question_summary": "Mark Shmulik 问公司内部是否已把 Muse 放在一切的中心，业务目标是否因此改变。",
-        "answer_summary": "Mark 回顾个人超级智能是北极星，并说实验室重启是为了专门把模型做成个人 agent。他没有确认 Muse 已经是一切的中心。",
+        "answer_summary": "Mark 没有直接确认 Muse 已经是一切的中心。他说一年多前写过一封信，把个人超级智能当作这项工作的北极星，并把它接上公司二十多年以来赋能个人、给人表达和连接工具的方向。延伸到 AI，就是把这项技术交到每个人手里。重启 MSL、建立实验室，很大一部分是因为需要专门把模型做成个人 agent，并由自己掌握从模型到 agent 的端到端体验。眼镜也是同一思路：做下一代硬件平台，把端到端体验交给用户。他认为这已经开始成形，未来几年会更明显。这些是长期赌注；只要继续为全球数十亿人设计体验并执行好，业务会跟着起来。他没有改口说各项业务目标已经因此改变。",
         "directness": "partial",
         "answer_quote": "we need to build models specifically to be good as personal agents"
       },
@@ -865,7 +978,7 @@
         "firm": "Bernstein",
         "topic": "客户与订单",
         "question_summary": "Mark Shmulik 问要把 Muse 做到小型企业，还需要哪些工作。",
-        "answer_summary": "Susan 说面向小型企业的能力在 9 月下旬放进现有 Muse 应用，并再次提到约 5 亿家自认小型企业在用 Family of Apps。",
+        "answer_summary": "Susan 说面向小型企业的能力是在 9 月下旬放进现有 Muse 应用的一组新技能和连接器，不是单独的产品，用来帮店主运营、寻找新客户。它可以连接企业的 Instagram 分析、Facebook 主页或 Meta 广告账户，以及 Shopify、QuickBooks、Canva 等企业已经在用的第三方工具。她说它已经理解企业在卖什么、品牌语气和客户在问什么，并能分析广告和内容表现、起草活动和回复、标出问题。公司正在听小型企业用户的主要用途，目前看到的包括广告优化、整理私信、扩大销售、按库存和新产品更新网页，以及员工负荷的平衡。她会按这些用途来决定后续功能。她再次提到准备发言里约 5 亿家自认小型企业在用 Family of Apps，并认为消费产品上的投入会带到这些企业，也有多个渠道把机会推给全球的小型企业。她还说，向 AI 的转变也给更广泛的企业市场打开了新机会。",
         "directness": "direct",
         "answer_quote": "500 million self identified small businesses"
       },
@@ -879,7 +992,7 @@
         "firm": "Barclays",
         "topic": "费用与运营",
         "question_summary": "Ross Sandler 问 Muse 目前的人均成本，以及成本曲线会如何下降。",
-        "answer_summary": "Susan 说今天没有 Muse 成本结构的具体数字；方向是利用非高峰算力、更小的模型和提高 GPU 利用率。",
+        "answer_summary": "Susan 说今天没有 Muse 成本结构的具体数字可以分享，但如 Mark 所说，它相当吃算力。把算力效率做上去，是既能扩大使用、又能把它做成想要的业务的关键。较近的做法包括用非高峰或闲置算力来跑一部分任务、使用更小的模型，以及一系列推理效率工作，目标是提高 GPU 利用率，再加上产品侧的效率工作。更长期，她预计随着大语言模型扩展，可以用更少的 token 完成更多任务，也可以用 AI 模型本身来改进运行模型的软件效率。她认为效率路线图上还有很多工作，技术进展也会随时间带来更大的节省。她没有给人均成本。",
         "directness": "partial",
         "answer_quote": "we do not have sort of specific numbers to share around the cost structure of Muse today"
       },
@@ -893,7 +1006,7 @@
         "firm": "Evercore ISI",
         "topic": "产品结构",
         "question_summary": "Mark Mahaney 问 Muse 是否仍按先做用户、后做变现的老办法，还是因为成本更高而要更快变现。",
-        "answer_summary": "Mark 说这次会比通常做法更早做变现，原因是成本和机会的规模，以及用户大量在做商务。",
+        "answer_summary": "Mark 说这次会比通常先攒用户、后做变现的做法更早开始变现。一层原因是成本和机会的规模都很大，要能扩大就必须在变现上有进展；另一层是用户在做的事情里，商务占了很大一部分。他认为要把用户想要的消费价值做出来，并建立一个能从所创造价值里分到一部分的模式，这样算账才撑得住想做的算力建设，并尽快覆盖所有人。他补充，除了 Susan 刚讲的效率工作，他预计一年后可以用小得多的模型、以今天的几分之一成本，提供现在 Muse Wonder 或当前前沿模型的同等智能。但一年后多数人不会还想用今天这个智能水平，因为模型本身也会进步，所以收入、规模和模型效率要一起做。他还说，现在不向所有人先收费，是为了先建立 Muse network；人和企业用得越多，彼此协作越有价值。他认为没有多少公司处在能做成这件事的位置。",
         "directness": "direct",
         "answer_quote": "we are going to work on monetization somewhat sooner on this than our normal playbook"
       },
@@ -907,7 +1020,7 @@
         "firm": "Evercore ISI",
         "topic": "客户与订单",
         "question_summary": "Mark Mahaney 请澄清商务数据是否把旅行算进去，还是只算零售。",
-        "answer_summary": "Mark 说这个口径包括旅行，旅行是 Muse 的其他主要用途之一。",
+        "answer_summary": "Mark 直接说这个口径包括旅行。他补充，团队原本可能把旅行看成另一类，但旅行其实是 Muse 的其他主要用途之一：人们用它规划行程，也规划可能通过 Family of Apps 获得的东西。他把这一点放进同一套判断里，也就是先把用户想要的消费价值做出来，才有可能从所创造的价值里分到一部分。",
         "directness": "direct",
         "answer_quote": "And to your question, that does include travel too."
       }
@@ -943,7 +1056,7 @@
         "firm": "Goldman Sachs",
         "topic": "客户与订单",
         "question_summary": "Eric Sheridan 问，如果平台或供应商不愿让 agent 接入，公司如何降低 agentic commerce 的摩擦。",
-        "answer_summary": "Susan 说市场会走向有授权的结构化交互，并提到公司已与行业伙伴预览个人 agent 协议。她没有点名不愿接入的对象，也没有给时间表。",
+        "answer_summary": "Mark 说眼下看到的是企业普遍很积极，因为这既能提高现有客户的销量和体验，也可能带来新客户。不同企业的采用节奏会不一样，公司的做法会跟着调整。他认为超出预期的是，很多企业不仅想让 Muse 更好地调用自己的服务，还主动来谈接入。Susan 补充，也有企业在意保护自己的客户关系。她预计市场会从 agent 像人一样去浏览每一个界面，转向有授权的结构化交互，包括经过认证的 API、获准的 agent 合作，以及消费者的个人 agent 与企业自己的 agent 直接通信。本月早些时候，公司与 Sierra、Walmart、Stripe、Shopify 等行业伙伴预览了跨 Muse 和 Meta business agents 的个人 agent 协议和开放标准，用来规定两边如何安全、可靠地交互，并给企业和客户保留适当控制。她说采用会不均衡、需要时间，近期很多体验仍会是 AI 辅助而不是完全自主；等可信接入能证明增量需求、并且运行安全，更多企业会愿意参加。她没有点名不愿接入的对象，也没有给时间表。",
         "directness": "partial",
         "answer_quote": "we previewed the personal agent protocol and open standard across Muse and Meta business agents"
       },
@@ -957,7 +1070,7 @@
         "firm": "Goldman Sachs",
         "topic": "其他",
         "question_summary": "Eric Sheridan 问新的无投票权股份类别会如何用于融资和资本结构。",
-        "answer_summary": "Susan 说这一类别可用于融资、员工薪酬、收购和其他一般公司用途，同时保留现有 A/B 类股东的投票权。她说目前没有具体融资计划可以宣布。",
+        "answer_summary": "Susan 说设立这一新类别，是为了有一只可公开交易、没有投票权的股票，用于融资、员工薪酬、收购和其他一般公司用途，同时保留现有 A 类和 B 类股东的投票权。她认为这能维持创始人主导的结构，扩大融资工具，并在 AI 推动各项业务的势头下保留投资的灵活性。目前没有具体融资计划可以宣布，但她认为先把资本结构框架立起来是稳妥的，这样公司可以使用更多种类的资金来源。",
         "directness": "partial",
         "answer_quote": "We do not have any specific financing plans to announce at this time."
       },
@@ -971,7 +1084,7 @@
         "firm": "JPMorgan",
         "topic": "客户与订单",
         "question_summary": "Douglas Anmuth 追问，更多交易变成经过授权的 agent 对 agent 之后，会解锁什么。",
-        "answer_summary": "Susan 说现在还预测不准，体验会不均衡；她举例认为由企业自己的 agent 接听会比 Muse 代为致电更容易。",
+        "answer_summary": "Susan 说她希望能把这个演变预测得更准，但这需要时间，而且过程会不均衡。她用自己使用 Muse 的体验说明：如果 Muse 必须代她给企业打电话，由代表该企业的 business agent 来接会更容易。她认为 Muse 的特点是主动替用户把任务执行下去，遇到障碍会换一条路径。消费者 agent 和企业 agent 这种主动性，可以让交易和活动比今天更多。今天更多是等潜在需求自己出现；有了 agent，就可以让 Muse 持续寻找并定期更新，她举的例子是一个月发来 10 本新书。她认为企业侧的 agent 也应做类似的事，从而形成更主动的 agent 对 agent 框架。她没有给渗透节奏或规模。",
         "directness": "partial",
         "answer_quote": "I wish I could sort of, predict that more perfectly."
       },
@@ -985,7 +1098,7 @@
         "firm": "JPMorgan",
         "topic": "指引与展望",
         "question_summary": "Douglas Anmuth 问 2027 年费用、资本开支和营业利润能否沿用过去的表述来推。",
-        "answer_summary": "Susan 说 2027 年预算和产能计划还早，没有更具体或定量的内容，要等到通常给出下一年指引的第四季度电话会。",
+        "answer_summary": "Susan 说明年的预算和产能计划还很早。他们正在评估很多投资提案，这些提案在不同时间跨度上有吸引力的回报，公司想在总预算和财务目标之内尽量多资助其中的项目。情况变化很快，所以现在没有更具体或定量的内容可以分享，要等到通常给出下一年指引的第四季度电话会。",
         "directness": "partial",
         "answer_quote": "we do not have anything more specific or quantitative to share until we get to the Q4 call"
       },
@@ -999,7 +1112,7 @@
         "firm": "Bank of America",
         "topic": "指引与展望",
         "question_summary": "Justin Post 问新模型用到广告系统后，还有多少改进空间。",
-        "answer_summary": "Susan 说广告和互动上的投入让她相信核心业务在 2027 年仍有增长空间，但没有给幅度，也说公司不提供 2027 年展望。",
+        "answer_summary": "这问原本是问 Mark 的，Susan 说两问都由她来答。她把广告系统还能改进的空间分成三块。第一是原有的效果改进路线，也就是日常的机器学习工作，她说这条管线仍然健康；因此虽然公司不提供 2027 年展望，广告和互动上的投入仍让她相信核心业务在 2027 年有实质的增长空间，但她没有给幅度。第二是转向更偏大语言模型的基础设施，用来更深入理解人们对自然内容和推荐的偏好，并期望由此改善排序和推荐。第三是生成式工具继续通过 Advantage Plus 给广告主增加功能，例如由图片生成视频或生成声音，让广告更针对被投放的人。她说这三块都还有空间。",
         "directness": "partial",
         "answer_quote": "we have meaningful runway to grow our core business throughout 2027"
       },
@@ -1013,7 +1126,7 @@
         "firm": "Bernstein",
         "topic": "产品结构",
         "question_summary": "Mark Shmulik 问公司内部是否已把 Muse 放在一切的中心，业务目标是否因此改变。",
-        "answer_summary": "Mark 回顾个人超级智能是北极星，并说实验室重启是为了专门把模型做成个人 agent。他没有确认 Muse 已经是一切的中心。",
+        "answer_summary": "Mark 没有直接确认 Muse 已经是一切的中心。他说一年多前写过一封信，把个人超级智能当作这项工作的北极星，并把它接上公司二十多年以来赋能个人、给人表达和连接工具的方向。延伸到 AI，就是把这项技术交到每个人手里。重启 MSL、建立实验室，很大一部分是因为需要专门把模型做成个人 agent，并由自己掌握从模型到 agent 的端到端体验。眼镜也是同一思路：做下一代硬件平台，把端到端体验交给用户。他认为这已经开始成形，未来几年会更明显。这些是长期赌注；只要继续为全球数十亿人设计体验并执行好，业务会跟着起来。他没有改口说各项业务目标已经因此改变。",
         "directness": "partial",
         "answer_quote": "we need to build models specifically to be good as personal agents"
       },
@@ -1027,7 +1140,7 @@
         "firm": "Barclays",
         "topic": "费用与运营",
         "question_summary": "Ross Sandler 问 Muse 目前的人均成本，以及成本曲线会如何下降。",
-        "answer_summary": "Susan 说今天没有 Muse 成本结构的具体数字；方向是利用非高峰算力、更小的模型和提高 GPU 利用率。",
+        "answer_summary": "Susan 说今天没有 Muse 成本结构的具体数字可以分享，但如 Mark 所说，它相当吃算力。把算力效率做上去，是既能扩大使用、又能把它做成想要的业务的关键。较近的做法包括用非高峰或闲置算力来跑一部分任务、使用更小的模型，以及一系列推理效率工作，目标是提高 GPU 利用率，再加上产品侧的效率工作。更长期，她预计随着大语言模型扩展，可以用更少的 token 完成更多任务，也可以用 AI 模型本身来改进运行模型的软件效率。她认为效率路线图上还有很多工作，技术进展也会随时间带来更大的节省。她没有给人均成本。",
         "directness": "partial",
         "answer_quote": "we do not have sort of specific numbers to share around the cost structure of Muse today"
       }

@@ -808,6 +808,53 @@ def _gap_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def _eps_chart(doc: dict[str, Any]) -> dict[str, Any] | None:
+    """META 预期差图：过去四季可比实际 + 未来四季 street 预期。没有这份数据时沿用横条。"""
+    from pipeline.compute.metrics import round_eps
+
+    raw = (doc.get("meta") or {}).get("eps_surprise_chart") or None
+    if not raw or not raw.get("quarters"):
+        return None
+    quarters = []
+    for q in raw["quarters"]:
+        consensus_raw = _num(q.get("consensus"))
+        consensus = round_eps(consensus_raw) if consensus_raw is not None else None
+        actual = _num(q.get("actual"))
+        yoy = _num(q.get("yoy"))
+        if q.get("reported") and actual is not None and consensus is not None:
+            diff = round(actual - consensus, 2)
+            if diff >= 0:
+                note, note_cls = f"超预期 ${diff:.2f}", "beat"
+            else:
+                note, note_cls = f"不及预期 ${abs(diff):.2f}", "miss"
+        elif q.get("reported"):
+            note, note_cls = q.get("missing_actual_label") or "未公布剔除后", "muted"
+        elif yoy is not None:
+            note, note_cls = f"同比 {_change(yoy)['text']}", "beat" if yoy > 0 else "miss" if yoy < 0 else "muted"
+        else:
+            note, note_cls = q.get("missing_yoy_label") or "同比缺基数", "muted"
+        quarters.append(
+            {
+                "label": q.get("label") or "",
+                "consensus": consensus,
+                "actual": actual,
+                "yoy_pct": None if yoy is None else yoy * 100,
+                "note": note,
+                "note_cls": note_cls,
+                "basis": q.get("basis_label") or "",
+            }
+        )
+    sides = []
+    for g in _gap_rows(doc):
+        if "EPS" in g["label"]:
+            continue
+        text = f"{g['label']} {g['detail']}" if g.get("detail") else g["label"]
+        if g.get("has"):
+            text += f" {g['gap']['text']}"
+        sides.append({"text": text, "cls": g["gap"]["cls"] if g.get("has") else "muted"})
+    return {"quarters": quarters, "note": raw.get("note") or "", "sides": sides}
+
+
 def _market_view(doc: dict[str, Any]) -> dict[str, Any]:
     """市场怎么判：次日股价 + 财报后下季一致预期的修正。两者同向才算市场认可。"""
     price = _price_view(doc)
@@ -1065,6 +1112,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
             thesis = _position_view(t, doc, today)
             html = env.get_template("period.html").render(
                 gaps=gaps,
+                eps_chart=_eps_chart(doc),
                 market=market,
                 checks=checks,
                 thesis=thesis,
