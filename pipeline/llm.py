@@ -436,45 +436,58 @@ class LLMClient:
         schema: Type[T],
         *,
         extra_system: str = "",
+        max_tokens: int | None = None,
+        timeout_sec: float | None = None,
     ) -> T:
         system = (
             "You output only valid JSON. No markdown fences, no commentary.\n" + extra_system
         ).strip()
-        key = self._cache_key(prompt_name, system, user_content)
-        cached = self._read_cache(key)
-        if cached:
-            self._log_usage(prompt_name, cached.get("usage", {}), 0, True)
-            return schema.model_validate(cached["data"])
-
+        # 个别步骤（行业展望）需要比全局 4096 更长的正文，且不能吃到短输出的缓存。
+        cache_user = user_content
+        saved_tokens, saved_timeout = self.max_tokens, self.request_timeout_sec
+        if max_tokens is not None:
+            self.max_tokens = int(max_tokens)
+            cache_user = f"{user_content}\n\n__cap__={int(max_tokens)}"
+        if timeout_sec is not None:
+            self.request_timeout_sec = float(timeout_sec)
+        key = self._cache_key(prompt_name, system, cache_user)
         last_err: Exception | None = None
         content = ""
-        # 总尝试次数 = 1 + max_retries；每次重试都会重发整段原文，务必保持很小
-        for attempt in range(self.max_retries + 1):
-            messages = [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_content},
-            ]
-            if last_err is not None:
-                messages.append(
-                    {
-                        "role": "user",
-                        "content": f"上次输出未通过校验：{redact_secrets(str(last_err)[:500], self.api_key)}。请只输出修正后的 JSON。",
-                    }
-                )
-            content, usage, latency = self._post_chat(messages, json_object=True)
-            self._log_usage(prompt_name, usage, latency, False)
-            try:
-                # 容忍 markdown 围栏 / 前后多余文字，避免为格式问题付费重试
-                data = _loads_json_payload(content)
-                model = schema.model_validate(data)
-                self._write_cache(key, {"data": data, "usage": usage})
-                return model
-            except (json.JSONDecodeError, ValidationError) as e:
-                last_err = e
-        raise LLMError(
-            f"LLM JSON 校验失败: {redact_secrets(str(last_err), self.api_key)}; "
-            f"raw={redact_secrets(content[:500], self.api_key)}"
-        )
+        try:
+            cached = self._read_cache(key)
+            if cached:
+                self._log_usage(prompt_name, cached.get("usage", {}), 0, True)
+                return schema.model_validate(cached["data"])
+            # 总尝试次数 = 1 + max_retries；每次重试都会重发整段原文，务必保持很小
+            for attempt in range(self.max_retries + 1):
+                messages = [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_content},
+                ]
+                if last_err is not None:
+                    messages.append(
+                        {
+                            "role": "user",
+                            "content": f"上次输出未通过校验：{redact_secrets(str(last_err)[:500], self.api_key)}。请只输出修正后的 JSON。",
+                        }
+                    )
+                content, usage, latency = self._post_chat(messages, json_object=True)
+                self._log_usage(prompt_name, usage, latency, False)
+                try:
+                    # 容忍 markdown 围栏 / 前后多余文字，避免为格式问题付费重试
+                    data = _loads_json_payload(content)
+                    model = schema.model_validate(data)
+                    self._write_cache(key, {"data": data, "usage": usage})
+                    return model
+                except (json.JSONDecodeError, ValidationError) as e:
+                    last_err = e
+            raise LLMError(
+                f"LLM JSON 校验失败: {redact_secrets(str(last_err), self.api_key)}; "
+                f"raw={redact_secrets(content[:500], self.api_key)}"
+            )
+        finally:
+            self.max_tokens = saved_tokens
+            self.request_timeout_sec = saved_timeout
 
     def complete_json_list(
         self,

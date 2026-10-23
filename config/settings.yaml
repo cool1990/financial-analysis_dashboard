@@ -10,7 +10,9 @@ llm:
   # （它只支持 high / xhigh），思考耗尽 4096 额度后正文为空。抽取、摘要和问答不需要推理，默认关闭。
   # 可选：off（关闭，最省）/ high / xhigh；删掉这一行则沿用模型默认
   reasoning_effort: "off"
-  # 问答与摘要、指引、变动原因用同一个 DeepSeek。留空则回退到上面的 model。
+  # 问答、摘要、指引、变动原因、行业展望用同一个 DeepSeek。留空则回退到上面的 model。
+  # 行业展望在 Stage2 读取 prompts/extract_industry_outlook.md，这一步单独把输出上限放到 8192，
+  # 避免六题展开被全局 4096 截断。页面只渲染这次写入的 guidance.industry_outlook。
   # 不单独设 qa_reasoning_effort / qa_max_tokens：沿用 reasoning_effort=off 和 max_tokens=4096。
   # DeepSeek V4 Pro 不支持 low；打开思考会耗尽 4096，正文为空。
   qa_model: "deepseek/deepseek-v4-pro-0813"

@@ -77,7 +77,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 
 ## LLM 成本护栏
 
-只有 Stage1（新闻稿抽取 + 指引，可选变动原因）和 Stage2（电话会指引、问答、变动原因、总结）调用 LLM，其余全部是规则计算。
+只有 Stage1（新闻稿抽取 + 指引，可选变动原因）和 Stage2（电话会指引、行业展望、问答、变动原因、总结）调用 LLM，其余全部是规则计算。行业展望由 Stage2 的 DeepSeek 按 `prompts/extract_industry_outlook.md` 写入，构建页面时不再另写一版。
 
 - poll 只在「财报窗口 + 已知财报日前 7 天至后 4 天」检查 SEC，且只处理发布不超过 `polling.new_filing_max_age_days`（默认 4 天）的 8-K；历史季度走 `backfill`。
 - 同一份 8-K Stage1 失败达到 `polling.max_retries` 次后不再自动重试（计数在 `data/*/processed.json` 的 `failures`）。
