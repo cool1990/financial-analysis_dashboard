@@ -540,8 +540,10 @@ def test_homepage_marks_tsm_as_adr(tmp_path, monkeypatch):
     build.build_site("TSM")
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
     page = (tmp_path / "stocks" / "TSM" / "index.html").read_text(encoding="utf-8")
+    label = build._display_name(build.load_ticker_config("TSM"), "TSM")
+    assert label == "台积电 (TSM)"
     assert 'class="stage-badge s-adr"' in index
-    assert ">TSM</a> <span" in index and ">ADR</span>" in index
+    assert f">{label}</a> <span" in index and ">ADR</span>" in index
     # 首页 ADR 徽章，以及有财季后的业绩页页眉，都写明不是 8-K Item 2.02。
     assert "不是 8-K Item 2.02" in index
     assert "不是 8-K Item 2.02" in page
