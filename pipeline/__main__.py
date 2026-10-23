@@ -79,6 +79,13 @@ def main(argv: list[str] | None = None) -> int:
     p_imp.add_argument("--pdf", default=None, help="业绩公告 PDF（或已抽出的 .txt）")
     p_imp.add_argument("--transcript", default=None, help="电话会 markdown / 文本，写入 raw/{period}/transcript.txt")
 
+    p_hk = sub.add_parser("hkex-poll", help="披露易业绩公布试跑（默认只列链接，不下载，不接每天的 poll）")
+    p_hk.add_argument("--ticker", required=True, help="目前只支持 0700.HK")
+    p_hk.add_argument("--since", default=None, help="YYYY-MM-DD，缺省为香港今天往前 18 个月")
+    p_hk.add_argument("--until", default=None, help="YYYY-MM-DD，缺省为香港今天")
+    p_hk.add_argument("--limit", type=int, default=20, help="最多输出多少条业绩公布")
+    p_hk.add_argument("--download", action="store_true", help="把 PDF 写到 data/{ticker}/raw/hkex/；默认不落盘")
+
     p_ping = sub.add_parser("llm-ping", help="校验 OpenRouter 模型 slug 与 API key")
     p_ping.add_argument("--model", default=None, help="模型 slug，默认取 settings.yaml")
 
@@ -209,6 +216,23 @@ def main(argv: list[str] | None = None) -> int:
             )
             print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0
+        if args.cmd == "hkex-poll":
+            from pipeline.commands.hkex_poll_cmd import hkex_poll
+            from pipeline.sources.hkex_news import HkexError
+
+            try:
+                out = hkex_poll(
+                    args.ticker,
+                    since=args.since,
+                    until=args.until,
+                    limit=args.limit,
+                    download=bool(args.download),
+                )
+            except HkexError as exc:
+                print(json.dumps(exc.to_dict(), ensure_ascii=False, indent=2))
+                return 1
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if out.get("ok") else 1
         if args.cmd == "av-estimates":
             from pipeline.commands.av_estimates_cmd import refresh_earnings_estimates
 
