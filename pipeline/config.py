@@ -126,3 +126,9 @@ def sec_user_agent() -> str:
 
 def openrouter_api_key() -> str | None:
     return os.environ.get("OPENROUTER_API_KEY") or None
+
+
+def alphavantage_api_key() -> str | None:
+    from pipeline.sources.alpha_vantage import alphavantage_api_key as _key
+
+    return _key()

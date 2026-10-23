@@ -280,6 +280,7 @@
         <p class="qa-answer"><b>答：</b>{{ answer_lines[0] if answer_lines else '—' }}</p>
         {% endif %}
         {% endif %}
+        {% if q.review_flags %}<p class="small">核对：{{ q.review_flags|join('；') }}</p>{% endif %}
         {% if q.note %}<p class="small">未回答的部分：{{ q.note }}</p>{% endif %}
         {% if q.answer_quote %}<blockquote>{{ q.answer_quote }}</blockquote>{% endif %}
         {% if q.new_numbers %}

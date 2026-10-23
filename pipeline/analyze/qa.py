@@ -4,8 +4,15 @@ import json
 import re
 from typing import Any
 
+from pipeline.analyze.qa_facts import (
+    analyst_subquestion_count,
+    attach_flags,
+    fact_label,
+    false_friend_flags,
+    missing_answer_facts,
+)
 from pipeline.compute.topics import compute_topic_stats
-from pipeline.config import load_topics
+from pipeline.config import load_settings, load_topics
 from pipeline.llm import CostLimitExceeded, LLMClient, LLMTruncatedError
 from pipeline.schemas import QAItem
 from pipeline.sources.transcripts import split_prepared_and_qa
@@ -115,6 +122,134 @@ def _prompt(llm: LLMClient, press_release_numbers: dict[str, Any] | None) -> str
     )
 
 
+def _qa_client() -> LLMClient:
+    """问答用 settings.llm.qa_model。留空则回退到摘要用的默认模型。"""
+    settings = load_settings().get("llm") or {}
+    model = str(settings.get("qa_model") or "").strip() or None
+    client = LLMClient(model=model)
+    if "qa_reasoning_effort" in settings:
+        client.reasoning_effort = settings.get("qa_reasoning_effort")
+    if settings.get("qa_max_tokens"):
+        client.max_tokens = int(settings["qa_max_tokens"])
+    if settings.get("qa_request_timeout_sec"):
+        client.request_timeout_sec = float(settings["qa_request_timeout_sec"])
+    return client
+
+
+def _bind_exchange(items: list[dict[str, Any]], ex: dict[str, Any]) -> list[dict[str, Any]]:
+    for item in items:
+        item["exchange_id"] = str(ex.get("exchange_id") or item.get("exchange_id") or "")
+        if not item.get("analyst"):
+            item["analyst"] = ex.get("analyst")
+        if not item.get("firm"):
+            item["firm"] = ex.get("firm")
+        item["review_flags"] = [str(flag) for flag in item.get("review_flags") or [] if str(flag).strip()]
+    return items
+
+
+def _usable_items(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [item for item in items if not item.get("parse_failed")]
+
+
+def _review_exchange(llm: LLMClient, ex: dict[str, Any], items: list[dict[str, Any]], notes: list[str]) -> list[dict[str, Any]]:
+    """第二遍对照原文，改归属、误译和漏掉的回答。失败就留下第一遍并打标。"""
+    payload = json.dumps(items, ensure_ascii=False)
+    user = llm.load_prompt("review_qa.md") + "\n\n原文：\n" + (ex.get("text") or "") + "\n\n已有摘要：\n" + payload
+    if notes:
+        user += "\n\n规则检查：\n" + "\n".join(notes)
+    try:
+        reviewed = [model.model_dump() for model in llm.complete_json_list("review_qa.md", user, QAItem)]
+    except Exception as exc:
+        attach_flags(items[0], [f"审阅未完成：{_failure_reason(exc)}"])
+        return items
+    reviewed = _bind_exchange([item for item in reviewed if not _is_placeholder_qa(item)], ex)
+    if not reviewed:
+        attach_flags(items[0], ["审阅没有返回可用摘要，保留第一遍"])
+        return items
+    text = ex.get("text") or ""
+    analyst = ex.get("analyst")
+    needed = analyst_subquestion_count(text, analyst)
+    if needed > 1 and len(reviewed) < needed and len(items) >= needed:
+        attach_flags(items[0], ["审阅把多个问题并回去了，已保留拆开的版本"])
+        return items
+    before = set(missing_answer_facts(text, [item.get("answer_summary") or "" for item in items], analyst))
+    after = set(missing_answer_facts(text, [item.get("answer_summary") or "" for item in reviewed], analyst))
+    dropped = sorted(after - before)
+    if dropped:
+        label = "、".join(fact_label(fact) for fact in dropped)
+        attach_flags(items[0], [f"审阅漏掉了原文中的数字或时间（{label}），已保留审阅前的版本"])
+        return items
+    return reviewed
+
+
+def _flag_remaining(ex: dict[str, Any], items: list[dict[str, Any]]) -> list[str]:
+    """数字、时间和明显误译在审阅之后仍然有问题，就写进 review_flags 并返回警告。"""
+    warnings: list[str] = []
+    usable = _usable_items(items)
+    if not usable:
+        return warnings
+    text = ex.get("text") or ""
+    analyst = ex.get("analyst")
+    missing = missing_answer_facts(text, [item.get("answer_summary") or "" for item in usable], analyst)
+    if missing:
+        label = "、".join(fact_label(fact) for fact in missing)
+        warning = f"问答摘要漏了原文中的数字或时间：{label}（exchange {ex.get('exchange_id')}）"
+        warnings.append(warning)
+        attach_flags(usable[0], [warning])
+    needed = analyst_subquestion_count(text, analyst)
+    if needed > 1 and len(usable) < needed:
+        warning = f"这一轮至少有 {needed} 个问题，摘要只有 {len(usable)} 条（exchange {ex.get('exchange_id')}）"
+        warnings.append(warning)
+        attach_flags(usable[0], [warning])
+    for item in usable:
+        flags = false_friend_flags(text, item.get("answer_summary") or "")
+        if flags:
+            attach_flags(item, flags)
+            warnings.extend(f"{flag}（exchange {ex.get('exchange_id')}）" for flag in flags)
+    return warnings
+
+
+def _gap_notes(ex: dict[str, Any], items: list[dict[str, Any]]) -> list[str]:
+    """这一轮还没拆开、或摘要还漏数字时，写成给模型的核对说明。"""
+    usable = _usable_items(items)
+    if not usable:
+        return []
+    text = ex.get("text") or ""
+    analyst = ex.get("analyst")
+    notes: list[str] = []
+    needed = analyst_subquestion_count(text, analyst)
+    if needed > 1 and len(usable) < needed:
+        notes.append(
+            f"这一轮分析师提了至少 {needed} 个互不相关的问题，现在只有 {len(usable)} 条。"
+            "必须拆开。每条只放回答该问题的发言，第二问里先开口的那个人的整段回答不能丢。"
+        )
+    missing = missing_answer_facts(text, [item.get("answer_summary") or "" for item in usable], analyst)
+    if missing:
+        notes.append(
+            "摘要漏了原文回答中的这些数字或时间："
+            + "、".join(fact_label(fact) for fact in missing)
+            + "。请补进对应那一条，不要改口径，也不要编造。"
+        )
+    return notes
+
+
+def _structure_exchange(llm: LLMClient, prompt_tmpl: str, ex: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
+    """先概括。问题被合并或数字被漏掉时重写一次，再对照原文审阅。"""
+    items = _bind_exchange(_structure_batch(llm, prompt_tmpl, [ex]), ex)
+    if not _usable_items(items):
+        return items, []
+    notes = _gap_notes(ex, items)
+    if notes:
+        reminded = prompt_tmpl + "\n\n请按下面的核对重写这一轮，不要把问题并回去：\n" + "\n".join(notes)
+        retried = _bind_exchange(_structure_batch(llm, reminded, [ex], split=False), ex)
+        if _usable_items(retried):
+            items = retried
+            # 审阅要看重写之后还缺什么，而不是第一遍的缺口
+            notes = _gap_notes(ex, items)
+    items = _review_exchange(llm, ex, _usable_items(items) or items, notes)
+    return items, _flag_remaining(ex, items)
+
+
 def repair_failed_items(
     transcript: str,
     items: list[dict[str, Any]],
@@ -128,8 +263,12 @@ def repair_failed_items(
     exchanges = [ex for ex in (_split_exchanges(qa) if qa else []) if ex["exchange_id"] in failed_ids]
     if not exchanges:
         return items, 0
-    llm = LLMClient()
-    fresh = _structure_batch(llm, _prompt(llm, press_release_numbers), exchanges)
+    llm = _qa_client()
+    prompt_tmpl = _prompt(llm, press_release_numbers)
+    fresh: list[dict[str, Any]] = []
+    for ex in exchanges:
+        got, _warnings = _structure_exchange(llm, prompt_tmpl, ex)
+        fresh.extend(got)
     by_id: dict[str, list[dict[str, Any]]] = {}
     for f in fresh:
         by_id.setdefault(str(f.get("exchange_id")), []).append(f)
@@ -168,21 +307,22 @@ def structure_qa(
 ) -> dict[str, Any]:
     prepared, qa = split_prepared_and_qa(transcript)
     exchanges = [ex for ex in (_split_exchanges(qa) if qa else []) if _exchange_worth_structuring(ex)]
-    llm = LLMClient()
+    llm = _qa_client()
     prompt_tmpl = _prompt(llm, press_release_numbers)
     items: list[dict[str, Any]] = []
-    # 每轮要写多句摘要加一段原话。5 轮一起塞进 max_tokens=4096 时，模型会把回答压成一句，
-    # 或者输出被截断。两轮一批，截断时仍会再对半拆。
-    batch_size = 2
-    for i in range(0, len(exchanges), batch_size):
-        batch = exchanges[i : i + batch_size]
-        print(f"[stage2/qa] batch {i // batch_size + 1}/{(len(exchanges) + batch_size - 1) // batch_size} size={len(batch)}", flush=True)
-        items.extend(_structure_batch(llm, prompt_tmpl, batch))
+    fact_warnings: list[str] = []
+    # 一轮一批。两轮塞进同一次输出时，模型会把第二个问题并掉或为了长度删回答。
+    for index, ex in enumerate(exchanges, start=1):
+        print(f"[stage2/qa] exchange {index}/{len(exchanges)} id={ex.get('exchange_id')}", flush=True)
+        got, warnings = _structure_exchange(llm, prompt_tmpl, ex)
+        items.extend(got)
+        fact_warnings.extend(warnings)
     items = [item for item in items if not _is_placeholder_qa(item)]
     stats = compute_topic_stats(items)
     return {
         "prepared_remarks": prepared,
         "qa_text": qa,
         "items": items,
+        "fact_warnings": fact_warnings,
         **stats,
     }

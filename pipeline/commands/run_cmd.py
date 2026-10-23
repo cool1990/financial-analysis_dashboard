@@ -523,6 +523,23 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
     t0 = _step("structure_qa")
     qa = structure_qa(text, press_nums)
     _done("structure_qa", t0)
+    from pipeline.sources.alpha_vantage import fetch_earnings_estimates
+    from pipeline.status_notes import reconcile_stage2_warnings
+
+    alpha_vantage = fetch_earnings_estimates(ticker)
+    consensus = (doc.get("meta") or {}).get("consensus_sources")
+    if not isinstance(consensus, dict):
+        consensus = {}
+        doc.setdefault("meta", {})["consensus_sources"] = consensus
+    consensus["alpha_vantage"] = alpha_vantage
+    doc["status"]["warnings"] = reconcile_stage2_warnings(
+        doc["status"].get("warnings"),
+        qa_model_called=True,
+        alpha_vantage=alpha_vantage,
+    )
+    for warning in qa.get("fact_warnings") or []:
+        if warning not in doc["status"]["warnings"]:
+            doc["status"]["warnings"].append(warning)
     prior = load_period_json(ticker, prior_fiscal_period(fiscal_period))
     stats = __import__("pipeline.compute.topics", fromlist=["compute_topic_stats"]).compute_topic_stats(
         qa.get("items") or [], (prior or {}).get("qa", {}).get("items")
