@@ -1,22 +1,22 @@
-"""港币兑人民币。HKDCNY 是 1 港币折合多少人民币，来自 Yahoo Finance 的 HKDCNY=X。
+"""港币兑人民币。HKDCNY 是 1 港币折合多少人民币，来自 TradingView 的 FX_IDC:HKDCNY。
 
+只有 CNYHKD 时用它的倒数。不调用其他外汇接口。
 `rate_on` 只认汇率日期与行情日同一天的收盘，不用前后日填空。
-Forward PE 走 `rate_for_pe`：当天没有时，先尝试拉截至行情日的最近收盘，
-再用不晚于行情日的最近一笔。一笔都没有才留给页面显示待核对。
+`rate_for_pe`：当天没有时，向 TradingView 要最新一根；那根日期不晚于行情日才保存。
+一笔都没有才留给页面显示待核对。
 """
 
 from __future__ import annotations
 
 import json
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 from pipeline import ROOT
 
 PAIR = "HKDCNY"
-SOURCE = "yfinance:HKDCNY=X"
-YAHOO_TICKER = "HKDCNY=X"
+SOURCE = "tradingview:FX_IDC:HKDCNY"
 
 
 def fx_path() -> Path:
@@ -136,7 +136,7 @@ def latest_saved_on_or_before(day: str) -> dict[str, Any] | None:
     return chosen
 
 
-# 同一次构建里，某个行情日拉过还是没有，就不要每个财报页再打一次 Yahoo。
+# 同一次构建里，某个行情日拉过还是没有，就不要每个财报页再打一次 TradingView。
 _FETCH_TRIED: set[tuple[str, str]] = set()
 
 
@@ -193,50 +193,49 @@ def store_rate(record: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def fetch_hkd_cny(day: str) -> dict[str, Any] | None:
-    """拉取 HKDCNY=X 在 day 的收盘，并写入 data/fx/HKDCNY.json。当天没有成交就返回 None。"""
-    from pipeline.sources.yfinance_src import YFinanceSource
-
-    start = date.fromisoformat(day)
-    end = (start + timedelta(days=1)).isoformat()
-    closes = YFinanceSource(YAHOO_TICKER).daily_closes(start.isoformat(), end)
-    rate = close_on(closes, day)
-    if rate is None:
+def _record_from_quote(quote: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(quote, dict):
         return None
-    record = {"pair": PAIR, "rate": rate, "date": day, "source": SOURCE}
-    store_rate(record)
-    return record
+    day = str(quote.get("date") or "")
+    rate = _num(quote.get("rate"))
+    if not day or rate is None:
+        return None
+    source = str(quote.get("source") or SOURCE)
+    return {"pair": PAIR, "rate": rate, "date": day, "source": source}
+
+
+def fetch_hkd_cny(day: str) -> dict[str, Any] | None:
+    """向 TradingView 要 HKDCNY。最新一根的香港日期必须等于 day，才写入 data/fx/HKDCNY.json。"""
+    from pipeline.sources.tradingview_scan import fetch_hkd_cny_quote
+
+    quote = _record_from_quote(fetch_hkd_cny_quote())
+    if quote is None or quote["date"] != day:
+        return None
+    store_rate(quote)
+    return quote
 
 
 def fetch_recent_hkd_cny(day: str, lookback_days: int = 14) -> dict[str, Any] | None:
-    """拉取截至 day 的最近一段收盘，只保存不晚于 day 的日期，返回其中最近一笔。
+    """向 TradingView 要最新一根 HKDCNY。日期不晚于 day 才保存。
 
+    Scanner 只有最新报价，不拉其他外汇源的历史。lookback_days 保留给调用方，这里不用。
     网络或解析失败时返回 None，不抛出，避免构建页面中断。
     """
-    from pipeline.sources.yfinance_src import YFinanceSource
-
+    del lookback_days
     try:
-        end_day = date.fromisoformat(day)
+        date.fromisoformat(day)
     except ValueError:
         return None
-    start = (end_day - timedelta(days=max(int(lookback_days), 1))).isoformat()
-    end = (end_day + timedelta(days=1)).isoformat()
+    from pipeline.sources.tradingview_scan import fetch_hkd_cny_quote
+
     try:
-        closes = YFinanceSource(YAHOO_TICKER).daily_closes(start, end)
+        quote = _record_from_quote(fetch_hkd_cny_quote())
     except Exception:
         return None
-    latest: dict[str, Any] | None = None
-    for name, close in closes:
-        rate_day = str(name)
-        if rate_day > day:
-            continue
-        rate = _num(close)
-        if rate is None:
-            continue
-        record = {"pair": PAIR, "rate": rate, "date": rate_day, "source": SOURCE}
-        try:
-            store_rate(record)
-        except (OSError, ValueError):
-            continue
-        latest = _prefer(latest, record)
-    return latest
+    if quote is None or quote["date"] > day:
+        return None
+    try:
+        store_rate(quote)
+    except (OSError, ValueError):
+        return None
+    return quote

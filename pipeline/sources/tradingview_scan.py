@@ -17,6 +17,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -112,16 +113,24 @@ def tv_symbol_candidates(ticker: str, cfg: dict[str, Any] | None = None) -> tupl
     return "america", ordered
 
 
+FX_MARKET = "forex"
+FX_HKDCNY_SYMBOL = "FX_IDC:HKDCNY"
+FX_CNYHKD_SYMBOL = "FX_IDC:CNYHKD"
+FX_COLUMNS = ["name", "close", "time", "currency"]
+
+
 def _post_scan(
     market: str,
     symbols: list[str],
     *,
     post: Callable[..., Any] | None = None,
     timeout: float = 30.0,
+    columns: list[str] | None = None,
 ) -> dict[str, dict[str, Any]]:
     """一次 POST，返回 {TV符号: {列名: 值}}。"""
+    columns = list(columns or SCAN_COLUMNS)
     url = f"https://scanner.tradingview.com/{market}/scan"
-    body = {"symbols": {"tickers": symbols}, "columns": SCAN_COLUMNS}
+    body = {"symbols": {"tickers": symbols}, "columns": columns}
     if post is None:
         response = requests.post(url, json=body, headers=TV_UA, timeout=timeout)
         response.raise_for_status()
@@ -136,8 +145,62 @@ def _post_scan(
         row = item.get("d")
         if not key or not isinstance(row, list):
             continue
-        got[str(key)] = dict(zip(SCAN_COLUMNS, row))
+        got[str(key)] = dict(zip(columns, row))
     return got
+
+
+def _fx_session_day(raw_time: Any) -> str:
+    """外汇 K 线时间按香港日历落到 YYYY-MM-DD。"""
+    try:
+        ts = float(raw_time)
+    except (TypeError, ValueError):
+        return ""
+    if ts > 10_000_000_000:
+        ts /= 1000.0
+    if ts <= 0:
+        return ""
+    local = datetime.fromtimestamp(ts, timezone.utc).astimezone(ZoneInfo("Asia/Hong_Kong"))
+    return local.date().isoformat()
+
+
+def fetch_hkd_cny_quote(
+    *,
+    post: Callable[..., Any] | None = None,
+    timeout: float = 30.0,
+) -> dict[str, Any] | None:
+    """TradingView 上 1 港币折合的人民币。优先 FX_IDC:HKDCNY，否则用 CNYHKD 的倒数。"""
+    try:
+        got = _post_scan(
+            FX_MARKET,
+            [FX_HKDCNY_SYMBOL, FX_CNYHKD_SYMBOL],
+            post=post,
+            timeout=timeout,
+            columns=FX_COLUMNS,
+        )
+    except Exception:
+        return None
+    direct = got.get(FX_HKDCNY_SYMBOL) or {}
+    inverse = got.get(FX_CNYHKD_SYMBOL) or {}
+    rate = _num(direct.get("close"))
+    symbol = FX_HKDCNY_SYMBOL
+    bar_time = direct.get("time")
+    if rate is None or rate <= 0:
+        inverted = _num(inverse.get("close"))
+        if inverted is None or inverted <= 0:
+            return None
+        rate = 1.0 / inverted
+        symbol = FX_CNYHKD_SYMBOL
+        bar_time = inverse.get("time")
+    day = _fx_session_day(bar_time)
+    if not day or rate <= 0:
+        return None
+    return {
+        "pair": "HKDCNY",
+        "rate": rate,
+        "date": day,
+        "source": f"tradingview:{symbol}",
+        "symbol": symbol,
+    }
 
 
 def tv_scan(

@@ -84,7 +84,7 @@ def main(argv: list[str] | None = None) -> int:
     p_tv = sub.add_parser("tv-scan", help="用 TradingView scanner 写入 data/{TICKER}/consensus/tradingview_scan.json")
     p_tv.add_argument("--ticker", default=None, help="一只，或逗号分隔。缺省则全部股票")
 
-    p_fx = sub.add_parser("fx-refresh", help="写入当天 HKDCNY（1 港币折合人民币），来自 Yahoo HKDCNY=X")
+    p_fx = sub.add_parser("fx-refresh", help="写入当天 HKDCNY（1 港币折合人民币），来自 TradingView FX_IDC:HKDCNY")
     p_fx.add_argument("--date", default=None, help="YYYY-MM-DD，缺省为香港当天")
 
     p_imp = sub.add_parser("import-period", help="港股手工导入业绩公告 PDF 与本地电话会")

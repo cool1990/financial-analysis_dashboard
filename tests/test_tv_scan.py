@@ -14,6 +14,58 @@ from pipeline.sources import tradingview_scan as tv
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_hkdcny_quote_prefers_direct_and_inverts_cnyhkd():
+    seen = {}
+
+    def post(url, body):
+        seen["url"] = url
+        seen["columns"] = body["columns"]
+        seen["tickers"] = body["symbols"]["tickers"]
+        return {
+            "data": [
+                {"s": "FX_IDC:HKDCNY", "d": ["HKDCNY", 0.8505, 1792706400, "CNY"]},
+                {"s": "FX_IDC:CNYHKD", "d": ["CNYHKD", 1.1748, 1792706400, "HKD"]},
+            ]
+        }
+
+    got = tv.fetch_hkd_cny_quote(post=post)
+    assert "scanner.tradingview.com/forex/scan" in seen["url"]
+    assert seen["columns"] == tv.FX_COLUMNS
+    assert seen["tickers"] == ["FX_IDC:HKDCNY", "FX_IDC:CNYHKD"]
+    assert got["pair"] == "HKDCNY"
+    assert got["rate"] == pytest.approx(0.8505)
+    assert got["date"] == "2026-10-23"
+    assert got["source"] == "tradingview:FX_IDC:HKDCNY"
+    assert got["symbol"] == "FX_IDC:HKDCNY"
+
+    def only_inverse(url, body):
+        return {"data": [{"s": "FX_IDC:CNYHKD", "d": ["CNYHKD", 1.25, 1792706400, "HKD"]}]}
+
+    inverted = tv.fetch_hkd_cny_quote(post=only_inverse)
+    assert inverted["rate"] == pytest.approx(0.8)
+    assert inverted["date"] == "2026-10-23"
+    assert inverted["source"] == "tradingview:FX_IDC:CNYHKD"
+    assert inverted["symbol"] == "FX_IDC:CNYHKD"
+
+    def zero_direct(url, body):
+        return {
+            "data": [
+                {"s": "FX_IDC:HKDCNY", "d": ["HKDCNY", 0, 1792706400, "CNY"]},
+                {"s": "FX_IDC:CNYHKD", "d": ["CNYHKD", 1.25, 1792706400, "HKD"]},
+            ]
+        }
+
+    fallback = tv.fetch_hkd_cny_quote(post=zero_direct)
+    assert fallback["rate"] == pytest.approx(0.8)
+    assert fallback["source"] == "tradingview:FX_IDC:CNYHKD"
+    assert tv.fetch_hkd_cny_quote(post=lambda url, body: {"data": []}) is None
+
+    def down(url, body):
+        raise RuntimeError("down")
+
+    assert tv.fetch_hkd_cny_quote(post=down) is None
+
+
 def test_hk_maps_to_hkex_without_leading_zeros():
     market, cands = tv.tv_symbol_candidates("0700.HK", {"listing": "hk", "exchange": "HK"})
     assert market == "hongkong"

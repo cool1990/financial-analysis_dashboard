@@ -230,24 +230,27 @@ def test_hkdcny_only_uses_the_same_calendar_day(tmp_path, monkeypatch):
     assert close_on([("2026-10-23", 0.91), ("2026-10-24", 0.5)], "2026-10-22") is None
     assert close_on([("2026-10-23", 0.91)], "2026-10-23") == pytest.approx(0.91)
 
-    calls = {}
+    calls = {"n": 0}
 
-    class Fake:
-        def __init__(self, ticker):
-            calls["ticker"] = ticker
+    def quote():
+        calls["n"] += 1
+        return {
+            "pair": "HKDCNY",
+            "rate": 0.9123,
+            "date": "2026-10-23",
+            "source": "tradingview:FX_IDC:HKDCNY",
+            "symbol": "FX_IDC:HKDCNY",
+        }
 
-        def daily_closes(self, start, end):
-            calls["window"] = (start, end)
-            return [("2026-10-23", 0.9123)]
-
-    monkeypatch.setattr("pipeline.sources.yfinance_src.YFinanceSource", Fake)
+    monkeypatch.setattr("pipeline.sources.tradingview_scan.fetch_hkd_cny_quote", quote)
     monkeypatch.setattr("pipeline.sources.fx.fx_path", lambda: tmp_path / "HKDCNY.json")
     assert fetch_hkd_cny("2026-10-22") is None
+    assert not (tmp_path / "HKDCNY.json").exists()
     got = fetch_hkd_cny("2026-10-23")
-    assert calls["ticker"] == "HKDCNY=X"
-    assert calls["window"] == ("2026-10-23", "2026-10-24")
+    assert calls["n"] == 2
     assert got["rate"] == pytest.approx(0.9123)
-    assert got["source"] == "yfinance:HKDCNY=X"
+    assert got["date"] == "2026-10-23"
+    assert got["source"] == "tradingview:FX_IDC:HKDCNY"
     assert rate_on("2026-10-23")["rate"] == pytest.approx(0.9123)
     assert rate_on("2026-10-24") is None
     assert rate_on("2026-10-23", attached={"pair": "HKDCNY", "rate": 0.5, "date": "2026-10-22"})["rate"] == pytest.approx(0.9123)
@@ -290,40 +293,51 @@ def test_rate_for_pe_fetches_recent_and_ignores_later_closes(tmp_path, monkeypat
     monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "HKDCNY.json")
     calls = {"n": 0}
 
-    class Fake:
-        def __init__(self, ticker):
-            calls["ticker"] = ticker
+    def quote():
+        calls["n"] += 1
+        return {
+            "pair": "HKDCNY",
+            "rate": 0.87,
+            "date": "2026-10-22",
+            "source": "tradingview:FX_IDC:HKDCNY",
+            "symbol": "FX_IDC:HKDCNY",
+        }
 
-        def daily_closes(self, start, end):
-            calls["n"] += 1
-            calls["window"] = (start, end)
-            return [("2026-10-20", 0.1), ("2026-10-22", 0.87), ("2026-10-25", 0.2)]
-
-    monkeypatch.setattr("pipeline.sources.yfinance_src.YFinanceSource", Fake)
+    monkeypatch.setattr("pipeline.sources.tradingview_scan.fetch_hkd_cny_quote", quote)
     got = fxmod.rate_for_pe("2026-10-24", fetch=True)
-    assert calls["ticker"] == "HKDCNY=X"
-    assert calls["window"] == ("2026-10-10", "2026-10-25")
     assert calls["n"] == 1
     assert got["date"] == "2026-10-22"
     assert got["rate"] == pytest.approx(0.87)
     assert got["matched"] == "recent"
+    assert got["source"] == "tradingview:FX_IDC:HKDCNY"
     assert fxmod.rate_on("2026-10-25") is None
     assert fxmod.rate_on("2026-10-22")["rate"] == pytest.approx(0.87)
     again = fxmod.rate_for_pe("2026-10-24", fetch=True)
     assert again["date"] == "2026-10-22"
     assert calls["n"] == 1
 
+    monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "future.json")
+
+    def later():
+        return {
+            "pair": "HKDCNY",
+            "rate": 0.2,
+            "date": "2026-10-25",
+            "source": "tradingview:FX_IDC:HKDCNY",
+        }
+
+    monkeypatch.setattr("pipeline.sources.tradingview_scan.fetch_hkd_cny_quote", later)
+    assert fxmod.rate_for_pe("2026-10-24", fetch=True) is None
+    assert fxmod.rate_on("2026-10-25") is None
+    assert not (tmp_path / "future.json").exists()
+
     monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "empty.json")
 
-    class Down:
-        def __init__(self, ticker):
-            pass
+    def down():
+        raise RuntimeError("tradingview down")
 
-        def daily_closes(self, start, end):
-            raise RuntimeError("yahoo down")
-
-    monkeypatch.setattr("pipeline.sources.yfinance_src.YFinanceSource", Down)
-    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.88, "date": "2026-10-22", "source": "yfinance:HKDCNY=X"})
+    monkeypatch.setattr("pipeline.sources.tradingview_scan.fetch_hkd_cny_quote", down)
+    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.88, "date": "2026-10-22", "source": "tradingview:FX_IDC:HKDCNY"})
     kept = fxmod.rate_for_pe("2026-10-24", fetch=True)
     assert kept["date"] == "2026-10-22"
     assert kept["rate"] == pytest.approx(0.88)
