@@ -295,8 +295,279 @@ def _metric_sections(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return sections
 
 
-def _fin_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
+def _block_num(doc: dict[str, Any] | None, key: str, field: str = "value") -> float | None:
+    if not doc:
+        return None
+    return _num(((doc.get("financials") or {}).get(key) or {}).get(field))
+
+
+def _quote_money(ticker: str, period: str) -> dict[str, dict[str, float | None]]:
+    """新闻稿表格上的利润额：本季、上季、去年同季。没有抽取结果时返回空。"""
+    extracted = _read_json(data_dir(ticker) / "raw" / period / "extracted_financials.json") or {}
+    if not extracted:
+        return {}
+    from pipeline.compute.comparatives import _cells_from_anchor, detect_layout
+    from pipeline.extract.numbers import ParsedAmount
+
+    layout = detect_layout(extracted) or {}
+    out: dict[str, dict[str, float | None]] = {}
+    for field in _QUOTE_MONEY_FIELDS:
+        item = extracted.get(field)
+        if not isinstance(item, dict) or not item.get("raw"):
+            continue
+        slots: dict[str, float | None] = {
+            "value": ParsedAmount.from_dict(item).value,
+            "year_ago": None,
+            "prior_q": None,
+        }
+        cells = _cells_from_anchor(item)
+        if cells and layout:
+            for name, key in (("year_ago", "yoy"), ("prior_q", "qoq")):
+                idx = layout.get(key)
+                if idx is None or idx >= len(cells):
+                    continue
+                slots[name] = ParsedAmount.from_dict(
+                    {"raw": repr(cells[idx]), "unit": item.get("unit")}
+                ).value
+        out[field] = slots
+    return out
+
+
+def _absolute_at(
+    docs: dict[str, dict[str, Any]],
+    anchor: dict[str, Any],
+    anchor_period: str,
+    ticker: str,
+    target: str,
+    money_key: str,
+    margin_key: str | None,
+) -> tuple[float | None, bool]:
+    """某一季的利润额。相邻季度页优先；否则用本季块上的对比列或新闻稿表格。"""
+    doc = docs.get(target)
+    if doc is not None:
+        if margin_key:
+            rev = _block_num(doc, "revenue")
+            margin = _block_num(doc, margin_key)
+            if rev is not None and margin is not None:
+                return rev * margin, False
+        stored = _block_num(doc, money_key)
+        if stored is not None:
+            return stored, False
+    which = "value" if target == anchor_period else None
+    if target == yoy_fiscal_period(anchor_period):
+        which = "year_ago"
+    elif target == prior_fiscal_period(anchor_period):
+        which = "prior_q"
+    if which is None:
+        return None, False
+    if which != "value":
+        if margin_key:
+            rev = _block_num(anchor, "revenue", which)
+            margin = _block_num(anchor, margin_key, which)
+            if rev is not None and margin is not None:
+                return rev * margin, True
+        stored = _block_num(anchor, money_key, which)
+        if stored is not None:
+            return stored, True
+    quoted = (_quote_money(ticker, anchor_period).get(money_key) or {}).get(which)
+    if quoted is not None:
+        return quoted, which != "value"
+    return None, False
+
+
+def _companion_row(
+    *,
+    key: str,
+    label: str,
+    value: float | None,
+    yoy: float | None,
+    qoq: float | None,
+    nested: bool,
+    from_press: bool,
+) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    ratio = _is_ratio_key(key)
+    return {
+        "key": key,
+        "label": label,
+        "value": _fmt_value(value, key),
+        "yoy": _change(yoy, pp=ratio),
+        "qoq": _change(qoq, pp=ratio),
+        "vs": {"text": "—", "cls": "na"},
+        "vs_source": "",
+        "summary": "",
+        "drivers": [],
+        "conflicts": [],
+        "from_press": from_press,
+        "nested": nested,
+    }
+
+
+def _levels(
+    docs: dict[str, dict[str, Any]],
+    anchor: dict[str, Any],
+    period: str,
+    ticker: str,
+    money_key: str,
+    margin_key: str | None,
+) -> tuple[float | None, float | None, float | None, bool]:
+    cur, _ = _absolute_at(docs, anchor, period, ticker, period, money_key, margin_key)
+    yoy_v, yoy_press = _absolute_at(
+        docs, anchor, period, ticker, yoy_fiscal_period(period), money_key, margin_key
+    )
+    qoq_v, qoq_press = _absolute_at(
+        docs, anchor, period, ticker, prior_fiscal_period(period), money_key, margin_key
+    )
+    return cur, yoy_v, qoq_v, yoy_press or qoq_press
+
+
+def _with_profit_companions(
+    rows: list[dict[str, Any]],
+    doc: dict[str, Any],
+    docs: dict[str, dict[str, Any]],
+    ticker: str,
+    period: str,
+) -> list[dict[str, Any]]:
+    """毛利率 / 营业利润率下面补利润额；营业利润块之后补净利润率与净利润。"""
+    seen = {row["key"] for row in rows}
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        out.append(row)
+        spec = next((item for item in _MARGIN_COMPANIONS if item[0] == row["key"]), None)
+        if not spec or spec[1] in seen:
+            continue
+        margin_key, money_key, label = spec
+        if _block_num(doc, margin_key) is None:
+            continue
+        cur, yoy_v, qoq_v, from_press = _levels(docs, doc, period, ticker, money_key, margin_key)
+        made = _companion_row(
+            key=money_key,
+            label=label,
+            value=cur,
+            yoy=_rel(cur, yoy_v, False),
+            qoq=_rel(cur, qoq_v, False),
+            nested=True,
+            from_press=from_press,
+        )
+        if made:
+            seen.add(money_key)
+            out.append(made)
+
+    if any(row["key"].startswith("net_income") or row["key"].startswith("net_margin") for row in out):
+        return out
+    net_rows: list[dict[str, Any]] = []
+    for money_key, margin_label, money_label in (
+        ("net_income_nongaap", "净利润率（Non-GAAP）", "净利润（Non-GAAP）"),
+        ("net_income_gaap", "净利润率（GAAP）", "净利润（GAAP）"),
+    ):
+        margin_key = money_key.replace("net_income", "net_margin")
+        ni, ni_y, ni_q, ni_press = _levels(docs, doc, period, ticker, money_key, None)
+        rev, rev_y, rev_q, rev_press = _levels(docs, doc, period, ticker, "revenue", None)
+        if ni is None or not rev:
+            continue
+        margin = ni / rev
+        margin_y = ni_y / rev_y if ni_y is not None and rev_y else None
+        margin_q = ni_q / rev_q if ni_q is not None and rev_q else None
+        net_rows.append(
+            _companion_row(
+                key=margin_key,
+                label=margin_label,
+                value=margin,
+                yoy=_rel(margin, margin_y, True),
+                qoq=_rel(margin, margin_q, True),
+                nested=False,
+                from_press=ni_press or rev_press,
+            )
+        )
+        net_rows.append(
+            _companion_row(
+                key=money_key,
+                label=money_label,
+                value=ni,
+                yoy=_rel(ni, ni_y, False),
+                qoq=_rel(ni, ni_q, False),
+                nested=True,
+                from_press=ni_press,
+            )
+        )
+    net_rows = [row for row in net_rows if row]
+    if not net_rows:
+        return out
+    insert_at = None
+    for i, row in enumerate(out):
+        if row["key"].startswith("operating_margin") or row["key"].startswith("operating_income"):
+            insert_at = i + 1
+    if insert_at is None:
+        for i, row in enumerate(out):
+            if row["key"].startswith("eps"):
+                insert_at = i
+                break
+    if insert_at is None:
+        insert_at = len(out)
+    return out[:insert_at] + net_rows + out[insert_at:]
+
+
+def _fill_profit_levels(points: dict[str, dict[str, Any]], docs: dict[str, dict[str, Any]]) -> None:
+    """趋势图补上利润额和净利润率。已有季度页用营收 × 利润率，缺页用新闻稿对比列。"""
+    ticker = ""
+    for doc in docs.values():
+        ticker = (doc.get("meta") or {}).get("ticker") or ""
+        if ticker:
+            break
+
+    def product(point: dict[str, Any]) -> None:
+        rev = point.get("revenue")
+        for margin_key, money_key in (
+            ("gross_margin_gaap", "gross_profit_gaap"),
+            ("gross_margin_nongaap", "gross_profit_nongaap"),
+            ("operating_margin_gaap", "operating_income_gaap"),
+            ("operating_margin_nongaap", "operating_income_nongaap"),
+        ):
+            margin = point.get(margin_key)
+            if point.get(money_key) is None and rev is not None and margin is not None:
+                point[money_key] = rev * margin
+        for money_key, margin_key in (
+            ("net_income_gaap", "net_margin_gaap"),
+            ("net_income_nongaap", "net_margin_nongaap"),
+        ):
+            ni = point.get(money_key)
+            if point.get(margin_key) is None and ni is not None and rev:
+                point[margin_key] = ni / rev
+
+    for point in points.values():
+        product(point)
+    if not ticker:
+        return
+    for period in docs:
+        quoted = _quote_money(ticker, period)
+        if not quoted:
+            continue
+        slots = {
+            period: "value",
+            yoy_fiscal_period(period): "year_ago",
+            prior_fiscal_period(period): "prior_q",
+        }
+        for target, slot in slots.items():
+            if slot != "value" and target in docs:
+                continue
+            point = points.get(target)
+            if point is None:
+                continue
+            for key, levels in quoted.items():
+                if point.get(key) is None and levels.get(slot) is not None:
+                    point[key] = levels[slot]
+            product(point)
+
+
+def _fin_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """财务解读表：每行一个指标，展开后看变动原因与原文引用。"""
+    meta = doc.get("meta") or {}
+    ticker = meta.get("ticker") or ""
+    period = meta.get("fiscal_period") or ""
+    if docs is None and ticker:
+        docs = _load_docs(ticker)
+    docs = docs or {}
     rows = []
     for s in _metric_sections(doc):
         m = s["metric"] or {}
@@ -318,9 +589,10 @@ def _fin_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
                 "drivers": drv.get("drivers") or [],
                 "conflicts": drv.get("conflicts") or [],
                 "from_press": m.get("comparatives_source") == "press_release",
+                "nested": False,
             }
         )
-    return rows
+    return _with_profit_companions(rows, doc, docs, ticker, period)
 
 
 def _price_view(doc: dict[str, Any]) -> dict[str, Any]:
@@ -937,14 +1209,40 @@ _HISTORY_SPECS: tuple[tuple[str, str, bool], ...] = (
     ("gross_margin", "gross_margin_nongaap", True),
     ("gross_margin_gaap", "gross_margin_gaap", True),
     ("gross_margin_nongaap", "gross_margin_nongaap", True),
+    ("gross_profit_gaap", "gross_profit_gaap", False),
+    ("gross_profit_nongaap", "gross_profit_nongaap", False),
     ("operating_margin", "operating_margin_nongaap", True),
     ("operating_margin_gaap", "operating_margin_gaap", True),
     ("operating_margin_nongaap", "operating_margin_nongaap", True),
+    ("operating_income_gaap", "operating_income_gaap", False),
+    ("operating_income_nongaap", "operating_income_nongaap", False),
+    ("net_margin_gaap", "net_margin_gaap", True),
+    ("net_margin_nongaap", "net_margin_nongaap", True),
+    ("net_income_gaap", "net_income_gaap", False),
+    ("net_income_nongaap", "net_income_nongaap", False),
     ("eps", "eps_gaap", False),
     ("eps_nongaap", "eps_nongaap", False),
     ("ocf", "operating_cash_flow", False),
     ("capex", "capex", False),
     ("fcf", "fcf", False),
+)
+
+# 利润率行下面跟的金额。净利润率不是原表里的行，排在营业利润块之后。
+_MARGIN_COMPANIONS: tuple[tuple[str, str, str], ...] = (
+    ("gross_margin_nongaap", "gross_profit_nongaap", "毛利润（Non-GAAP）"),
+    ("gross_margin_gaap", "gross_profit_gaap", "毛利润（GAAP）"),
+    ("gross_margin", "gross_profit", "毛利润"),
+    ("operating_margin_nongaap", "operating_income_nongaap", "营业利润（Non-GAAP）"),
+    ("operating_margin_gaap", "operating_income_gaap", "营业利润（GAAP）"),
+    ("operating_margin", "operating_income", "营业利润"),
+)
+_QUOTE_MONEY_FIELDS = (
+    "gross_profit_gaap",
+    "gross_profit_nongaap",
+    "operating_income_gaap",
+    "operating_income_nongaap",
+    "net_income_gaap",
+    "net_income_nongaap",
 )
 
 
@@ -984,7 +1282,13 @@ def _history(docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
                 "period": target,
                 "revenue": rev,
                 "gross_margin": pick(fin, "gross_margin_nongaap", "gross_margin_gaap", field=which),
+                "gross_margin_gaap": pick(fin, "gross_margin_gaap", field=which),
+                "gross_margin_nongaap": pick(fin, "gross_margin_nongaap", field=which),
                 "operating_margin": pick(fin, "operating_margin_nongaap", "operating_margin_gaap", field=which),
+                "operating_margin_gaap": pick(fin, "operating_margin_gaap", field=which),
+                "operating_margin_nongaap": pick(fin, "operating_margin_nongaap", field=which),
+                "net_income_gaap": pick(fin, "net_income_gaap", field=which),
+                "net_income_nongaap": pick(fin, "net_income_nongaap", field=which),
                 "fcf": pick(fin, "fcf", field=which),
                 "derived": True,
             }
@@ -1006,6 +1310,7 @@ def _history(docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
                 point[f"{series_key}_qoq"] = pick(fin, fin_key, field=qoq_field)
         points[period] = point
 
+    _fill_profit_levels(points, docs)
     ordered = [points[p] for p in sorted(points)]
     by_period = {p["period"]: p for p in ordered}
     for point in ordered:
@@ -1200,7 +1505,7 @@ def _gap_rows(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
-def _eps_chart(doc: dict[str, Any]) -> dict[str, Any] | None:
+def _eps_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> dict[str, Any] | None:
     """META 预期差图：过去四季可比实际 + 未来四季 street 预期。没有这份数据时沿用横条。"""
     from pipeline.compute.metrics import round_eps
 
@@ -1236,15 +1541,28 @@ def _eps_chart(doc: dict[str, Any]) -> dict[str, Any] | None:
                 "basis": q.get("basis_label") or "",
             }
         )
-    sides = []
-    for g in _gap_rows(doc):
-        if "EPS" in g["label"]:
-            continue
-        text = f"{g['label']} {g['detail']}" if g.get("detail") else g["label"]
+    def chip(g: dict[str, Any], *, strip_basis: bool = False) -> dict[str, str]:
+        label = _chip_subject(g["label"]) if strip_basis else g["label"]
+        text = f"{label} {g['detail']}" if g.get("detail") else label
         if g.get("has"):
             text += f" {g['gap']['text']}"
-        sides.append({"text": text, "cls": g["gap"]["cls"] if g.get("has") else "muted"})
-    return {"quarters": quarters, "note": raw.get("note") or "", "sides": sides}
+        return {"text": text, "cls": g["gap"]["cls"] if g.get("has") else "muted"}
+
+    sides = []
+    eps_sides = []
+    for g in _gap_rows(doc):
+        if "EPS" in g["label"]:
+            eps_sides.append(chip(g, strip_basis=True))
+        else:
+            sides.append(chip(g))
+    revenue = _revenue_expect(doc, docs, eps_sides)
+    return {
+        "quarters": quarters,
+        "note": raw.get("note") or "",
+        "sides": sides,
+        "hint": "深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比",
+        "revenue": revenue,
+    }
 
 
 def _market_view(doc: dict[str, Any]) -> dict[str, Any]:
@@ -1589,8 +1907,8 @@ def _management_eps_cells(doc: dict[str, Any], fiscal_period: str) -> list[dict[
         year_hit = None
 
     return [
-        _eps_cell("下季度EPS指引", next_hit, next_q),
-        _eps_cell("年度EPS指引", year_hit, full_year),
+        _eps_cell("下季度 EPS 指引", next_hit, next_q),
+        _eps_cell("年度 EPS 指引", year_hit, full_year),
     ]
 
 
@@ -1606,63 +1924,515 @@ def stamp_management_eps(doc: dict[str, Any], fiscal_period: str) -> dict[str, A
     return record
 
 
-def _market_quotes(ticker: str) -> dict[str, Any] | None:
-    """右上角四个行情指标。只读已保存的 TradingView scanner 列，缺列就留空。"""
-    path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
+def _finite(value: Any) -> float | None:
+    """把缺失、NaN 和无穷当成没有这个数。"""
+    number = _num(value)
+    if number is None or number != number or number in {float("inf"), float("-inf")}:
+        return None
+    return number
+
+
+def _read_json(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
     try:
-        snap = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    cols = (snap.get("quote") or {}).get("columns") or {}
-    close = _num(cols.get("close"))
-    ntm = _num(cols.get("eps_estimate_ntm"))
-    div = _num(cols.get("dividends_yield"))
-    rsi = _num(cols.get("RSI"))
-    items: list[dict[str, str]] = []
-    if ntm is not None:
-        items.append({
-            "label": "Forward EPS",
-            "value": f"${ntm:.2f}",
-            "vendor": "TradingView",
-            "source": f"TradingView eps_estimate_ntm = {ntm:.6f}，未来 12 个月一致预期。下一财年是另一列，不放在这一格。",
-        })
-    if close is not None and ntm not in (None, 0):
-        items.append({
-            "label": "Forward PE",
-            "value": f"{close / ntm:.1f}×",
-            "vendor": "TradingView",
-            "source": (
-                f"close {close:.2f} ÷ eps_estimate_ntm {ntm:.6f}。"
-                "scanner 的 price_earnings_forward 为空，这一格是两列相除，不是现成的远期市盈率。"
-            ),
-        })
-    if div is not None:
-        items.append({
-            "label": "股息率（TTM）",
-            "value": f"{div:.2f}%",
-            "vendor": "TradingView",
-            "source": (
-                "全年普通股股息 dps_common_stock_prim_issue_fy $2.10 ÷ close，与 TradingView dividends_yield 一致。"
-                "名为 dividend_yield_ttm 的列为空，这一格用全年股息除以收盘价。季度股息 dividends_per_share_fq = $0.525。"
-            ),
-        })
-    if rsi is not None:
-        items.append({
-            "label": "RSI",
-            "value": f"{rsi:.1f}",
-            "vendor": "TradingView",
-            "source": "TradingView 列 RSI。名为 RSI14 的列为空，页面不把周期写成 14。",
-        })
-    if not items:
+    return data if isinstance(data, dict) else None
+
+
+def _tradingview(ticker: str) -> dict[str, Any] | None:
+    if not ticker:
         return None
-    quote = snap.get("quote") or {}
+    return _read_json(data_dir(ticker) / "consensus" / "tradingview_scan.json")
+
+
+def _tv_columns(ticker: str) -> dict[str, Any]:
+    tv = _tradingview(ticker) or {}
+    cols = (tv.get("quote") or {}).get("columns") or {}
+    return cols if isinstance(cols, dict) else {}
+
+
+def _as_date(raw: str | None) -> date | None:
+    match = re.match(r"(\d{4})-(\d{2})-(\d{2})", str(raw or ""))
+    if not match:
+        return None
+    try:
+        return date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+    except ValueError:
+        return None
+
+
+def _period_from_tv(raw: str | None) -> str | None:
+    match = re.fullmatch(r"(\d{4})-Q([1-4])", str(raw or ""))
+    if not match:
+        return None
+    return f"FY{match.group(1)}Q{match.group(2)}"
+
+
+def _parse_year_quarter(raw: str | None) -> tuple[int, int] | None:
+    match = re.fullmatch(r"(\d{4})-Q([1-4])", str(raw or ""))
+    if not match:
+        match = re.fullmatch(r"FY(\d{4})Q([1-4])", str(raw or ""))
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _current_fiscal_year(day: date, fy_end_month: int) -> int:
+    """财年 FY{N} 在结束月当月及之前仍叫 N；过了结束月就是下一年。"""
+    if day.month > fy_end_month:
+        return day.year + 1
+    return day.year
+
+
+def _months_remaining(day: date, fy_end_month: int) -> int:
+    """距离本财年结束还有几个月，包含当前这个没过完的月。"""
+    if day.month > fy_end_month:
+        end_year = day.year + 1
+    else:
+        end_year = day.year
+    return (end_year - day.year) * 12 + (fy_end_month - day.month) + 1
+
+
+def _fy_estimate_label(year: int) -> str:
+    return f"FY{year % 100:02d}E"
+
+
+def _fmt_px(value: float) -> str:
+    return f"${value:.2f}"
+
+
+def _fmt_cap(value: float) -> str:
+    return f"${value / 1_000_000_000:.1f}B"
+
+
+def _latest_snapshot(ticker: str) -> dict[str, Any] | None:
+    folder = data_dir(ticker) / "snapshots"
+    if not folder.exists():
+        return None
+    best: dict[str, Any] | None = None
+    best_ts = ""
+    for path in folder.glob("*.json"):
+        data = _read_json(path)
+        if not data:
+            continue
+        stamp = str(data.get("snapshot_at") or "")
+        if best is None or stamp > best_ts:
+            best, best_ts = data, stamp
+    return best
+
+
+def _price_quote(ticker: str, doc: dict[str, Any]) -> dict[str, Any]:
+    """最新股价只读已经落盘的行情，不在页面上留手填框。"""
+    tv = _tradingview(ticker) or {}
+    quote = tv.get("quote") or {}
+    close = _finite((quote.get("columns") or {}).get("close"))
+    if close is not None:
+        return {
+            "price": close,
+            "as_of": _session_date(quote.get("fetched_at")),
+            "origin": "tradingview",
+        }
+    reaction = doc.get("price_reaction") or {}
+    after = _finite(reaction.get("close_after"))
+    before = _finite(reaction.get("close_before"))
+    if after is not None:
+        return {"price": after, "as_of": str(reaction.get("after_date") or ""), "origin": "price_reaction"}
+    if before is not None:
+        return {"price": before, "as_of": str(reaction.get("before_date") or ""), "origin": "price_reaction"}
+    return {"price": None, "as_of": "", "origin": ""}
+
+
+def _diluted_shares(ticker: str, period: str) -> float | None:
+    """新闻稿里的稀释加权股本。单位按抽取结果；没写单位且数字很小就按百万股。"""
+    path = data_dir(ticker) / "raw" / period / "extracted_financials.json"
+    node = (_read_json(path) or {}).get("diluted_shares") or {}
+    if not isinstance(node, dict):
+        return None
+    raw = str(node.get("raw") or "").replace(",", "").strip()
+    count = _finite(raw)
+    if count is None:
+        return None
+    unit = str(node.get("unit") or "").lower()
+    if "billion" in unit:
+        return count * 1_000_000_000
+    if "million" in unit or "百万" in unit:
+        return count * 1_000_000
+    if "thousand" in unit:
+        return count * 1_000
+    if count < 100_000:
+        return count * 1_000_000
+    return count
+
+
+def _guidance_sub(cell: dict[str, Any]) -> str:
+    parts = ["管理层 Non-GAAP"]
+    for name in cell.get("sources") or []:
+        if name not in parts:
+            parts.append(name)
+    return " · ".join(parts)
+
+
+def _comparable_quarter_eps(doc: dict[str, Any]) -> float | None:
+    """和盈利预期同一套可比每股收益：记分卡优先，否则 Non-GAAP，再退回 GAAP。"""
+    for row in doc.get("scorecard") or []:
+        if row.get("metric") == "eps":
+            actual = _finite(row.get("actual"))
+            if actual is not None:
+                return actual
+    fin = doc.get("financials") or {}
+    nongaap = _finite((fin.get("eps_nongaap") or {}).get("value"))
+    gaap = _finite((fin.get("eps_gaap") or {}).get("value"))
+    if nongaap is not None:
+        return nongaap
+    return gaap
+
+
+def _quarter_eps_cells(
+    doc: dict[str, Any],
+    docs: dict[str, dict[str, Any]] | None,
+    tv: dict[str, Any] | None,
+) -> dict[tuple[int, int], dict[str, Any]]:
+    """(财年, 季度) → 可比实际和一致预期。图表里的 Non-GAAP 实际优先于数据商 GAAP。"""
+    cells: dict[tuple[int, int], dict[str, Any]] = {}
+
+    def slot(year: int, quarter: int) -> dict[str, Any]:
+        return cells.setdefault((year, quarter), {"reported": False, "actual": None, "consensus": None})
+
+    for quarter in ((doc.get("meta") or {}).get("eps_surprise_chart") or {}).get("quarters") or []:
+        parsed = _parse_year_quarter(quarter.get("fiscal_period"))
+        if not parsed:
+            continue
+        cell = slot(*parsed)
+        actual = _finite(quarter.get("actual"))
+        consensus = _finite(quarter.get("consensus"))
+        if quarter.get("reported") and actual is not None:
+            cell["reported"] = True
+            cell["actual"] = actual
+        if consensus is not None and cell["consensus"] is None:
+            cell["consensus"] = consensus
+
+    rows = ((tv or {}).get("rows_used") or {}).get("earnings_fq_h_chart") or []
+    if not rows:
+        rows = ((tv or {}).get("rows_used") or {}).get("earnings_fq_h") or []
+    for quarter in rows:
+        parsed = _parse_year_quarter(quarter.get("FiscalPeriod"))
+        if not parsed:
+            continue
+        cell = slot(*parsed)
+        consensus = _finite(quarter.get("Estimate"))
+        if consensus is not None and cell["consensus"] is None:
+            cell["consensus"] = consensus
+
+    for period, item in (docs or {}).items():
+        parsed = _parse_year_quarter(period)
+        if not parsed:
+            continue
+        cell = slot(*parsed)
+        if cell["actual"] is None:
+            actual = _comparable_quarter_eps(item)
+            if actual is not None:
+                cell["reported"] = True
+                cell["actual"] = actual
+    return cells
+
+
+def _sum_fiscal_year(cells: dict[tuple[int, int], dict[str, Any]], year: int) -> float | None:
+    """四个季度都在才相加。已报告用可比实际，未报告用一致预期。"""
+    parts: list[float] = []
+    for quarter in range(1, 5):
+        cell = cells.get((year, quarter))
+        if not cell:
+            return None
+        if cell.get("reported") and cell.get("actual") is not None:
+            parts.append(float(cell["actual"]))
+        elif cell.get("consensus") is not None:
+            parts.append(float(cell["consensus"]))
+        else:
+            return None
+    return sum(parts)
+
+
+def _annual_consensus(ticker: str, fy_end_month: int) -> dict[str, Any]:
+    """最新快照里的全年共识。0y / +1y 按快照当天的财年对上，yearAgo 记到上一财年。"""
+    snap = _latest_snapshot(ticker) or {}
+    years: dict[int, float] = {}
+    prior: dict[int, float] = {}
+    est = snap.get("earnings_estimate") or {}
+    index = list(est.get("index") or [])
+    columns = list(est.get("columns") or [])
+    data = est.get("data") or []
+    as_of = _as_date(str(snap.get("snapshot_at") or ""))
+    if "avg" not in columns or as_of is None:
+        return {"years": years, "prior": prior}
+    avg_at = columns.index("avg")
+    ago_at = columns.index("yearAgoEps") if "yearAgoEps" in columns else None
+    base = _current_fiscal_year(as_of, fy_end_month)
+    for name, offset in (("0y", 0), ("+1y", 1), ("+2y", 2)):
+        if name not in index:
+            continue
+        row = data[index.index(name)]
+        if not isinstance(row, list) or avg_at >= len(row):
+            continue
+        value = _finite(row[avg_at])
+        if value is not None:
+            years[base + offset] = value
+        if name == "0y" and ago_at is not None and ago_at < len(row):
+            ago = _finite(row[ago_at])
+            if ago is not None:
+                prior[base - 1] = ago
+    return {"years": years, "prior": prior}
+
+
+def _choose_fy_eps(
+    year: int,
+    cells: dict[tuple[int, int], dict[str, Any]],
+    annual: dict[str, Any],
+) -> float | None:
+    summed = _sum_fiscal_year(cells, year)
+    if summed is not None:
+        return summed
+    found = (annual.get("years") or {}).get(year)
+    if found is not None:
+        return found
+    return (annual.get("prior") or {}).get(year)
+
+
+def _ttm_eps(
+    doc: dict[str, Any],
+    docs: dict[str, dict[str, Any]] | None,
+    annual: dict[str, Any],
+    period: str,
+) -> float | None:
+    """近四季可比每股收益。刚披露完 Q4、手头又没有四季时，用快照里的上一财年。"""
+    reported: list[float] = []
+    for quarter in ((doc.get("meta") or {}).get("eps_surprise_chart") or {}).get("quarters") or []:
+        actual = _finite(quarter.get("actual"))
+        if quarter.get("reported") and actual is not None:
+            reported.append(actual)
+    if len(reported) >= 4:
+        return sum(reported[-4:])
+    series: list[float] = []
+    for key in sorted(docs or {}):
+        actual = _comparable_quarter_eps((docs or {})[key])
+        if actual is not None:
+            series.append(actual)
+    if len(series) >= 4:
+        return sum(series[-4:])
+    match = re.fullmatch(r"FY(\d{4})Q4", period or "")
+    if match:
+        return (annual.get("prior") or {}).get(int(match.group(1)))
+    return None
+
+
+def _forward_pe_view(
+    ticker: str,
+    doc: dict[str, Any],
+    period: str,
+    cfg: dict[str, Any],
+    docs: dict[str, dict[str, Any]] | None = None,
+    active: bool = True,
+) -> dict[str, Any] | None:
+    """估值位置的 Forward PE。时间是行，EPS 和 P/E 是列，股价取已保存的最新价。"""
+    if not active:
+        return None
+    quote = _price_quote(ticker, doc)
+    price = quote.get("price")
+    if price is None:
+        return None
+    fy_end = int(cfg.get("fiscal_year_end_month") or 12)
+    as_of = _as_date(quote.get("as_of")) or datetime.now(BJ).date()
+    if docs is None:
+        docs = _load_docs(ticker)
+    annual = _annual_consensus(ticker, fy_end)
+    cells = _quarter_eps_cells(doc, docs, _tradingview(ticker))
+    match = re.fullmatch(r"FY(\d{4})Q[1-4]", period or "")
+    anchor = int(match.group(1)) if match else _current_fiscal_year(as_of, fy_end)
+    fy_values: dict[int, float] = {}
+    for year in range(anchor, anchor + 3):
+        value = _choose_fy_eps(year, cells, annual)
+        if value is not None:
+            fy_values[year] = value
+    current = _current_fiscal_year(as_of, fy_end)
+    for year in (current, current + 1):
+        if year not in fy_values:
+            value = _choose_fy_eps(year, cells, annual)
+            if value is not None:
+                fy_values[year] = value
+    months = _months_remaining(as_of, fy_end)
+    ntm = None
+    if current in fy_values and (current + 1) in fy_values and 0 < months <= 12:
+        weight = months / 12
+        ntm = weight * fy_values[current] + (1 - weight) * fy_values[current + 1]
+    ttm = _ttm_eps(doc, docs, annual, period)
+    ttm_pe = price / ttm if ttm not in (None, 0) else None
+
+    def row(label: str, kind: str, eps: float) -> dict[str, Any]:
+        pe = price / eps if eps else None
+        vs = "—"
+        if ttm_pe and pe is not None:
+            vs = f"{pe / ttm_pe * 100:.0f}%"
+        return {
+            "label": label,
+            "kind": kind,
+            "eps": f"${eps:.2f}",
+            "pe": f"{pe:.1f}×" if pe is not None else "—",
+            "vs": vs,
+            "eps_raw": eps,
+            "pe_raw": pe,
+        }
+
+    rows: list[dict[str, Any]] = []
+    if ttm not in (None, 0):
+        rows.append(row("近 4 季（TTM）", "ttm", ttm))
+    if ntm not in (None, 0):
+        rows.append(row("未来 12 个月（NTM）", "ntm", ntm))
+    for year in range(anchor, anchor + 3):
+        if year in fy_values and fy_values[year] not in (None, 0):
+            rows.append(row(_fy_estimate_label(year), "fy", fy_values[year]))
     return {
-        "items": items,
-        "fetched_at": quote.get("fetched_at") or "",
-        "note": quote.get("note") or "Alpha Vantage 没有调用：当前环境没有 API key。",
+        "price": _fmt_px(price),
+        "rows": rows,
+        "show_vs": ttm_pe is not None,
+        "note": (
+            f"NTM 用当前财年与下一财年共识按剩余 {months} 个月加权。"
+            "不足 4 个季度且缺少两个财年共识时不显示，避免把两个季度加总当成一年。"
+        ),
     }
+
+
+def _revenue_expect(
+    doc: dict[str, Any],
+    docs: dict[str, dict[str, Any]] | None,
+    eps_sides: list[dict[str, str]],
+) -> dict[str, Any] | None:
+    """和 EPS 图同一排季度的营收。一致预期只用已保存的 TradingView / 记分卡，不改 EPS 的配对。"""
+    raw_quarters = ((doc.get("meta") or {}).get("eps_surprise_chart") or {}).get("quarters") or []
+    if not raw_quarters:
+        return None
+    ticker = str((doc.get("meta") or {}).get("ticker") or "").upper()
+    if docs is None and ticker:
+        docs = _load_docs(ticker)
+    docs = docs or {}
+    tv = _tradingview(ticker) if ticker else None
+    consensus: dict[str, float] = {}
+    for item in ((tv or {}).get("rows_used") or {}).get("revenues_fq_h") or []:
+        period = _period_from_tv(item.get("FiscalPeriod"))
+        estimate = _finite(item.get("Estimate"))
+        if period and estimate is not None:
+            consensus[period] = estimate
+    actuals: dict[str, float] = {}
+    yoys: dict[str, float] = {}
+    for period, item in docs.items():
+        fin = ((item.get("financials") or {}).get("revenue") or {})
+        actual = _finite(fin.get("value"))
+        yoy = _finite(fin.get("yoy_pct"))
+        if actual is not None:
+            actuals[period] = actual
+        if yoy is not None:
+            yoys[period] = yoy
+        for score in item.get("scorecard") or []:
+            if score.get("metric") != "revenue":
+                continue
+            bench = score.get("benchmark") or {}
+            value = _finite(bench.get("value"))
+            if bench.get("source") == "consensus" and value is not None:
+                consensus.setdefault(period, value)
+    quarters = []
+    for quarter in raw_quarters:
+        period = _period_from_tv(quarter.get("fiscal_period"))
+        if not period:
+            continue
+        actual = actuals.get(period)
+        estimate = consensus.get(period)
+        if actual is None and estimate is None:
+            continue
+        yoy = yoys.get(period)
+        if yoy is None and estimate is not None:
+            base = actuals.get(yoy_fiscal_period(period))
+            if base:
+                yoy = estimate / abs(base) - 1
+        if actual is not None and estimate is not None and quarter.get("reported"):
+            diff = actual - estimate
+            if diff >= 0:
+                note, note_cls = f"超预期 {_fmt_money(diff)}", "beat"
+            else:
+                note, note_cls = f"不及预期 {_fmt_money(abs(diff))}", "miss"
+        elif yoy is not None:
+            note = f"同比 {_change(yoy)['text']}"
+            note_cls = "beat" if yoy > 0 else "miss" if yoy < 0 else "muted"
+        else:
+            note, note_cls = "缺一致预期", "muted"
+        quarters.append(
+            {
+                "label": quarter.get("label") or period,
+                "consensus": None if estimate is None else round(estimate / 1_000_000_000, 2),
+                "actual": None if actual is None else round(actual / 1_000_000_000, 2),
+                "yoy_pct": None if yoy is None else yoy * 100,
+                "note": note,
+                "note_cls": note_cls,
+                "basis": "营收",
+            }
+        )
+    if not quarters:
+        return None
+    return {
+        "quarters": quarters,
+        "note": (
+            "浅蓝柱是公司营收，灰柱是 TradingView 营收一致预期。"
+            "已保存的营收预期目前只到本季和下一季，更早的季度不画灰柱。橙线是同比。"
+        ),
+        "hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比",
+        "sides": eps_sides,
+    }
+
+
+def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: bool) -> dict[str, Any] | None:
+    """标题下的六格：股价、市值、RSI、股息率，以及管理层 Non-GAAP EPS 指引。"""
+    if not is_latest:
+        return None
+    quote = _price_quote(ticker, doc)
+    columns = _tv_columns(ticker)
+    price = quote.get("price")
+    items: list[dict[str, Any]] = []
+    if price is not None:
+        sub = f"{quote['as_of']} 收盘" if quote.get("as_of") else "最新收盘"
+        items.append({
+            "label": "股价",
+            "value": _fmt_px(price),
+            "sub": sub,
+            "vendor": "TradingView" if quote.get("origin") == "tradingview" else None,
+        })
+    else:
+        items.append({"label": "股价", "value": "未接入", "sub": "行情未接入"})
+    shares = _diluted_shares(ticker, period)
+    if price is not None and shares:
+        items.append({"label": "市值", "value": _fmt_cap(price * shares), "sub": "股价 × 稀释加权股本"})
+    else:
+        items.append({"label": "市值", "value": "未接入", "sub": "缺股价或股本"})
+    rsi = _finite(columns.get("RSI"))
+    if rsi is not None:
+        items.append({"label": "RSI", "value": f"{rsi:.1f}", "sub": "TradingView", "vendor": "TradingView"})
+    else:
+        items.append({"label": "RSI", "value": "未接入", "sub": "行情未接入"})
+    dividend = _finite(columns.get("dividends_yield"))
+    if dividend is not None:
+        items.append({"label": "股息率", "value": f"{dividend:.2f}%", "sub": "TTM", "vendor": "TradingView"})
+    else:
+        items.append({"label": "股息率", "value": "未接入", "sub": "行情未接入"})
+    for cell in _management_eps_cells(doc, period):
+        shown = dict(cell)
+        shown["sub"] = _guidance_sub(shown)
+        items.append(shown)
+    tv = _tradingview(ticker) or {}
+    market_quote = tv.get("quote") or {}
+    market = bool(market_quote.get("columns"))
+    as_of = _session_date(market_quote.get("fetched_at")) if market else ""
+    if not as_of:
+        as_of = _session_date(((doc.get("meta") or {}).get("release_at_utc")))
+    return {"items": items, "line": _quote_line(items, as_of), "market": market}
 
 
 _QUOTE_SOURCE_ORDER = ("TradingView", "Alpha Vantage", "新闻稿", "电话会")
@@ -1706,25 +2476,6 @@ def _quote_line(items: list[dict[str, Any]], as_of: str) -> str:
     if found:
         parts.append("来源 " + " / ".join(found))
     return " · ".join(parts)
-
-
-def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: bool) -> dict[str, Any] | None:
-    """最新财季页头右上角：行情四格，再加上管理层 Non-GAAP EPS 指引两格。"""
-    if not is_latest:
-        return None
-    market = _market_quotes(ticker)
-    items = list((market or {}).get("items") or [])
-    items.extend(_management_eps_cells(doc, period))
-    if not items:
-        return None
-    as_of = _session_date((market or {}).get("fetched_at"))
-    if not as_of:
-        as_of = _session_date(((doc.get("meta") or {}).get("release_at_utc")))
-    return {
-        "items": items,
-        "line": _quote_line(items, as_of),
-        "market": bool(market),
-    }
 
 
 def _env() -> Environment:
@@ -1808,12 +2559,13 @@ def build_site(ticker: str | None = None) -> list[Path]:
             thesis = _position_view(t, doc, today)
             html = env.get_template("period.html").render(
                 gaps=gaps,
-                eps_chart=_eps_chart(doc),
+                eps_chart=_eps_chart(doc, docs),
                 checks=checks,
                 thesis=thesis,
                 chips=_verdict_chips(doc, gaps, checks, thesis),
                 drivers_pending=_drivers_pending(doc),
                 quotes=_header_quotes(t, doc, period, period == latest),
+                forward_pe=_forward_pe_view(t, doc, period, cfg, docs, period == latest),
                 root="../../",
                 nav=nav,
                 active=t,
@@ -1827,7 +2579,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 history_derived=any(h.get("derived") for h in history),
                 waiting_transcript=(doc.get("status") or {}).get("stage") == "stage1_done",
                 findings=_findings(doc),
-                fin_rows=_fin_rows(doc),
+                fin_rows=_fin_rows(doc, docs),
                 guidance=_guidance_view(doc),
                 revisions=_revision_rows(doc),
                 qa=_qa_view(doc, bool((prior.get("qa") or {}).get("items"))),

@@ -17,6 +17,18 @@
       {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }}
     </div>
   </div>
+  {% if quotes %}
+  <div class="metric-strip" aria-label="行情与指引">
+    {% for q in quotes["items"] %}
+    <div class="m"{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
+      <div class="k">{{ q.label }}</div>
+      <div class="v{% if q.value in ['无', '未接入'] %} is-empty{% endif %}">{{ q.value }}</div>
+      {% if q.sub %}<div class="s">{{ q.sub }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if quotes.line %}<p class="strip-asof">{{ quotes.line }}</p>{% endif %}
+  {% endif %}
 </div>
 
 <nav class="section-nav" aria-label="分区">
@@ -32,13 +44,22 @@
 </nav>
 
 <section class="dim" id="expect">
-  <div class="judge lead{% if not quotes %} solo{% endif %}">
+  <div class="judge lead{% if not forward_pe %} solo{% endif %}">
     <div class="card gapcard{% if eps_chart %} charted{% endif %}">
       {% if eps_chart %}
-      <h2>盈利预期 <small>深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比</small></h2>
-      {% if eps_chart.sides %}<div class="eps-side">{% for s in eps_chart.sides %}<span class="vchip {{ s.cls }}">{{ s.text }}</span>{% endfor %}</div>{% endif %}
+      <h2>盈利预期
+        {% if eps_chart.revenue %}
+        <span class="seg expect-toggle" role="group" aria-label="切换每股收益或营收">
+          <button type="button" data-expect="eps" aria-pressed="true">EPS</button>
+          <button type="button" data-expect="revenue" aria-pressed="false">营收</button>
+        </span>
+        {% endif %}
+        <small id="expectHint">{{ eps_chart.hint }}</small>
+      </h2>
+      {% if eps_chart.sides %}<div class="eps-side" data-expect-side="eps">{% for s in eps_chart.sides %}<span class="vchip {{ s.cls }}">{{ s.text }}</span>{% endfor %}</div>{% endif %}
+      {% if eps_chart.revenue and eps_chart.revenue.sides %}<div class="eps-side" data-expect-side="revenue" hidden>{% for s in eps_chart.revenue.sides %}<span class="vchip {{ s.cls }}">{{ s.text }}</span>{% endfor %}</div>{% endif %}
       <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
-      <p class="eps-note">{{ eps_chart.note }}</p>
+      <p class="eps-note" id="expectNote">{{ eps_chart.note }}</p>
       {% else %}
       <h2>盈利预期 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
       <div class="gap-rows">
@@ -61,18 +82,37 @@
       {% endif %}
     </div>
 
-    {% if quotes %}
-    <div class="card quote-card">
-      <h2>估值与技术</h2>
-      <div class="quote-grid">
-        {% for q in quotes["items"] %}
-        <div{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
-          <span>{{ q.label }}</span>
-          <b>{{ q.value }}</b>
-        </div>
-        {% endfor %}
+    {% if forward_pe %}
+    <div class="card forward-pe" id="forward-pe">
+      <div class="fp-head">
+        <h2>Forward PE <small>本财年与下财年按剩余月份加权</small></h2>
+        <div class="fp-price"><span>股价</span><b>{{ forward_pe.price }}</b></div>
       </div>
-      {% if quotes.line %}<p class="quote-asof">{{ quotes.line }}</p>{% endif %}
+      {% if forward_pe.rows %}
+      <div class="table-wrap">
+        <table class="data fp">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>EPS</th>
+              <th>P/E</th>
+              {% if forward_pe.show_vs %}<th>相当于 TTM PE 的</th>{% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in forward_pe.rows %}
+            <tr{% if row.kind == 'ntm' %} class="fp-ntm"{% endif %}>
+              <td>{{ row.label }}</td>
+              <td>{{ row.eps }}</td>
+              <td>{{ row.pe }}</td>
+              {% if forward_pe.show_vs %}<td>{{ row.vs }}</td>{% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+      <p class="eps-note">{{ forward_pe.note }}</p>
     </div>
     {% endif %}
   </div>
@@ -95,9 +135,9 @@
   <div class="card rows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     {% for r in fin_rows %}
-    <details class="mrow">
+    <details class="mrow{% if r.nested %} child{% endif %}">
       <summary>
-        <span class="m-name">{{ r.label }}</span>
+        <span class="m-name">{% if r.nested %}<i class="nest" aria-hidden="true">└</i>{% endif %}{{ r.label }}</span>
         <span class="m-val num">{{ r.value }}</span>
         <span class="num"><i class="m-label">同比</i><span class="c-{{ r.yoy.cls }}">{{ r.yoy.text }}</span></span>
         <span class="num"><i class="m-label">环比</i><span class="c-{{ r.qoq.cls }}">{{ r.qoq.text }}</span></span>
@@ -354,8 +394,16 @@ var ROW_SERIES = {
   revenue: { v: 'revenue', kind: 'money' },
   gross_margin_gaap: { v: 'gross_margin_gaap', kind: 'ratio' },
   gross_margin_nongaap: { v: 'gross_margin_nongaap', kind: 'ratio' },
+  gross_profit_gaap: { v: 'gross_profit_gaap', kind: 'money' },
+  gross_profit_nongaap: { v: 'gross_profit_nongaap', kind: 'money' },
   operating_margin_gaap: { v: 'operating_margin_gaap', kind: 'ratio' },
   operating_margin_nongaap: { v: 'operating_margin_nongaap', kind: 'ratio' },
+  operating_income_gaap: { v: 'operating_income_gaap', kind: 'money' },
+  operating_income_nongaap: { v: 'operating_income_nongaap', kind: 'money' },
+  net_margin_gaap: { v: 'net_margin_gaap', kind: 'ratio' },
+  net_margin_nongaap: { v: 'net_margin_nongaap', kind: 'ratio' },
+  net_income_gaap: { v: 'net_income_gaap', kind: 'money' },
+  net_income_nongaap: { v: 'net_income_nongaap', kind: 'money' },
   eps_gaap: { v: 'eps', kind: 'eps' },
   eps_nongaap: { v: 'eps_nongaap', kind: 'eps' },
   operating_cash_flow: { v: 'ocf', kind: 'money' },
@@ -459,80 +507,113 @@ function drawRowCharts() {
   Chart.defaults.font.family = color('--font') || 'system-ui';
   Chart.defaults.font.size = 12;
   var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
-  var quarters = spec.quarters || [];
-  new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: quarters.map(function (q) { return q.label; }),
-      datasets: [
-        { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
-        { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
-        { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: { top: 18, bottom: 22 } },
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
-        tooltip: {
-          callbacks: {
-            label: function (ctx) {
-              var q = quarters[ctx.dataIndex] || {};
-              if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
-              if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
-              if (ctx.dataset.label === '实际') {
-                return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' $' + ctx.parsed.y.toFixed(2);
+  var views = {
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: '美元', money: function (v) { return '$' + Number(v).toFixed(2); } }
+  };
+  if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
+    views.revenue = {
+      quarters: spec.revenue.quarters,
+      hint: spec.revenue.hint || '',
+      note: spec.revenue.note || '',
+      unit: '十亿美元',
+      money: function (v) { return '$' + Number(v).toFixed(2) + 'B'; }
+    };
+  }
+  var chart = null;
+  function draw(name) {
+    var view = views[name] || views.eps;
+    var quarters = view.quarters;
+    if (chart) chart.destroy();
+    chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: quarters.map(function (q) { return q.label; }),
+        datasets: [
+          { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
+          { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
+          { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 18, bottom: 22 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var q = quarters[ctx.dataIndex] || {};
+                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+                if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+                var text = view.money(ctx.parsed.y);
+                if (ctx.dataset.label === '实际') return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' ' + text;
+                return ctx.dataset.label + ' ' + text;
               }
-              return ctx.dataset.label + ' $' + ctx.parsed.y.toFixed(2);
             }
           }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: view.unit }, grid: { color: color('--grid') } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
         }
       },
-      scales: {
-        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
-        y: { beginAtZero: true, position: 'left', title: { display: true, text: '美元' }, grid: { color: color('--grid') } },
-        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
-      }
-    },
-    plugins: [{
-      id: 'epsMarks',
-      afterDatasetsDraw: function (chart) {
-        var ctx = chart.ctx;
-        chart.data.datasets.forEach(function (ds, di) {
-          if (ds.type !== 'bar') return;
-          var meta = chart.getDatasetMeta(di);
-          meta.data.forEach(function (bar, i) {
-            var val = ds.data[i];
-            if (val == null) return;
+      plugins: [{
+        id: 'epsMarks',
+        afterDatasetsDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          drawn.data.datasets.forEach(function (ds, di) {
+            if (ds.type !== 'bar') return;
+            var meta = drawn.getDatasetMeta(di);
+            meta.data.forEach(function (bar, i) {
+              var val = ds.data[i];
+              if (val == null) return;
+              ctx.save();
+              ctx.fillStyle = color('--ink-2') || '#52514e';
+              ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(view.money(val), bar.x, bar.y - 2);
+              ctx.restore();
+            });
+          });
+        },
+        afterDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          var x = drawn.scales.x;
+          quarters.forEach(function (q, i) {
+            if (!q.note) return;
             ctx.save();
-            ctx.fillStyle = color('--ink-2') || '#52514e';
+            ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
             ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            ctx.fillText('$' + Number(val).toFixed(2), bar.x, bar.y - 2);
+            ctx.textBaseline = 'top';
+            ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
             ctx.restore();
           });
-        });
-      },
-      afterDraw: function (chart) {
-        var ctx = chart.ctx;
-        var x = chart.scales.x;
-        quarters.forEach(function (q, i) {
-          if (!q.note) return;
-          ctx.save();
-          ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
-          ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
-          ctx.restore();
-        });
-      }
-    }]
+        }
+      }]
+    });
+    var hint = document.getElementById('expectHint');
+    if (hint) hint.textContent = view.hint;
+    var note = document.getElementById('expectNote');
+    if (note) note.textContent = view.note;
+    document.querySelectorAll('[data-expect-side]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-expect-side') !== name;
+    });
+  }
+  document.querySelectorAll('[data-expect]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-expect');
+      document.querySelectorAll('[data-expect]').forEach(function (other) {
+        other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+      });
+      draw(mode);
+    });
   });
+  draw('eps');
 })();
 </script>
 {% endif %}
