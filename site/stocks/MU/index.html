@@ -151,7 +151,7 @@
     <span class="ev-meta">19 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
@@ -163,6 +163,12 @@
       <span class="m-sum">收入环比增长31%，主要受AI服务器和存储需求增加驱动，量价齐升。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="3">
         <div class="card chart">
           <h3>水平值</h3>
@@ -203,6 +209,12 @@
       <span class="m-sum">新闻稿中的营业成本，没有再拆开。</span>
     </button>
     <div class="fin-panel" id="fin-panel-cost_of_revenue" data-fin-panel="cost_of_revenue" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -218,6 +230,12 @@
       <span class="m-sum">非GAAP毛利率环比提升2.1个百分点，主因价格上升和产品结构优化。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_nongaap" data-fin-panel="gross_margin_nongaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -243,6 +261,12 @@
       <span class="m-sum">GAAP毛利率环比提升2.2个百分点，主要受产品结构改善和平均售价上升推动。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -268,6 +292,12 @@
       <span class="m-sum">非GAAP营业利润率环比提升1.1个百分点，主因毛利率改善，费用控制亦有贡献。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_nongaap" data-fin-panel="operating_margin_nongaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -293,6 +323,12 @@
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_income_nongaap" data-fin-panel="operating_income_nongaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -308,6 +344,12 @@
       <span class="m-sum">GAAP营业利润率环比小幅提升0.3个百分点，主要受毛利率改善带动，但部分被营业费用增加抵消。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -333,6 +375,12 @@
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -348,6 +396,12 @@
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -363,6 +417,12 @@
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -378,6 +438,12 @@
       <span class="m-sum">非GAAP每股收益环比增长33%，主因价格上升和产品结构优化。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_nongaap" data-fin-panel="eps_nongaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -403,6 +469,12 @@
       <span class="m-sum">GAAP每股收益环比增长33%，主要受收入增长和毛利率提升推动。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -428,6 +500,12 @@
       <span class="m-sum">经营现金流环比增长73%，主要受净利润增加和营运资金有利变动推动。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -453,6 +531,12 @@
       <span class="m-sum">资本开支环比增长42%，主要投向爱达荷和新加坡洁净室建设。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -473,6 +557,12 @@
       <span class="m-sum">调整后自由现金流环比增长81%，主因经营现金流大幅增加，部分被资本开支增加抵消。</span>
     </button>
     <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -498,6 +588,12 @@
       <span class="m-sum">稀释加权平均股 1,147M 股。比基本股多 17M，差额是潜在稀释。</span>
     </button>
     <div class="fin-panel" id="fin-panel-share_count" data-fin-panel="share_count" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -518,6 +614,12 @@
       <span class="m-sum">期末存货 $10.37B，相当于本期销售成本 132.9 天。存货同比 +24.1%，快于销售成本同比 +14.7%，周转天数变长。</span>
     </button>
     <div class="fin-panel" id="fin-panel-dio_days" data-fin-panel="dio_days" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -538,6 +640,12 @@
       <span class="m-sum">期末应收账款 $36.20B，相当于本季营收 61.4 天。营收同比 +379.3%，快于应收账款同比 +290.7%，周转天数变短。</span>
     </button>
     <div class="fin-panel" id="fin-panel-dso_days" data-fin-panel="dso_days" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -558,6 +666,12 @@
       <span class="m-sum">期末合同负债 $12.89B，相当于本季营收 21.9 天。合同负债同比 91 倍，快于营收同比 +379.3%，周转天数变长。</span>
     </button>
     <div class="fin-panel" id="fin-panel-deferred_days" data-fin-panel="deferred_days" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
@@ -1019,7 +1133,7 @@ function drawRowCharts() {
 </script>
 <script>
 (function () {
-  var view = {"by_key": {"cost_of_revenue": {"charts": [{"amount": [6.26, 6.4, 7.18], "amount_text": ["$6.26B", "$6.40B", "$7.18B"], "kind": "amount_yoy", "labels": ["FY2025Q4", "FY2026Q3", "FY2026Q4"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, 14.7]}], "note": "营业成本来自新闻稿表格。没有把营业成本再拆开。"}}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "note": ""};
+  var view = {"by_key": {"cost_of_revenue": {"charts": [{"amount": [6.26, 6.4, 7.18], "amount_text": ["$6.26B", "$6.40B", "$7.18B"], "annual": null, "kind": "amount_yoy", "labels": ["FY2025Q4", "FY2026Q3", "FY2026Q4"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, 14.7]}], "note": "营业成本来自新闻稿表格。没有把营业成本再拆开。"}}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "grain": false, "note": ""};
   var history = [{"derived": true, "fcf": 72000000.0, "gross_margin": 0.45682722050375607, "gross_margin_gaap": 0.44666372072470173, "gross_margin_nongaap": 0.45682722050375607, "gross_profit_gaap": 5054000000.0, "gross_profit_nongaap": 5169000000.0, "net_income_gaap": 3201000000.0, "net_income_nongaap": null, "net_margin_gaap": 0.2828988068935042, "operating_income_gaap": 3654000000.0000005, "operating_income_nongaap": 3955000000.0, "operating_margin": 0.34953601414052143, "operating_margin_gaap": 0.32293415819708354, "operating_margin_nongaap": 0.34953601414052143, "period": "FY2025Q4", "revenue": 11315000000.0}, {"derived": true, "fcf": 17562000000.0, "gross_margin": 0.8490688923195677, "gross_margin_gaap": 0.8456194519490544, "gross_margin_nongaap": 0.8490688923195677, "gross_profit_gaap": 35056000000.0, "gross_profit_nongaap": 35199000000.0, "net_income_gaap": 28243000000.0, "net_income_nongaap": null, "net_margin_gaap": 0.6812765341566963, "operating_income_gaap": 33318000000.0, "operating_income_nongaap": 33681000000.0, "operating_margin": 0.8124517560787341, "operating_margin_gaap": 0.8036954843689695, "operating_margin_nongaap": 0.8124517560787341, "period": "FY2026Q3", "revenue": 41456000000.0}, {"capex": 11110000000.0, "capex_qoq": 0.4196268847431638, "capex_yoy": 0.9635913750441852, "deferred_days": 21.87648675063158, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": 132.8632692843219, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": 61.40854524331999, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 32.87, "eps_nongaap": 33.42, "eps_nongaap_qoq": 0.33094384707287944, "eps_nongaap_yoy": 10.02970297029703, "eps_qoq": 0.33238751520064835, "eps_yoy": 10.614840989399292, "fcf": 32863000000.0, "fcf_qoq": 0.8712561211707095, "fcf_yoy": 455.43055555555554, "gross_margin": 0.8704567666746574, "gross_margin_gaap": 0.8675616367626178, "gross_margin_gaap_qoq": 0.02194218481356336, "gross_margin_gaap_yoy": 0.42089791603791604, "gross_margin_nongaap": 0.8704567666746574, "gross_margin_nongaap_qoq": 0.02138787435508971, "gross_margin_nongaap_yoy": 0.41362954617090136, "gross_margin_qoq": 0.02138787435508971, "gross_margin_yoy": 0.41362954617090136, "gross_profit_gaap": 47047000000.0, "gross_profit_gaap_qoq": 0.3420527156549521, "gross_profit_gaap_yoy": 8.308864265927978, "gross_profit_nongaap": 47204000000.0, "gross_profit_nongaap_qoq": 0.34106082559163614, "gross_profit_nongaap_yoy": 8.132133875024183, "net_income_gaap": 37701000000.0, "net_income_gaap_qoq": 0.33487943915306445, "net_income_gaap_yoy": 10.777881911902531, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.6952184255656567, "net_margin_gaap_qoq": 0.013941891408960405, "net_margin_gaap_yoy": 0.4123196186721525, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 43973000000.0, "ocf_qoq": 0.7320387584685678, "ocf_yoy": 6.674171029668412, "operating_income_gaap": 43751000000.0, "operating_income_gaap_qoq": 0.3131340416591632, "operating_income_gaap_yoy": 10.973453749315818, "operating_income_nongaap": 44636000000.0, "operating_income_nongaap_qoq": 0.32525756361153174, "operating_income_nongaap_yoy": 10.285967130214917, "operating_margin": 0.823102030279002, "operating_margin_gaap": 0.8067823489276955, "operating_margin_gaap_qoq": 0.003086864558725977, "operating_margin_gaap_yoy": 0.48384819073061197, "operating_margin_nongaap": 0.823102030279002, "operating_margin_nongaap_qoq": 0.010650274200267873, "operating_margin_nongaap_yoy": 0.47356601613848054, "operating_margin_qoq": 0.010650274200267873, "operating_margin_yoy": 0.47356601613848054, "period": "FY2026Q4", "revenue": 54229000000.0, "revenue_qoq": 0.30810980316480124, "revenue_yoy": 3.792664604507291, "share_count": 1147000000.0, "share_count_qoq": null, "share_count_yoy": null}];
   var live = [];
   var active = view.charts || [];
@@ -1034,8 +1148,11 @@ function drawRowCharts() {
     return {
       maxRotation: 0, autoSkip: false,
       callback: function (_val, i) {
-        var lab = labels[i] || '';
-        return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
+        var lab = String(labels[i] || '');
+        var match = /^FY(\d{4})/.exec(lab);
+        if (!match) return '';
+        if (/^FY\d{4}$/.test(lab) || lab.indexOf('Q1') === match[0].length) return match[1];
+        return '';
       }
     };
   }
@@ -1191,20 +1308,40 @@ function drawRowCharts() {
       }
     }));
   }
+  var openKey = view.default || '';
+  var grainByKey = {};
+  function currentGrain() {
+    return grainByKey[openKey] || 'quarter';
+  }
+  function presented(chart) {
+    if (!chart || currentGrain() !== 'year') return chart;
+    if (chart.kind !== 'amount_yoy' && chart.kind !== 'share') return chart;
+    var annual = chart.annual || null;
+    if (!annual || !annual.labels || !annual.labels.length) return null;
+    var copy = {};
+    Object.keys(chart).forEach(function (key) { copy[key] = chart[key]; });
+    Object.keys(annual).forEach(function (key) { copy[key] = annual[key]; });
+    return copy;
+  }
   function drawRoot(root) {
     if (typeof Chart === 'undefined') return;
     clearCharts();
     root.querySelectorAll('canvas[data-fin-kind="amount_yoy"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
-      if (chart) drawAmount(canvas, chart);
+      var shown = chart && presented(chart);
+      if (shown) drawAmount(canvas, shown);
     });
     root.querySelectorAll('canvas[data-fin-kind="share"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
-      if (chart) drawShare(canvas, chart);
+      var shown = chart && presented(chart);
+      if (shown) drawShare(canvas, shown);
     });
     root.querySelectorAll('canvas[data-series]').forEach(drawGeneric);
   }
   function cardHtml(chart, index) {
+    if (currentGrain() === 'year' && (chart.kind === 'amount_yoy' || chart.kind === 'share') && !presented(chart)) {
+      return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><p class="placeholder">没有完整财年</p></div>';
+    }
     var canvas = chart.kind === 'generic'
       ? '<canvas data-metric="' + esc(chart.metric) + '" data-series="' + esc(chart.series) + '" aria-label="' + esc(chart.title) + '"></canvas>'
       : '<canvas data-fin-kind="' + esc(chart.kind) + '" data-fin-index="' + index + '" aria-label="' + esc(chart.title) + '"></canvas>';
@@ -1214,9 +1351,31 @@ function drawRowCharts() {
   function visibleGrid() {
     return document.querySelector('[data-fin-panel]:not([hidden]) [data-fin-charts]');
   }
+  function rowByKey(key) {
+    var found = null;
+    document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+      if (btn.getAttribute('data-fin-metric') === key) found = btn;
+    });
+    return found;
+  }
+  function hasGrain(charts) {
+    return (charts || []).some(function (chart) {
+      return chart.kind === 'amount_yoy' || chart.kind === 'share';
+    });
+  }
+  function syncGrainBar(panel, charts) {
+    var bar = panel.querySelector('[data-fin-grain-bar]');
+    if (!bar) return;
+    bar.hidden = !hasGrain(charts);
+    var grain = grainByKey[panel.getAttribute('data-fin-panel')] || 'quarter';
+    bar.querySelectorAll('[data-fin-grain]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-grain') === grain ? 'true' : 'false');
+    });
+  }
   function collapseFin() {
     clearCharts();
     active = [];
+    openKey = '';
     document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
       panel.hidden = true;
       var charts = panel.querySelector('[data-fin-charts]');
@@ -1227,6 +1386,7 @@ function drawRowCharts() {
     });
   }
   function show(key) {
+    openKey = key;
     var spec = (view.by_key || {})[key];
     active = spec ? spec.charts : [
       { title: '水平值', kind: 'generic', subtitle: '本季水平', metric: key, series: 'level' },
@@ -1244,6 +1404,7 @@ function drawRowCharts() {
         charts.innerHTML = '';
         return;
       }
+      syncGrainBar(panel, active);
       charts.setAttribute('data-cols', String(active.length));
       charts.innerHTML = active.map(cardHtml).join('');
       var note = panel.querySelector('[data-fin-note]');
@@ -1258,12 +1419,61 @@ function drawRowCharts() {
     });
     if (grid) requestAnimationFrame(function () { drawRoot(grid); });
   }
-  document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      if (btn.getAttribute('aria-pressed') === 'true') collapseFin();
-      else show(btn.getAttribute('data-fin-metric'));
-    });
-  });
+  var rows = document.getElementById('finRows');
+  if (rows && rows.getAttribute('data-fin-bound') === '1') return;
+  if (rows) rows.setAttribute('data-fin-bound', '1');
+  var armed = null;
+  if (rows) rows.addEventListener('pointerdown', function (event) {
+    if (event.target.closest('[data-fin-grain], .fin-panel')) {
+      armed = null;
+      return;
+    }
+    var btn = event.target.closest('[data-fin-metric]');
+    if (!btn || !rows.contains(btn)) {
+      armed = null;
+      return;
+    }
+    armed = { key: btn.getAttribute('data-fin-metric'), open: openKey };
+  }, true);
+  if (rows) rows.addEventListener('click', function (event) {
+    var grainBtn = event.target.closest('[data-fin-grain]');
+    if (grainBtn) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      if (!openKey) return;
+      var grain = grainBtn.getAttribute('data-fin-grain');
+      if ((grainByKey[openKey] || 'quarter') === grain) return;
+      grainByKey[openKey] = grain;
+      show(openKey);
+      return;
+    }
+    var heading = event.target.closest('h3');
+    var openPanel = openKey ? document.querySelector('[data-fin-panel="' + openKey + '"]') : null;
+    if (heading && openPanel && heading.closest('.fin-panel') === openPanel) {
+      var row = rowByKey(openKey);
+      var label = row && row.querySelector('.m-name') ? row.querySelector('.m-name').textContent.replace(/\s+/g, '') : '';
+      if (label && heading.textContent.replace(/\s+/g, '') === label) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        armed = null;
+        collapseFin();
+        return;
+      }
+    }
+    if (event.target.closest('.fin-panel')) return;
+    var btn = event.target.closest('[data-fin-metric]');
+    if (!btn || !rows.contains(btn)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    var key = btn.getAttribute('data-fin-metric');
+    var wasOpen = armed && armed.key === key ? armed.open : openKey;
+    armed = null;
+    if (wasOpen === key) collapseFin();
+    else show(key);
+  }, true);
   var box = document.getElementById('fin');
   function drawInitial() {
     var grid = visibleGrid();

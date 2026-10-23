@@ -314,6 +314,8 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert 'aria-label="营业收入"' in fin[: fin.index('data-fin-metric="cost_of_revenue"')]
     assert "毛利润" not in fin and 'id="finCharts"' not in meta_html
     assert "再点同一行就收起" in meta_html and "function collapseFin()" in meta_html
+    assert 'data-fin-grain="quarter"' in meta_html and 'data-fin-grain="year"' in meta_html
+    assert "没有完整财年" in meta_html and 'data-fin-bound' in meta_html
     assert "营业费用" in meta_html and "$38.24B" in meta_html
     assert "FY2016Q1" in meta_html and "$63.06B" in meta_html and "应用家族" in meta_html
     assert "财务数据" not in meta_html and "业务拆分" not in meta_html
@@ -861,6 +863,96 @@ def test_cost_charts_keep_total_and_skip_empty_mix():
     mu_cost = mu["by_key"]["cost_of_revenue"]["charts"]
     assert [chart["kind"] for chart in mu_cost] == ["amount_yoy"]
     assert mu_cost[0]["labels"][-1] == "FY2026Q4" and mu_cost[0]["amount"][-1] == 7.18
+    assert not (mu_cost[0].get("annual") or {}).get("labels")
+
+
+def test_annual_charts_sum_full_years_and_skip_partial():
+    """年度把四个季度的金额加总；未满一年或中间缺年都不拿来算同比。占比用分项合计再算份额。"""
+    from builder.build import _amount_yoy_chart, _fin_view, _line_points, _share_chart
+
+    quarters = [
+        {"period": "FY2022Q1", "revenue": None},
+        {"period": "FY2022Q2", "revenue": 1_000_000_000},
+        {"period": "FY2022Q3", "revenue": 1_000_000_000},
+        {"period": "FY2022Q4", "revenue": 1_000_000_000},
+        {"period": "FY2023Q1", "revenue": 1_000_000_000},
+        {"period": "FY2023Q2", "revenue": 1_000_000_000},
+        {"period": "FY2023Q3", "revenue": 1_000_000_000},
+        {"period": "FY2023Q4", "revenue": 1_000_000_000},
+        {"period": "FY2024Q1", "revenue": 2_000_000_000},
+        {"period": "FY2024Q2", "revenue": 2_000_000_000},
+        {"period": "FY2024Q3", "revenue": 2_000_000_000},
+        {"period": "FY2025Q1", "revenue": 3_000_000_000},
+        {"period": "FY2025Q2", "revenue": 3_000_000_000},
+        {"period": "FY2025Q3", "revenue": 3_000_000_000},
+        {"period": "FY2025Q4", "revenue": 3_000_000_000},
+    ]
+    annual = _amount_yoy_chart(quarters, "revenue", "营业收入", "十亿美元")["annual"]
+    assert annual["labels"] == ["FY2023", "FY2025"]
+    assert annual["amount"] == [4.0, 12.0]
+    assert annual["amount_text"] == ["$4.00B", "$12.00B"]
+    assert annual["yoy"] == [None, None]
+
+    both = quarters[:8]
+    both += [
+        {"period": "FY2024Q1", "revenue": 2_000_000_000},
+        {"period": "FY2024Q2", "revenue": 2_000_000_000},
+        {"period": "FY2024Q3", "revenue": 2_000_000_000},
+        {"period": "FY2024Q4", "revenue": 2_000_000_000},
+    ]
+    linked = _amount_yoy_chart(both, "revenue", "营业收入", "十亿美元")["annual"]
+    assert linked["labels"] == ["FY2023", "FY2024"]
+    assert linked["amount"] == [4.0, 8.0]
+    assert linked["yoy"] == [None, 100.0]
+
+    def lines(year, quarter, ga):
+        items = [
+            {"key": "rd", "name": "研发", "value": 100_000_000},
+            {"key": "sales", "name": "销售", "value": 100_000_000},
+        ]
+        if ga:
+            items.append({"key": "ga", "name": "管理", "value": 100_000_000})
+        return {"period": f"FY{year}Q{quarter}", "opex_lines": items}
+
+    mix_rows = [lines(2024, quarter, quarter == 4) for quarter in (1, 2, 3, 4)]
+    mix_rows += [lines(2025, quarter, False) for quarter in (1, 2, 3)]
+    mix_rows += [lines(2023, quarter, False) for quarter in (1, 2, 3)]
+    mix_rows.append({"period": "FY2023Q4", "opex_lines": []})
+    share = _share_chart(_line_points(mix_rows, "opex_lines", denominator="lines"), "费用构成", "占比", "FY2024Q4")
+    assert share["points"][0]["items"][0]["value"] == 100_000_000
+    assert share["annual"]["labels"] == ["FY2024"]
+    items = share["annual"]["points"][0]["items"]
+    assert [item["name"] for item in items] == ["研发", "销售", "管理"]
+    assert [item["value"] for item in items] == [400_000_000, 400_000_000, 100_000_000]
+    assert [item["share"] for item in items] == [44.4, 44.4, 11.1]
+
+    meta = _fin_view("META", "FY2026Q3")
+    revenue = meta["by_key"]["revenue"]["charts"]
+    amount = revenue[0]["annual"]
+    assert amount["labels"] == [f"FY{year}" for year in range(2016, 2026)]
+    assert "FY2026" not in amount["labels"]
+    assert amount["amount"][0] == 27.64 and amount["yoy"][0] is None
+    assert amount["amount"][1] == 40.65 and amount["yoy"][1] is not None
+    business = revenue[1]["annual"]
+    assert business["labels"][0] == "FY2016" and "FY2018" in business["labels"]
+    assert "FY2019" not in business["labels"] and "FY2020" not in business["labels"]
+    assert "FY2021" in business["labels"] and business["labels"][-1] == "FY2025"
+    assert "FY2026" not in business["labels"]
+    early = business["points"][0]["items"]
+    assert [item["key"] for item in early] == ["ads", "other"]
+    assert abs(sum(item["share"] for item in early) - 100) < 0.2
+    later = next(point for point in business["points"] if point["period"] == "FY2021")
+    assert [item["key"] for item in later["items"]] == ["ads", "other", "rl"]
+    geo = revenue[2]["annual"]
+    assert geo["labels"][-1] == "FY2025" and "FY2026" not in geo["labels"]
+    opex = meta["by_key"]["opex"]["charts"]
+    assert opex[0]["annual"]["labels"][-1] == "FY2025"
+    opex_share = opex[1]["annual"]["points"][-1]["items"]
+    assert [item["name"] for item in opex_share] == ["研发", "销售", "管理"]
+    assert abs(sum(item["share"] for item in opex_share) - 100) < 0.2
+    cost = meta["by_key"]["cost_of_revenue"]["charts"]
+    assert [chart["title"] for chart in cost] == ["营业成本"]
+    assert cost[0]["annual"]["labels"][-1] == "FY2025" and "FY2026" not in cost[0]["annual"]["labels"]
 
 
 def test_activity_rows_and_business_split_read_press_release():
