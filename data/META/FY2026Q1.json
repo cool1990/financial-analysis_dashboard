@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "ir_pdf",
+    "eps_basis": "gaap",
+    "transcript_url": "https://s21.q4cdn.com/399680738/files/doc_financials/2026/q1/META-Q1-2026-Earnings-Call-Transcript.pdf",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -192,12 +198,389 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "营收563.11亿美元，同比增33.1%，环比降6.0%。主因广告展示量增19%，单价增12%；不变汇率增速为29%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "广告展示量同比增加19%，是总收入增长的主因。",
+            "evidence_quote": "In Q1, the total number of ad impressions served across our services increased 19%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "全球平均广告单价同比上升12%，来自广告效果改善，以及相对去年第一季更好的宏观环境。",
+            "evidence_quote": "The global average price per ad increased 12% year-over-year in Q1, with broad-based growth as we benefited from ad performance improvements, better macro conditions versus Q1 of last year",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "+",
+            "is_primary": false,
+            "description": "总收入同比增33%，按不变汇率为29%，外汇是顺风。这已包含在报表增速里，不在展示量和单价之外再加一层。",
+            "evidence_quote": "Q1 total revenue was $56.3 billion, up 33% or 29% on a constant currency basis.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "展示量增长强，其中包括变现较低地区的展示，部分抵消了单价。",
+            "evidence_quote": "This was partially offset by strong impression growth, including from lower monetizing regions.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称总收入563亿美元、同比33%；JSON为563.11亿美元、同比33.1%，属于取整。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率81.85%，同比降0.25个百分点，环比升0.06个百分点。电话会未说明毛利率，变动接近持平。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": true,
+            "description": "毛利率几乎没有变化，电话会没有单独说明毛利率或营业成本。",
+            "evidence_quote": "",
+            "source": "",
+            "is_inference": true,
+            "reasoning": "指标表毛利率为81.85%，同比下降约0.25个百分点，环比上升约0.06个百分点。营收同比约33.1%。电话会只说总费用334亿美元、同比增35%，由基础设施成本和员工薪酬推动，没有把营业成本和营业费用拆开。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "营业利润率40.6%，同比降0.87个百分点，环比降0.70个百分点。总费用同比增35%，快于营收，主因基础设施成本与员工薪酬。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "总费用334亿美元，同比增35%，快于收入增速，增长主要来自基础设施成本和员工薪酬，所以营业利润率同比、环比都略降。",
+            "evidence_quote": "Q1 total expenses were $33.4 billion, up 35% compared to last year. Year-over-year growth was driven mainly by infrastructure costs and employee compensation.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第一季营业利润229亿美元、营业利润率41%。JSON营业利润228.72亿美元、营业利润率40.6%，属于取整。摘要使用JSON的40.6%。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "GAAP每股收益10.44美元，同比增62.4%。主因80.3亿美元税额优惠；剔除后为7.31美元。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": true,
+            "description": "本季税率-23%，因为有80.3亿美元税额优惠，这项优惠部分抵消2025年第三季确认的非现金税务费用。GAAP每股收益因此是10.44美元；剔除后电话会称为7.31美元。同比62.4%主要来自这笔一次性税务收益。",
+            "evidence_quote": "Our tax rate for the quarter was -23%, which was favorably impacted by a tax benefit of $8.03 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称净利润268亿美元；JSON为267.73亿美元，属于取整。稀释每股收益10.44美元、剔除税额优惠后的7.31美元与JSON一致。"
+        ]
+      },
+      {
+        "metric": "eps_nongaap",
+        "summary": "剔除后每股收益7.31美元，同比增13.7%，主因广告展示增加；费用上升和股权投资浮亏抵消一部分。环比降17.7%，电话会未解释。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "广告展示量同比增19%，总收入同比增33%，是剔除税额优惠后每股收益同比仍增长的主要来源。",
+            "evidence_quote": "In Q1, the total number of ad impressions served across our services increased 19%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "平均广告单价同比增12%，同样推高了剔除税务优惠后的利润。",
+            "evidence_quote": "The global average price per ad increased 12% year-over-year in Q1, with broad-based growth as we benefited from ad performance improvements, better macro conditions versus Q1 of last year",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "总费用同比增35%，快于收入，限制了利润增速，所以非GAAP每股收益同比只有13.7%，低于收入增速。",
+            "evidence_quote": "Q1 total expenses were $33.4 billion, up 35% compared to last year. Year-over-year growth was driven mainly by infrastructure costs and employee compensation.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "本季利息及其他收益为-11亿美元，来自股权投资的未实现亏损，压低了本季利润。电话会没有给出这项同比变化。",
+            "evidence_quote": "Q1 interest and other income was -$1.1 billion, driven by unrealized losses on our equity investments.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "经营现金流322.26亿美元，同比增34.1%，环比降11.0%。电话会未作解释，增幅与营收同比33.1%接近。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会没有披露经营现金流。同比增幅与营收增幅接近。",
+            "evidence_quote": "",
+            "source": "",
+            "is_inference": true,
+            "reasoning": "指标表经营现金流为322.26亿美元，同比上升34.1%，环比下降11.0%。营收同比约33.1%。电话会没有讲经营现金流的金额或原因。净利润含80.3亿美元税额优惠，而该优惠部分抵消的是2025年第三季的非现金税务费用，所以不用净利润同比直接解释经营现金流。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "资本开支189.97亿美元，同比增46.8%，环比降11.2%，用于服务器、数据中心和网络。电话会含租赁本金的口径为198亿美元。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "本季资本开支用于服务器、数据中心和网络。电话会报198亿美元，含融资租赁本金；JSON购建固定资产为189.97亿美元，同比增46.8%。",
+            "evidence_quote": "Capital expenditures, including principal payments on finance leases, were $19.8 billion, driven by investments in servers, data centers, and network infrastructure.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会资本开支含融资租赁本金为198亿美元；JSON为购建固定资产189.97亿美元。摘要和同比46.8%、环比降11.2%使用JSON。"
+        ]
+      },
+      {
+        "metric": "fcf",
+        "summary": "自由现金流132.29亿美元，同比增19.3%，环比降10.8%。经营现金流增长是主因，资本开支增速更高抵消了一部分。电话会为124亿美元。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "自由现金流同比仍增长，主因是经营现金流同比增34.1%。",
+            "evidence_quote": "",
+            "source": "",
+            "is_inference": true,
+            "reasoning": "指标表自由现金流为132.29亿美元，同比上升19.3%，环比下降10.8%。经营现金流同比上升34.1%。电话会只说自由现金流为124亿美元，没有解释同比。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "资本开支同比增46.8%，快于经营现金流，抵消了一部分自由现金流增长。",
+            "evidence_quote": "",
+            "source": "",
+            "is_inference": true,
+            "reasoning": "指标表资本开支同比上升46.8%，高于经营现金流同比34.1%，对应自由现金流同比19.3%。电话会没有用指标表这一口径解释自由现金流。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会自由现金流为124亿美元；JSON为132.29亿美元。电话会的资本开支含融资租赁本金、高于JSON的购建固定资产，自由现金流因此更低。摘要使用JSON的132.29亿美元。"
+        ]
+      }
+    ],
+    "status": null
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "总收入",
+        "period": "FY2026Q2",
+        "type": "numeric",
+        "low_raw": "$58 billion",
+        "high_raw": "$61 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2026年第二季度总收入为580亿至610亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect second quarter 2026 total revenue to be in the range of $58-61 billion.",
+        "low": 58000000000.0,
+        "mid": 59500000000.0,
+        "high": 61000000000.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "外汇对收入同比增速的影响",
+        "period": "FY2026Q2",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately 2%",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "第二季度指引假设，按当前汇率，外汇对总收入同比增速大约是2%的顺风。",
+        "source": "prepared_remarks",
+        "source_quote": "Our guidance assumes foreign currency is an approximately 2% tailwind to year-over-year total revenue growth, based on current exchange rates.",
+        "low": null,
+        "mid": 0.02,
+        "high": null
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "全年总费用",
+        "period": "FY2026",
+        "type": "numeric",
+        "low_raw": "$162 billion",
+        "high_raw": "$169 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2026年全年总费用为1620亿至1690亿美元，与先前展望相同。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect full year 2026 total expenses to be in the range of $162-169 billion, unchanged from our prior outlook.",
+        "low": 162000000000.0,
+        "mid": 165500000000.0,
+        "high": 169000000000.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "营业利润",
+        "period": "FY2026",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "up",
+        "statement": "公司仍预计2026年营业利润高于2025年营业利润。",
+        "source": "prepared_remarks",
+        "source_quote": "We continue to expect to deliver operating income this year that is above 2025 operating income.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "资本开支（含融资租赁本金）",
+        "period": "FY2026",
+        "type": "numeric",
+        "low_raw": "$125 billion",
+        "high_raw": "$145 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "公司预计2026年资本开支（含融资租赁本金）为1250亿至1450亿美元，高于此前的1150亿至1350亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "We anticipate 2026 capital expenditures, including principal payments on finance leases, to be in the range of $125-145 billion, increased from our prior range of $115-135 billion.",
+        "low": 125000000000.0,
+        "mid": 135000000000.0,
+        "high": 145000000000.0
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "资本开支上调的原因",
+        "period": "FY2026",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "资本开支指引上调，是因为今年零部件价格更高，另有较少一部分数据中心成本用于支持以后年度的产能。",
+        "source": "prepared_remarks",
+        "source_quote": "This reflects our expectations for higher component pricing this year and, to a lesser extent, additional data center costs to support future year capacity.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "tax_rate",
+        "metric_label": "税率",
+        "period": "FY2026",
+        "type": "numeric",
+        "low_raw": "13%",
+        "high_raw": "16%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "若税制没有变化，公司预计2026年剩余季度的税率为13%至16%。",
+        "source": "prepared_remarks",
+        "source_quote": "Absent any changes to our tax landscape, we expect our tax rate for the remaining quarters of 2026 to be between 13-16%.",
+        "low": 0.13,
+        "mid": 0.145,
+        "high": 0.16
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "员工人数",
+        "period": "FY2026Q2",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "down",
+        "statement": "公司已在内部传达，计划在5月缩减员工规模。",
+        "source": "prepared_remarks",
+        "source_quote": "As we grow our infrastructure spend, we remain committed to operating efficiently, and we recently shared internally that we plan to reduce the size of our employee base in May.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -207,6 +590,151 @@
       "t_plus_7": {},
       "gap_closure": null
     },
+    "industry_outlook": [
+      {
+        "title": "外部环境（技术变化）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark把这一季放进一场历史性的技术转变里。他听到业界很多人说，人工智能会取代人。他自己的判断是，人工智能会放大人做自己想做的事的能力，包括把健康、学习、关系、个人目标和职业目标做得更好。他认为人类进步一直来自人们追求各自的志向，这件事以后仍会成立，人会更重要。Meta要做的是帮助个人的产品，而且他认为这些会是有史以来最重要、最有价值的一批产品。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "过去10个月，他称公司建成了业内最强的研究团队，并打下了把非常先进的模型做大的科学和技术基础。今年到目前最大的里程碑，是发布Muse模型家族和第一个模型Muse Spark，以及大幅升级的新版Meta AI。这是Meta Superintelligence Labs的第一次发布。Spark只是这条扩展阶梯上的一步，更先进的模型已经在训练。Spark已经让Meta AI成为世界级助手，并在视觉理解、健康、购物、社交内容、本地、做游戏等方面领先，这些都连着他所说的个人超级智能。更新发布之后，Meta AI的使用大幅增加，Meta AI应用也一直靠近应用商店的前列。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "问答里，他把模型能够自我改进说成基本门槛。今天模型还能向人学习；到了某个时点，改进要靠模型自己完成，增长才会这样发生。做不到的公司，不会是领先的实验室，也做不出领先的产品。写代码是自我改进的一个成分，不是全部。他不反对做接口或编程工具，但那不是首要重点。他们要准备的，是为了人、也为了企业的个人超级智能，把自我改进所需要的各部分都做上。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark说，每天有超过35亿人至少使用他们的一款应用。家庭日活总人数小幅下降，是因为伊朗断网，以及俄罗斯的封锁；除此以外，各应用的趋势是强的。Instagram和Facebook的日活、月活继续增长，视频把两个应用的参与度推到历史新高。WhatsApp的势头也强，包括在美国。Threads仍走在成为这个品类领先应用的路上。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Susan把人数说得更具体：3月估计有35.6亿人每天至少使用一款Family of Apps，比12月略低，原因是伊朗的互联网中断，以及俄罗斯限制访问WhatsApp。若去掉这些影响，家庭日活人数环比本会增长。参与度上，Instagram第一季的排序改进让Reels使用时长提升10%。Facebook的全球视频总时长第一季增长超过8%，是四年来最大的环比增幅。在美国和加拿大，排序改进让Facebook的视频观看时长增加9%。当天发出的帖子，现在占Instagram和Facebook所推荐Reels的30%以上，达到一年前的两倍多。Facebook和Instagram上，各有超过5亿用户每周在看被人工智能翻译的视频。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "新的使用来自助手和智能体。Mark说，有了强模型之后，目标不只是把Meta AI做成一个助手，而是做出能理解人的目标、并且日夜帮人去完成的智能体。商业人工智能的早期版本已经在测试，每周对话从今年年初以来增长了10倍。Susan说，开始用Muse Spark回答之后，Meta AI的每用户会话数出现了两位数百分比的增长。在各应用的直接聊天、独立的Meta AI应用和网站上，全球数十亿人可以用到最新模型。人和商业人工智能的每周对话超过1000万次，年初是100万次，本季会向更多国家开放。WhatsApp的Status广告，每天已经有数亿人在看。Threads的广告也扩到了更多市场。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "眼镜是另一条需求。Mark说，人工智能眼镜的每日使用人数同比增至三倍，这个品类仍是消费电子里增长最快的之一。本季发布了Ray-Ban Meta Optics，按全天佩戴来设计，而不是主要当太阳镜。去年有Oakley，今年晚些时候还会有新的合作和款式。Susan补充，第一季人工智能眼镜的销售继续强劲增长，购买从上一代Ray-Ban Meta转到最新一代，她点出的原因是电池续航更长、视频更清晰。Meta Ray-Ban Displays搭配Meta Neural Band已经看到较强的兴趣，她认为这说明消费者愿意要带显示的眼镜。Reality Labs第一季收入4.02亿美元，同比下降2%，因为Quest头显卖得更少，被人工智能眼镜收入的持续强增长抵消了一部分。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark说，今年上调了基础设施资本开支的预测，其中大部分是因为零部件更贵，尤其是内存价格。他同时说，公司非常看重把投资的效率做高。正在推出超过1吉瓦、与Broadcom一起开发的自研芯片，以及大量AMD芯片，用来配合正在部署的新Nvidia系统。Meta Compute的首要目标之一，是在建设算力的效率上领先业界，并预期这会逐渐变成一项战略优势。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Susan把算力说成以后服务能做到什么程度的上限。算力决定模型有多强、能推出什么新产品，也决定员工怎样靠智能体来想点子、做实验、执行任务和做产品。公司在大幅扩大自己的数据中心，并沿着供应链签协议，锁定未来产能要用的零部件；也在签今年和2027年上线的云协议，以便更快放量。这些多年的云协议和基础设施采购协议，使本季的合同承诺增加了1070亿美元。这些投入要支撑未来模型的训练，更重要的是拿出推理容量，把个人智能体和商业智能体送到全球数十亿人，并支持正在做的其他人工智能产品。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "问答里Susan说，他们不提供2027年资本开支的具体展望，自己对未来几年需要多少产能也还在做很动态的规划。到目前为止的经验是，即便产能已经在大幅增加，公司仍一直把算力需求估低了，因为人工智能还在进步，团队不断找到新的项目，内部用途现在也很吸引人。他们的预期是，算力会更处在业务的中心，并决定模型质量、能做哪些产品、以及整个组织能有多高的产出。建设会留出弹性。如果最后不需要预想中的那么多，可以更慢地投入使用，或者在以后几年减少支出，去用满现在正在建的产能。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark用实验室的进度来说明竞争位置。Muse Spark是Meta Superintelligence Labs交出的第一个模型，他认为这项工作走在建成领先实验室的路上。问答里他说，从把实验室搭起来，到拿出一个被广泛看成很强的模型，这条实验室走得很快。他把这看成一次验证：团队配合得好，基础设施在运转，这笔相当大的赌注目前符合计划。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他把自己的路线和业界很多说法分开。那些说法是去做一种集中的东西，把社会里的生产性工作都做掉。他要的未来，是社会靠个人追求自己的志向往前走。有人关心治病这样的大事，很多人关心的是给女儿找一件合适的衬衫。购物被他当成一个具体例子：他没有听到别的实验室在讲，怎样做一套特别擅长购物的人工智能。他认为原因不是购物本身最重要，而是本地信息、社交语境、购物、个人健康，以及看懂周围的画面，都是个人超级智能的一部分；看懂画面这件事，在眼镜上会很重要。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他用OpenClaw说明消费者产品和今天那些系统的差距。那些系统现在还很粗糙，装起来要在本地准备一台电脑、进入终端、配置一堆东西。做得到的人，也许是几十万，或者几百万里偏少的数量。Meta要做的是给全球数十亿人用的版本：打磨过、调好、容易用，基础设施已经替人做好，而且真的能用。如果明显更好、又容易到人可以直接用，使用的人就能从几十万或几百万，变成面向数十亿人。从实验室的第一天起，首要重点就是把这样的东西做成产品。企业侧也一样。很多人的目标是做出东西，做网站、做产品、把产品做大，好的智能体会帮人做这些事。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "硬件上，公司仍是业界在VR上投入最大的一家，但重点是让VR业务变得可持续，把更多投入放到人工智能和眼镜上。他没有把公司定义成一家开发者工具公司。接口和编程工具可以有，但不是首要重点。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark说，公司的公式一直没变：先做能送到数十亿人的体验，等人够多，再集中变现。智能体也按这个顺序走。他看三步。第一步，技术质量够不够做出一个好产品。第二步，产品出来之后怎么放量。第三步，怎么赚钱，再把效率做上去，提高盈利能力。他没有每个产品逐月该增长多少的精确计划。他还说，人越想从里面得到更多，就越愿意为更高配、更耗算力的版本付很多钱。一旦到了产品与市场的契合，就会更着重把业务建起来，并把成本降下来。这是公司过去20年做事的方式。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "收费对象分成个人和商家，而且两边要一起工作。个人智能体帮人完成生活里不同的目标。商业智能体帮各地的创业者和企业使用Meta的工具以及其他工具，去增长、找到新客户、把现有客户服务得更好。他认为，人们会做出以前一直想要、但以前没有工具做成的东西，创业会因此明显增加。商业人工智能的早期版本已经在测，每周对话从年初增长了10倍。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Susan把远近分开。近处最主要的，是加深现有社区的参与，让广告更个性化、更吸引人、更有价值，并帮助中小企业在平台上找到客户、与客户互动。再往后，才是帮人更有生产力的智能体、面向企业的智能体，以及让这些智能体彼此打交道，希望在平台上形成活跃的商务。后一类更远。消费者这一侧，她说可以想象佣金结构，或者一个付费的高阶方案。商业人工智能今天对消息应用上的大多数企业是免费的；等进展更多，会去建立更长期的收费方式。以后还能向企业提供哪些别的服务，她说今天没有更多可讲。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "广告这边已经有几条在用的做法。价值优化套件让广告主优先买价值最高的转化，而不是只追求最低成本下的转化次数最多，年化收入运行率现在超过200亿美元，同比翻了一倍以上。创作者合作广告的收入运行率，第一季同比也翻了一倍以上，达到100亿美元。上个月，Facebook上的联盟合作扩到了更多测试伙伴，创作者可以在帖子里标出参与零售商的商品，有人购买就拿佣金；Instagram上也开始测类似的做法。超过800万广告主至少使用一种生成式人工智能广告创意工具，中小广告主用得尤其多；使用视频生成功能的广告主，在测试里转化率高出3%以上。面向合格广告主的Meta AI商业助手已经在支持的购买入口全部推出，常见账户问题的解决率高出20%。本周还以公开测试推出Meta ads AI connectors，广告主可以把广告账户直接接到一个人工智能代理上，用自己已经在用的工具分析和优化投放。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "排序模型也在改广告效果。第一季对Lattice的建模学习和GEM架构的改进，让落地页浏览广告的转化率提高了6%以上。去年下半年开始用的自适应排序模型，会在判断转化概率更高时，把请求送到更吃算力的推理模型上；第一季把它扩到站外转化之后，Facebook和Instagram主要版位的转化率提高了1.6%。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark把接下来要做的事说成几条一起推进的工作，而不是先做完一件再做下一件。",
+            "items": []
+          },
+          {
+            "type": "ol",
+            "text": "",
+            "items": [
+              "把个人超级智能送到数十亿人。助手只是起点，智能体要能理解目标，并日夜把目标做下去。今年是把智能体确立成人们使用方式的关键时期；模型还能继续变强，那会是很长的过程。短期会有能用的版本，中期和长期则是把更多能力和智能放进模型。",
+              "用新模型改推荐，并改Facebook、Instagram和广告这些核心业务。应用今天主要帮人做三件事：与人联系、了解世界、娱乐。新模型让公司第一次按事情本身去理解人在意什么、每一条内容在讲什么，从而给人看更有用的东西，也可以为具体的某个人生成内容。推荐系统的规模很大，所以这项研究是分阶段放进去的。过去几年，同样的投入能换来的参与度和广告主价值在增加，因此他们继续重投入。",
+              "Susan把今年的推荐工作说成两层。一层是继续把模型做得更大、更复杂，并加入大语言模型，让系统更懂内容，从而把人配到更符合兴趣的内容上。另一层是做下一代推荐：既做同时支撑自然内容和广告推荐的基础模型，也做基于大语言模型的推荐系统。今年先验证这些架构和方法，以后再放大。数据上，第一季把Instagram训练所用的用户互动序列长度翻了一倍，并把每一次互动描述得更丰富。",
+              "把建设算力的效率做成优势。自研芯片、AMD和Nvidia一起上，Meta Compute要在这件事上领先。推理容量优先用来把个人智能体和商业智能体送到数十亿人。",
+              "硬件分成眼镜和VR。眼镜可以更新到最新的人工智能模型和功能，从回答问题变成整天带在身边的个人智能体，帮人记住事情、完成目标。元宇宙里更多工作也会用上正在训练的模型。VR仍保持业界最大的投入，同时要把这项业务做成可持续，好把更多资源放进人工智能和眼镜。",
+              "用更小的队伍做出更多东西。Mark说，已经看到一两个人用一周做出以前几十个人要几个月才做完的东西。公司的下一代要围着这样的人来建：把大规模做产品和交付产品的基础设施做好，团队不要大于需要，奖励做出超常贡献的人，并让自己能试更多想法、接更多新项目。效率还要继续提高，但他认为未来是做出比以前多得多、质量也更高的东西。",
+              "计划在5月缩减编制，并用人工智能提高产出。Susan说，基础设施支出在增加，公司仍要高效运营，并且已经在内部传达，计划于5月缩减员工规模。更精简是为了更快，也用来部分抵消正在做的大额投资。第一季结束时员工超过77900人，比第四季少1%：一部分职能在减人，变现和基础设施这些优先方向仍在招人，两边对冲。问答里她说，还不知道未来公司的最优人数；眼下是用人工智能工具明显提高生产力，工程师的产出已经在加快，同时更想用这些工具做出比以前更多的产品和服务。"
+            ]
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -232,18 +760,569 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "未来12到24个月，公司看哪些信号，才能确认投在Muse和其他产品上的资本开支与基础设施，会带来健康的投资回报？最要紧的是Meta AI、Muse的进展，还是核心算法？",
+        "answer_summary": "Mark（CEO）：他看的是公司有没有走在做出领先模型、领先产品的路上。公司一贯的做法是，先做出能送到数十亿人的体验，等规模起来再集中变现。这次也是先投入把模型做成领先，再变成领先产品。他认为这些会是未来十年最重要的一批产品。里程碑分三步。第一步看技术质量够不够做出一个好产品。第二步看产品出来之后怎么放量。第三步看变现，再把效率做上去，提高盈利能力。他没有每个产品逐月怎么增长的精确计划，但知道这些东西大致该长成什么样。他会看使用、产品质量、模型质量，以及其他前沿模型的使用和轨迹。按这些看，他对实验室正走在成为世界领先实验室的路上比较放心。Muse Spark是质量很高的模型，它驱动的Meta AI在他看来已经是世界级助手，而且有能力把使用做大。接下来几个季度，他会跟踪下一轮训练跑得怎么样、产品怎么放量、管线里的产品还让不让人兴奋。目前他们很兴奋。同一段时间里，变现也会加上去。更具体的财务问题，他交给Susan补充。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出投资回报率的数字门槛，也没有说12到24个月要看到多大的收入或利润。他明确说没有逐月放量的精确计划，并把具体财务问题交给CFO，这一问里没有CFO的补充。",
+        "tone": "positive",
+        "answer_quote": "So I think just like anything else that we’ve done over time the basic milestones that I look at are around, first, technically, are we delivering the quality to enable a great product; then second, when you have the product, how is it scaling; and then third, you look at the monetization and then you drive up the efficiency of it towards increasing profitability.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Mark Shmulik",
+        "firm": "Bernstein",
+        "topic": "模型与产品节奏",
+        "is_new_topic": true,
+        "question_summary": "Muse Spark已经发布，研究团队接下来怎样在继续训练、把个人智能做专，以及把更多产品做出来之间分配精力？",
+        "answer_summary": "Mark（CEO）：路线图一直比较稳定，研究和产品是两条一起转的循环。研究团队负责把模型做得更智能，能力集中在商业智能体和个人智能体。第一个模型刚发布，他们正沿着扩展阶梯把能力和规模做上去，下一组更先进的模型已经在训练。这不会很快结束，会有团队一直训练更智能、更符合他们需要的模型。产品团队现在被解开了：以前用自己的旧模型，或者用其他公司的接口做原型；现在有了很强的自有模型，可以在上面做产品并放到规模上。他在开场讲了方向，更多细节会在接下来几个月清楚。两边都会反复做：继续提高智能，继续做新产品并放量。等到产品与市场契合，就会更着重把业务建起来，并把成本降下来。这是公司过去20年的做法，也是现在的计划。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "And now we’re unlocked to be able to go build things and get them to scale on top of our own models.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Mark Shmulik",
+        "firm": "Bernstein",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "今年的回报和进展，怎样影响2027年的资本开支？同行当晚提到支出可能再明显上台阶，有没有办法把这个关系量化？",
+        "answer_summary": "Susan（CFO）：他们不提供2027年资本开支的具体展望，自己也还在很动态地规划未来几年要多少产能。到目前的经验是，即便产能已经在大幅增加，公司仍一直把算力需求估低了，因为人工智能继续进步，团队不断找到有吸引力的新项目，内部用途现在也很吸引人。她预期算力会更处在业务中心，并决定模型质量、能推出什么产品，以及组织能有多高的产出。所以基础设施建设会留出弹性。如果最后不需要预想中的那么多，可以更慢地投入使用，或者在以后几年少花，去用满现在正在建的产能。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有把今年的回报折成2027年支出会增加还是减少，也没有给规模。她直接说不提供2027年资本开支的具体展望。",
+        "tone": "cautious",
+        "answer_quote": "Mark, on your second question, we aren’t providing a specific outlook for 2027 CapEx. And we are, frankly, undergoing a very dynamic planning process ourselves as we’re working through what our capacity needs will be over the coming years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "智能体商业化",
+        "is_new_topic": true,
+        "question_summary": "把智能体算力放到消费者和企业面前之后，媒体参与和商务会怎样变得更像智能体在办事？中小企业和更大的企业以前产品推进没那么快，机会在哪里？",
+        "answer_summary": "Susan（CFO）：近处最大的重点，是加深现有社区和用户的参与，让广告明显更个性化、更吸引人、更有价值，并帮助中小企业在平台上找到客户、与客户互动。这些是离今天的业务最近的机会。等智能体能力做出来，智能体可以帮人更有生产力，也有面向企业的智能体，并让这些智能体互相协作，希望在平台上建成活跃的商务。后一类更远一些。当前重点是个人超级智能，以及一个能替人办事的消费者智能体。这是现在在做的消费者体验，但她认为以后有清楚的赚钱机会，可以想象佣金结构，或者一个付费的高阶方案。企业端，智能体和把商业人工智能做大是大机会。消息平台上，人和商业人工智能每周对话超过1000万次，年初是100万次，第二季会继续向全球扩展。商业人工智能今天对消息应用上的大多数企业免费。等进展更多，会去建立更长期的收费方式，也会考虑以后还能向企业提供的其他服务，但今天没有更多可讲。",
+        "new_numbers": [
+          {
+            "number": "每周对话超过1000万次",
+            "meaning": "消息平台上，人与商业人工智能的每周对话数"
+          },
+          {
+            "number": "年初每周对话约100万次",
+            "meaning": "年初时商业人工智能的每周对话数"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "近处的参与、广告和中小企业讲清楚了，也说了以后可以是抽成或付费高阶方案。其他企业服务没有展开，她明确说今天没有更多可分享，也没有给收入规模或时间表。",
+        "tone": "positive",
+        "answer_quote": "I think I mentioned earlier in my remarks that there are over 10 million weekly conversations between people and business AIs on our messaging platforms. That’s up from 1 million at the start of the year, and we’re going to continue expanding globally in Q2.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "AI眼镜",
+        "is_new_topic": true,
+        "question_summary": "还有什么卡住今年用更多品牌推出眼镜？回头看2026年，怎样才算成功，例如卖出多少台？",
+        "answer_summary": "Susan（CFO）：她说第一季人工智能眼镜的销售继续强劲增长。扩大后的产品线需求总体上相当强，销售正从上一代Ray-Ban Meta转到最新一代。她认为这说明改进是有价值的，例如电池续航更长、视频分辨率更高。他们对眼镜的进展相当兴奋。Meta Ray-Ban Displays搭配Meta Neural Band已经看到较强的兴趣，这是一个鼓励的信号，说明消费者愿意要带显示的眼镜，也就是这个产品下一阶段的样子。这块他们会继续投入。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有说明其他品牌今年能不能推出、卡在哪里，也没有给出2026年的销量或怎样才算成功的标准。",
+        "tone": "positive",
+        "answer_quote": "Demand for the expanded portfolio lineup has generally been quite strong, and we’re seeing sales shift now from the prior generation of Ray-Ban Metas to the latest generation which I think speaks to the value of the improved features like extended battery life and features like higher resolution video capture.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "分析师所说的约一成人员缩减里，多少来自人工智能带来的效率，多少只是为了保持精简？以后员工人数相对收入增速会怎样？",
+        "answer_summary": "Susan（CFO）：她说，往后看，还不知道公司的最优规模会是多少。人工智能的能力进步很快。他们很看重用人工智能工具把生产力大幅提高，而且这已经体现在工程师的产出加快上。总体倾向是用这些工具做出比以前更多的产品和服务。与此同时，基础设施的投入非常大，他们也很看重继续把运营做高效。所以会不停地评估组织方式，确认未来几年最适合完成优先事项。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有确认人员缩减的比例，没有拆开多少来自人工智能效率、多少来自控制编制，也没有说员工人数会比收入增速更快还是更慢。",
+        "tone": "cautious",
+        "answer_quote": "We’re very focused on leveraging AI tools to substantially increase our productivity, and we’re seeing that reflected in the accelerating output from our engineers. And we’re generally approaching -- we’re approaching this with a bias toward wanting to use these tools to build even more products and services than we would have before.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产品发布节奏",
+        "is_new_topic": true,
+        "question_summary": "Muse Spark大约用10个月做出来，这对正在做的新产品解开了什么？未来九个月，基于这个模型的消费端或企业端产品，发布节奏会是怎样？",
+        "answer_summary": "Mark（CEO）：这个领域走得很快。从把实验室建起来，到拿出一个被广泛接受为很强的模型，他认为这条实验室是最快的之一。他把这看成重要的验证：团队在一起工作，基础设施在工作，事情在计划之内。上个季度他主要的收获是，这笔相当大的赌注目前符合计划。具体节奏他很难说。一是不想分享对竞争敏感的信息，二是他们更看重质量，而不是卡死一个日期。研究是在试新东西，什么时候做成就无法预先知道。产品上，外面有很多智能体，但他愿意交给自己母亲用的没有那么多。他更在意达到这个质量，而不是赶在某一周发布。不过现在的状态是，团队不是一个季度才向他汇报一次，而是一天比一天有实质进展，小团队可以进步很快。所以会看到很多新东西。这次电话会的时点，好处是Muse Spark的发布和Meta AI的第一次发布在他看来都是正面的，说明走在计划上。他现在只能画出很高一层的方向，画面会在后面几个季度清楚很多。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出未来九个月消费端或企业端产品的发布时间。理由是信息不想让竞争对手知道，而且研究和产品都更看重质量，落地时间无法预先确定。",
+        "tone": "positive",
+        "answer_quote": "And there aren’t that many that I would want to give to my mother. And I think getting to like that quality bar is something that I care about more than hitting a specific week for launching or something like that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "个人智能体",
+        "is_new_topic": true,
+        "question_summary": "OpenClaw，以及分析师提到的更适合普通消费者的Poke和近期收购的Dreamer，会怎样改变Meta AI和整体智能体的方向？",
+        "answer_summary": "Mark（CEO）：OpenClaw和其他智能体让人看到哪些事有可能做到，但今天的系统还很粗糙。装OpenClaw要在本地准备电脑、进入终端、配置一堆东西。做得到的人，也许是几十万，或者几百万里偏少的数量。Meta要谈的是给全球数十亿人的个人超级智能：体验打磨好、调好、容易用，基础设施已经替人做好，而且真的能用。这是消费侧的重点。如果有一个明显好于那些系统、又容易到人可以直接用的版本，用户就能从几十万或几百万，变成面向数十亿人。从实验室第一天起，首要重点就是把这样的东西做成产品。企业侧也一样。很多人的目标是创造东西，做网站、做产品、把产品做大，好的智能体会帮人做这些。他在开场说过，今天产品能帮人完成的目标不多，虽然都是大事：和在意的人保持联系，了解世界。他希望产品能具体理解每个人的目标，然后替人去做，需要回答问题时再回来。不管是个人目标、创业还是工作，他认为世界上每个人都会想要某种版本。人越想多得到一些，也越愿意为高配或高算力的版本付很多钱。接下来要看的是，能不能做出真正能用的版本，能不能把正在用公司产品的人，先变成数亿、再变成数十亿人在用，然后靠变现和降成本，把它变得越来越赚钱。",
+        "new_numbers": [
+          {
+            "number": "几十万人，或几百万的较小数量",
+            "meaning": "Mark估计今天能够自行安装配置这类粗糙智能体的人数"
+          },
+          {
+            "number": "数十亿人",
+            "meaning": "个人超级智能要送达的人数"
+          },
+          {
+            "number": "先到数亿，再到数十亿",
+            "meaning": "他把现有产品用户转成智能体用户时想看到的规模台阶"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有具体谈Poke或Dreamer，也没有确认收购，讲的是怎样把粗糙的智能体做成数十亿人能用的产品。",
+        "tone": "positive",
+        "answer_quote": "And to set up OpenClaw you need to like install a computer locally and then get into a terminal and configure a bunch of things that, again, like there’s -- maybe there’s hundreds of thousands of people or small numbers of millions of people who can do that. But what we’re talking about is delivering personal superintelligence for billions of people around the world.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "模型自我改进",
+        "is_new_topic": true,
+        "question_summary": "实验室会留在消费者这条路上，还是也要像其他公司那样做写代码，以及模型递归式地自己改进？",
+        "answer_summary": "Mark（CEO）：他接着回答第二个问题。团队有两个主要目标。一个是智能体这条设想。另一个是自我改进非常重要，因为没有领先的模型，就做不出领先的人工智能产品；如果模型不能自己改进，以后也不会有领先的模型。增长和改进会走到必须由模型自己完成的那一步。做不到这一点的公司，不会是领先实验室，也做不出领先产品。所以这是他们在做的基本条件。这并不必然把他们变成一家开发者工具公司。他不反对有接口或编程工具，但那不是首要重点。他认为人们把写代码和自我改进绑得太紧。写代码是模型自我改进的一个成分，不是全部。他们关注的是，为了给人和企业的个人超级智能，自我改进所需要的所有部分。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "The other is that self-improvement is really important because you can’t build a leading AI product if you don’t have leading models. So -- and you’re not going to have leading models in the future if your models can’t improve themselves, right?",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Ronald Josey",
+        "firm": "Citigroup",
+        "topic": "个人智能体",
+        "is_new_topic": true,
+        "question_summary": "个人智能体是短期、中期还是长期目标？产品什么时候能看到，是短期还是中期？",
+        "answer_summary": "Mark（CEO）：智能体的工作会有短期就能用的版本，但把更多智能和更多能力放进模型，还有很大的上行空间。业界每个月、每一代模型都能做更多事，人们用上之后就多了一些能力，他认为这是这个行业最让人兴奋的时候。他把智能体看成把这种能力交给人的产品载体。今年会是确立这个载体的关键时期，让人开始这样使用；模型的改进则会持续非常久。所以短期、中期、长期都有很多事要做。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think of the agents as the product vehicle for delivering that capability to people. And we certainly -- I think this year is going to be a key period for establishing that as the vehicle for how people are going to use this, but then the model improvement, I think, is going to be something that’s going to go on for a very long time.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Ronald Josey",
+        "firm": "Citigroup",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "把用户互动序列的长度翻倍，怎样带动更多使用？有观点认为推荐的改进已经接近尽头，是不是其实还有很大空间？",
+        "answer_summary": "Susan（CFO）：今年剩下的时间里，推荐仍有很大的改进空间，他们预期因此还能继续提高Facebook和Instagram的参与度。具体有几件。第一，继续改进数据基础设施，让模型能用更多数据来训练；把用户过去接触过的内容描述得更细；把模型架构做得更复杂，以便用上这些更大的数据，包括更长的内容互动历史。这些都是为了提高推荐的整体质量。第二，让推荐对每个人的兴趣更个性化、更相关。他们在重新设计内容检索，让展示的内容更覆盖一个人的全部兴趣，并按兴趣的宽窄来调整主题有多杂。兴趣特别集中的人，会看到相对更多这类内容；兴趣更广的人，会看到更大的主题范围。第三，继续改进基于大语言模型、让用户调节算法的功能，使用户能用更细的自然语言说，想多看什么、少看什么。分析师点出的序列长度，只是第一季众多改进中的一项，后面还有一大条改进路线。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "说明了更长的互动历史、更细的内容描述和按兴趣宽窄调整推荐会提高质量，但没有给出把序列长度翻倍本身对应多少使用时长或使用量。",
+        "tone": "positive",
+        "answer_quote": "I think first of all, there is still a lot of room to continue improving recommendations over the rest of the year, and we expect we’ll be able to do that to drive additional engagement on both Facebook and Instagram.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "广告推荐模型",
+        "is_new_topic": true,
+        "question_summary": "广告业务从较小的模型走到Muse Spark和以后的大语言模型，这一步在参与度和变现上解开了什么？",
+        "answer_summary": "Susan（CFO）：已经有工作在做。即便在现在的广告路线图里，也在改架构，以便用上更大模型的能力。过去不用GEM这种更大的架构做推理，因为规模和复杂度会贵到不划算。那些大模型的用法，是把知识迁移到更小、更轻、在运行时使用的模型上。推理模型有很紧的时延要求，必须在毫秒内找到合适的广告，这在过去限制了把它们的规模和复杂度真正做大。去年下半年，他们推出自适应排序模型，从而用得上万亿参数这一档的大语言模型规模，并改进了模型架构，还和底层芯片一起设计，以保持大规模投放广告所需要的亚秒级速度。他们还做了一种办法：如果判断转化概率更高，就把请求智能地送到更吃算力的推理模型，从而同时提高效果和推理上的投入产出。在把更多大语言模型的工作放进底层广告排序之前，这里已经有大量工作。",
+        "new_numbers": [
+          {
+            "number": "一万亿参数",
+            "meaning": "自适应排序模型用到的大语言模型规模"
+          },
+          {
+            "number": "数毫秒",
+            "meaning": "投放时找到合适广告的时延要求"
+          },
+          {
+            "number": "不到一秒",
+            "meaning": "大规模投放广告需要保持的速度"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "讲了现有广告排序怎样用上更大的模型，但没有说明Muse Spark本身对参与度或变现解开了什么，并表示底层广告排序还没有把更多大语言模型的工作纳进去。",
+        "tone": "neutral",
+        "answer_quote": "But in the second half of last year, we introduced a new adaptive ranking model which enables us to leverage LLM scale model complexity of a trillion parameters, and we made advances in the model architecture and codesign the system with the underlying silicon, so it maintains the sub-second speed that is required to serve ads at scale.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "Manus交易",
+        "is_new_topic": true,
+        "question_summary": "Manus对做智能体产品有什么战略重要性，角色是什么？技术和交易现在到了哪一步？",
+        "answer_summary": "Susan（CFO）：Manus的细节还在处理，现在没有可以更新的内容。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有说明Manus的战略角色、技术现状或交易进展，只说细节还在处理，现在没有更新。",
+        "tone": "neutral",
+        "answer_quote": "On Manus, we’re still working through the details. So we don’t have an update right now.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "购物与商务",
+        "is_new_topic": true,
+        "question_summary": "Muse Spark提到健康和购物。购物和商务能不能讲深一点？2021到2022年在Instagram和Facebook推进商务有什么教训？有没有下一代交易市场式业务的机会？",
+        "answer_summary": "Mark（CEO）：他给了一个更偏方向的回答。人工智能智能体在整条技术栈都被优化时会更好，所以公司必须既做前沿模型，也做智能体，并且为此建设基础设施。这笔大投资赌的是：个人在意的事，以及人本身，在未来会更重要。业界很多说法是，公司要做某种集中的东西，把社会里的生产性工作都做掉。他看到的世界不是这样。他的未来是，社会靠个人追求自己的志向而进步。有人关心治病这样的大事，很多人关心的是给女儿找一件合适的衬衫这种个人的事。他们要做的，是帮人实现个人智能体这个设想。他认为，帮助个人、做消费者产品，在细节上和别人做的差别非常大。购物是一个会有商业含义、消费者也会喜欢的具体例子。他没有听到别的实验室在讲，怎样做一套特别擅长购物的人工智能。原因不是购物本身最重要，而是让人能做生活里重要的事：本地、理解社交语境、购物、个人健康，以及理解周围看见的东西。看懂周围看见的东西，在眼镜上会非常重要。这些都是个人超级智能的组成部分。看Meta的投资，他认为归根结底是一套价值观：希望人工智能在社会里做什么。如果希望它帮助个人、让人工智能服务于个人的目标，那就是他们要做的，而且他认为会非常有价值。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有谈2021到2022年在Instagram和Facebook推进商务的教训，也没有说要不要做下一代交易市场。",
+        "tone": "positive",
+        "answer_quote": "But I don’t hear any other labs out there talking about how they’re building an AI that’s really good at shopping.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "根据模型改进和内容推荐，对核心业务的增长轨迹有多少能见度？公司已经很大，增速仍大约是行业的两倍，这种表现还能看到多远？",
+        "answer_summary": "Susan（CFO）：她把问题分成两层。一层是收入展望。他们已经给了第二季度指引，这里面既有一组宏观结果的范围，也有还在做的工作，就是继续提高各应用的使用和参与，以及继续把广告做得更好、更有效。另一层是这条路线图的整体轨迹。她做这件事很久了，一直很惊讶团队还能继续把这里的技术水平往前推。规划现在围绕这一点调得很细。她在几次电话会上说过，预算是按投入产出筛的，用来保证给那些他们认为会在以后几年带动增长的广告项目提供资金。这套做法已经相当成型。衡量这些投入的影响一直比较扎实，而且一直是广告收入增长很重要的驱动。这次预算又跑了一遍。就他们看得到的范围而言，他们对前面的投资机会感觉良好。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有单独回应增速大约是行业两倍还能维持多久，也没有给出比已发布的第二季度指引更长的定量增速。能见度落在那条指引，以及按投入产出筛选广告项目的流程。",
+        "tone": "positive",
+        "answer_quote": "And obviously we gave the Q2 guide which embeds, I think, both a range of kind of macro outcomes, but also the work that we’ve -- the ongoing work that we have to continue improving both the sort of usage and engagement on our family of apps and then our ability to continue making the ads better and more performant.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "产能与资本开支": 2,
+      "模型与产品节奏": 1,
+      "智能体商业化": 1,
+      "AI眼镜": 1,
+      "费用与运营": 1,
+      "产品发布节奏": 1,
+      "个人智能体": 2,
+      "模型自我改进": 1,
+      "需求与出货": 1,
+      "广告推荐模型": 1,
+      "Manus交易": 1,
+      "购物与商务": 1,
+      "指引与展望": 1
+    },
+    "new_topics": [
+      "AI眼镜",
+      "Manus交易",
+      "个人智能体",
+      "产品发布节奏",
+      "产能与资本开支",
+      "广告推荐模型",
+      "指引与展望",
+      "智能体商业化",
+      "模型与产品节奏",
+      "模型自我改进",
+      "购物与商务",
+      "费用与运营",
+      "需求与出货"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "产能与资本开支",
+      "个人智能体",
+      "模型与产品节奏"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "未来12到24个月，公司看哪些信号，才能确认投在Muse和其他产品上的资本开支与基础设施，会带来健康的投资回报？最要紧的是Meta AI、Muse的进展，还是核心算法？",
+        "answer_summary": "Mark（CEO）：他看的是公司有没有走在做出领先模型、领先产品的路上。公司一贯的做法是，先做出能送到数十亿人的体验，等规模起来再集中变现。这次也是先投入把模型做成领先，再变成领先产品。他认为这些会是未来十年最重要的一批产品。里程碑分三步。第一步看技术质量够不够做出一个好产品。第二步看产品出来之后怎么放量。第三步看变现，再把效率做上去，提高盈利能力。他没有每个产品逐月怎么增长的精确计划，但知道这些东西大致该长成什么样。他会看使用、产品质量、模型质量，以及其他前沿模型的使用和轨迹。按这些看，他对实验室正走在成为世界领先实验室的路上比较放心。Muse Spark是质量很高的模型，它驱动的Meta AI在他看来已经是世界级助手，而且有能力把使用做大。接下来几个季度，他会跟踪下一轮训练跑得怎么样、产品怎么放量、管线里的产品还让不让人兴奋。目前他们很兴奋。同一段时间里，变现也会加上去。更具体的财务问题，他交给Susan补充。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出投资回报率的数字门槛，也没有说12到24个月要看到多大的收入或利润。他明确说没有逐月放量的精确计划，并把具体财务问题交给CFO，这一问里没有CFO的补充。",
+        "tone": "positive",
+        "answer_quote": "So I think just like anything else that we’ve done over time the basic milestones that I look at are around, first, technically, are we delivering the quality to enable a great product; then second, when you have the product, how is it scaling; and then third, you look at the monetization and then you drive up the efficiency of it towards increasing profitability.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Mark Shmulik",
+        "firm": "Bernstein",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "今年的回报和进展，怎样影响2027年的资本开支？同行当晚提到支出可能再明显上台阶，有没有办法把这个关系量化？",
+        "answer_summary": "Susan（CFO）：他们不提供2027年资本开支的具体展望，自己也还在很动态地规划未来几年要多少产能。到目前的经验是，即便产能已经在大幅增加，公司仍一直把算力需求估低了，因为人工智能继续进步，团队不断找到有吸引力的新项目，内部用途现在也很吸引人。她预期算力会更处在业务中心，并决定模型质量、能推出什么产品，以及组织能有多高的产出。所以基础设施建设会留出弹性。如果最后不需要预想中的那么多，可以更慢地投入使用，或者在以后几年少花，去用满现在正在建的产能。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有把今年的回报折成2027年支出会增加还是减少，也没有给规模。她直接说不提供2027年资本开支的具体展望。",
+        "tone": "cautious",
+        "answer_quote": "Mark, on your second question, we aren’t providing a specific outlook for 2027 CapEx. And we are, frankly, undergoing a very dynamic planning process ourselves as we’re working through what our capacity needs will be over the coming years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "智能体商业化",
+        "is_new_topic": true,
+        "question_summary": "把智能体算力放到消费者和企业面前之后，媒体参与和商务会怎样变得更像智能体在办事？中小企业和更大的企业以前产品推进没那么快，机会在哪里？",
+        "answer_summary": "Susan（CFO）：近处最大的重点，是加深现有社区和用户的参与，让广告明显更个性化、更吸引人、更有价值，并帮助中小企业在平台上找到客户、与客户互动。这些是离今天的业务最近的机会。等智能体能力做出来，智能体可以帮人更有生产力，也有面向企业的智能体，并让这些智能体互相协作，希望在平台上建成活跃的商务。后一类更远一些。当前重点是个人超级智能，以及一个能替人办事的消费者智能体。这是现在在做的消费者体验，但她认为以后有清楚的赚钱机会，可以想象佣金结构，或者一个付费的高阶方案。企业端，智能体和把商业人工智能做大是大机会。消息平台上，人和商业人工智能每周对话超过1000万次，年初是100万次，第二季会继续向全球扩展。商业人工智能今天对消息应用上的大多数企业免费。等进展更多，会去建立更长期的收费方式，也会考虑以后还能向企业提供的其他服务，但今天没有更多可讲。",
+        "new_numbers": [
+          {
+            "number": "每周对话超过1000万次",
+            "meaning": "消息平台上，人与商业人工智能的每周对话数"
+          },
+          {
+            "number": "年初每周对话约100万次",
+            "meaning": "年初时商业人工智能的每周对话数"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "近处的参与、广告和中小企业讲清楚了，也说了以后可以是抽成或付费高阶方案。其他企业服务没有展开，她明确说今天没有更多可分享，也没有给收入规模或时间表。",
+        "tone": "positive",
+        "answer_quote": "I think I mentioned earlier in my remarks that there are over 10 million weekly conversations between people and business AIs on our messaging platforms. That’s up from 1 million at the start of the year, and we’re going to continue expanding globally in Q2.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "AI眼镜",
+        "is_new_topic": true,
+        "question_summary": "还有什么卡住今年用更多品牌推出眼镜？回头看2026年，怎样才算成功，例如卖出多少台？",
+        "answer_summary": "Susan（CFO）：她说第一季人工智能眼镜的销售继续强劲增长。扩大后的产品线需求总体上相当强，销售正从上一代Ray-Ban Meta转到最新一代。她认为这说明改进是有价值的，例如电池续航更长、视频分辨率更高。他们对眼镜的进展相当兴奋。Meta Ray-Ban Displays搭配Meta Neural Band已经看到较强的兴趣，这是一个鼓励的信号，说明消费者愿意要带显示的眼镜，也就是这个产品下一阶段的样子。这块他们会继续投入。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有说明其他品牌今年能不能推出、卡在哪里，也没有给出2026年的销量或怎样才算成功的标准。",
+        "tone": "positive",
+        "answer_quote": "Demand for the expanded portfolio lineup has generally been quite strong, and we’re seeing sales shift now from the prior generation of Ray-Ban Metas to the latest generation which I think speaks to the value of the improved features like extended battery life and features like higher resolution video capture.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "分析师所说的约一成人员缩减里，多少来自人工智能带来的效率，多少只是为了保持精简？以后员工人数相对收入增速会怎样？",
+        "answer_summary": "Susan（CFO）：她说，往后看，还不知道公司的最优规模会是多少。人工智能的能力进步很快。他们很看重用人工智能工具把生产力大幅提高，而且这已经体现在工程师的产出加快上。总体倾向是用这些工具做出比以前更多的产品和服务。与此同时，基础设施的投入非常大，他们也很看重继续把运营做高效。所以会不停地评估组织方式，确认未来几年最适合完成优先事项。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有确认人员缩减的比例，没有拆开多少来自人工智能效率、多少来自控制编制，也没有说员工人数会比收入增速更快还是更慢。",
+        "tone": "cautious",
+        "answer_quote": "We’re very focused on leveraging AI tools to substantially increase our productivity, and we’re seeing that reflected in the accelerating output from our engineers. And we’re generally approaching -- we’re approaching this with a bias toward wanting to use these tools to build even more products and services than we would have before.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产品发布节奏",
+        "is_new_topic": true,
+        "question_summary": "Muse Spark大约用10个月做出来，这对正在做的新产品解开了什么？未来九个月，基于这个模型的消费端或企业端产品，发布节奏会是怎样？",
+        "answer_summary": "Mark（CEO）：这个领域走得很快。从把实验室建起来，到拿出一个被广泛接受为很强的模型，他认为这条实验室是最快的之一。他把这看成重要的验证：团队在一起工作，基础设施在工作，事情在计划之内。上个季度他主要的收获是，这笔相当大的赌注目前符合计划。具体节奏他很难说。一是不想分享对竞争敏感的信息，二是他们更看重质量，而不是卡死一个日期。研究是在试新东西，什么时候做成就无法预先知道。产品上，外面有很多智能体，但他愿意交给自己母亲用的没有那么多。他更在意达到这个质量，而不是赶在某一周发布。不过现在的状态是，团队不是一个季度才向他汇报一次，而是一天比一天有实质进展，小团队可以进步很快。所以会看到很多新东西。这次电话会的时点，好处是Muse Spark的发布和Meta AI的第一次发布在他看来都是正面的，说明走在计划上。他现在只能画出很高一层的方向，画面会在后面几个季度清楚很多。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出未来九个月消费端或企业端产品的发布时间。理由是信息不想让竞争对手知道，而且研究和产品都更看重质量，落地时间无法预先确定。",
+        "tone": "positive",
+        "answer_quote": "And there aren’t that many that I would want to give to my mother. And I think getting to like that quality bar is something that I care about more than hitting a specific week for launching or something like that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "个人智能体",
+        "is_new_topic": true,
+        "question_summary": "OpenClaw，以及分析师提到的更适合普通消费者的Poke和近期收购的Dreamer，会怎样改变Meta AI和整体智能体的方向？",
+        "answer_summary": "Mark（CEO）：OpenClaw和其他智能体让人看到哪些事有可能做到，但今天的系统还很粗糙。装OpenClaw要在本地准备电脑、进入终端、配置一堆东西。做得到的人，也许是几十万，或者几百万里偏少的数量。Meta要谈的是给全球数十亿人的个人超级智能：体验打磨好、调好、容易用，基础设施已经替人做好，而且真的能用。这是消费侧的重点。如果有一个明显好于那些系统、又容易到人可以直接用的版本，用户就能从几十万或几百万，变成面向数十亿人。从实验室第一天起，首要重点就是把这样的东西做成产品。企业侧也一样。很多人的目标是创造东西，做网站、做产品、把产品做大，好的智能体会帮人做这些。他在开场说过，今天产品能帮人完成的目标不多，虽然都是大事：和在意的人保持联系，了解世界。他希望产品能具体理解每个人的目标，然后替人去做，需要回答问题时再回来。不管是个人目标、创业还是工作，他认为世界上每个人都会想要某种版本。人越想多得到一些，也越愿意为高配或高算力的版本付很多钱。接下来要看的是，能不能做出真正能用的版本，能不能把正在用公司产品的人，先变成数亿、再变成数十亿人在用，然后靠变现和降成本，把它变得越来越赚钱。",
+        "new_numbers": [
+          {
+            "number": "几十万人，或几百万的较小数量",
+            "meaning": "Mark估计今天能够自行安装配置这类粗糙智能体的人数"
+          },
+          {
+            "number": "数十亿人",
+            "meaning": "个人超级智能要送达的人数"
+          },
+          {
+            "number": "先到数亿，再到数十亿",
+            "meaning": "他把现有产品用户转成智能体用户时想看到的规模台阶"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有具体谈Poke或Dreamer，也没有确认收购，讲的是怎样把粗糙的智能体做成数十亿人能用的产品。",
+        "tone": "positive",
+        "answer_quote": "And to set up OpenClaw you need to like install a computer locally and then get into a terminal and configure a bunch of things that, again, like there’s -- maybe there’s hundreds of thousands of people or small numbers of millions of people who can do that. But what we’re talking about is delivering personal superintelligence for billions of people around the world.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Ronald Josey",
+        "firm": "Citigroup",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "把用户互动序列的长度翻倍，怎样带动更多使用？有观点认为推荐的改进已经接近尽头，是不是其实还有很大空间？",
+        "answer_summary": "Susan（CFO）：今年剩下的时间里，推荐仍有很大的改进空间，他们预期因此还能继续提高Facebook和Instagram的参与度。具体有几件。第一，继续改进数据基础设施，让模型能用更多数据来训练；把用户过去接触过的内容描述得更细；把模型架构做得更复杂，以便用上这些更大的数据，包括更长的内容互动历史。这些都是为了提高推荐的整体质量。第二，让推荐对每个人的兴趣更个性化、更相关。他们在重新设计内容检索，让展示的内容更覆盖一个人的全部兴趣，并按兴趣的宽窄来调整主题有多杂。兴趣特别集中的人，会看到相对更多这类内容；兴趣更广的人，会看到更大的主题范围。第三，继续改进基于大语言模型、让用户调节算法的功能，使用户能用更细的自然语言说，想多看什么、少看什么。分析师点出的序列长度，只是第一季众多改进中的一项，后面还有一大条改进路线。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "说明了更长的互动历史、更细的内容描述和按兴趣宽窄调整推荐会提高质量，但没有给出把序列长度翻倍本身对应多少使用时长或使用量。",
+        "tone": "positive",
+        "answer_quote": "I think first of all, there is still a lot of room to continue improving recommendations over the rest of the year, and we expect we’ll be able to do that to drive additional engagement on both Facebook and Instagram.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "广告推荐模型",
+        "is_new_topic": true,
+        "question_summary": "广告业务从较小的模型走到Muse Spark和以后的大语言模型，这一步在参与度和变现上解开了什么？",
+        "answer_summary": "Susan（CFO）：已经有工作在做。即便在现在的广告路线图里，也在改架构，以便用上更大模型的能力。过去不用GEM这种更大的架构做推理，因为规模和复杂度会贵到不划算。那些大模型的用法，是把知识迁移到更小、更轻、在运行时使用的模型上。推理模型有很紧的时延要求，必须在毫秒内找到合适的广告，这在过去限制了把它们的规模和复杂度真正做大。去年下半年，他们推出自适应排序模型，从而用得上万亿参数这一档的大语言模型规模，并改进了模型架构，还和底层芯片一起设计，以保持大规模投放广告所需要的亚秒级速度。他们还做了一种办法：如果判断转化概率更高，就把请求智能地送到更吃算力的推理模型，从而同时提高效果和推理上的投入产出。在把更多大语言模型的工作放进底层广告排序之前，这里已经有大量工作。",
+        "new_numbers": [
+          {
+            "number": "一万亿参数",
+            "meaning": "自适应排序模型用到的大语言模型规模"
+          },
+          {
+            "number": "数毫秒",
+            "meaning": "投放时找到合适广告的时延要求"
+          },
+          {
+            "number": "不到一秒",
+            "meaning": "大规模投放广告需要保持的速度"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "讲了现有广告排序怎样用上更大的模型，但没有说明Muse Spark本身对参与度或变现解开了什么，并表示底层广告排序还没有把更多大语言模型的工作纳进去。",
+        "tone": "neutral",
+        "answer_quote": "But in the second half of last year, we introduced a new adaptive ranking model which enables us to leverage LLM scale model complexity of a trillion parameters, and we made advances in the model architecture and codesign the system with the underlying silicon, so it maintains the sub-second speed that is required to serve ads at scale.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "Manus交易",
+        "is_new_topic": true,
+        "question_summary": "Manus对做智能体产品有什么战略重要性，角色是什么？技术和交易现在到了哪一步？",
+        "answer_summary": "Susan（CFO）：Manus的细节还在处理，现在没有可以更新的内容。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有说明Manus的战略角色、技术现状或交易进展，只说细节还在处理，现在没有更新。",
+        "tone": "neutral",
+        "answer_quote": "On Manus, we’re still working through the details. So we don’t have an update right now.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "购物与商务",
+        "is_new_topic": true,
+        "question_summary": "Muse Spark提到健康和购物。购物和商务能不能讲深一点？2021到2022年在Instagram和Facebook推进商务有什么教训？有没有下一代交易市场式业务的机会？",
+        "answer_summary": "Mark（CEO）：他给了一个更偏方向的回答。人工智能智能体在整条技术栈都被优化时会更好，所以公司必须既做前沿模型，也做智能体，并且为此建设基础设施。这笔大投资赌的是：个人在意的事，以及人本身，在未来会更重要。业界很多说法是，公司要做某种集中的东西，把社会里的生产性工作都做掉。他看到的世界不是这样。他的未来是，社会靠个人追求自己的志向而进步。有人关心治病这样的大事，很多人关心的是给女儿找一件合适的衬衫这种个人的事。他们要做的，是帮人实现个人智能体这个设想。他认为，帮助个人、做消费者产品，在细节上和别人做的差别非常大。购物是一个会有商业含义、消费者也会喜欢的具体例子。他没有听到别的实验室在讲，怎样做一套特别擅长购物的人工智能。原因不是购物本身最重要，而是让人能做生活里重要的事：本地、理解社交语境、购物、个人健康，以及理解周围看见的东西。看懂周围看见的东西，在眼镜上会非常重要。这些都是个人超级智能的组成部分。看Meta的投资，他认为归根结底是一套价值观：希望人工智能在社会里做什么。如果希望它帮助个人、让人工智能服务于个人的目标，那就是他们要做的，而且他认为会非常有价值。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有谈2021到2022年在Instagram和Facebook推进商务的教训，也没有说要不要做下一代交易市场。",
+        "tone": "positive",
+        "answer_quote": "But I don’t hear any other labs out there talking about how they’re building an AI that’s really good at shopping.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "根据模型改进和内容推荐，对核心业务的增长轨迹有多少能见度？公司已经很大，增速仍大约是行业的两倍，这种表现还能看到多远？",
+        "answer_summary": "Susan（CFO）：她把问题分成两层。一层是收入展望。他们已经给了第二季度指引，这里面既有一组宏观结果的范围，也有还在做的工作，就是继续提高各应用的使用和参与，以及继续把广告做得更好、更有效。另一层是这条路线图的整体轨迹。她做这件事很久了，一直很惊讶团队还能继续把这里的技术水平往前推。规划现在围绕这一点调得很细。她在几次电话会上说过，预算是按投入产出筛的，用来保证给那些他们认为会在以后几年带动增长的广告项目提供资金。这套做法已经相当成型。衡量这些投入的影响一直比较扎实，而且一直是广告收入增长很重要的驱动。这次预算又跑了一遍。就他们看得到的范围而言，他们对前面的投资机会感觉良好。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有单独回应增速大约是行业两倍还能维持多久，也没有给出比已发布的第二季度指引更长的定量增速。能见度落在那条指引，以及按投入产出筛选广告项目的流程。",
+        "tone": "positive",
+        "answer_quote": "And obviously we gave the Q2 guide which embeds, I think, both a range of kind of macro outcomes, but also the work that we’ve -- the ongoing work that we have to continue improving both the sort of usage and engagement on our family of apps and then our ability to continue making the ads better and more performant.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "营收增33%，EPS含税务优惠，资本开支上调",
+    "key_findings": [
+      {
+        "finding": "营收563.11亿美元，同比增33.1%，环比降6.0%。电话会称广告展示量增19%、平均单价增12%，总收入按不变汇率增29%。",
+        "evidence": "revenue",
+        "text": "营收563.11亿美元，同比增33.1%，环比降6.0%。电话会称广告展示量增19%、平均单价增12%，总收入按不变汇率增29%。"
+      },
+      {
+        "finding": "GAAP每股收益10.44美元，同比增62.4%，主因80.3亿美元税额优惠；剔除后7.31美元，同比增13.7%，环比降17.7%。",
+        "evidence": "eps_gaap, eps_nongaap",
+        "text": "GAAP每股收益10.44美元，同比增62.4%，主因80.3亿美元税额优惠；剔除后7.31美元，同比增13.7%，环比降17.7%。"
+      },
+      {
+        "finding": "购建固定资产189.97亿美元，同比增46.8%。电话会把含融资租赁本金的资本开支说成198亿美元，自由现金流说成124亿美元；JSON自由现金流为132.29亿美元，同比增19.3%。2026年资本开支指引上调到1250亿至1450亿美元，含融资租赁本金。",
+        "evidence": "capex, fcf",
+        "text": "购建固定资产189.97亿美元，同比增46.8%。电话会把含融资租赁本金的资本开支说成198亿美元，自由现金流说成124亿美元；JSON自由现金流为132.29亿美元，同比增19.3%。2026年资本开支指引上调到1250亿至1450亿美元，含融资租赁本金。"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2026Q2总收入是否落在580亿至610亿美元的指引区间",
+        "threshold": "580亿–610亿美元"
+      },
+      {
+        "metric_key": "tax_rate",
+        "condition": "FY2026Q2税率是否在13%至16%",
+        "threshold": "13%–16%"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "下一次电话会给出的2026年资本开支指引（含融资租赁本金）是否仍为1250亿至1450亿美元",
+        "threshold": "1250亿–1450亿美元"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "FY2026Q2 GAAP营业利润率同比是否仍下降。本季为40.6%，同比降0.87个百分点",
+        "threshold": "同比变动<0"
+      },
+      {
+        "metric_key": "other",
+        "condition": "FY2026Q2末披露的员工人数是否低于第一季末的超过77900人",
+        "threshold": "<77900人"
+      }
+    ]
   },
   "thesis_review": {}
 }

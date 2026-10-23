@@ -165,7 +165,7 @@
         {% else %}
         {% if not r.summary %}<p class="muted">{% if drivers_pending %}{{ drivers_pending }}{% else %}暂无单独解读。{% endif %}</p>{% endif %}
         {% endfor %}
-        {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
+        {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts|conflicts }}</p>{% endif %}
         {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
       </div>
       {% endif %}

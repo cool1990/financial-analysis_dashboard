@@ -96,7 +96,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>5</b></a>
     <a href="#notes">数据来源<b>1</b></a>
   </div>
 </nav>
@@ -125,7 +125,7 @@
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">营业收入</span>
@@ -133,7 +133,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+28.0%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+8.0%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">营收608.01亿美元，同比增28.0%。电话会称总收入608亿美元、同比增28%（恒定汇率增27%），主因广告展示量增14%、单价增12%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -161,7 +161,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note>营收、营业成本、研发、销售、管理费用来自 SEC companyfacts 的单季 us-gaap。毛利为营收减营业成本，申报没有单独的毛利科目，也没有把营业成本再拆开。地区收入来自 10-Q/10-K XBRL 的地区轴。第四季没有单季事实时用全年减前九个月；地区口径对不上时留空。 2016 年地区是美国与美国以外，2017 起改为美国和加拿大、欧洲、亚太、世界其他地区。 FY2019Q4、FY2020Q4 没有完整的业务分部，柱上留空。 业务柱只计广告、其他和 Reality Labs；应用家族是母项，不重复计入。</p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>广告展示量同比增长14%，各区域都健康，来自互动和用户增长以及广告加载优化。</p>
+<blockquote>In Q2, the total number of ad impressions served across our services increased 14%.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>全球平均广告单价同比增长12%，来自广告效果、相对去年第二季更好的宏观环境，以及汇率顺风。</p>
+<blockquote>The global average price per ad increased 12% year-over-year, driven by ad performance gains, improvements in macro conditions relative to Q2 of last year and currency tailwinds.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>电话会称总收入按报告口径增28%，按恒定汇率增27%，汇率贡献约1个百分点。</p>
+<blockquote>Q2 total revenue was $60.8 billion, up 28% or 27% on a constant currency basis.</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -188,7 +203,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-0.8pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-0.5pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP毛利率81.4%，同比下降0.8个百分点。电话会没有单列毛利率，费用压力主要被讲成薪酬、基础设施、法律和第三方AI token成本。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -201,7 +216,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill alert">负贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会未拆营业成本。总费用同比增长55%，主因薪酬、基础设施、法律相关成本和第三方AI token成本；毛利率降幅远小于营业利润率，说明压力主要不在毛利。</p>
+<p class="small muted">依据：指标表毛利率同比仅降0.76个百分点，而营业利润率同比降12.1个百分点。Susan说总费用增55%，但没有把其中多少归入营业成本。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
       <span class="m-name">营业费用</span>
@@ -228,7 +248,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-12.1pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-9.7pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP营业利润率30.9%，同比降12.1个百分点。电话会称经营利润188亿美元、同比降8%、利润率31%，含24亿美元法律费用和12亿美元遣散费。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -241,7 +261,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>第二季计入24亿美元法律诉讼费用和12亿美元与5月裁员相关的遣散费。剔除这两项后，经营利润本会同比增长9%。</p>
+<blockquote>Q2 total expenses were $42 billion, up 55% compared to last year and included $2.4 billion in charges related to legal proceedings and $1.2 billion in severance expenses in connection with the May 2026 head count reduction.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>即便剔除遣散费，薪酬仍因过去一年补进的技术人才、尤其是AI人才而增长；基础设施成本来自更高折旧、数据中心运营和第三方云支出。</p>
+<blockquote>Year-over-year growth was primarily driven by increases in employee compensation, infrastructure costs, legal-related costs and third-party AI token costs.</blockquote>        </div>
+<p class="conflict">冲突：电话会把营业利润率说成31%，指标表为30.88%，差异来自四舍五入。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
       <span class="m-name">营业利润（GAAP）</span>
@@ -249,7 +279,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-8.2%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-17.9%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -262,7 +292,7 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+<p class="muted">暂无单独解读。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
       <span class="m-name">净利润率（GAAP）</span>
@@ -270,7 +300,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-12.5pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-21.5pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -283,7 +313,7 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+<p class="muted">暂无单独解读。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
       <span class="m-name">净利润（GAAP）</span>
@@ -291,7 +321,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-13.6%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-40.8%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -304,7 +334,7 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+<p class="muted">暂无单独解读。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_nongaap" aria-pressed="false" aria-controls="fin-panel-eps_nongaap">
       <span class="m-name">稀释每股收益（Non-GAAP）</span>
@@ -312,7 +342,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+2.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+0.5%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum">Non-GAAP。公司没有公布剔除后每股收益。新闻稿：净利润 158.48 亿美元，稀释股本 25.66 亿股，法律费用 24 亿美元，遣散费 11.8 亿美元，有效税率 16%。Non-GAAP = (15848 + (2400+1180)×(1-0.16)) / 2566 = 7.35。2026 年第三季电话会说当季法律费用有不可抵扣部分；第二季新闻稿没有拆开抵扣比例。</span>
+      <span class="m-sum">文件中的Non-GAAP每股收益为7.35美元，同比增2.9%。公司没有公布这个数字，只说剔除法律费用和遣散费后经营利润同比增长9%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_nongaap" data-fin-panel="eps_nongaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -324,6 +354,13 @@
       <div class="charts fin-charts" data-fin-charts data-cols="0">
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>7.35美元是用净利润、24亿美元法律费用、12亿美元遣散费和16%税率重建的，不是公司披露的口径。</p>
+<blockquote>Excluding the Q2 legal charges and severance expenses, our second quarter operating income would have increased 9% year-over-year.</blockquote><p class="small muted">依据：指标表写明 Non-GAAP = (15848 + (2400+1180)×(1-0.16)) / 2566 = 7.35。电话会只说剔除后经营利润增9%，没有给出7.35。</p>        </div>
+<p class="conflict">冲突：公司未公布Non-GAAP每股收益。7.35美元是季度文件按法律费用和遣散费税后加回重建的。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
@@ -331,7 +368,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-13.4%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-40.8%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP稀释每股收益6.18美元，同比下降13.4%。电话会称净利润158亿美元、合每股6.18美元，税率16%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -344,7 +381,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>法律费用和遣散费抬高费用，经营利润同比下降8%，把每股收益从去年同期压下来。</p>
+<blockquote>Net income was $15.8 billion or $6.18 per share.</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
@@ -352,7 +394,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+24.7%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-1.1%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">经营现金流318.62亿美元，同比增24.7%。电话会没有解释经营现金流。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -365,7 +407,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会只给出含融资租赁本金的资本开支和自由现金流，没有说明经营现金流为何在净利润下降时仍然增长。</p>
+<p class="small muted">依据：指标表经营现金流318.62亿美元，同比+24.7%，环比-1.1%。原文没有对应句子。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
@@ -373,7 +420,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+82.1%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+58.5%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表资本开支301.16亿美元，同比增82.1%。电话会称含融资租赁本金的资本开支为311亿美元，用于服务器、数据中心和网络。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -386,7 +433,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>资本开支增加来自服务器、数据中心和网络基础设施，服务于AI产能。</p>
+<blockquote>Capital expenditures, including principal payments on finance leases, were $31.1 billion, driven by investments in servers, data centers and network infrastructure.</blockquote>        </div>
+<p class="conflict">冲突：电话会资本开支含融资租赁本金，为311亿美元；指标表购建固定资产为301.16亿美元。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
       <span class="m-name">自由现金流</span>
@@ -394,7 +446,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-80.6%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-86.8%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表自由现金流17.46亿美元，同比下降80.6%。电话会称自由现金流为7.84亿美元，因资本开支口径不同而低于指标表。</span>
     </button>
     <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -407,39 +459,250 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>自由现金流转弱，是因为基础设施资本开支大幅上升，而不是因为经营现金流下降。</p>
+<blockquote>Free cash flow was $784 million.</blockquote>        </div>
+<p class="conflict">冲突：电话会自由现金流7.84亿美元；指标表为经营现金流减购建固定资产，等于17.46亿美元。差额对应电话会多计入的融资租赁本金。</p>      </div>
     </div>
   </div>
   </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 2 项 · 行业展望 6 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
-      <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>营收<small class="basis">下季</small></td>
+            <td>$61.00B – $64.00B</td>
+            <td class="c-up">+2.8%</td>
+            <td class="c-up">+22.0%</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr>
+            <td>资本开支<small class="basis">FY2026全年</small></td>
+            <td>$130.00B – $145.00B</td>
+            <td class="c-na"></td>
+            <td class="c-up">+97.3%</td>
+            <td class="c-na"></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境（技术变化）</h4>
+          <div class="outlook-copy">
+            <p>Mark把这一章定义成把超级智能交到每个人手里，而不是集中在少数机构。他在会后发表的评论里说，Meta一直做的是把技术权力交给个人，让人按自己的方式连接；做AI也沿这条路，而且他认为这是社会进步的方式。若做成，生意也会跟着强。</p>
+            <p>算力是外部约束。Mark（CEO）在回答既卖算力又买算力时说，需求远远超过全部供给，所以公司既收到大量购买其算力的报价，自己也有很多内部用途。Susan（CFO）在正文里说，行业历史上对这波人工智能采用建得不够，现有产能包括Meta自己的都极其值钱；更长期，供应链还得为公司和其他人预期的人工智能体验把产能建出来。因此她认为近端产能比远端更值钱，而且可预见的未来全行业产能仍紧。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化</h4>
+          <div class="outlook-copy">
+            <p>Mark说每天至少有36亿人使用一款应用。Instagram日活到20亿，Threads月活超过5亿，是增长最快的对话应用；Facebook日活早已超过20亿。WhatsApp在世界杯决赛的消息峰值达到每秒3000万条。美元口径的广告收入同比增速，快于任何其他公司已披露的广告业务，所以他说这些AI投入正在兑现。</p>
+            <p>新需求已经有使用量。平台上有900万小企业在用至少一种AI广告创意工具。商业智能体本季在WhatsApp和Messenger全球推出，已经有超过100万商家每周用它们跟客户说话或完成销售，Instagram上也在铺。自重建Meta AI并接入Muse Spark以来，每天与助手互动的人数增加60%，而且周环比还在加快。眼镜早期销售超出预期。Susan补充，Instagram全球使用时长同比双位数增长，主要来自Feed和Reels推荐改进；Facebook视频使用时长全球增9%，美加增10%以上。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化</h4>
+          <div class="outlook-copy">
+            <p>Mark说，作为Meta Compute的一部分，公司前一天宣布与BlackRock成立战略合作，在得州El Paso建一座1吉瓦的新数据中心。他预期算力的很大一部分会用于训练模型、增长核心业务、交付个人智能体和新产品，同时也预期服务大客户的业务会变大。公司已经有API，正在铺商业智能体，还收到不少以显著溢价购买其算力的报价，路线图上还有更多编码和生产力工具。</p>
+            <p>Susan把产能计划说成两段。当前是把2026和2027年的产能尽量做大：过去一旦有增量产能，扩Reels这类体验就被证明很值钱，她相信这个时间窗口也一样。2028年及以后更难预测使用量曲线，所以做法是先把数据中心和网络基础铺下，把买服务器的决定留到以后，让长寿命资产能按AI采用节奏调整。内部自研芯片用来换长期的供应链筹码和投资回报。她在最后一问里把“把2026和2027年产能做满”解释成两件事：公司现在并且在可预见的未来是需求受限，核心业务仍有很多投了算力就有正回报的地方；同时长期建设本身有约束。所以眼下为2028年做的规划，重点是留下土地和电力的灵活性，芯片和其他大额采购往后决定。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>Mark说广告业务按美元计的同比增速快于其他已披露公司。编码智能体是过去一年真正起来的第一个智能体市场，因为客户更愿意自己调试，而且编码是闭环的数字活动，相对好训练。他赌的是消费级个人智能体最终会是极大的市场：往外看大约五年，很难想象没有数十亿人拥有一个理解其目标、全天替他办事的个人智能体。但给消费者做和给开发者做不一样，要服务数十亿人就必须开箱即用，不能靠进终端慢慢调。</p>
+            <p>模型竞争上，Mark说目前开源模型还没有前沿模型强，所以不能只靠别人的开源权重，依赖别人也不稳妥。公司会开放和封闭一起做，预计不久会再发一些开源模型，但并不教条。他同时说，通用评测上差几个点并不能说明技能组合相同；个人超级智能和面向小企业的商业智能体，需要的技能可能和别的实验室调的不一样。全栈自己做模型，是他眼里和分发、扩产品并列的持久优势。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>Mark把变现说成混合模式：订阅、按用量计价，以及越来越像广告系统那样，只有给商家做出结果才收费。长期这会让公司在算力上跑一个有效拍卖，类似今天对广告主的做法。Meta One是新的订阅，跨应用提供更多工具和AI功能；需求起来后还会有不同档位和价格。Muse Spark已通过新的公开API提供，并在OpenRouter向美国开发者开放，后面还会扩渠道、国家和企业客户。</p>
+            <ul><li>现有广告关系的延伸：对数百万广告主和数亿小企业，用消息应用上的商业智能体继续帮他们接触客户，按结果收费，而不是追求眼前把销售额做到最大。</li><li>新的企业肌肉：编码和内部生产力工具先为自己建，再卖给小企业或更大的企业，这和历史上的营销销售不是同一块肌肉。</li><li>直接卖算力：报价相对公司的取得成本有明显溢价，但Mark认为卖智能的利润率会显著高于直接卖算力，所以不会把算力全部卖掉换短期利润。</li></ul>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略</h4>
+          <div class="outlook-copy">
+            <p>Mark开场把投入分成三块，并说这三块都已经开始出结果。第一，AI在加速核心业务：应用体验、广告主效果，以及内部把产品做出来的速度。推荐系统里接入大语言模型，是为了从第一性原理理解内容为什么吸引人、用户想做什么，从而展示更相关的内容；Muse图像和视频模型则会把可发现的内容从“朋友和关注的人”加上“未关注的创作者”扩展成几乎无限的个性化内容。广告侧用大语言模型扩大能考虑的自然内容和广告行为上下文，Facebook和Instagram的相关性和转化都明显提高。</p>
+            <ol><li>个人智能体：要能全天替用户达成健康、关系、财务等目标。编码是第一个真正起来的领域，因为工程师愿意花时间调；个人智能体必须是开箱即用的消费品，简单到数十亿人能用。WhatsApp已经是人们使用Meta AI的主要界面，公司还在消息应用上做更多智能体的平台，并在本季为WhatsApp和Meta AI应用上线隐身模式，让Meta也看不到这些私密对话。</li><li>商业智能体：已在WhatsApp和Messenger全球可用，每周超过100万商家在用。智能体每天跟客户说话，会把洞察带回商家；下一步包括汇总隔夜对话、指出客户在要什么，再往后是建议怎么增长、给出竞争情报。更长期想做成“生意合一”的服务，让人用Meta的平台把一家生意开起来并运转。</li><li>硬件：眼镜可以全天戴着、帮忙又不把人从当下拉开。Mark说眼镜仍是有史以来增长最快的消费电子之一。刚和依视路陆逊梯卡合作推出Meta眼镜，其中有和Kylie Jenner设计的款式，是第一批出厂就带Muse Spark、能理解用户所见的眼镜。9月23日的Connect还会讲更多。</li></ol>
+            <p>实验室策略是沿着缩放阶梯从较小模型做到更大模型。已发布的Muse Spark和1.1是这个阶梯上的一档，公司同时在训练更大的模型。服务数十亿人时，难题用更先进的模型，绝大多数提示用更简单、更高效的模型。Mark说过去十多年公司证明了，一旦产品和形态成立，Meta大概是世界上最擅长把体验扩到数十亿人的公司。他在回答Ken时把公司说成全栈技术公司：自建数据中心、基础设施、芯片和底层软件，模型主权是这个栈往后的一部分。他承认这是全行业的大赌注，他个人赌的是投入的人长期会得到回报。</p>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">12 轮 · 部分回答 / 回避 5</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>12</b> 轮</span>
+<span>热门话题：<b>AI 产品与模型、产能与资本开支、竞争格局</b></span><span>新出现：<b>AI 产品与模型、客户与订单、竞争格局</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 5</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">在消费者智能体、商业智能体、API和出租算力这些机会里，哪一块能在2026和2027年先放量，并向投资者展示可量化的重大资本回报？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：算力里很大一部分先用于把模型训练成领先实验室，他认为这是重要投入。其余才分到改进核心业务、即将发布的新消费产品、API、商业智能体、路线图上的开发者工具，以及直接卖算力。卖算力已经有不少报价，溢价相对取得成本是有意义的。他判断卖智能的利润率会继续显著高于直接卖算力，但卖算力本身也是大机会。分析师想听哪一块先放得最大，他的回答是乐观地认为这些方向都会有实质性增长，而且很快还会有更多可以讲的。他没有指出单一的先放量项目，也没有给资本回报数字。</p>
+<p class="small">未回答的部分：没有指出2026或2027年哪一项会先放量，也没有给可量化的资本回报。</p><blockquote>I&#39;m actually quite optimistic that we&#39;re going to see meaningful growth in all of these areas.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">对2027年资本开支有没有早期看法，包括什么会把数字往上推、什么会往下压，以及这笔多年建设怎么融资？</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill alert">回避</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Susan（CFO）：现在不提供2027年资本开支的具体展望。基础设施规划仍然非常动态，就算今年的展望里也留了一组结果。正文里说过，当前计划是把2026和2027年的产能尽量做大，同时保留2028年及以后继续增长的灵活性，也好等更能判断2028年以后的实际需求时再决定买服务器。未来几年要多少产能还在算。她补充，一般认为近端产能比长期产能更值钱，规划过程仍然很动态。</p>
+<p class="small">未回答的部分：明确说现在不给2027年资本开支展望，也没有讲上修或下修的来源。</p><blockquote>we aren&#39;t providing a specific outlook for 2027 CapEx at this time.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Eric Sheridan<small>Goldman Sachs</small></span>
+        <span class="qa-q">企业机会里，有多少是今天就能沿现有广告和营销的销售方式延伸，有多少必须新建成套的企业销售能力？</span>
+        <span class="qa-tags">
+<span class="pill">客户与订单</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mark（CEO）：企业机会是组合。一块是延伸现有生意，也就是卖给那些要接触客户、直接卖东西的商家和营销方，这已经是Facebook和Instagram的绝大部分生意。商业智能体可以在消息应用和其他界面上继续跟客户互动，并且像广告系统一样，只有交付结果才收费。他把这块看成对数百万广告主、数亿使用平台的小企业已有销售和合作关系的延伸，应该比较自然。做法不是把近期销售额做到最大，而是把用户结果做大，并建一个稳的拍卖，这是过去对生意有用的方式。</li><li>另一块是其他企业客户。编码和内部生产力工具，一部分是因为公司自己需要、而且要调到适合自己；现在有了这些工具，就觉得无论小企业还是更大的企业都有大机会可卖。这和历史能力不太一样，怎么建还会再讲。他强调企业机会是这些东西的总和，不只是卖算力，也包括API、生产力服务，以及营销以外的商业智能体。这会是公司要新练的一块肌肉。</li></ul></div>
+<blockquote>So we view this as an extension of the sales and the partnerships that we have with many millions of advertisers and hundreds of millions of small businesses that use our platforms.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Eric Sheridan<small>Goldman Sachs</small></span>
+        <span class="qa-q">未来几年的资金来源怎么配：既要敢花，又要安排债务、股权和其他资本的比例。昨天和BlackRock的交易在这个框架里是什么位置？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Susan（CFO）：资金来源是财务规划里一直在认真看的事。强的经营现金流让公司在为基础设施出资时处于有利位置。近年资本结构也在提高债务占比，以降低资本成本；对时间很长的投入、尤其是AI基础设施，继续增加成本低、期限长的资金，她认为是审慎的。口径也扩大到像昨天和BlackRock那样的合作。以后还会按项目继续评估不同资金来源。她没有给债务和股权的目标比例。</p>
+<p class="small">未回答的部分：讲了经营现金流、增加长期债务和合作出资的原则，没有给债务与股权的配比。</p><blockquote>we&#39;ve also been evolving our capital structure in recent years to include a greater mix of debt as we work to bring down our cost of capital</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Mark Shmulik<small>Bernstein</small></span>
+        <span class="qa-q">消费者会不会很快跨过“把AI当高级搜索来用”的效用差距，还是还得再耐心等？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mark（CEO）：有些东西已经跨过去了。AI和别的技术不一样的地方是大约每年、而且周期可能加快，会出现新能力，从而出现新产品线。消费者助手是一条，Meta AI在做，竞争对手也有自己的产品；过去一年编码智能体市场长得很快，这是第一个真正的智能体市场。编码先起来，是因为客户技术化、愿意自己把它调通，而且编码天生是数字的、闭环的，某种程度上更好训练。他押的一个注是，消费者个人智能体最终会是极其重要的巨大市场。往外看五年，很难想象没有数十亿人拥有一个理解自己目标、全天24小时替自己办事的个人智能体，领域可以是健康、爱好、个人财务、生产力、把家运转得更好、关系、职业。</li><li>给消费者做和给开发者做不同。要服务的不是几百万人而是数十亿人，它必须能用、必须简单。今天很多原型智能体要费劲调、要进终端才能装起来，一开始像魔法，过一阵又可能坏掉。谁能把“就是能用”的个人智能体做出来，谁就拿到AI的下一个大机会。公司对此非常兴奋，同时仍在做Meta AI、商业智能体和继续推进模型。他知道很快会发布，但现在还没发，所以业绩会上只能说到这里。他认为这几乎必然有人做成，而且很贴Meta的长处：做能触达数十亿人的消费品，一旦跑通就擅长放大，也擅长建基础设施去撑这些很吃算力的应用。</li></ul></div>
+<blockquote>I think that it&#39;s extremely unlikely if you look out 5 years from now, for example, that whatever period of time you want that you don&#39;t have billions of people with a personal agent that understands your goals and it is just working on your behalf 24/7 to achieve your goals.</blockquote>        <p class="small">新数字：5年（Mark用来想象个人智能体普及的时间跨度）；数十亿人（他预期会拥有个人智能体的用户规模）；24/7（个人智能体替用户办事的方式）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Douglas Anmuth<small>JPMorgan</small></span>
+        <span class="qa-q">大语言模型越来越能带来排序和推荐的提升。这条路线图走到哪了，还要靠更好的模型和更多算力走多远？</span>
+        <span class="qa-tags">
+<span class="pill">需求与出货</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Susan（CFO）：今年剩下的时间和2027年，推荐都还有继续改进的空间，并预期这会继续带动Facebook和Instagram的互动。第一，推荐会更个性化、更贴用户兴趣，办法是推进模型和架构，把兴趣抓得更准，也对当下在意的事反应更快。AI要承担的包括：把基于大语言模型的内容理解扩出去，更懂人们看重的帖子和创作者；用AI把高质量、新鲜、正在发生的内容浮出来，并降低低质量内容的占比。第二，继续改进数据基础设施，让模型能在更多数据上训练、也用得更有效：把用户过去互动过的内容描述得更细，用更细的内容去丰富历史互动序列，从而让模型分清哪些互动对用户更有价值或更没价值；同时在Facebook和Instagram上加长训练用的互动序列，并提高模型架构的复杂度，以吃下更大的数据集。第三，内容理解上已经用大语言模型走出一段，接下来会进一步放进推荐和内容政策执行，因为它们能把内容理解得更深。她对这整块工作很乐观。公司也在用基于大语言模型的智能体方法改造推荐系统，本半年排名智能体推出的次数增加了，这也能让工程师更有生产力。</p>
+<blockquote>we certainly see further headroom to continue improving recommendations over the rest of the year and into 2027.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Douglas Anmuth<small>JPMorgan</small></span>
+        <span class="qa-q">外部有不少人要买公司的算力，公司同时又在向第三方买产能。这是时间差和过渡，还是训练与推理要用不同的芯片？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：最上层的观察是，所有需求加起来，算力远远不够，所以既有很多人要买公司手里的算力，公司自己也有很多认为会很有价值的内部用途。经营上常见的取舍是，今天变现多少、又为以后留多少资产，这永远是一个组合：不能只做长期、不去证明近期已经存在的市场，但把算力全部卖掉、吃掉短期利润，而放弃在上面做智能，也是蠢的，因为智能会是算力价值的倍数，而且会复利。他的答案就是公司正在做的：用大量资本把算力建出来，确信在合适的时候可以直接把算力变现，同时也有很多把算力上面的智能变现的用途，包括谈过的企业场景、消费场景，以及核心业务本身——不一定是还没讲的新产品，也包括继续给排序、推荐和广告加智能。因此会出现一段提前量：现在投资建数据中心，未来某个时点上线，上线前拿不到价值。他看到的是这些需求都很大，所以想把这些不同的生意都做大。</p>
+<p class="small">未回答的部分：用需求远大于供给和短期变现对长期资产的组合来回答，没有区分训练和推理各自用什么芯片。</p><blockquote>the high-level observation is that there&#39;s just nowhere near enough compute for all the demand.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Justin Post<small>Bank of America</small></span>
+        <span class="qa-q">AI实验室的高级领导大约一年前加入。实验室现在表现如何，市场能不能看到模型、芯片或其他产品的推出速度加快？实验室在建什么样的可持续优势？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mark（CEO）：他对现在的轨迹相当满意。已经发了几个他认为在早期缩放阶梯上相当好的模型，而且如他所说，正在把更大、更先进的模型做上去，对这些也很兴奋。这里有智能的一面，也有数据的一面。任何一个想进入的产品类别，都会有飞轮：从那个社区的人怎么用里学习，做得越好反馈越多，产品就必然更好。人们可以理解地迷恋智能，但要服务好人，数据和知识这一部分非常重要。若讲的是个人超级智能，对这个人生活里在发生什么、目标是什么有清楚的心智模型，会是很重要的一块。不同公司在不同市场、不同部分起步优势不同。</li><li>一开始就做这几件事，一是技术是通用的，智能建出来可以用于多个用途；二是要投资把飞轮建起来，他认为可持续优势是这样来的。Meta已经证明，一旦有能用的产品和形态，他甚至会说公司大概是世界上最擅长把这些体验扩到数十亿人的公司。所以他对个人智能体的工作感觉相当好，对商业智能体也很好，因为已经有广告主和小企业的底盘，以及把这件事铺开的能力。这些是持久优势，再加上正在建的数据飞轮。研究侧则是把团队管好、低戏剧性地长期复利。这不是一个干净的数学解释，但他认为生意就是这样运作的。</li></ul></div>
+<p class="small">未回答的部分：对实验室轨迹是肯定的，但没有说市场何时会看到模型或芯片的推出速度加快。</p><blockquote>I&#39;m quite happy with the trajectory that we&#39;re on. We&#39;ve released a few models that I think are quite impressive on our early scaling ladder.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Ross Sandler<small>Barclays</small></span>
+        <span class="qa-q">Muse Spark 1.1接近帕累托前沿，但在智能谱系里偏便宜的一端。公司是否认为低成本端和高性能端都要竞争？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：训练大模型时，每一段都会看到新行为，所以做法是从小模型建到大模型。已经发布的模型处在往上爬的某一档规模，公司还在把更大的模型做上去。他认为以模型规模和实验室所处阶段而言，Muse Spark 1和1.1都非常好，他对它们感觉不错。同时也要有更先进的模型，所以在放大模型，并围绕这件事建研究基础设施。与此同时，也要有更高效的模型，因为大规模服务消费者时用的很多是这类。若要服务数十亿人，难题得有更先进的模型，绝大多数提示则要用更简单、更高效的模型来答。效率和能解出企业和客户最难的问题，两头都要。</p>
+<blockquote>if you&#39;re serving billions of people, you want the ability to have more advanced models for things that are very hard problems, and you want the ability to serve the vast majority of prompts from simpler and more efficient models.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Ross Sandler<small>Barclays</small></span>
+        <span class="qa-q">实验室领导也谈过回到几年前的开源。这和AI产品、模型的变现讨论怎么放在一起？</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：公司一直觉得开源是生态里重要的一部分，对世界有好处，也能带来对自己基础设施栈的社区投入和改进。但一直说的是开放和封闭混合，现在仍然如此。把Meta Superintelligence Labs拉起来时，反倒是做开源模型要多花一些功夫：如果只做封闭、只为自己的用途建，可以更参差；一旦开源、会被用在很多事情上，就要更全面。他想先保证实验室不受阻碍地去建最智能的模型。预计某个近期时点会回到发布一些开源模型，但如一直所说，并不教条。开源重要，想为生态做贡献，计划是开放和封闭都做。</p>
+<blockquote>we expect that we will get back to releasing some open source models at some point soon.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Kenneth Gawrelski<small>Wells Fargo</small></span>
+        <span class="qa-q">开源权重模型若扩散，会不会改变公司开发封闭前沿模型的看法？能不能因此不必自己做前沿模型？</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mark（CEO）：问题实质上是，因为已经有一些开源权重模型，能不能只靠它们。基本答案是不能，因为现在开源模型没有前沿模型强。另外始终有政策和别的公司会怎么做的问题，像Meta这样的公司能不能把依赖当成一件可靠的事，他认为非常棘手。两边他都相信自己能做得更好，而且这种依赖有风险，他不认为这是对的做法。</li><li>把Meta退一步看，很多人只看到表层：做了一些社交媒体应用，有广告生意。实际上它是全栈技术公司，自建数据中心、基础设施、芯片和底层软件。Facebook早期能成，是因为它在别的社交网络又慢又没效率时真的能用。他因此认为，对自己的模型有主权，会是这个栈往后重要的一部分。这也是别人在意开源的原因：即便自己建不出这些模型，也不想只能依赖少数封闭实验室。开源并不会取消API机会，因为仍然要有人把模型跑起来、做推理、跑得有效率，有算力本身会继续是生意优势。这些事不一定互相冲突。</li><li>挑剔的客户和公司会想知道自己掌握命运、能信任所用的模型、数据是安全的、没有被送到竞争对手那里。所以开源重要，但对自己来说，把模型建出来同样关键。模型在通用评测上可能只差几个点，但技能组合其实不同，像人有尖峰也有短板。若要做给人的个人超级智能，或给小企业的商业智能体，需要的技能可能和别的实验室在调的不一样。全栈地做Instagram推荐和广告系统，是过去拿到结果的方式；他相信全栈模型也会是以后做这些用例的很大一块优势。他承认这是大投入、大赌注，但看到技术在起作用，对实验室轨迹满意，对要来的产品感到兴奋。他个人赌的是，在这件事上投入的人长期会得到回报。</li></ul></div>
+<blockquote>right now, the open source models are not as strong as the frontier models. So no is the basic answer.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Kenneth Gawrelski<small>Wells Fargo</small></span>
+        <span class="qa-q">把2026和2027年产能做满，说的是需求还是供给？是计划把建到2027年的产能都留给内部用，还是2028年以后的建设会按产品和需求再评估？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Susan（CFO）：说聚焦2026和2027年产能，其实有两个因素。一是公司今天、并且预期在可预见的未来都是需求受限，这也包括核心业务：如果有算力，仍有很多投下去回报为正的地方。二是建设产能的长期约束不确定，她在前面讲过供应链还要继续建。所以看过2027、看到2028和更远，世界和公司自己的内部需求都会变很多，到时候很多牌已经翻开。今天为2028年做的规划，重点是灵活性：有土地和电力，但买芯片和其他大额项目的决定放到更后面再做。眼下知道2026和2027年有很多好的产能用途，建的就是这个。</p>
+<blockquote>we are today and expect to be in the sort of foreseeable future demand constrained.</blockquote>      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 1 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：— · 文件编号 — · 文字稿：—</p>
+    <p>新闻稿：— · 文件编号 — · 文字稿：Motley Fool 文字稿</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。</li></ul>  </div>
 </details>

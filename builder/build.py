@@ -221,9 +221,40 @@ METRIC_SECTIONS = [
     ("fcf", "自由现金流", False),
 ]
 
+# 电话会多写出来的指标。页面行名用中文，不把字段名直接显示出来。
+METRIC_LABELS.update(
+    {
+        "gross_profit_gaap": "毛利（GAAP）",
+        "gross_profit_nongaap": "毛利（Non-GAAP）",
+        "operating_income_gaap": "营业利润（GAAP）",
+        "operating_income_nongaap": "营业利润（Non-GAAP）",
+        "net_income_gaap": "净利润（GAAP）",
+        "net_income_nongaap": "净利润（Non-GAAP）",
+        "wafer_revenue_mix": "晶圆收入结构",
+    }
+)
+
 
 def _metric_label(key: str | None) -> str:
     return METRIC_LABELS.get(key or "", key or "—")
+
+
+def _conflicts_text(items) -> str:
+    """页面上的冲突说明用中文句子。结构化字典只取 detail，不把字段名打出来。"""
+    if isinstance(items, str):
+        return items
+    parts: list[str] = []
+    for item in items or []:
+        if isinstance(item, str):
+            text = item
+        elif isinstance(item, dict):
+            text = str(item.get("detail") or item.get("summary") or "")
+        else:
+            text = ""
+        text = text.strip()
+        if text:
+            parts.append(text)
+    return "；".join(parts)
 
 
 def _stage_label(stage: str | None) -> str:
@@ -385,13 +416,15 @@ def _metric_sections(doc: dict[str, Any]) -> list[dict[str, Any]]:
             metric = fin.get(key)
             if not (isinstance(metric, dict) and metric.get("value") is not None):
                 continue
+        metric = fin.get(key)
+        shown = (metric or {}).get("display_label") if isinstance(metric, dict) else None
         sections.append(
             {
                 "key": key,
-                "label": _metric_label(key),
+                "label": shown or _metric_label(key),
                 "is_ratio": _is_ratio_key(key),
                 "is_eps": "eps" in (key or ""),
-                "metric": fin.get(key),
+                "metric": metric,
                 "driver": drv,
             }
         )
@@ -1295,7 +1328,7 @@ def _activity_rows(
                 dict(_NA),
                 dict(_NA),
                 "新闻稿里没有稀释加权平均股。",
-                [_structure_driver("没有读到 Weighted-average shares 或 shares used in per share calculations。", "不拿每股收益冒充股数。")],
+                [_structure_driver("新闻稿没有给出计算每股收益所用的加权平均股数。", "不拿每股收益冒充股数。")],
             )
         )
 
@@ -5951,6 +5984,7 @@ def _env() -> Environment:
     env.filters["period_zh"] = _period_zh
     env.filters["warn_zh"] = _humanize_warning
     env.filters["qa_lines"] = _qa_answer_lines
+    env.filters["conflicts"] = _conflicts_text
     env.policies["json.dumps_kwargs"] = {"sort_keys": True, "ensure_ascii": False}
     return env
 
