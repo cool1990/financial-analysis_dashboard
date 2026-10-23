@@ -25,14 +25,14 @@
     "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
-      "新闻稿含 NT$/TWD。reporting_currency=USD，未标明美元的金额不能当成 USD。",
-      "eps_gaap_diluted 采用新闻稿 US$4.60 per ADR，优先于 NT$ 普通股 EPS，不做汇率换算",
-      "net_income_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
-      "gross_profit_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
-      "operating_income_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
-      "晶圆收入占比按新闻稿的制程节点百分比记入，不作为美元金额",
-      "kpis.advanced_node_revenue 不是美元金额，已移出金额科目",
-      "kpis.hpc_revenue 空壳已移除"
+      "新闻稿里同时有新台币和美元。报表货币是美元，没有标明美元的金额不能当成美元。",
+      "稀释每股收益采用新闻稿里的每份美国存托凭证4.60美元，优先于普通股的新台币每股收益，不做汇率换算。",
+      "净利润只有新台币、没有美元对照，已清空，以免被当成美元。",
+      "毛利只有新台币、没有美元对照，已清空，以免被当成美元。",
+      "营业利润只有新台币、没有美元对照，已清空，以免被当成美元。",
+      "晶圆收入占比按新闻稿的制程节点百分比记入，不作为美元金额。",
+      "先进制程收入不是美元金额，已移出金额科目。",
+      "高性能计算收入是空项，已移除。"
     ]
   },
   "scorecard": [
@@ -354,7 +354,7 @@
     "metrics": [
       {
         "metric": "revenue",
-        "summary": "指标表收入为467.2亿美元。电话会称美元收入46.7 billion、环比增16.2%，高于第三季指引上沿，主因领先制程需求；HPC环比增22%，占营收68%。",
+        "summary": "指标表收入为467.2亿美元。电话会称美元收入467亿美元、环比增16.2%，高于第三季指引上沿，主因领先制程需求；HPC环比增22%，占营收68%。",
         "drivers": [
           {
             "type": "量",
@@ -402,13 +402,7 @@
           }
         ],
         "conflicts": [
-          {
-            "metric": "revenue",
-            "json_value": 46720000000,
-            "json_display": "467.2亿美元",
-            "call_figure": "$46.7 billion",
-            "detail": "Wendell Huang与C.C. Wei都说第三季度美元收入为46.7 billion。中文摘要使用指标表的467.2亿美元。"
-          }
+          "Wendell Huang与C.C. Wei都说第三季度美元收入为467亿美元。中文摘要使用指标表的467.2亿美元。"
         ]
       },
       {
@@ -543,7 +537,7 @@
       },
       {
         "metric_key": "gross_margin_gaap",
-        "metric_label": "Gross profit margin",
+        "metric_label": "毛利率",
         "period": "fourth quarter 2026",
         "type": "numeric",
         "low_raw": "65%",
@@ -563,7 +557,7 @@
       },
       {
         "metric_key": "operating_margin",
-        "metric_label": "Operating profit margin",
+        "metric_label": "营业利润率",
         "period": "fourth quarter 2026",
         "type": "numeric",
         "low_raw": "56.5%",
@@ -583,7 +577,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Business outlook",
+        "metric_label": "经营展望",
         "period": "fourth quarter 2026",
         "type": "qualitative",
         "low_raw": null,
@@ -603,7 +597,7 @@
       },
       {
         "metric_key": "revenue",
-        "metric_label": "fourth quarter revenue",
+        "metric_label": "第四季营收",
         "period": "FY2026Q4",
         "type": "numeric",
         "low_raw": "$52.3 billion",
@@ -623,7 +617,7 @@
       },
       {
         "metric_key": "gross_margin_gaap",
-        "metric_label": "gross margin",
+        "metric_label": "毛利率",
         "period": "FY2026Q4",
         "type": "numeric",
         "low_raw": "65%",
@@ -643,7 +637,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "fourth quarter gross margin midpoint",
+        "metric_label": "第四季毛利率中值",
         "period": "FY2026Q4",
         "type": "numeric",
         "low_raw": null,
@@ -663,7 +657,7 @@
       },
       {
         "metric_key": "operating_margin",
-        "metric_label": "operating margin",
+        "metric_label": "营业利润率",
         "period": "FY2026Q4",
         "type": "numeric",
         "low_raw": "56.5%",
@@ -683,7 +677,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "exchange rate assumption",
+        "metric_label": "汇率假设",
         "period": "FY2026Q4",
         "type": "numeric",
         "low_raw": null,
@@ -703,7 +697,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "leading-edge demand",
+        "metric_label": "先进制程需求",
         "period": "FY2026Q4",
         "type": "qualitative",
         "low_raw": null,
@@ -723,7 +717,7 @@
       },
       {
         "metric_key": "revenue",
-        "metric_label": "full year revenue growth",
+        "metric_label": "全年营收增长",
         "period": "FY2026",
         "type": "numeric",
         "low_raw": null,
@@ -743,7 +737,7 @@
       },
       {
         "metric_key": "capex",
-        "metric_label": "capital budget",
+        "metric_label": "资本预算",
         "period": "FY2026",
         "type": "numeric",
         "low_raw": "$60 billion",
@@ -783,7 +777,7 @@
       },
       {
         "metric_key": "capex",
-        "metric_label": "third-quarter capital expenditures",
+        "metric_label": "第三季资本开支",
         "period": "FY2026Q3",
         "type": "numeric",
         "low_raw": null,
@@ -803,7 +797,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "overseas fab gross margin dilution",
+        "metric_label": "海外厂对毛利率的稀释",
         "period": "the next few years",
         "type": "numeric",
         "low_raw": "3%",
@@ -823,7 +817,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "overseas fab gross margin dilution",
+        "metric_label": "海外厂对毛利率的稀释",
         "period": "the latter part of the five-year period",
         "type": "numeric",
         "low_raw": "3 percentage point",
@@ -843,7 +837,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "cash dividend per share",
+        "metric_label": "每股现金股息",
         "period": "annual and quarterly",
         "type": "directional",
         "low_raw": null,
@@ -863,7 +857,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "capital intensity",
+        "metric_label": "资本密集度",
         "period": "2026-2028",
         "type": "directional",
         "low_raw": null,
@@ -1096,7 +1090,7 @@
             "meaning": "C.C. Wei说高50%的复合增速并不重要，实际可能会更高"
           },
           {
-            "number": "demand is higher than the supply",
+            "number": "需求高于供给",
             "meaning": "公司自己的评估仍是需求高于供给"
           }
         ],
@@ -1204,7 +1198,7 @@
             "meaning": "与ASML合作建立12英寸光罩的目标年份"
           },
           {
-            "number": "12 in photomask",
+            "number": "12英寸光罩",
             "meaning": "2031年要和ASML一起建立的光罩"
           }
         ],
@@ -1239,15 +1233,15 @@
         "answer_summary": "C.C. Wei（CEO）：他认为台积电的先进封装非常有竞争力，但第一优先是让客户的产品顺利进入市场，所以要给最好的技术，也要有足够产能。目前已经在量产5倍光罩尺寸，良率很好；他认为除了台积电，今天没有别人做得到，客户对结果很满意。公司正在做9倍光罩，并走向14倍。CoWoS也在推进，为的是以后能提供合理的成本下降。到目前为止，CoWoS仍是客户的第一选择。竞争对手也会拿出很有竞争力的方案，但他强调，今天能确保先进封装做到5倍光罩尺寸的仍然是台积电。",
         "new_numbers": [
           {
-            "number": "5x reticle size",
+            "number": "5倍光罩尺寸",
             "meaning": "已经在量产的先进封装光罩尺寸"
           },
           {
-            "number": "9x reticle size",
+            "number": "9倍光罩尺寸",
             "meaning": "正在开发的光罩尺寸"
           },
           {
-            "number": "14x reticle size",
+            "number": "14倍光罩尺寸",
             "meaning": "再下一步要走到的光罩尺寸"
           }
         ],
@@ -1286,7 +1280,7 @@
             "meaning": "这段资本开支预计明显高于过去三年"
           },
           {
-            "number": "revenue will outpace the increase in CapEx",
+            "number": "收入增幅将超过资本开支增幅",
             "meaning": "若执行得当，收入增幅仍会超过资本开支增幅"
           }
         ],
@@ -1306,7 +1300,7 @@
         "answer_summary": "Wendell Huang（CFO）：公司会在任何做得到的地方增加产能，以满足客户的强需求，美国也包括在内，各地都在加速。他重申，五年期后半段海外厂的毛利率稀释是3到4个百分点，这个说法仍然成立。所以仍是五年期后半段的3到4个百分点。他没有说明亚利桑那是第二阶段很快放量，还是第三阶段及以后被提前，也没有把起点改成2027年。",
         "new_numbers": [
           {
-            "number": "3 percentage point to 4 percentage point",
+            "number": "3到4个百分点",
             "meaning": "五年期后半段海外厂毛利率稀释"
           }
         ],
@@ -1446,7 +1440,7 @@
             "meaning": "C.C. Wei说高50%的复合增速并不重要，实际可能会更高"
           },
           {
-            "number": "demand is higher than the supply",
+            "number": "需求高于供给",
             "meaning": "公司自己的评估仍是需求高于供给"
           }
         ],
@@ -1530,7 +1524,7 @@
             "meaning": "这段资本开支预计明显高于过去三年"
           },
           {
-            "number": "revenue will outpace the increase in CapEx",
+            "number": "收入增幅将超过资本开支增幅",
             "meaning": "若执行得当，收入增幅仍会超过资本开支增幅"
           }
         ],
@@ -1550,7 +1544,7 @@
         "answer_summary": "Wendell Huang（CFO）：公司会在任何做得到的地方增加产能，以满足客户的强需求，美国也包括在内，各地都在加速。他重申，五年期后半段海外厂的毛利率稀释是3到4个百分点，这个说法仍然成立。所以仍是五年期后半段的3到4个百分点。他没有说明亚利桑那是第二阶段很快放量，还是第三阶段及以后被提前，也没有把起点改成2027年。",
         "new_numbers": [
           {
-            "number": "3 percentage point to 4 percentage point",
+            "number": "3到4个百分点",
             "meaning": "五年期后半段海外厂毛利率稀释"
           }
         ],
@@ -1631,9 +1625,9 @@
         "text": "第四季度营收指引523亿至543亿美元，毛利率65%至67%，营业利润率56.5%至58.5%。C.C. Wei现在预计2026年全年美元营收同比约增44%。电话会重申全年资本预算600亿至640亿美元，并称第三季度资本开支138亿美元；指标表capex为空，138亿美元只记为电话会数字。"
       },
       {
-        "finding": "第三季度收入按指标表为467.2亿美元。电话会称美元收入46.7 billion、环比增16.2%，高于第三季指引上沿，主因领先制程需求；HPC环比增22%，占营收68%。稀释每股收益用指标表的4.60美元/ADR，电话会对应表述是TWD 29.43。",
+        "finding": "第三季度收入按指标表为467.2亿美元。电话会称美元收入467亿美元、环比增16.2%，高于第三季指引上沿，主因领先制程需求；HPC环比增22%，占营收68%。稀释每股收益用指标表的4.60美元/ADR，电话会对应表述是TWD 29.43。",
         "evidence": "revenue; eps_gaap",
-        "text": "第三季度收入按指标表为467.2亿美元。电话会称美元收入46.7 billion、环比增16.2%，高于第三季指引上沿，主因领先制程需求；HPC环比增22%，占营收68%。稀释每股收益用指标表的4.60美元/ADR，电话会对应表述是TWD 29.43。"
+        "text": "第三季度收入按指标表为467.2亿美元。电话会称美元收入467亿美元、环比增16.2%，高于第三季指引上沿，主因领先制程需求；HPC环比增22%，占营收68%。稀释每股收益用指标表的4.60美元/ADR，电话会对应表述是TWD 29.43。"
       },
       {
         "finding": "毛利率66.4%，环比降1.3个百分点，主因2纳米初期爬坡稀释；营业利润率58.7%。第四季度毛利率中值被指引到66%。C.C. Wei在问答里说AI需求仍高于供给，高50%的复合增速可能会更高，但没有给新区间（问答1）。",

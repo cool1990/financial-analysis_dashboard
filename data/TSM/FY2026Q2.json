@@ -25,14 +25,14 @@
     "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
-      "新闻稿含 NT$/TWD。reporting_currency=USD，未标明美元的金额不能当成 USD。",
-      "eps_gaap_diluted 采用新闻稿 US$4.31 per ADR，优先于 NT$ 普通股 EPS，不做汇率换算",
-      "net_income_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
-      "gross_profit_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
-      "operating_income_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
-      "晶圆收入占比按新闻稿的制程节点百分比记入，不作为美元金额",
-      "kpis.advanced_node_revenue 不是美元金额，已移出金额科目",
-      "kpis.hpc_revenue 空壳已移除"
+      "新闻稿里同时有新台币和美元。报表货币是美元，没有标明美元的金额不能当成美元。",
+      "稀释每股收益采用新闻稿里的每份美国存托凭证4.31美元，优先于普通股的新台币每股收益，不做汇率换算。",
+      "净利润只有新台币、没有美元对照，已清空，以免被当成美元。",
+      "毛利只有新台币、没有美元对照，已清空，以免被当成美元。",
+      "营业利润只有新台币、没有美元对照，已清空，以免被当成美元。",
+      "晶圆收入占比按新闻稿的制程节点百分比记入，不作为美元金额。",
+      "先进制程收入不是美元金额，已移出金额科目。",
+      "高性能计算收入是空项，已移除。"
     ]
   },
   "scorecard": [
@@ -390,7 +390,7 @@
           }
         ],
         "conflicts": [
-          "文字稿文末导语写 Revenue surged 33.7%。新闻稿美元营收同比为33.7%、环比为12.0%，另有新台币营收同比36.0%。指标表 revenue 的 yoy_pct 与 qoq_pct 均为空，摘要不采用33.7%或36.0%。",
+          "文字稿文末导语写营收大增33.7%。新闻稿美元营收同比为33.7%、环比为12.0%，另有新台币营收同比36.0%。指标表营收的同比和环比都是空的，摘要不采用33.7%或36.0%。",
           "管理层称领先制程需求强劲，同时应收账款天数增加3天至29天，库存天数增加7天至87天。库存天数上升被归因于 N2 爬坡。"
         ]
       },
@@ -469,12 +469,12 @@
           }
         ],
         "conflicts": [
-          "新闻稿称 diluted EPS 同比增加77.4%，与净利相同。指标表 eps_gaap.yoy_pct 为空，77.4%只记在 net_income_gaap。电话会没有说出每股收益。"
+          "新闻稿称稀释每股收益同比增加77.4%，与净利相同。指标表每股收益的同比为空，77.4%只记在净利润。电话会没有说出每股收益。"
         ]
       },
       {
         "metric": "net_income_gaap",
-        "summary": "指标表未记美元净利。同比升77.4%，环比升23.4%，口径为 NT$706.56 billion。电话会未复述。",
+        "summary": "指标表未记美元净利。同比升77.4%，环比升23.4%，口径为新台币7065.6亿元。电话会未复述。",
         "drivers": [
           {
             "type": "其他",
@@ -484,7 +484,7 @@
             "evidence_quote": "",
             "source": "",
             "is_inference": true,
-            "reasoning": "指标表 net_income_gaap 的金额为空，同比+77.4%、环比+23.4%，来源句是 NT$706.56 billion。电话会没有说净利。同季营收处在指引高端、毛利率环比上升，只是背景。",
+            "reasoning": "指标表净利润的金额为空，同比上升77.4%、环比上升23.4%，来源句是新台币7065.6亿元。电话会没有说净利。同季营收处在指引高端、毛利率环比上升，只是背景。",
             "quote_unverified": false
           }
         ],
@@ -547,20 +547,20 @@
           }
         ],
         "conflicts": [
-          "Wendell Huang 说全年资本预算为 $60 billion to $64 billion，第二季资本开支为 $15.7 billion。C.C. Wei 原话是 CapEx from TWD 52-TWD 56, now TWD 60-TWD 64。单位不同，未换算。",
-          "Jeff Su 复述亚利桑那总投资为 TWD 265 billion。C.C. Wei 说的是 additional $100 billion。未换算，也不把 Jeff 的复述当成回答。",
-          "指标表 capex.value 为空，上述数字不回填。"
+          "Wendell（CFO）说全年资本预算为600亿至640亿美元，第二季资本开支为157亿美元。C.C. Wei（CEO）原话是资本开支从新台币52到56，现在是新台币60到64。单位不同，未换算。",
+          "Jeff Su 复述亚利桑那总投资为新台币2650亿元。C.C. Wei（CEO）说的是再追加1000亿美元。未换算，也不把 Jeff 的复述当成回答。",
+          "指标表资本开支为空，上述数字不回填。"
         ]
       },
       {
         "metric": "operating_cash_flow",
-        "summary": "指标表经营现金流为空。电话会称经营现金约 TWD 783 billion，不换算成美元。",
+        "summary": "指标表经营现金流为空。电话会称经营现金约新台币7830亿元，不换算成美元。",
         "drivers": [
           {
             "type": "其他",
             "direction": "+",
             "is_primary": true,
-            "description": "第二季经营现金约 TWD 783 billion，资本开支 TWD 496 billion。指标表没有美元金额。",
+            "description": "第二季经营现金约新台币7830亿元，资本开支新台币4960亿元。指标表没有美元金额。",
             "evidence_quote": "we generated about TWD 783 billion in cash from operations, spent TWD 496 billion in CapEx",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -569,7 +569,7 @@
           }
         ],
         "conflicts": [
-          "电话会只给了新台币：经营现金约 TWD 783 billion，资本开支 TWD 496 billion。指标表 operating_cash_flow 为空，未换算成美元。"
+          "电话会只给了新台币：经营现金约新台币7830亿元，资本开支新台币4960亿元。指标表经营现金流为空，未换算成美元。"
         ]
       }
     ],
@@ -599,7 +599,7 @@
       },
       {
         "metric_key": "gross_margin_gaap",
-        "metric_label": "Gross profit margin",
+        "metric_label": "毛利率",
         "period": "third quarter 2026",
         "type": "numeric",
         "low_raw": "65%",
@@ -619,7 +619,7 @@
       },
       {
         "metric_key": "operating_margin",
-        "metric_label": "Operating profit margin",
+        "metric_label": "营业利润率",
         "period": "third quarter 2026",
         "type": "numeric",
         "low_raw": "56%",
@@ -639,7 +639,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Business outlook",
+        "metric_label": "经营展望",
         "period": "third quarter 2026",
         "type": "qualitative",
         "low_raw": null,
@@ -674,7 +674,7 @@
       },
       {
         "metric_key": "revenue",
-        "metric_label": "Revenue growth",
+        "metric_label": "营收增长",
         "period": "FY2026",
         "type": "numeric",
         "low_raw": null,
@@ -689,7 +689,7 @@
       },
       {
         "metric_key": "gross_margin_gaap",
-        "metric_label": "Gross margin",
+        "metric_label": "毛利率",
         "period": "FY2026Q3",
         "type": "numeric",
         "low_raw": "65%",
@@ -704,7 +704,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "2 nm gross margin dilution",
+        "metric_label": "2纳米对毛利率的稀释",
         "period": "FY2026Q3",
         "type": "numeric",
         "low_raw": "3 percentage points",
@@ -719,7 +719,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "2 nm gross margin dilution",
+        "metric_label": "2纳米对毛利率的稀释",
         "period": "FY2026H2",
         "type": "numeric",
         "low_raw": "3 percentage points",
@@ -734,7 +734,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Gross margin dilution offset",
+        "metric_label": "毛利率稀释的对冲",
         "period": "FY2026Q3",
         "type": "qualitative",
         "low_raw": null,
@@ -749,7 +749,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Overseas fab gross margin dilution",
+        "metric_label": "海外厂对毛利率的稀释",
         "period": "next several years",
         "type": "numeric",
         "low_raw": "2%-3%",
@@ -764,7 +764,7 @@
       },
       {
         "metric_key": "operating_margin",
-        "metric_label": "Operating margin",
+        "metric_label": "营业利润率",
         "period": "FY2026Q3",
         "type": "numeric",
         "low_raw": "56%",
@@ -779,7 +779,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Leading-edge demand",
+        "metric_label": "先进制程需求",
         "period": "FY2026H2",
         "type": "qualitative",
         "low_raw": null,
@@ -794,7 +794,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Foreign exchange",
+        "metric_label": "汇率",
         "period": "FY2026H2",
         "type": "qualitative",
         "low_raw": null,
@@ -809,7 +809,7 @@
       },
       {
         "metric_key": "capex",
-        "metric_label": "Capital budget",
+        "metric_label": "资本预算",
         "period": "FY2026",
         "type": "numeric",
         "low_raw": "$60 billion",
@@ -824,7 +824,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "CapEx as spoken in TWD by CEO",
+        "metric_label": "首席执行官口述的新台币资本开支",
         "period": "FY2026",
         "type": "numeric",
         "low_raw": "TWD 60",
@@ -839,7 +839,7 @@
       },
       {
         "metric_key": "capex",
-        "metric_label": "Three-year CapEx",
+        "metric_label": "三年资本开支",
         "period": "next three years",
         "type": "directional",
         "low_raw": null,
@@ -854,7 +854,7 @@
       },
       {
         "metric_key": "capex",
-        "metric_label": "Arizona investment",
+        "metric_label": "亚利桑那投资",
         "period": "multi-year",
         "type": "numeric",
         "low_raw": null,
@@ -870,7 +870,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Taiwan fabs",
+        "metric_label": "台湾晶圆厂",
         "period": "next several years",
         "type": "numeric",
         "low_raw": null,
@@ -885,7 +885,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "3 nm fabs",
+        "metric_label": "3纳米晶圆厂",
         "period": "multi-year",
         "type": "numeric",
         "low_raw": null,
@@ -900,7 +900,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Capacity bottlenecks",
+        "metric_label": "产能瓶颈",
         "period": "FY2026",
         "type": "qualitative",
         "low_raw": null,
@@ -915,7 +915,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Cash dividend per share",
+        "metric_label": "每股现金股息",
         "period": "FY2026",
         "type": "numeric",
         "low_raw": null,
@@ -930,7 +930,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Cash dividend per share",
+        "metric_label": "每股现金股息",
         "period": "2027",
         "type": "directional",
         "low_raw": null,
@@ -945,7 +945,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Near-term demand",
+        "metric_label": "近期需求",
         "period": "FY2026Q3",
         "type": "qualitative",
         "low_raw": null,
@@ -960,7 +960,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Consumer end market",
+        "metric_label": "消费电子终端市场",
         "period": "FY2026",
         "type": "qualitative",
         "low_raw": null,
@@ -990,7 +990,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Demand-supply gap",
+        "metric_label": "供需缺口",
         "period": "multi-year",
         "type": "qualitative",
         "low_raw": null,
@@ -1005,7 +1005,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Node capacity growth",
+        "metric_label": "制程产能增长",
         "period": "multi-year",
         "type": "directional",
         "low_raw": null,
@@ -1020,7 +1020,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "A14 production",
+        "metric_label": "A14投产",
         "period": "2028",
         "type": "qualitative",
         "low_raw": null,
@@ -1035,7 +1035,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "A13 and A12 production",
+        "metric_label": "A13和A12投产",
         "period": "2029",
         "type": "qualitative",
         "low_raw": null,
@@ -1065,7 +1065,7 @@
       },
       {
         "metric_key": "other",
-        "metric_label": "Demand through 2030",
+        "metric_label": "到2030年的需求",
         "period": "2029-2030",
         "type": "qualitative",
         "low_raw": null,
@@ -1267,11 +1267,11 @@
         "firm": "UBS",
         "topic": "产能与资本开支",
         "is_new_topic": false,
-        "question_summary": "亚利桑那再投 1000 亿美元之后，分析师口中的累计资本开支是 TWD 265 billion。未来几年这些产能什么时候开出来？",
-        "answer_summary": "C.C. Wei（CEO）：时间表要看市场。现在的大趋势强到公司宣布在亚利桑那再投 1000 亿美元（additional $100 billion）。厂会很多，他说大概还要再盖四座。分析师追问这是否前后段都算，他回答是。",
+        "question_summary": "亚利桑那再投1000亿美元之后，分析师口中的累计资本开支是新台币2650亿元。未来几年这些产能什么时候开出来？",
+        "answer_summary": "C.C. Wei（CEO）：时间表要看市场。现在的大趋势强到公司宣布在亚利桑那再投1000亿美元。厂会很多，他说大概还要再盖四座。分析师追问这是否前后段都算，他回答是。",
         "new_numbers": [
           {
-            "number": "additional $100 billion",
+            "number": "再追加1000亿美元",
             "meaning": "亚利桑那追加投资，C.C. Wei 的原话"
           },
           {
@@ -1284,7 +1284,7 @@
         "tone": "positive",
         "answer_quote": "It probably additional four more fabs will be built.",
         "review_flags": [
-          "分析师说累计为 TWD 265 billion，Jeff Su 复述成 The total investment now is TWD 265 billion。C.C. Wei 回答的是 additional $100 billion 和大概再增加四座厂。未换算，也不把 Jeff 的复述当成回答。"
+          "分析师说累计为新台币2650亿元，Jeff Su 也复述成这个新台币金额。C.C. Wei（CEO）回答的是再追加1000亿美元，以及大概再增加四座厂。未换算，也不把 Jeff 的复述当成回答。"
         ]
       },
       {
@@ -1297,11 +1297,11 @@
         "answer_summary": "C.C. Wei（CEO）：韩国那家竞争对手确实赚很多钱，他直言自己羡慕；美国那家得到很强的政府支持。台积电也得到政府支持，只是不对外宣布。政府帮忙他欢迎，钱也好，但没有捷径，还是要回到基本功。最重要的一直是技术、制造和客户信任。他说自己干了三十多年、快四十年，这始终是台积电拿到订单的办法。选一种技术再放量，不是去便利店买牛奶，这是他引用客户的话：你是在选技术伙伴。要懂技术、用测试芯片一起磨、准备产能再爬坡，所以大约要五年。不是今天觉得这家牛奶更好就换一家店。",
         "new_numbers": [
           {
-            "number": "about five years",
+            "number": "大约五年",
             "meaning": "他所说的选定技术、准备产能并爬坡所需时间"
           },
           {
-            "number": "30-some, 40 years",
+            "number": "三十多年到四十年",
             "meaning": "他从事这个行业的时间，用来说明技术、制造和客户信任一直是关键"
           }
         ],
@@ -1340,7 +1340,7 @@
         "tone": "positive",
         "answer_quote": "our packaging capacity is so tight that now it's limiting my customers' growth.",
         "review_flags": [
-          "文字稿把提问者标成 Speaker 5，Jeff Su 介绍为 Arthur from Macquarie。"
+          "文字稿把提问者标成发言人5，Jeff Su 介绍为麦格理的 Arthur。"
         ]
       },
       {
@@ -1357,7 +1357,7 @@
         "tone": "positive",
         "answer_quote": "Our number one is to support our customers' success. Whatever that we can help our customers' business, we want to win.",
         "review_flags": [
-          "文字稿把提问者标成 Speaker 5，Jeff Su 介绍为 Arthur from Macquarie。"
+          "文字稿把提问者标成发言人5，Jeff Su 介绍为麦格理的 Arthur。"
         ]
       },
       {
@@ -1383,7 +1383,7 @@
         "tone": "cautious",
         "answer_quote": "This year, we say we increase the CapEx from TWD 52-TWD 56, now TWD 60-TWD 64.",
         "review_flags": [
-          "C.C. Wei 原话是 TWD 52-TWD 56 与 TWD 60-TWD 64。Wendell Huang 在准备发言中说的是 $60 billion and $64 billion。未做换算。文字稿没有给出 Gokul Hariharan 的机构。"
+          "C.C. Wei（CEO）原话是新台币52至56，以及新台币60至64。Wendell（CFO）在准备发言中说的是600亿和640亿美元。未做换算。文字稿没有给出 Gokul Hariharan 的机构。"
         ]
       },
       {
@@ -1439,11 +1439,11 @@
             "meaning": "他表示不会对客户突然采取的涨价幅度"
           },
           {
-            "number": "86% gross margin",
+            "number": "86%的毛利率",
             "meaning": "他提到并随即质疑的存储公司毛利率"
           },
           {
-            "number": "About 68%",
+            "number": "大约68%",
             "meaning": "他说自己会感到满意的毛利率水平，不是正式指引"
           }
         ],
@@ -1510,11 +1510,11 @@
         "answer_summary": "C.C. Wei（CEO）：现在已经开始生产，之后会放量。随着时间过去，AI 数据中心需要降低功耗、提高通信带宽。他相信 COUPE 的需求会继续增加，并在未来几年变成一项很重要的技术。",
         "new_numbers": [
           {
-            "number": "start the production right now",
+            "number": "现在已经开始生产",
             "meaning": "COUPE 已经开始生产"
           },
           {
-            "number": "next few years",
+            "number": "今后几年",
             "meaning": "他认为 COUPE 变成重要技术的时间范围，没有说对营收形成实质贡献的具体年份"
           }
         ],
@@ -1549,7 +1549,7 @@
         "answer_summary": "C.C. Wei（CEO）：今天的大多数仍然是 CoWoS。公司在开发替代方案，想把成本降下来，也在和基板厂商合作，让客户的产品能够上市。进展上，几个季度前宣布的试验线还要大约一年才成熟，之后才能和客户一起放进生产。",
         "new_numbers": [
           {
-            "number": "another one year",
+            "number": "再过一年",
             "meaning": "试验线达到成熟、可以和客户导入生产所需的时间"
           }
         ],
@@ -1684,7 +1684,7 @@
         "answer_summary": "C.C. Wei（CEO）：最重要的原因是需求继续增加，客户在施压，要和台积电一起把产能做上去，而不是单方面推动台积电。这是主要原因之一。第二个原因是通胀，现在买设备是按上涨后的价格买的。",
         "new_numbers": [
           {
-            "number": "inflation price",
+            "number": "通胀带来的价格上涨",
             "meaning": "他所说的资本开支上调的第二个原因：设备价格上涨"
           }
         ],
@@ -1704,7 +1704,7 @@
         "answer_summary": "C.C. Wei（CEO）：成熟制程覆盖很多不同的市场，只有和 AI 相关的部分在短缺。最重要的是电源管理芯片，因为 AI 数据中心需要大量电源管理。这些是 0.18 微米、19 nm 这一类成熟节点，确实紧缺。传感器也紧，因为要采集环境信息，放进 AI 数据中心去分析。除此之外，就像分析师说的，消费类产品需求并不高，其他市场也没有那么强。他在准备发言里已经说过，其他领域并没有大量短缺。",
         "new_numbers": [
           {
-            "number": "0.18 micron, 19 nm",
+            "number": "0.18微米和19纳米",
             "meaning": "他举例说明紧缺的电源管理所用的成熟节点，19 nm 按原文记录"
           }
         ],
@@ -1765,11 +1765,11 @@
         "firm": "UBS",
         "topic": "产能与资本开支",
         "is_new_topic": false,
-        "question_summary": "亚利桑那再投 1000 亿美元之后，分析师口中的累计资本开支是 TWD 265 billion。未来几年这些产能什么时候开出来？",
-        "answer_summary": "C.C. Wei（CEO）：时间表要看市场。现在的大趋势强到公司宣布在亚利桑那再投 1000 亿美元（additional $100 billion）。厂会很多，他说大概还要再盖四座。分析师追问这是否前后段都算，他回答是。",
+        "question_summary": "亚利桑那再投1000亿美元之后，分析师口中的累计资本开支是新台币2650亿元。未来几年这些产能什么时候开出来？",
+        "answer_summary": "C.C. Wei（CEO）：时间表要看市场。现在的大趋势强到公司宣布在亚利桑那再投1000亿美元。厂会很多，他说大概还要再盖四座。分析师追问这是否前后段都算，他回答是。",
         "new_numbers": [
           {
-            "number": "additional $100 billion",
+            "number": "再追加1000亿美元",
             "meaning": "亚利桑那追加投资，C.C. Wei 的原话"
           },
           {
@@ -1782,7 +1782,7 @@
         "tone": "positive",
         "answer_quote": "It probably additional four more fabs will be built.",
         "review_flags": [
-          "分析师说累计为 TWD 265 billion，Jeff Su 复述成 The total investment now is TWD 265 billion。C.C. Wei 回答的是 additional $100 billion 和大概再增加四座厂。未换算，也不把 Jeff 的复述当成回答。"
+          "分析师说累计为新台币2650亿元，Jeff Su 也复述成这个新台币金额。C.C. Wei（CEO）回答的是再追加1000亿美元，以及大概再增加四座厂。未换算，也不把 Jeff 的复述当成回答。"
         ]
       },
       {
@@ -1795,11 +1795,11 @@
         "answer_summary": "C.C. Wei（CEO）：韩国那家竞争对手确实赚很多钱，他直言自己羡慕；美国那家得到很强的政府支持。台积电也得到政府支持，只是不对外宣布。政府帮忙他欢迎，钱也好，但没有捷径，还是要回到基本功。最重要的一直是技术、制造和客户信任。他说自己干了三十多年、快四十年，这始终是台积电拿到订单的办法。选一种技术再放量，不是去便利店买牛奶，这是他引用客户的话：你是在选技术伙伴。要懂技术、用测试芯片一起磨、准备产能再爬坡，所以大约要五年。不是今天觉得这家牛奶更好就换一家店。",
         "new_numbers": [
           {
-            "number": "about five years",
+            "number": "大约五年",
             "meaning": "他所说的选定技术、准备产能并爬坡所需时间"
           },
           {
-            "number": "30-some, 40 years",
+            "number": "三十多年到四十年",
             "meaning": "他从事这个行业的时间，用来说明技术、制造和客户信任一直是关键"
           }
         ],
@@ -1838,7 +1838,7 @@
         "tone": "positive",
         "answer_quote": "Our number one is to support our customers' success. Whatever that we can help our customers' business, we want to win.",
         "review_flags": [
-          "文字稿把提问者标成 Speaker 5，Jeff Su 介绍为 Arthur from Macquarie。"
+          "文字稿把提问者标成发言人5，Jeff Su 介绍为麦格理的 Arthur。"
         ]
       },
       {
@@ -1864,7 +1864,7 @@
         "tone": "cautious",
         "answer_quote": "This year, we say we increase the CapEx from TWD 52-TWD 56, now TWD 60-TWD 64.",
         "review_flags": [
-          "C.C. Wei 原话是 TWD 52-TWD 56 与 TWD 60-TWD 64。Wendell Huang 在准备发言中说的是 $60 billion and $64 billion。未做换算。文字稿没有给出 Gokul Hariharan 的机构。"
+          "C.C. Wei（CEO）原话是新台币52至56，以及新台币60至64。Wendell（CFO）在准备发言中说的是600亿和640亿美元。未做换算。文字稿没有给出 Gokul Hariharan 的机构。"
         ]
       },
       {
@@ -1931,11 +1931,11 @@
         "answer_summary": "C.C. Wei（CEO）：现在已经开始生产，之后会放量。随着时间过去，AI 数据中心需要降低功耗、提高通信带宽。他相信 COUPE 的需求会继续增加，并在未来几年变成一项很重要的技术。",
         "new_numbers": [
           {
-            "number": "start the production right now",
+            "number": "现在已经开始生产",
             "meaning": "COUPE 已经开始生产"
           },
           {
-            "number": "next few years",
+            "number": "今后几年",
             "meaning": "他认为 COUPE 变成重要技术的时间范围，没有说对营收形成实质贡献的具体年份"
           }
         ],
@@ -1970,7 +1970,7 @@
         "answer_summary": "C.C. Wei（CEO）：今天的大多数仍然是 CoWoS。公司在开发替代方案，想把成本降下来，也在和基板厂商合作，让客户的产品能够上市。进展上，几个季度前宣布的试验线还要大约一年才成熟，之后才能和客户一起放进生产。",
         "new_numbers": [
           {
-            "number": "another one year",
+            "number": "再过一年",
             "meaning": "试验线达到成熟、可以和客户导入生产所需的时间"
           }
         ],
@@ -2090,7 +2090,7 @@
         "answer_summary": "C.C. Wei（CEO）：最重要的原因是需求继续增加，客户在施压，要和台积电一起把产能做上去，而不是单方面推动台积电。这是主要原因之一。第二个原因是通胀，现在买设备是按上涨后的价格买的。",
         "new_numbers": [
           {
-            "number": "inflation price",
+            "number": "通胀带来的价格上涨",
             "meaning": "他所说的资本开支上调的第二个原因：设备价格上涨"
           }
         ],
