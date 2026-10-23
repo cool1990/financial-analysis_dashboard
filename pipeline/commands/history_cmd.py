@@ -315,6 +315,13 @@ def build_history_documents(
         "latest_accession": latest,
         "quarters": _statement_quarters(company_facts, geography, fiscal_year_end_month, start),
     }
+    revenue_by_period = {row["period"]: row.get("revenue") for row in statement["quarters"]}
+    for row in segment["quarters"]:
+        lines = row.get("lines") or []
+        # 只剩一条「其他收入」且对不上营收时，是母项被滤掉后的残片，不画。
+        if len(lines) == 1 and lines[0].get("key") == "other" and not _geo_matches_revenue(revenue_by_period.get(row["period"]), lines):
+            row["lines"] = []
+            row["method"] = "mismatch"
     shares, receivables = _activity_rows(company_facts, fiscal_year_end_month, start)
     activity = {
         "source": f"SEC companyfacts CIK{cik}",
