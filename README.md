@@ -59,7 +59,7 @@ cd site && python3 -m http.server
 | `python -m pipeline replay-filings --ticker TSM` | 回放 6-K 过滤器（不调用 LLM） |
 | `python -m pipeline history --ticker META` | 生成分部、报表和 XBRL 活动历史。`listing: hk` / `adr` 跳过。`--if-new` 只在新的 10-Q/10-K 时刷新；全池扫描不会给还没有这三份文件的股票做首次抓取 |
 | `python -m pipeline build` | 生成 `site/` |
-| `python -m pipeline stage3-recent` | 近期财报的股价反应 + T+1/3/7 分析师修正（daily 自动跑，无 LLM） |
+| `python -m pipeline stage3-recent` | **已停用**：保留命令为空操作，避免旧 workflow 失败 |
 | `python -m pipeline thesis --ticker MU` | 按仓位档案评估本季（1 次小调用；档案和数据都没变时跳过） |
 | `python -m pipeline init-missing` | 给缺 CIK 的股票自动初始化（daily 自动跑，无 LLM） |
 | `python -m pipeline comparatives` | 用新闻稿对比列补算同比 / 环比（无 LLM、不联网） |
@@ -84,7 +84,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
   - 等待 / 持仓：`论点` 每条三行（看好 / 担心 / 证伪，证伪里写日期会显示倒计时），`条件` 写买入或加仓 / 卖出。
   - Stage2 完成时自动评估（1 次小调用，档案和数据都没变时跳过；观察仓没写问题时不调用）；改了档案后用 manual → `thesis` 重评。
 - 增长质量 = 通用层（`settings.yaml` 的 `quality.defaults`，会计质量类）+ 公司层（股票配置 `quality_checks`，同 key 覆盖通用阈值）。
-- 次日涨跌同时计算相对对照指数（股票配置 `benchmark`，默认 SPY）的超额涨跌。
+- Stage3 次日股价反应与 T+1/3/7 分析师修正已停用，不再计算或展示。
 - 新增股票：加 `config/tickers/{TICKER}.yaml` 和仓位档案即可，daily 会自动补 CIK（`init-missing`）。
 - 上市地：`listing: domestic`（默认）走 **8-K Item 2.02** + EX-99。`listing: adr` 走 **6-K / 6-K/A**，用 `sec.earnings_6k` 的 exhibit 描述过滤（Press release / earnings），并排除月报、合并报表、股息、董事会。不要用 Item 2.02 滤 6-K，也不要把 TWSE / 港交所 / 巨潮接成每天的 poll。港股试跑命令 `hkex-poll` 是单独入口，不在 poll cron 里。第二只 ADR 只加一份 yaml，不要为单票写死文件名。
 - ADR 另写 `reporting_currency`（TSM 为 USD）和 `accounting_basis`（备注，不参与 FY 计算）。稿里的 NT$ / TWD 不能当成美元。历史回补走 6-K 新闻稿：`python -m pipeline backfill --ticker TSM --limit 4`。`backfill --xbrl-only` 会拒绝 ADR。过滤器回放：`python -m pipeline replay-filings --ticker TSM`（不调用 LLM）。确认回放命中 Press release、排除 monthend / revenue / fsx / dividend / board 之后，这只 ADR 才随 poll 自动检查近期 6-K。

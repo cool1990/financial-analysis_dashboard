@@ -181,7 +181,7 @@ METRIC_LABELS = {
 STAGE_LABELS = {
     "stage1_done": "阶段1 · 新闻稿",
     "stage2_done": "阶段2 · 含电话会",
-    "stage3_done": "阶段3 · 市场反应",
+    "stage3_done": "阶段2 · 含电话会",  # Stage3 已停用；历史 stage3_done 按 Stage2 展示
     "transcript_found": "已找到文字稿",
     "backfill_gaap": "历史回补（GAAP）",
     "scheduled": "待财报",
@@ -269,6 +269,19 @@ def _humanize_warning(text: str) -> str:
     if m:
         return f"电话会与新闻稿指引条目冲突（已拆分展示）：{_metric_label(m.group(1))} · {m.group(2)}"
     return s
+
+
+def _is_stage3_warning(text: str) -> bool:
+    """Stage3 已停用：次日股价反应相关告警不再展示。"""
+    s = str(text or "")
+    markers = (
+        "次日涨跌",
+        "股价反应",
+        "等待阶段3",
+        "交易日收盘价不足，暂无法计算次日涨跌",
+        "交易日数据不足",
+    )
+    return any(m in s for m in markers)
 
 
 def _period_zh(period: str | None) -> str:
@@ -2599,18 +2612,9 @@ def _fin_panel(rows: list[dict[str, Any]], view: dict[str, Any]) -> dict[str, An
 
 
 def _price_view(doc: dict[str, Any]) -> dict[str, Any]:
-    pr = doc.get("price_reaction") or {}
-    pct = _num(pr.get("next_day_pct"))
-    if pct is None:
-        stage = (doc.get("status") or {}).get("stage")
-        return {"text": "—", "cls": "na", "detail": pr.get("note") or ("交易日数据不足" if stage == "stage3_done" else "等待阶段3")}
-    detail = ""
-    if pr.get("close_before") is not None and pr.get("close_after") is not None:
-        detail = (
-            f"{pr.get('before_date') or ''} ${float(pr['close_before']):.2f} → "
-            f"{pr.get('after_date') or ''} ${float(pr['close_after']):.2f}"
-        )
-    return {"text": f"{pct*100:+.2f}%", "cls": "up" if pct > 0 else "down" if pct < 0 else "flat", "detail": detail}
+    """Stage3 已停用：次日涨跌不再展示。"""
+    del doc
+    return {"text": "—", "cls": "na", "detail": ""}
 
 
 # 指引按指标族合并：GAAP / Non-GAAP 两条并成一格
@@ -3406,35 +3410,9 @@ def _guide_section(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None =
 
 
 def _revision_rows(doc: dict[str, Any]) -> dict[str, Any]:
-    ar = (doc.get("guidance") or {}).get("analyst_revisions") or {}
-    tm1 = ar.get("t_minus_1") or {}
-    cq = ar.get("t_minus_1_current_quarter") or {}
-    has = bool(cq) or tm1.get("eps") is not None or tm1.get("revenue") is not None
-    rows = []
-    for key, label in (("t_minus_1", "T-1 发布前"), ("t_plus_1", "T+1"), ("t_plus_3", "T+3"), ("t_plus_7", "T+7")):
-        r = ar.get(key) or {}
-        rows.append(
-            {
-                "label": label,
-                "date": r.get("date") or "待补",
-                "eps": f"${float(r['eps']):.2f}" if r.get("eps") is not None else "待补",
-                "eps_chg": _change(r.get("eps_chg")),
-                "rev": _fmt_money(r.get("revenue")) if r.get("revenue") is not None else "待补",
-                "rev_chg": _change(r.get("revenue_chg")),
-            }
-        )
-    return {
-        "has": has,
-        "rows": rows,
-        "current_q": {
-            "eps": f"${float(cq['eps']):.2f}" if cq.get("eps") is not None else "—",
-            "rev": _fmt_money(cq.get("revenue")),
-            "date": cq.get("date") or "—",
-        }
-        if cq
-        else None,
-        "notes": ar.get("status_notes") or [],
-    }
+    """Stage3 已停用：T+1/3/7 分析师修正不再展示。"""
+    del doc
+    return {"has": False, "rows": [], "current_q": None, "notes": ["Stage3 分析师修正已停用"]}
 
 
 _QA_BULLET_RE = re.compile(r"^(?:[-*•・]|—)\s+")
@@ -4475,36 +4453,14 @@ def _eps_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = Non
 
 
 def _market_view(doc: dict[str, Any]) -> dict[str, Any]:
-    """市场怎么判：次日股价 + 财报后下季一致预期的修正。两者同向才算市场认可。"""
-    price = _price_view(doc)
-    ar = (doc.get("guidance") or {}).get("analyst_revisions") or {}
-    tm1 = ar.get("t_minus_1") or {}
-    latest = None
-    for key, label in (("t_plus_7", "T+7"), ("t_plus_3", "T+3"), ("t_plus_1", "T+1")):
-        r = ar.get(key) or {}
-        if r.get("eps_chg") is not None:
-            latest = {"label": label, "chg": _change(r.get("eps_chg")), "raw": r.get("eps_chg"),
-                      "detail": f"${float(tm1['eps']):.2f} → ${float(r['eps']):.2f}" if tm1.get("eps") is not None and r.get("eps") is not None else ""}
-            break
-    pr = doc.get("price_reaction") or {}
-    excess = _num(pr.get("excess_pct"))
-    bench = {
-        "symbol": pr.get("benchmark") or "",
-        "pct": _change(pr.get("benchmark_pct")) if pr.get("benchmark_pct") is not None else None,
-        "excess": _change(excess) if excess is not None else None,
+    """Stage3 已停用：次日股价反应与分析师修正不再展示。"""
+    del doc
+    return {
+        "price": {"text": "—", "cls": "na", "detail": ""},
+        "revision": None,
+        "stance": None,
+        "bench": {"symbol": "", "pct": None, "excess": None},
     }
-    # 有对照指数时用超额涨跌判断，扣掉板块整体波动
-    p = excess if excess is not None else _num(pr.get("next_day_pct"))
-    rv = latest["raw"] if latest else None
-    if p is None or rv is None:
-        stance = None
-    elif p > 0 and rv > 0:
-        stance = {"text": "市场认可", "cls": "ok"}
-    elif p < 0 and rv < 0:
-        stance = {"text": "市场不认可", "cls": "bad"}
-    else:
-        stance = {"text": "市场分歧", "cls": "warn"}
-    return {"price": price, "revision": latest, "stance": stance, "bench": bench}
 
 
 def _quality_checks(doc: dict[str, Any], cfg: dict[str, Any] | None = None) -> list[dict[str, str]]:
@@ -5755,7 +5711,7 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
                 qa=_qa_view(doc, bool((prior.get("qa") or {}).get("items"))),
                 watchlist=_watchlist(doc),
                 next_earnings=_next_earnings(t),
-                warnings=[_humanize_warning(w) for w in _dedupe((doc.get("status") or {}).get("warnings"))],
+                warnings=[_humanize_warning(w) for w in _dedupe((doc.get("status") or {}).get("warnings")) if not _is_stage3_warning(w)],
                 money_unit=_chart_units(cfg.get("reporting_currency"))[0],
                 eps_unit=_chart_units(cfg.get("reporting_currency"))[1],
                 eps_mark=_ccy_prefix(cfg.get("reporting_currency")),

@@ -29,7 +29,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p_poll = sub.add_parser("poll", help="财报窗口轮询 / 文字稿获取")
     sub.add_parser("init-missing", help="给缺 CIK 的股票自动初始化（不调用 LLM）")
-    sub.add_parser("stage3-recent", help="刷新近期财报的股价反应与分析师修正（无 LLM）")
+    sub.add_parser("stage3-recent", help="已停用：空操作（旧 daily 兼容）")
     p_th = sub.add_parser("thesis", help="评估投资论点（1 次小调用；论点和数据都没变时跳过）")
     p_th.add_argument("--ticker", required=True)
     p_th.add_argument("--period", default="latest")
@@ -41,7 +41,7 @@ def main(argv: list[str] | None = None) -> int:
     p_run = sub.add_parser("run", help="按阶段重跑")
     p_run.add_argument("--ticker", required=True)
     p_run.add_argument("--period", default=None, help="财季，或 latest")
-    p_run.add_argument("--stage", type=int, required=True, choices=[1, 2, 3])
+    p_run.add_argument("--stage", type=int, required=True, choices=[1, 2, 3], help="1=提取 2=总结；3 已停用（空操作）")
     p_run.add_argument("--accession", default=None, help="指定 8-K accession 模拟/重跑")
     p_run.add_argument("--model", default=None, help="覆盖 settings.yaml 中的模型")
     p_run.add_argument(

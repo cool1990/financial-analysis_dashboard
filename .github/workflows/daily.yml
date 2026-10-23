@@ -28,8 +28,8 @@ jobs:
       - name: Install
         run: pip install -r requirements.txt
 
-      # daily 不调用 LLM：快照 → 近期季度 Stage3（股价反应 + T+1/3/7 修正）→ 建站
-      - name: Snapshot + Stage3 refresh + build
+      # daily 不调用 LLM：快照 → 建站（Stage3 次日股价反应 / T+1/3/7 修正已停用）
+      - name: Snapshot + build
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
@@ -39,7 +39,6 @@ jobs:
           # 新加的股票自动补 CIK 与业绩口径（只在缺 CIK 时请求 SEC）
           python -m pipeline init-missing 2>&1 | tee logs/daily_init.log
           python -m pipeline snapshot 2>&1 | tee logs/daily_snapshot.log
-          python -m pipeline stage3-recent 2>&1 | tee logs/daily_stage3.log
           # 分部 / 报表 / XBRL 活动历史只在出现新的 10-Q 或 10-K 时重写。港股和 ADR 会跳过。
           python -m pipeline history --if-new 2>&1 | tee logs/daily_history.log
           # 当前季预期只在 Actions 里拉。Secret 名是 ALPHAVANTAGE_KEY。
