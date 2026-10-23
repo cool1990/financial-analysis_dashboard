@@ -111,7 +111,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 
 ### 腾讯 0700.HK
 
-财报分析和 Stage1 的实际数保持人民币（¥）。股价和市值按港股报价用港币（HK$）。TradingView 把 EPS 标成港币时，财报页 Forward PE 整表用这套港币 EPS 与港币股价直接相除，EPS 标 HK$，不把扫描 EPS 写成人民币，也不乘 HKDCNY。首页 Forward PE 同样是港币除港币。只有这张表的 EPS 本身是人民币、股价是港币时，才用当天或最近可用的 HKDCNY（Yahoo `HKDCNY=X`）把股价换成人民币；没有任何可用汇率时才显示「待核对」。
+财报分析和 Stage1 的实际数保持人民币（¥）。股价和市值按港股报价用港币（HK$）。TradingView 把 EPS 标成港币时，财报页 Forward PE 整表用这套港币 EPS 与港币股价直接相除，EPS 标 HK$，不把扫描 EPS 写成人民币，也不乘 HKDCNY。首页 Forward PE 同样是港币除港币。盈利预期图里，财报实际是人民币、扫描预期是港币时，用当天或最近可用的 HKDCNY（Yahoo `HKDCNY=X`）把预期换成人民币再比较；没有汇率就显示「待核对」，不把两种货币直接相比。只有 Forward PE 的 EPS 本身是人民币、股价是港币时，才用这套汇率把股价换成人民币。
 
 ```bash
 python -m pipeline fx-refresh --date 2026-10-23
