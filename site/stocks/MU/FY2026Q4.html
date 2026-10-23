@@ -148,21 +148,68 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">20 项指标 · 点指标看图</span>
+    <span class="ev-meta">19 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <p class="layer-sub">点一个指标，下面换成这个指标的图。营收给出金额、同比，以及业务占比；有地区拆分时再给地区占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一行指标，图出现在这一行下面。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
-    <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true">
-      <span class="m-name">营收</span>
+    <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
+      <span class="m-name">营业收入</span>
       <span class="m-val num">$54.23B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+379.3%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+30.8%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">收入环比增长31%，主要受AI服务器和存储需求增加驱动，量价齐升。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="gross_margin_nongaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
+      <div class="charts fin-charts" data-fin-charts data-cols="3">
+        <div class="card chart">
+          <h3>水平值</h3>
+          <p class="c-sub">本季水平</p>
+          <div class="c-body"><canvas data-metric="revenue" data-series="level" aria-label="水平值"></canvas></div>
+        </div>
+        <div class="card chart">
+          <h3>环比</h3>
+          <p class="c-sub">较上一季</p>
+          <div class="c-body"><canvas data-metric="revenue" data-series="qoq" aria-label="环比"></canvas></div>
+        </div>
+        <div class="card chart">
+          <h3>同比</h3>
+          <p class="c-sub">较去年同季</p>
+          <div class="c-body"><canvas data-metric="revenue" data-series="yoy" aria-label="同比"></canvas></div>
+        </div>
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>AI相关服务器和存储解决方案需求增加，推动出货量增长。</p>
+<blockquote>$54.23 billion in the fourth quarter, driven by increased demand for AI-related server and storage solutions.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>平均售价上升，对收入增长有正向贡献。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
+      <span class="m-name">营业成本</span>
+      <span class="m-val num">$7.18B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+14.7%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+12.2%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">新闻稿中的营业成本，没有再拆开。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-cost_of_revenue" data-fin-panel="cost_of_revenue" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="gross_margin_nongaap" aria-pressed="false" aria-controls="fin-panel-gross_margin_nongaap">
       <span class="m-name">毛利率（Non-GAAP）</span>
       <span class="m-val num">87.0%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+41.4pp</span></span>
@@ -170,15 +217,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">非GAAP毛利率环比提升2.1个百分点，主因价格上升和产品结构优化。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="gross_profit_nongaap" aria-pressed="false">
-      <span class="m-name">毛利润（Non-GAAP）</span>
-      <span class="m-val num">$47.20B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+813.2%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+34.1%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">—</span></span>
-    </button>
-    <button type="button" class="mrow" data-fin-metric="gross_margin_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-gross_margin_nongaap" data-fin-panel="gross_margin_nongaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>平均售价上升推动毛利率改善。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>高毛利产品占比提升。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="gross_margin_gaap" aria-pressed="false" aria-controls="fin-panel-gross_margin_gaap">
       <span class="m-name">毛利率（GAAP）</span>
       <span class="m-val num">86.8%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+42.1pp</span></span>
@@ -186,15 +242,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">GAAP毛利率环比提升2.2个百分点，主要受产品结构改善和平均售价上升推动。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="gross_profit_gaap" aria-pressed="false">
-      <span class="m-name">毛利润（GAAP）</span>
-      <span class="m-val num">$47.05B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+830.9%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+34.2%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">—</span></span>
-    </button>
-    <button type="button" class="mrow" data-fin-metric="operating_margin_nongaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>平均售价上升直接提升毛利率。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>向高毛利产品组合转移，改善毛利率。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_margin_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_nongaap">
       <span class="m-name">营业利润率（Non-GAAP）</span>
       <span class="m-val num">82.3%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+47.4pp</span></span>
@@ -202,7 +267,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">非GAAP营业利润率环比提升1.1个百分点，主因毛利率改善，费用控制亦有贡献。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="operating_income_nongaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_margin_nongaap" data-fin-panel="operating_margin_nongaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率提升是营业利润率改善的主要驱动。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>新闻稿</span>          </div>
+          <p>非GAAP营业费用环比增加，但增幅小于收入增幅，对利润率有正向贡献。</p>
+<blockquote>Operating expenses 3,296 1,738 1,400 2,568 1,518 1,214</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_income_nongaap">
       <span class="m-name">营业利润（Non-GAAP）</span>
       <span class="m-val num">$44.64B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">11 倍</span></span>
@@ -210,7 +292,14 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_income_nongaap" data-fin-panel="operating_income_nongaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_gaap">
       <span class="m-name">营业利润率（GAAP）</span>
       <span class="m-val num">80.7%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+48.4pp</span></span>
@@ -218,7 +307,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">GAAP营业利润率环比小幅提升0.3个百分点，主要受毛利率改善带动，但部分被营业费用增加抵消。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率提升带动营业利润率改善。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>新闻稿</span>          </div>
+          <p>营业费用环比增加，部分抵消毛利率改善。</p>
+<blockquote>Operating expenses 3,296 1,738 1,400 2,568 1,518 1,214</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
       <span class="m-name">营业利润（GAAP）</span>
       <span class="m-val num">$43.75B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">12 倍</span></span>
@@ -226,7 +332,14 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
       <span class="m-name">净利润率（GAAP）</span>
       <span class="m-val num">69.5%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+41.2pp</span></span>
@@ -234,7 +347,14 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
       <span class="m-name">净利润（GAAP）</span>
       <span class="m-val num">$37.70B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">12 倍</span></span>
@@ -242,7 +362,14 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">—</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="eps_nongaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="eps_nongaap" aria-pressed="false" aria-controls="fin-panel-eps_nongaap">
       <span class="m-name">稀释每股收益（Non-GAAP）</span>
       <span class="m-val num">$33.42</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">11 倍</span></span>
@@ -250,7 +377,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-up">+3.0%</span></span>
       <span class="m-sum">非GAAP每股收益环比增长33%，主因价格上升和产品结构优化。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-eps_nongaap" data-fin-panel="eps_nongaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>平均售价上升是EPS增长的主要驱动。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>高毛利产品组合提升盈利。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
       <span class="m-val num">$32.87</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">12 倍</span></span>
@@ -258,7 +402,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">GAAP每股收益环比增长33%，主要受收入增长和毛利率提升推动。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>平均售价上升和产品结构改善推动盈利增长。</p>
+<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>收入增长亦受益于AI相关需求增加。</p>
+<blockquote>$54.23 billion in the fourth quarter, driven by increased demand for AI-related server and storage solutions.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
       <span class="m-val num">$43.97B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+667.4%</span></span>
@@ -266,7 +427,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">经营现金流环比增长73%，主要受净利润增加和营运资金有利变动推动。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>净利润增加是经营现金流增长的主要驱动。</p>
+<blockquote>Operating Cash Flow -- $43.97 billion, up from $25.39 billion in the prior quarter due to higher net income and favorable working capital timing.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营运资金有利变动亦贡献现金流增长。</p>
+<blockquote>Operating Cash Flow -- $43.97 billion, up from $25.39 billion in the prior quarter due to higher net income and favorable working capital timing.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
       <span class="m-val num">$11.11B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+96.4%</span></span>
@@ -274,7 +452,19 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">资本开支环比增长42%，主要投向爱达荷和新加坡洁净室建设。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>资本开支增加主要用于洁净室建设。</p>
+<blockquote>Capital Expenditures -- $27.37 billion for the full fiscal year, with the majority of increases directed toward clean room construction in Idaho and Singapore.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
       <span class="m-name">自由现金流</span>
       <span class="m-val num">$32.86B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">456 倍</span></span>
@@ -282,7 +472,24 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">调整后自由现金流环比增长81%，主因经营现金流大幅增加，部分被资本开支增加抵消。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="share_count" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>经营现金流增加是自由现金流增长的主要驱动。</p>
+<blockquote>Operating Cash Flow -- $43.97 billion, up from $25.39 billion in the prior quarter due to higher net income and favorable working capital timing.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>资本开支增加部分抵消自由现金流增长。</p>
+<blockquote>Capital Expenditures -- $27.37 billion for the full fiscal year, with the majority of increases directed toward clean room construction in Idaho and Singapore.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="share_count" aria-pressed="false" aria-controls="fin-panel-share_count">
       <span class="m-name">股份数量</span>
       <span class="m-val num">1,147M 股</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+1.4%</span></span>
@@ -290,7 +497,19 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">稀释加权平均股 1,147M 股。比基本股多 17M，差额是潜在稀释。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="dio_days" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-share_count" data-fin-panel="share_count" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>比基本股多 17M，差额是潜在稀释。</p>
+<p class="small muted">依据：用利润表稀释加权平均股。股数按百万股换回实际股数，不用每股收益那一行。</p>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="dio_days" aria-pressed="false" aria-controls="fin-panel-dio_days">
       <span class="m-name">存货周转天数</span>
       <span class="m-val num">132.9天</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+10.1天</span></span>
@@ -298,7 +517,19 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">期末存货 $10.37B，相当于本期销售成本 132.9 天。存货同比 +24.1%，快于销售成本同比 +14.7%，周转天数变长。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="dso_days" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-dio_days" data-fin-panel="dio_days" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">结构</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>存货同比 +24.1%，快于销售成本同比 +14.7%，周转天数变长。</p>
+<p class="small muted">依据：期末余额，不是期初期末平均。销售成本用营收 ×（1 − 毛利率）。</p>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="dso_days" aria-pressed="false" aria-controls="fin-panel-dso_days">
       <span class="m-name">应收账款周转天数</span>
       <span class="m-val num">61.4天</span>
       <span class="num"><i class="m-label">同比</i><span class="c-down">-13.9天</span></span>
@@ -306,7 +537,19 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">期末应收账款 $36.20B，相当于本季营收 61.4 天。营收同比 +379.3%，快于应收账款同比 +290.7%，周转天数变短。</span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="deferred_days" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-dso_days" data-fin-panel="dso_days" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>营收同比 +379.3%，快于应收账款同比 +290.7%，周转天数变短。</p>
+<p class="small muted">依据：期末应收账款 ÷ 本季营收 × 本季天数，不是平均余额。</p>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="deferred_days" aria-pressed="false" aria-controls="fin-panel-deferred_days">
       <span class="m-name">合同负债周转天数</span>
       <span class="m-val num">21.9天</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+20.7天</span></span>
@@ -314,179 +557,19 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">期末合同负债 $12.89B，相当于本季营收 21.9 天。合同负债同比 91 倍，快于营收同比 +379.3%，周转天数变长。</span>
     </button>
-  </div>
-  <div class="charts fin-charts" id="finCharts" data-cols="3">
-    <div class="card chart">
-      <h3>水平值</h3>
-      <p class="c-sub">本季水平</p>
-      <div class="c-body"><canvas data-metric="revenue" data-series="level" aria-label="水平值"></canvas></div>
-    </div>
-    <div class="card chart">
-      <h3>环比</h3>
-      <p class="c-sub">较上一季</p>
-      <div class="c-body"><canvas data-metric="revenue" data-series="qoq" aria-label="环比"></canvas></div>
-    </div>
-    <div class="card chart">
-      <h3>同比</h3>
-      <p class="c-sub">较去年同季</p>
-      <div class="c-body"><canvas data-metric="revenue" data-series="yoy" aria-label="同比"></canvas></div>
+    <div class="fin-panel" id="fin-panel-deferred_days" data-fin-panel="deferred_days" hidden>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>合同负债同比 91 倍，快于营收同比 +379.3%，周转天数变长。</p>
+<p class="small muted">依据：没有预收账款时改用合同负债。期末余额，不是平均余额。</p>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
   </div>
-<p class="small muted mix-note" id="finNote" hidden></p>  <div class="fin-drivers" data-fin-drivers="revenue">
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>AI相关服务器和存储解决方案需求增加，推动出货量增长。</p>
-<blockquote>$54.23 billion in the fourth quarter, driven by increased demand for AI-related server and storage solutions.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>平均售价上升，对收入增长有正向贡献。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="gross_margin_nongaap" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>平均售价上升推动毛利率改善。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>高毛利产品占比提升。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="gross_profit_nongaap" hidden>
-<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="gross_margin_gaap" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>平均售价上升直接提升毛利率。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>向高毛利产品组合转移，改善毛利率。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="gross_profit_gaap" hidden>
-<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_margin_nongaap" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>毛利率提升是营业利润率改善的主要驱动。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>新闻稿</span>      </div>
-      <p>非GAAP营业费用环比增加，但增幅小于收入增幅，对利润率有正向贡献。</p>
-<blockquote>Operating expenses 3,296 1,738 1,400 2,568 1,518 1,214</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_income_nongaap" hidden>
-<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_margin_gaap" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>毛利率提升带动营业利润率改善。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>新闻稿</span>      </div>
-      <p>营业费用环比增加，部分抵消毛利率改善。</p>
-<blockquote>Operating expenses 3,296 1,738 1,400 2,568 1,518 1,214</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_income_gaap" hidden>
-<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="net_margin_gaap" hidden>
-<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="net_income_gaap" hidden>
-<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="eps_nongaap" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>平均售价上升是EPS增长的主要驱动。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>高毛利产品组合提升盈利。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="eps_gaap" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>平均售价上升和产品结构改善推动盈利增长。</p>
-<blockquote>Non-GAAP EPS -- $33.42 for the quarter, reflecting higher average selling prices and a shift toward high-margin products.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>收入增长亦受益于AI相关需求增加。</p>
-<blockquote>$54.23 billion in the fourth quarter, driven by increased demand for AI-related server and storage solutions.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_cash_flow" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>净利润增加是经营现金流增长的主要驱动。</p>
-<blockquote>Operating Cash Flow -- $43.97 billion, up from $25.39 billion in the prior quarter due to higher net income and favorable working capital timing.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>营运资金有利变动亦贡献现金流增长。</p>
-<blockquote>Operating Cash Flow -- $43.97 billion, up from $25.39 billion in the prior quarter due to higher net income and favorable working capital timing.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="capex" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>资本开支增加主要用于洁净室建设。</p>
-<blockquote>Capital Expenditures -- $27.37 billion for the full fiscal year, with the majority of increases directed toward clean room construction in Idaho and Singapore.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="fcf" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>      </div>
-      <p>经营现金流增加是自由现金流增长的主要驱动。</p>
-<blockquote>Operating Cash Flow -- $43.97 billion, up from $25.39 billion in the prior quarter due to higher net income and favorable working capital timing.</blockquote>    </div>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>      </div>
-      <p>资本开支增加部分抵消自由现金流增长。</p>
-<blockquote>Capital Expenditures -- $27.37 billion for the full fiscal year, with the majority of increases directed toward clean room construction in Idaho and Singapore.</blockquote>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="share_count" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>      </div>
-      <p>比基本股多 17M，差额是潜在稀释。</p>
-<p class="small muted">依据：用利润表稀释加权平均股。股数按百万股换回实际股数，不用每股收益那一行。</p>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="dio_days" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">结构</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>新闻稿</span>      </div>
-      <p>存货同比 +24.1%，快于销售成本同比 +14.7%，周转天数变长。</p>
-<p class="small muted">依据：期末余额，不是期初期末平均。销售成本用营收 ×（1 − 毛利率）。</p>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="dso_days" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>      </div>
-      <p>营收同比 +379.3%，快于应收账款同比 +290.7%，周转天数变短。</p>
-<p class="small muted">依据：期末应收账款 ÷ 本季营收 × 本季天数，不是平均余额。</p>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="deferred_days" hidden>
-    <div class="drv">
-      <div class="drv-meta">
-<span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>      </div>
-      <p>合同负债同比 91 倍，快于营收同比 +379.3%，周转天数变长。</p>
-<p class="small muted">依据：没有预收账款时改用合同负债。期末余额，不是平均余额。</p>    </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>  </div>
 <p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>  </div>
 </details>
 
@@ -936,7 +1019,7 @@ function drawRowCharts() {
 </script>
 <script>
 (function () {
-  var view = {"by_key": {}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "note": ""};
+  var view = {"by_key": {"cost_of_revenue": {"charts": [{"amount": [6.26, 6.4, 7.18], "amount_text": ["$6.26B", "$6.40B", "$7.18B"], "kind": "amount_yoy", "labels": ["FY2025Q4", "FY2026Q3", "FY2026Q4"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, 14.7]}], "note": "营业成本来自新闻稿表格。没有把营业成本再拆开。"}}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "note": ""};
   var history = [{"derived": true, "fcf": 72000000.0, "gross_margin": 0.45682722050375607, "gross_margin_gaap": 0.44666372072470173, "gross_margin_nongaap": 0.45682722050375607, "gross_profit_gaap": 5054000000.0, "gross_profit_nongaap": 5169000000.0, "net_income_gaap": 3201000000.0, "net_income_nongaap": null, "net_margin_gaap": 0.2828988068935042, "operating_income_gaap": 3654000000.0000005, "operating_income_nongaap": 3955000000.0, "operating_margin": 0.34953601414052143, "operating_margin_gaap": 0.32293415819708354, "operating_margin_nongaap": 0.34953601414052143, "period": "FY2025Q4", "revenue": 11315000000.0}, {"derived": true, "fcf": 17562000000.0, "gross_margin": 0.8490688923195677, "gross_margin_gaap": 0.8456194519490544, "gross_margin_nongaap": 0.8490688923195677, "gross_profit_gaap": 35056000000.0, "gross_profit_nongaap": 35199000000.0, "net_income_gaap": 28243000000.0, "net_income_nongaap": null, "net_margin_gaap": 0.6812765341566963, "operating_income_gaap": 33318000000.0, "operating_income_nongaap": 33681000000.0, "operating_margin": 0.8124517560787341, "operating_margin_gaap": 0.8036954843689695, "operating_margin_nongaap": 0.8124517560787341, "period": "FY2026Q3", "revenue": 41456000000.0}, {"capex": 11110000000.0, "capex_qoq": 0.4196268847431638, "capex_yoy": 0.9635913750441852, "deferred_days": 21.87648675063158, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": 132.8632692843219, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": 61.40854524331999, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 32.87, "eps_nongaap": 33.42, "eps_nongaap_qoq": 0.33094384707287944, "eps_nongaap_yoy": 10.02970297029703, "eps_qoq": 0.33238751520064835, "eps_yoy": 10.614840989399292, "fcf": 32863000000.0, "fcf_qoq": 0.8712561211707095, "fcf_yoy": 455.43055555555554, "gross_margin": 0.8704567666746574, "gross_margin_gaap": 0.8675616367626178, "gross_margin_gaap_qoq": 0.02194218481356336, "gross_margin_gaap_yoy": 0.42089791603791604, "gross_margin_nongaap": 0.8704567666746574, "gross_margin_nongaap_qoq": 0.02138787435508971, "gross_margin_nongaap_yoy": 0.41362954617090136, "gross_margin_qoq": 0.02138787435508971, "gross_margin_yoy": 0.41362954617090136, "gross_profit_gaap": 47047000000.0, "gross_profit_gaap_qoq": 0.3420527156549521, "gross_profit_gaap_yoy": 8.308864265927978, "gross_profit_nongaap": 47204000000.0, "gross_profit_nongaap_qoq": 0.34106082559163614, "gross_profit_nongaap_yoy": 8.132133875024183, "net_income_gaap": 37701000000.0, "net_income_gaap_qoq": 0.33487943915306445, "net_income_gaap_yoy": 10.777881911902531, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.6952184255656567, "net_margin_gaap_qoq": 0.013941891408960405, "net_margin_gaap_yoy": 0.4123196186721525, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 43973000000.0, "ocf_qoq": 0.7320387584685678, "ocf_yoy": 6.674171029668412, "operating_income_gaap": 43751000000.0, "operating_income_gaap_qoq": 0.3131340416591632, "operating_income_gaap_yoy": 10.973453749315818, "operating_income_nongaap": 44636000000.0, "operating_income_nongaap_qoq": 0.32525756361153174, "operating_income_nongaap_yoy": 10.285967130214917, "operating_margin": 0.823102030279002, "operating_margin_gaap": 0.8067823489276955, "operating_margin_gaap_qoq": 0.003086864558725977, "operating_margin_gaap_yoy": 0.48384819073061197, "operating_margin_nongaap": 0.823102030279002, "operating_margin_nongaap_qoq": 0.010650274200267873, "operating_margin_nongaap_yoy": 0.47356601613848054, "operating_margin_qoq": 0.010650274200267873, "operating_margin_yoy": 0.47356601613848054, "period": "FY2026Q4", "revenue": 54229000000.0, "revenue_qoq": 0.30810980316480124, "revenue_yoy": 3.792664604507291, "share_count": 1147000000.0, "share_count_qoq": null, "share_count_yoy": null}];
   var live = [];
   var active = view.charts || [];
@@ -1128,6 +1211,9 @@ function drawRowCharts() {
     var readout = chart.kind === 'share' ? '<p class="fin-readout" data-fin-readout="' + index + '" hidden></p>' : '';
     return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><div class="c-body">' + canvas + '</div>' + readout + '</div>';
   }
+  function visibleGrid() {
+    return document.querySelector('[data-fin-panel]:not([hidden]) [data-fin-charts]');
+  }
   function show(key) {
     var spec = (view.by_key || {})[key];
     active = spec ? spec.charts : [
@@ -1135,28 +1221,38 @@ function drawRowCharts() {
       { title: '环比', kind: 'generic', subtitle: '较上一季', metric: key, series: 'qoq' },
       { title: '同比', kind: 'generic', subtitle: '较去年同季', metric: key, series: 'yoy' }
     ];
-    var grid = document.getElementById('finCharts');
-    grid.setAttribute('data-cols', String(active.length));
-    grid.innerHTML = active.map(cardHtml).join('');
-    var note = document.getElementById('finNote');
-    if (note) {
-      note.textContent = spec && spec.note ? spec.note : '';
-      note.hidden = !note.textContent;
-    }
-    document.querySelectorAll('[data-fin-drivers]').forEach(function (node) {
-      node.hidden = node.getAttribute('data-fin-drivers') !== key;
+    clearCharts();
+    var grid = null;
+    document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
+      var on = panel.getAttribute('data-fin-panel') === key;
+      panel.hidden = !on;
+      var charts = panel.querySelector('[data-fin-charts]');
+      if (!charts) return;
+      if (!on) {
+        charts.innerHTML = '';
+        return;
+      }
+      charts.setAttribute('data-cols', String(active.length));
+      charts.innerHTML = active.map(cardHtml).join('');
+      var note = panel.querySelector('[data-fin-note]');
+      if (note) {
+        note.textContent = spec && spec.note ? spec.note : '';
+        note.hidden = !note.textContent;
+      }
+      grid = charts;
     });
     document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
       btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-metric') === key ? 'true' : 'false');
     });
-    requestAnimationFrame(function () { drawRoot(grid); });
+    if (grid) requestAnimationFrame(function () { drawRoot(grid); });
   }
   document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
     btn.addEventListener('click', function () { show(btn.getAttribute('data-fin-metric')); });
   });
   var box = document.getElementById('fin');
   function drawInitial() {
-    if (box.open) drawRoot(document.getElementById('finCharts'));
+    var grid = visibleGrid();
+    if (box.open && grid) drawRoot(grid);
   }
   box.addEventListener('toggle', drawInitial);
   drawInitial();

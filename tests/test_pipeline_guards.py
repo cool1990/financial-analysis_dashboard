@@ -307,7 +307,12 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "财报分析" in meta_html and 'data-fin="split"' not in meta_html
     assert "rev-horizons" not in meta_html and "revHorizons" not in meta_html
     assert 'data-fin-metric="revenue"' in meta_html and "按业务" in meta_html and "按地区" in meta_html
-    assert "毛利构成" in meta_html and "费用构成" in meta_html
+    assert "费用构成" in meta_html and "毛利构成" not in meta_html
+    fin = meta_html.split('id="fin"', 1)[1].split('id="guide"', 1)[0]
+    assert fin.index('data-fin-metric="revenue"') < fin.index('data-fin-panel="revenue"') < fin.index('data-fin-metric="cost_of_revenue"')
+    assert fin.index('data-fin-metric="cost_of_revenue"') < fin.index('data-fin-panel="cost_of_revenue"') < fin.index(">毛利率（GAAP）<")
+    assert 'aria-label="营业收入"' in fin[: fin.index('data-fin-metric="cost_of_revenue"')]
+    assert "毛利润" not in fin and 'id="finCharts"' not in meta_html
     assert "营业费用" in meta_html and "$38.24B" in meta_html
     assert "FY2016Q1" in meta_html and "$63.06B" in meta_html and "应用家族" in meta_html
     assert "财务数据" not in meta_html and "业务拆分" not in meta_html
@@ -763,13 +768,13 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
 
 
 def test_fin_rows_pair_margins_with_absolute_profit():
-    """利润率下面跟利润额；净利润率排在营业利润块之后，再跟净利润。"""
+    """营业成本在毛利率上面；营业利润额仍跟在营业利润率下面，再跟净利润。"""
     from builder.build import _fin_rows
 
     meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
     labels = [row["label"] for row in _fin_rows(meta)]
-    assert labels[labels.index("毛利率（GAAP）") + 1] == "毛利润（GAAP）"
-    assert "毛利润（Non-GAAP）" not in labels
+    assert labels.index("营业收入") < labels.index("营业成本") < labels.index("毛利率（GAAP）")
+    assert "毛利润" not in labels
     op = labels.index("营业利润率（GAAP）")
     assert labels.index("营业费用") < op
     assert labels[op + 1 : op + 4] == ["营业利润（GAAP）", "净利润率（GAAP）", "净利润（GAAP）"]
@@ -778,8 +783,9 @@ def test_fin_rows_pair_margins_with_absolute_profit():
     assert by["营业费用"]["value"] == "$38.24B"
     assert by["营业费用"]["yoy"]["text"] == "+77.9%"
     assert by["营业费用"]["qoq"]["text"] == "+24.6%"
-    assert by["毛利润（GAAP）"]["nested"] is False and by["毛利润（GAAP）"]["value"] == "$51.23B"
-    assert by["毛利润（GAAP）"]["yoy"]["text"] == "+21.9%" and by["毛利润（GAAP）"]["qoq"]["text"] == "+3.6%"
+    assert by["营业成本"]["value"] == "$13.37B"
+    assert by["营业成本"]["yoy"]["text"] == "+45.2%" and by["营业成本"]["qoq"]["text"] == "+18.0%"
+    assert "没有再拆开" in by["营业成本"]["summary"]
     assert by["营业利润（GAAP）"]["value"] == "$12.99B"
     assert by["营业利润（GAAP）"]["yoy"]["text"] == "-36.8%" and by["营业利润（GAAP）"]["qoq"]["text"] == "-30.8%"
     assert by["净利润率（GAAP）"]["nested"] is False and by["净利润率（GAAP）"]["value"] == "15.3%"
@@ -790,19 +796,70 @@ def test_fin_rows_pair_margins_with_absolute_profit():
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_labels = [row["label"] for row in _fin_rows(mu)]
-    assert mu_labels[mu_labels.index("毛利率（Non-GAAP）") + 1] == "毛利润（Non-GAAP）"
-    assert mu_labels[mu_labels.index("毛利率（GAAP）") + 1] == "毛利润（GAAP）"
+    assert mu_labels.index("营业收入") < mu_labels.index("营业成本") < mu_labels.index("毛利率（Non-GAAP）")
+    assert mu_labels.index("营业成本") < mu_labels.index("毛利率（GAAP）")
+    assert "毛利润" not in mu_labels
     assert mu_labels[mu_labels.index("营业利润率（Non-GAAP）") + 1] == "营业利润（Non-GAAP）"
     assert mu_labels[mu_labels.index("营业利润率（GAAP）") + 1] == "营业利润（GAAP）"
     after_oi = mu_labels.index("营业利润（GAAP）")
     assert mu_labels[after_oi + 1 : after_oi + 3] == ["净利润率（GAAP）", "净利润（GAAP）"]
     mu_by = {row["label"]: row for row in _fin_rows(mu)}
-    assert mu_by["毛利润（Non-GAAP）"]["value"] == "$47.20B"
-    assert mu_by["毛利润（GAAP）"]["value"] == "$47.05B"
+    assert mu_by["营业成本"]["value"] == "$7.18B"
+    assert mu_by["营业成本"]["yoy"]["text"] == "+14.7%" and mu_by["营业成本"]["qoq"]["text"] == "+12.2%"
+    assert mu_by["毛利率（GAAP）"]["value"] == "86.8%"
+    assert mu_by["毛利率（Non-GAAP）"]["value"] == "87.0%"
     assert mu_by["营业利润（Non-GAAP）"]["value"] == "$44.64B"
     assert mu_by["营业利润（GAAP）"]["value"] == "$43.75B"
     assert mu_by["净利润（GAAP）"]["value"] == "$37.70B"
     assert mu_by["净利润（GAAP）"]["yoy"]["text"] != "—" and mu_by["净利润（GAAP）"]["qoq"]["text"] != "—"
+
+
+def test_cost_charts_keep_total_and_skip_empty_mix():
+    """只有营业成本合计时不画空的占比图；有两项以上的拆分才加占比，收入地区不算成本地区。"""
+    from builder.build import _cost_charts, _fin_view
+
+    total_only = [
+        {"period": "FY2024Q1", "cost_of_revenue": 10_000_000_000, "geo": [
+            {"key": "us", "name": "美国", "value": 4_000_000_000},
+            {"key": "row", "name": "美国以外", "value": 6_000_000_000},
+        ]},
+        {"period": "FY2024Q2", "cost_of_revenue": 12_000_000_000, "cogs_lines": [
+            {"key": "cogs", "name": "营业成本", "value": 12_000_000_000},
+        ]},
+    ]
+    assert [chart["title"] for chart in _cost_charts(total_only, "FY2024Q2")] == ["营业成本"]
+
+    split = [
+        {"period": "FY2024Q1", "cost_of_revenue": 10_000_000_000, "cogs_lines": [
+            {"key": "infra", "name": "基础设施", "value": 6_000_000_000},
+            {"key": "other", "name": "其他成本", "value": 4_000_000_000},
+        ]},
+        {"period": "FY2024Q2", "cost_of_revenue": 10_000_000_000, "cogs_lines": [
+            {"key": "infra", "name": "基础设施", "value": 7_000_000_000},
+            {"key": "other", "name": "其他成本", "value": 3_000_000_000},
+        ], "cost_geo": [
+            {"key": "us", "name": "美国", "value": 4_000_000_000},
+            {"key": "row", "name": "美国以外", "value": 6_000_000_000},
+        ]},
+    ]
+    charts = _cost_charts(split, "FY2024Q2")
+    assert [chart["title"] for chart in charts] == ["营业成本", "成本构成", "按地区"]
+    items = charts[1]["points"][1]["items"]
+    assert [item["name"] for item in items] == ["基础设施", "其他成本"]
+    assert items[1]["legend"] == "其他"
+    assert abs(sum(item["share"] for item in items) - 100) < 0.2
+
+    meta = _fin_view("META", "FY2026Q3")
+    assert [chart["title"] for chart in meta["by_key"]["revenue"]["charts"]] == ["营业收入", "按业务", "按地区"]
+    cost = meta["by_key"]["cost_of_revenue"]["charts"]
+    assert [chart["title"] for chart in cost] == ["营业成本"]
+    assert cost[0]["amount"][-1] == 13.37
+    assert "毛利" not in meta["by_key"]
+
+    mu = _fin_view("MU", "FY2026Q4")
+    mu_cost = mu["by_key"]["cost_of_revenue"]["charts"]
+    assert [chart["kind"] for chart in mu_cost] == ["amount_yoy"]
+    assert mu_cost[0]["labels"][-1] == "FY2026Q4" and mu_cost[0]["amount"][-1] == 7.18
 
 
 def test_activity_rows_and_business_split_read_press_release():

@@ -115,12 +115,12 @@
     <span class="ev-meta">{{ fin_rows|length }} 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <p class="layer-sub">点一个指标，下面换成这个指标的图。营收给出金额、同比，以及业务占比；有地区拆分时再给地区占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一行指标，图出现在这一行下面。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   {% if drivers_pending %}<p class="pending-note">{{ drivers_pending }}</p>{% endif %}
   <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     {% for r in fin_rows %}
-    <button type="button" class="mrow" data-fin-metric="{{ r.key }}" aria-pressed="{{ 'true' if r.key == fin_view.default else 'false' }}">
+    <button type="button" class="mrow" data-fin-metric="{{ r.key }}" aria-pressed="{{ 'true' if r.key == fin_view.default else 'false' }}" aria-controls="fin-panel-{{ r.key }}">
       <span class="m-name">{{ r.label }}</span>
       <span class="m-val num">{{ r.value }}</span>
       <span class="num"><i class="m-label">同比</i><span class="c-{{ r.yoy.cls }}">{{ r.yoy.text }}</span></span>
@@ -128,42 +128,46 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-{{ r.vs.cls }}">{{ r.vs.text }}</span></span>
       <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif drivers_pending %}<span class="muted">变动原因待生成</span>{% else %}<span class="muted">—</span>{% endif %}</span>
     </button>
+    <div class="fin-panel" id="fin-panel-{{ r.key }}" data-fin-panel="{{ r.key }}"{% if r.key != fin_view.default %} hidden{% endif %}>
+      <div class="charts fin-charts" data-fin-charts data-cols="{% if r.key == fin_view.default %}{{ fin_view.charts|length }}{% else %}0{% endif %}">
+        {% if r.key == fin_view.default %}
+        {% for chart in fin_view.charts %}
+        <div class="card chart">
+          <h3>{{ chart.title }}</h3>
+          <p class="c-sub">{{ chart.subtitle }}</p>
+          <div class="c-body"><canvas {% if chart.kind == 'generic' %}data-metric="{{ chart.metric }}" data-series="{{ chart.series }}"{% else %}data-fin-kind="{{ chart.kind }}" data-fin-index="{{ loop.index0 }}"{% endif %} aria-label="{{ chart.title }}"></canvas></div>
+          {% if chart.kind == 'share' %}<p class="fin-readout" data-fin-readout="{{ loop.index0 }}" hidden></p>{% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+      <p class="small muted mix-note" data-fin-note{% if r.key != fin_view.default or not fin_view.note %} hidden{% endif %}>{% if r.key == fin_view.default %}{{ fin_view.note }}{% endif %}</p>
+      {% if r.drivers or r.conflicts or r.from_press or not r.summary %}
+      <div class="fin-drivers">
+        {% for drv in r.drivers %}
+        <div class="drv">
+          <div class="drv-meta">
+            {% if drv.type %}<span class="pill">{{ drv.type }}</span>{% endif %}
+            {% if drv.direction == '+' %}<span class="pill ok">正贡献</span>{% elif drv.direction == '-' %}<span class="pill alert">负贡献</span>{% endif %}
+            {% if drv.quote_unverified %}<span class="pill warn">引文未核实</span>{% elif drv.is_inference %}<span class="pill warn">推测</span>{% endif %}
+            {% if drv.source %}<span>{{ drv.source|source }}</span>{% endif %}
+          </div>
+          <p>{{ drv.description }}</p>
+          {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
+          {% if drv.is_inference and drv.reasoning %}<p class="small muted">依据：{{ drv.reasoning }}</p>{% endif %}
+        </div>
+        {% else %}
+        {% if not r.summary %}<p class="muted">{% if drivers_pending %}{{ drivers_pending }}{% else %}暂无单独解读。{% endif %}</p>{% endif %}
+        {% endfor %}
+        {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
+        {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
+      </div>
+      {% endif %}
+    </div>
     {% else %}
     <p class="placeholder">财务数据尚未生成。</p>
     {% endfor %}
   </div>
-  <div class="charts fin-charts" id="finCharts" data-cols="{{ fin_view.charts|length }}">
-    {% for chart in fin_view.charts %}
-    <div class="card chart">
-      <h3>{{ chart.title }}</h3>
-      <p class="c-sub">{{ chart.subtitle }}</p>
-      <div class="c-body"><canvas {% if chart.kind == 'generic' %}data-metric="{{ chart.metric }}" data-series="{{ chart.series }}"{% else %}data-fin-kind="{{ chart.kind }}" data-fin-index="{{ loop.index0 }}"{% endif %} aria-label="{{ chart.title }}"></canvas></div>
-      {% if chart.kind == 'share' %}<p class="fin-readout" data-fin-readout="{{ loop.index0 }}" hidden></p>{% endif %}
-    </div>
-    {% endfor %}
-  </div>
-  {% if fin_view.note %}<p class="small muted mix-note" id="finNote">{{ fin_view.note }}</p>{% else %}<p class="small muted mix-note" id="finNote" hidden></p>{% endif %}
-  {% for r in fin_rows %}
-  <div class="fin-drivers" data-fin-drivers="{{ r.key }}"{% if r.key != fin_view.default %} hidden{% endif %}>
-    {% for drv in r.drivers %}
-    <div class="drv">
-      <div class="drv-meta">
-        {% if drv.type %}<span class="pill">{{ drv.type }}</span>{% endif %}
-        {% if drv.direction == '+' %}<span class="pill ok">正贡献</span>{% elif drv.direction == '-' %}<span class="pill alert">负贡献</span>{% endif %}
-        {% if drv.quote_unverified %}<span class="pill warn">引文未核实</span>{% elif drv.is_inference %}<span class="pill warn">推测</span>{% endif %}
-        {% if drv.source %}<span>{{ drv.source|source }}</span>{% endif %}
-      </div>
-      <p>{{ drv.description }}</p>
-      {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
-      {% if drv.is_inference and drv.reasoning %}<p class="small muted">依据：{{ drv.reasoning }}</p>{% endif %}
-    </div>
-    {% else %}
-    {% if not r.summary %}<p class="muted">{% if drivers_pending %}{{ drivers_pending }}{% else %}暂无单独解读。{% endif %}</p>{% endif %}
-    {% endfor %}
-    {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
-    {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
-  </div>
-  {% endfor %}
   {% if history_derived %}<p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>{% endif %}
   </div>
 </details>
@@ -658,6 +662,9 @@ function drawRowCharts() {
     var readout = chart.kind === 'share' ? '<p class="fin-readout" data-fin-readout="' + index + '" hidden></p>' : '';
     return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><div class="c-body">' + canvas + '</div>' + readout + '</div>';
   }
+  function visibleGrid() {
+    return document.querySelector('[data-fin-panel]:not([hidden]) [data-fin-charts]');
+  }
   function show(key) {
     var spec = (view.by_key || {})[key];
     active = spec ? spec.charts : [
@@ -665,28 +672,38 @@ function drawRowCharts() {
       { title: '环比', kind: 'generic', subtitle: '较上一季', metric: key, series: 'qoq' },
       { title: '同比', kind: 'generic', subtitle: '较去年同季', metric: key, series: 'yoy' }
     ];
-    var grid = document.getElementById('finCharts');
-    grid.setAttribute('data-cols', String(active.length));
-    grid.innerHTML = active.map(cardHtml).join('');
-    var note = document.getElementById('finNote');
-    if (note) {
-      note.textContent = spec && spec.note ? spec.note : '';
-      note.hidden = !note.textContent;
-    }
-    document.querySelectorAll('[data-fin-drivers]').forEach(function (node) {
-      node.hidden = node.getAttribute('data-fin-drivers') !== key;
+    clearCharts();
+    var grid = null;
+    document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
+      var on = panel.getAttribute('data-fin-panel') === key;
+      panel.hidden = !on;
+      var charts = panel.querySelector('[data-fin-charts]');
+      if (!charts) return;
+      if (!on) {
+        charts.innerHTML = '';
+        return;
+      }
+      charts.setAttribute('data-cols', String(active.length));
+      charts.innerHTML = active.map(cardHtml).join('');
+      var note = panel.querySelector('[data-fin-note]');
+      if (note) {
+        note.textContent = spec && spec.note ? spec.note : '';
+        note.hidden = !note.textContent;
+      }
+      grid = charts;
     });
     document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
       btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-metric') === key ? 'true' : 'false');
     });
-    requestAnimationFrame(function () { drawRoot(grid); });
+    if (grid) requestAnimationFrame(function () { drawRoot(grid); });
   }
   document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
     btn.addEventListener('click', function () { show(btn.getAttribute('data-fin-metric')); });
   });
   var box = document.getElementById('fin');
   function drawInitial() {
-    if (box.open) drawRoot(document.getElementById('finCharts'));
+    var grid = visibleGrid();
+    if (box.open && grid) drawRoot(grid);
   }
   box.addEventListener('toggle', drawInitial);
   drawInitial();
