@@ -261,6 +261,29 @@ class AnalystRevisions(BaseModel):
     gap_closure: Optional[Any] = None
 
 
+class OutlookPiece(BaseModel):
+    """行业展望里的一段正文或一组条目。"""
+
+    model_config = ConfigDict(extra="ignore")
+
+    type: Literal["p", "ul", "ol"] = "p"
+    text: str = ""
+    items: list[str] = Field(default_factory=list)
+
+
+class IndustryOutlookTopic(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    title: str
+    blocks: list[OutlookPiece] = Field(default_factory=list)
+
+
+class IndustryOutlookResult(BaseModel):
+    """Stage2 行业展望。空题目不要出现在 topics 里。"""
+
+    topics: list[IndustryOutlookTopic] = Field(default_factory=list)
+
+
 class GuidanceBlock(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -268,6 +291,8 @@ class GuidanceBlock(BaseModel):
     prior_guidance_review: list[Any] = Field(default_factory=list)
     vs_consensus: list[Any] = Field(default_factory=list)
     analyst_revisions: AnalystRevisions = Field(default_factory=AnalystRevisions)
+    # Stage2（GitHub Actions / DeepSeek）写入。构建页面只渲染这份，不另写摘要。
+    industry_outlook: list[IndustryOutlookTopic] = Field(default_factory=list)
 
 
 class QABlock(BaseModel):

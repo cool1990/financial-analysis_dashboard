@@ -515,6 +515,25 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
 
     stamp_management_eps(doc, fiscal_period)
 
+    # 行业展望必须由这次 Stage2（GitHub Actions 上的 DeepSeek）写成。
+    # 构建页面只渲染 guidance.industry_outlook，不在本地另写摘要。
+    # 过短的结果不覆盖已有正文，避免薄版把已经写好的展望冲掉。
+    from pipeline.analyze.outlook import extract_industry_outlook, outlook_is_thin
+
+    t0 = _step("industry_outlook")
+    try:
+        topics = extract_industry_outlook(text, llm)
+        if outlook_is_thin(topics):
+            if topics:
+                doc["status"]["warnings"].append("行业展望过短（一句带过），未写入。重跑 Stage2 才会覆盖。")
+            else:
+                doc["status"]["warnings"].append("行业展望：电话会正文里没有可归入这些题目的内容")
+        else:
+            doc.setdefault("guidance", {})["industry_outlook"] = topics
+    except Exception as e:
+        doc["status"]["warnings"].append(f"行业展望抽取失败: {e}")
+    _done("industry_outlook", t0)
+
     # Q&A
     press_nums = {
         "revenue": (doc.get("financials") or {}).get("revenue", {}).get("value"),

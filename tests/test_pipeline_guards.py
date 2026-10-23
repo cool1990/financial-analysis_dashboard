@@ -305,6 +305,9 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "市场怎么判" not in meta_html and "阶段1" not in meta_html
     assert "财报分析" in meta_html and '<details class="ev" id="fin" open>' in meta_html
     assert "财务数据" in meta_html and "业务拆分" in meta_html and 'class="fin-layout"' in meta_html
+    assert 'data-fin="statements"' in meta_html and 'data-fin="split"' in meta_html
+    assert 'data-fin-panel="split" hidden' in meta_html
+    assert "rev-horizons" not in meta_html and "revHorizons" not in meta_html
     assert "按业务" in meta_html and "按地理" in meta_html
     assert "股份数量" in meta_html and "存货周转天数" in meta_html and "应收账款周转天数" in meta_html
     assert "预收账款周转天数" in meta_html and "未披露" in meta_html
@@ -347,9 +350,13 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "FY26E" in mu_forward and "FY27E" in mu_forward and "FY28E" in mu_forward
     guide = meta_html.split('id="guide"', 1)[1].split('id="qa"', 1)[0]
     assert "业绩指引" in guide and "行业展望" in guide and "gtile" not in guide
+    assert "分析师修正" not in guide and "分析师修正" not in meta_html and "分析师修正" not in html
+    assert 'class="guide-stack"' in guide and 'class="guide-part"' in guide
     assert "隐含环比" in guide and "隐含同比" in guide and "较共识" in guide
     assert "$73.00B – $76.00B" in guide and "+15.3%" in guide and "+24.4%" in guide and "+0.5%" in guide
-    assert "外部环境" in guide and "需求变化" in guide and "公司战略" in guide
+    assert "资本开支" in guide and "$135.00B – $145.00B" in guide and "FY2026全年" in guide and "+100.9%" in guide
+    assert "外部环境（技术变化）" in guide and "需求变化" in guide and "公司战略" in guide
+    assert "1000 万人" in guide and "10 倍以上" in guide and "150 亿美元" in guide
     assert "$175.00B" not in guide and "全年费用" not in guide
     assert "文本不足" not in meta_html
     assert "未调用模型，变动原因未生成" not in meta_html
@@ -470,22 +477,30 @@ def test_header_eps_guidance_uses_only_management_nongaap():
 
 
 def test_guide_section_splits_performance_and_industry():
-    """指引展望的两半：有数字的管理层指引进表，没有的指标不占行；行业句子不另编。"""
+    """指引展望的两半：有数字的管理层指引进表，资本开支有数字才占行；行业展望用已写入的正文。"""
     from builder.build import _guide_section, _load_docs
 
     meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
     view = _guide_section(meta, _load_docs("META"))
-    assert [row["label"] for row in view["rows"]] == ["营收"]
+    assert [row["label"] for row in view["rows"]] == ["营收", "资本开支"]
     revenue = view["rows"][0]
     assert revenue["value"] == "$73.00B – $76.00B"
     assert revenue["qoq"]["text"] == "+15.3%" and revenue["qoq"]["cls"] == "up"
     assert revenue["yoy"]["text"] == "+24.4%"
     assert revenue["vs"]["text"] == "+0.5%"
+    capex = view["rows"][1]
+    assert capex["period"] == "FY2026全年"
+    assert capex["value"] == "$135.00B – $145.00B"
+    assert capex["qoq"]["text"] == "" and capex["vs"]["text"] == ""
+    assert capex["yoy"]["text"] == "+100.9%" and capex["yoy"]["cls"] == "up"
     titles = [block["title"] for block in view["outlook"]]
-    assert titles == ["外部环境", "需求变化", "供给变化", "竞争变化", "商业模式", "公司战略"]
-    assert "青少年" in view["outlook"][0]["text"]
-    assert "强劲增长" in next(block["text"] for block in view["outlook"] if block["title"] == "需求变化")
-    assert all(title in {"外部环境", "需求变化", "供给变化", "竞争变化", "商业模式", "公司战略"} for title in titles)
+    assert titles == ["外部环境（技术变化）", "需求变化", "供给变化", "竞争变化", "商业模式", "公司战略"]
+    demand = next(block for block in view["outlook"] if block["title"] == "需求变化")
+    demand_text = "".join(piece.get("text") or "" for piece in demand["blocks"])
+    assert "1000 万人" in demand_text and "25%" in demand_text
+    strategy = next(block for block in view["outlook"] if block["title"] == "公司战略")
+    assert any(piece.get("type") == "ol" and len(piece.get("items") or []) == 7 for piece in strategy["blocks"])
+    assert "青少年" not in json.dumps(view["outlook"], ensure_ascii=False)
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_view = _guide_section(mu, _load_docs("MU"))
@@ -496,8 +511,70 @@ def test_guide_section_splits_performance_and_industry():
     assert mu_rows["调整后摊薄 EPS"]["value"] == "$38.15"
     assert mu_rows["调整后摊薄 EPS"]["qoq"]["text"] == "+14.2%"
     assert mu_rows["调整后摊薄 EPS"]["vs"]["text"] == "+11.1%"
-    assert "净利润率" not in mu_rows and "营业利润率" not in mu_rows
+    assert "净利润率" not in mu_rows and "营业利润率" not in mu_rows and "资本开支" not in mu_rows
     assert "供给变化" in {block["title"] for block in mu_view["outlook"]}
+    assert "industry_outlook" not in (mu.get("guidance") or {})
+
+
+def test_capex_guidance_row_skipped_when_not_numeric():
+    from builder.build import _guide_section
+
+    doc = {
+        "meta": {"fiscal_period": "FY2026Q3"},
+        "guidance": {"items": [{
+            "metric_key": "capex",
+            "type": "qualitative",
+            "period": "FY2027",
+            "statement": "资本开支将继续增加",
+        }]},
+        "scorecard": [],
+        "financials": {},
+    }
+    assert _guide_section(doc, {})["rows"] == []
+
+
+def test_industry_outlook_prompt_teaches_depth_and_stage2_calls_deepseek_path():
+    """行业展望由 Stage2 的 DeepSeek 按提示词写，不在构建时另写。"""
+    prompt = (ROOT / "prompts" / "extract_industry_outlook.md").read_text(encoding="utf-8")
+    assert "忠实原文" in prompt and "通俗易懂" in prompt and "不要乱编造" in prompt
+    assert "有材料就写细" in prompt and "整题省略" in prompt
+    assert "数字" in prompt and "因果" in prompt
+    assert "一句" in prompt and "1000 万人" in prompt and "10 倍" in prompt and "150 亿" in prompt
+    stage2 = (ROOT / "pipeline" / "commands" / "run_cmd.py").read_text(encoding="utf-8")
+    assert "extract_industry_outlook" in stage2 and "outlook_is_thin" in stage2
+    assert "行业展望过短" in stage2
+
+
+def test_extract_industry_outlook_uses_longer_deepseek_budget(monkeypatch):
+    from pipeline.analyze.outlook import extract_industry_outlook, outlook_is_thin
+    from pipeline.schemas import IndustryOutlookResult
+
+    captured = {}
+
+    class Fake:
+        def load_prompt(self, name, **kwargs):
+            assert name == "extract_industry_outlook.md"
+            return "PROMPT"
+
+        def complete_json(self, name, user, schema, **kwargs):
+            captured["name"] = name
+            captured["user"] = user
+            captured["max_tokens"] = kwargs.get("max_tokens")
+            captured["timeout"] = kwargs.get("timeout_sec")
+            return IndustryOutlookResult.model_validate({"topics": [{
+                "title": "供给变化",
+                "blocks": [{"type": "p", "text": "他说算力是限制，所以还没有全球上线，要先把效率做上去。" * 20}],
+            }]})
+
+    text = "Mark -- Chief Executive Officer\n算力还不够。\n\nQuestion-and-Answer Session\nMark: 先提效率。"
+    topics = extract_industry_outlook(text, Fake())  # type: ignore[arg-type]
+    assert captured["name"] == "extract_industry_outlook.md"
+    assert captured["max_tokens"] == 8192 and captured["timeout"] == 150
+    assert "电话会正文（prepared remarks）" in captured["user"]
+    assert "问答" in captured["user"] and "算力还不够" in captured["user"]
+    assert topics[0]["title"] == "供给变化"
+    assert outlook_is_thin([{"blocks": [{"text": "监管可能影响"}]}]) is True
+    assert outlook_is_thin(topics) is False
 
 
 def test_guidance_view_tiles_and_outlook_categories():
@@ -717,10 +794,12 @@ def test_activity_rows_and_business_split_read_press_release():
     rows = {row["label"]: row for row in _activity_rows("META", "FY2026Q3", meta, {})}
     assert rows["股份数量"]["value"] == "2,573M 股"
     assert rows["股份数量"]["yoy"]["text"] == "+1M 股"
+    assert rows["股份数量"]["qoq"]["text"] == "+7M 股"
     assert "潜在稀释" in rows["股份数量"]["summary"]
     assert rows["存货周转天数"]["value"] == "未披露"
     assert rows["应收账款周转天数"]["value"] == "32.4天"
-    assert rows["应收账款周转天数"]["yoy"]["text"] == "—"
+    assert rows["应收账款周转天数"]["yoy"]["text"] == "+1.3天"
+    assert rows["应收账款周转天数"]["qoq"]["text"] == "-0.2天"
     assert rows["预收账款周转天数"]["value"] == "未披露"
     assert any(item["type"] == "结构" for item in rows["应收账款周转天数"]["drivers"])
     split = _business_split("META", "FY2026Q3", meta, {})

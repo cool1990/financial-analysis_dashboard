@@ -125,12 +125,6 @@
         <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比</small>
       </h2>
       <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
-      <div class="rev-horizons" id="revHorizons" hidden>
-        <div><span>近 4 季（TTM）</span><b>$241.61B</b></div>
-        <div><span>未来 12 个月（NTM）</span><b>$296.78B</b></div>
-        <div><span>FY26E</span><b>$255.82B</b></div>
-        <div><span>FY27E</span><b>$310.44B</b></div>
-      </div>
       <p class="eps-note" id="expectNote">浅蓝柱是 Non-GAAP 实际，灰柱是 TradingView earnings_fq_h 的 street 一致预期。FQ4 2025 新闻稿没有每股收益剔除项，Non-GAAP 等于稀释每股收益 $8.88。FQ1 2026 是 GAAP $10.44 减去新闻稿所写的 $3.13，即 $7.31。FQ2 2026 公司没有公布剔除后的每股收益；按净利润 158.48 亿美元、稀释股本 25.66 亿股、法律费用 24 亿美元、遣散费 11.8 亿美元，并以当季 16% 有效税率税后加回，得到 $7.35。FQ3 2026 是新闻稿剔除诉讼费用后的 $7.40，不是 GAAP $3.83。未来四季只有预期。橙线同比用同一 Non-GAAP 口径。</p>
     </div>
     <div class="expect-pe" id="forward-pe">
@@ -175,12 +169,18 @@
 
 
 <details class="ev" id="fin" open>
-  <summary><span class="ev-t">财报分析</span><span class="ev-meta">17 项指标 · 同比 / 环比 · 变动原因与原文 · 趋势图</span></summary>
+  <summary>
+    <span class="ev-t">财报分析</span>
+    <span class="seg fin-toggle" role="group" aria-label="切换财务数据或业务拆分">
+      <button type="button" data-fin="statements" aria-pressed="true">财务数据</button>
+      <button type="button" data-fin="split" aria-pressed="false">业务拆分</button>
+    </span>
+    <span class="ev-meta">17 项指标 · 同比 / 环比 · 变动原因与原文 · 趋势图</span>
+  </summary>
   <div class="ev-body">
   <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开水平值、环比、同比三张图；有原文时同时展开驱动因素。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   <div class="fin-layout">
-  <div class="card rows">
-    <h3 class="fin-title">财务数据</h3>
+  <div class="card rows" data-fin-panel="statements">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <details class="mrow">
       <summary>
@@ -614,9 +614,9 @@
         <span class="m-name">股份数量</span>
         <span class="m-val num">2,573M 股</span>
         <span class="num"><i class="m-label">同比</i><span class="c-up">+1M 股</span></span>
-        <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+        <span class="num"><i class="m-label">环比</i><span class="c-up">+7M 股</span></span>
         <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-        <span class="m-sum">稀释加权平均股 2,573M 股。比基本股多 21M，差额是潜在稀释。</span>
+        <span class="m-sum">稀释加权平均股 2,573M 股。比基本股多 21M，差额是潜在稀释。环比用对应季度 10-Q 的稀释加权平均股。</span>
       </summary>
       <div class="m-body">
         <div class="charts">
@@ -641,7 +641,7 @@
 <span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
           <p>比基本股多 21M，差额是潜在稀释。</p>
 <p class="small muted">依据：用利润表稀释加权平均股。股数按百万股换回实际股数，不用每股收益那一行。</p>        </div>
-<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+      </div>
     </details>
     <details class="mrow">
       <summary>
@@ -681,10 +681,10 @@
       <summary>
         <span class="m-name">应收账款周转天数</span>
         <span class="m-val num">32.4天</span>
-        <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
-        <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+        <span class="num"><i class="m-label">同比</i><span class="c-up">+1.3天</span></span>
+        <span class="num"><i class="m-label">环比</i><span class="c-down">-0.2天</span></span>
         <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-        <span class="m-sum">期末应收账款 $22.72B，相当于本季营收 32.4 天。资产负债表没有上季或去年同季的应收列。</span>
+        <span class="m-sum">期末应收账款 $22.72B，相当于本季营收 32.4 天。应收账款同比 +31.3%，快于营收同比 +26.1%，周转天数变长。上季和去年同季的应收取自对应季度 10-Q 的期末余额。</span>
       </summary>
       <div class="m-body">
         <div class="charts">
@@ -707,7 +707,7 @@
         <div class="drv">
           <div class="drv-meta">
 <span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
-          <p>只有期末应收，天数变动不算。</p>
+          <p>应收账款同比 +31.3%，快于营收同比 +26.1%，周转天数变长。</p>
 <p class="small muted">依据：期末应收账款 ÷ 本季营收 × 本季天数，不是平均余额。</p>        </div>
       </div>
     </details>
@@ -746,9 +746,8 @@
       </div>
     </details>
   </div>
-  <div class="card split-card">
+  <div class="card split-card" data-fin-panel="split" hidden>
     <div class="split-head">
-      <h3 class="fin-title">业务拆分</h3>
       <span class="seg" role="group" aria-label="按业务或按地理">
         <button type="button" data-split="business" aria-pressed="true">按业务</button>
         <button type="button" data-split="geo" aria-pressed="false">按地理</button>
@@ -797,6 +796,19 @@
   (function () {
     var root = document.getElementById('fin');
     if (!root) return;
+    root.querySelectorAll('[data-fin]').forEach(function (btn) {
+      btn.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        var mode = btn.getAttribute('data-fin');
+        root.querySelectorAll('[data-fin]').forEach(function (other) {
+          other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+        });
+        root.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
+          panel.hidden = panel.getAttribute('data-fin-panel') !== mode;
+        });
+      });
+    });
     root.querySelectorAll('[data-split]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var mode = btn.getAttribute('data-split');
@@ -815,56 +827,82 @@
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 1 项 · 行业展望 6 题</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 2 项 · 行业展望 6 题</span></summary>
   <div class="ev-body">
-  <div class="group-title">业绩指引</div>
-  <p class="layer-sub">只列管理层给出数字的营收、毛利率、营业利润率、净利润率和调整后摊薄 EPS。没给的不占行。隐含环比、隐含同比用指引中值对比已披露实际，较共识用已保存的一致预期。算不出就空着。</p>
-  <div class="card" style="padding:4px 16px 10px">
-    <div class="table-wrap">
-    <table class="data guide-table">
-      <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
-      <tbody>
-        <tr>
-          <td>营收<small class="basis">下季</small></td>
-          <td>$73.00B – $76.00B</td>
-          <td class="c-up">+15.3%</td>
-          <td class="c-up">+24.4%</td>
-          <td class="c-up">+0.5%</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
+  <div class="guide-stack">
+    <section class="guide-part">
+      <h3>业绩指引</h3>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>营收<small class="basis">下季</small></td>
+            <td>$73.00B – $76.00B</td>
+            <td class="c-up">+15.3%</td>
+            <td class="c-up">+24.4%</td>
+            <td class="c-up">+0.5%</td>
+          </tr>
+          <tr>
+            <td>资本开支<small class="basis">FY2026全年</small></td>
+            <td>$135.00B – $145.00B</td>
+            <td class="c-na"></td>
+            <td class="c-up">+100.9%</td>
+            <td class="c-na"></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+    <section class="guide-part">
+      <h3>行业展望</h3>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境（技术变化）</h4>
+          <div class="outlook-copy">
+            <p>Mark 认为 AI 领域发展很快，而且只要把模型继续做大，就能做出超级智能，所以 Meta 会&#34;一步步往上爬&#34;，已经在做比 Muse Wonder 更大的模型。他还看到一个年年出现的规律：一年后，用更小的模型、只花一小部分成本，就能达到今天 Muse Wonder 或任何现有前沿模型的水平。他预计 Muse 的成本效率明年能提升 10 倍以上，并认为之后几年继续快速提升&#34;非常可能&#34;。另外，模型越聪明，产品就越好用，Muse Wonder 已经让质量、互动和留存都进一步提升。他还说，公司正在测试用 Muse Wonder 自动改进推荐和广告系统，预计模型越强，改进速度越快。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化</h4>
+          <div class="outlook-copy">
+            <p>他认为个人 AI 助手（agent）的需求很强。Muse 只在美国和加拿大上线一个半月，就有超过 1000 万人设置，约 25% 每天使用，起步水平是 Threads 的两倍多，他认为也高于其他 AI 应用起步时的水平。如果全球上线，用户数会大得多。</p>
+            <p>需求主要来自购物。超过四分之一的用户用 Muse 购物，平均每单 200 美元以上。交易量大到第一周就要和 Stripe 一起上调信用额度。其次是连接邮件、日历等个人效率用途。也有不少人用 Muse 帮自己经营小生意。</p>
+            <p>商家这边，他说绝大多数商家很积极，认为这能提高销量、改善客户体验，甚至带来新客户，很多商家主动找 Meta 做对接，&#34;超出预期&#34;。但不同商家接受的快慢不一样。</p>
+            <p>他也指出，需求标准会不断提高：一年后，大多数人不会满足于今天的智能水平，因为模型也在进步。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化</h4>
+          <div class="outlook-copy">
+            <p>他说目前最大的限制是算力。Muse 运行很耗算力，所以还没有全球上线，要先把效率做上去才能放量，这会是未来一年的主要制约之一。公司正在建设能服务 10 亿以上用户的算力，前提是达到一定的效率目标。</p>
+            <p>在他看来，训练模型是一笔巨大的固定成本。既然已有领先模型，就要把它卖给尽可能多的高利润用途来摊薄成本，比如对外提供模型 API、编程工具 Muse Code 和其他企业服务。他还说，公司还没找到算力用于提升自家核心业务的上限。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>Mark 认为，要做出最好的个人 agent，必须自己掌握模型、agent 和硬件整条链路。Muse Wonder 在多个关键维度领先，证明了自己训练模型的重要性。他认为 Meta 是推行这一战略&#34;位置最好的公司&#34;，世界上很少有公司能像 Meta 这样做，因为核心业务足够强，可以先投入把 Muse 网络做起来。此外，他提到 Threads 的月活已超过 X。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>他认为购物方式会变：以后买东西不再是打开商家网站，而是让你的 Muse 和商家的 agent 直接对话。Muse 也不再是一个人用的工具，而是能和亲友、商家的 Muse 协作的网络，参与的人和商家越多，网络越有价值。所以 Meta 不打算一开始就向所有人收费。</p>
+            <p>具体收费方式有四种：</p>
+            <ul><li>大多数人免费使用，Meta 按促成的交易收取费用，预计由商家承担。</li><li>想用最先进模型或更多用量的个人，付费订阅。</li><li>想用 Muse 增长业务的商家，以及想让员工用 Muse 工作的公司，付费订阅。</li><li>用户可以把 Muse 连接到 Meta 的内容和广告体验上，帮助改善个性化。</li></ul>
+            <p>他预计，Muse 用户长期带来的人均收入会高于现有应用在美国每人每年几百美元的水平。硬件方面，眼镜定价不追求在硬件上赚大钱，而是靠在上面长期做软件和 AI 服务赚钱，接入 Muse 后预计付费订阅会增加。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略</h4>
+          <div class="outlook-copy">
+            <ol><li>主线是&#34;个人超级智能&#34;：给每个人一个强大的个人助手。Mark 说这既是使命也是策略，目标是尽快服务数十亿人。</li><li>Muse 进入运营阶段：已经找到产品市场契合，接下来做三件事：扩大用户规模、增加收入、降低算力成本。</li><li>模型两条线一起走：一边做更大的前沿模型，一边做更小、更高效、专为个人 agent 优化的模型。</li><li>做企业业务：由 CJ Desai 带领 Meta Enterprise 平台，近期主要是模型 API、Muse Code 和商家 agent。长期目标是可以带进企业环境使用的 Muse，以及商家 agent 网络。</li><li>硬件转向 AI 优先：Reality Labs 的重点转向个人超级智能，Muse 下个月登陆 Meta 眼镜。VR 只在有重大突破时才发新设备，投入放慢。他预计 Reality Labs 明年亏损降到约 150 亿美元，之后向盈利方向发展。</li><li>多条路同时下注：Muse 网络、企业平台、用模型加速核心业务，三者的增速很难准确预测，所以同时推进，提高其中一条大幅超预期的概率。</li><li>追求速度：用小团队快速出产品。Muse 从想法到成功产品只用了约 8 个月。</li></ol>
+          </div>
+        </article>
+      </div>
+    </section>
   </div>
-
-  <div class="group-title">行业展望</div>
-  <p class="layer-sub">只写电话会里管理层对行业和经营环境的表述，不重复上面的数字指引。没有对应表述的题目不写。</p>
-  <div class="outlook-block">
-    <h4>外部环境</h4>
-    <p>管理层警告青少年相关法律和监管审查可能对业务产生重大影响。</p>
-  </div>
-  <div class="outlook-block">
-    <h4>需求变化</h4>
-    <p>管理层预计2027年整体收入将保持强劲增长。这会是多年的机会，投入会随客户需求和产品市场匹配的验证逐步加大。</p>
-  </div>
-  <div class="outlook-block">
-    <h4>供给变化</h4>
-    <p>围绕它的商业化要和降低算力消耗、提高算力效率同步推进，他对此乐观。最大的限制之一是它算力消耗大，所以还没有在全球上线；一部分原因是要针对各地优化并做连接器，另一部分是要确保高效运行。</p>
-  </div>
-  <div class="outlook-block">
-    <h4>竞争变化</h4>
-    <p>Susan（CFO）：AI 正在冲击企业市场，传统企业公司并未锁定优势，一些领先公司几年前还不存在。Meta 同样投入模型开发，模型越来越有竞争力，目前已有 500 million 商家使用其产品。</p>
-  </div>
-  <div class="outlook-block">
-    <h4>商业模式</h4>
-    <p>公司拥有模型、基础设施、全球分发和长期商家关系的差异化资产，希望形成新的多元经常性收入，包括订阅、按用量计费的 API 和消息等。变现方式包括订阅、交易、广告，以及前面提到的企业级产品。</p>
-  </div>
-  <div class="outlook-block">
-    <h4>公司战略</h4>
-    <p>管理层预计Reality Labs亏损收窄并逐步走向盈利。Mark Elliot Zuckerberg：一年多以前（more than a year ago）他写过关于个人超级智能（personal superintelligence）的信，把它定为公司工作的北极星。</p>
-  </div>
-
-  <div class="group-title">分析师修正</div>
-  <div class="card placeholder">尚无发布前后的一致预期快照。daily 每天拍摄，财报后会自动补齐 T+1/T+3/T+7。</div>
   </div>
 </details>
 
@@ -1044,6 +1082,18 @@
   </main>
   <footer>数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿。解读由模型生成并经原文引用校验，仅供研究参考，不构成投资建议。</footer>
 <script>
+(function () {
+  function openFromHash() {
+    var id = (location.hash || '').replace(/^#/, '');
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (el && el.tagName === 'DETAILS') el.open = true;
+  }
+  openFromHash();
+  window.addEventListener('hashchange', openFromHash);
+})();
+</script>
+<script>
 document.querySelectorAll('[data-qa]').forEach(function (btn) {
   btn.addEventListener('click', function () {
     var mode = btn.getAttribute('data-qa');
@@ -1200,7 +1250,7 @@ function drawRowCharts() {
 </script>
 <script>
 (function () {
-  var spec = {"hint": "深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比", "note": "浅蓝柱是 Non-GAAP 实际，灰柱是 TradingView earnings_fq_h 的 street 一致预期。FQ4 2025 新闻稿没有每股收益剔除项，Non-GAAP 等于稀释每股收益 $8.88。FQ1 2026 是 GAAP $10.44 减去新闻稿所写的 $3.13，即 $7.31。FQ2 2026 公司没有公布剔除后的每股收益；按净利润 158.48 亿美元、稀释股本 25.66 亿股、法律费用 24 亿美元、遣散费 11.8 亿美元，并以当季 16% 有效税率税后加回，得到 $7.35。FQ3 2026 是新闻稿剔除诉讼费用后的 $7.40，不是 GAAP $3.83。未来四季只有预期。橙线同比用同一 Non-GAAP 口径。", "quarters": [{"actual": 8.88, "basis": "Non-GAAP", "consensus": 8.21, "label": "FQ4 2025", "note": "超预期 $0.67", "note_cls": "beat", "yoy_pct": 10.72319201995014}, {"actual": 7.31, "basis": "Non-GAAP", "consensus": 6.7, "label": "FQ1 2026", "note": "超预期 $0.61", "note_cls": "beat", "yoy_pct": 13.685847589424572}, {"actual": 7.35, "basis": "Non-GAAP", "consensus": 7.19, "label": "FQ2 2026", "note": "超预期 $0.16", "note_cls": "beat", "yoy_pct": 2.941176470588235}, {"actual": 7.4, "basis": "Non-GAAP", "consensus": 6.54, "label": "FQ3 2026", "note": "超预期 $0.86", "note_cls": "beat", "yoy_pct": 2.0689655172413843}, {"actual": null, "basis": "一致预期", "consensus": 8.29, "label": "FQ4 2026", "note": "同比 -6.6%", "note_cls": "miss", "yoy_pct": -6.633997747747758}, {"actual": null, "basis": "一致预期", "consensus": 7.63, "label": "FQ1 2027", "note": "同比 +4.3%", "note_cls": "beat", "yoy_pct": 4.312640218878254}, {"actual": null, "basis": "一致预期", "consensus": 7.87, "label": "FQ2 2027", "note": "同比 +7.0%", "note_cls": "beat", "yoy_pct": 7.035455782312925}, {"actual": null, "basis": "一致预期", "consensus": 8.21, "label": "FQ3 2027", "note": "同比 +10.9%", "note_cls": "beat", "yoy_pct": 10.885405405405399}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [{"label": "近 4 季（TTM）", "value": "$241.61B"}, {"label": "未来 12 个月（NTM）", "value": "$296.78B"}, {"label": "FY26E", "value": "$255.82B"}, {"label": "FY27E", "value": "$310.44B"}], "note": "浅蓝柱是公司营收，灰柱是已保存的一致预期。TradingView 的季度营收预期只有本季和下一季；快照另有再下一季，以及全年 0y / +1y。没有 +2y，所以没有更远的财年。图下的区间是 近 4 季（TTM）、未来 12 个月（NTM）、FY26E、FY27E。更早的季度没有灰柱。橙线是同比。", "quarters": [{"actual": 59.89, "basis": "营收", "consensus": null, "label": "FQ4 2025", "note": "同比 +23.8%", "note_cls": "beat", "yoy_pct": 23.784230649994832}, {"actual": 56.31, "basis": "营收", "consensus": null, "label": "FQ1 2026", "note": "同比 +33.1%", "note_cls": "beat", "yoy_pct": 33.07888642057002}, {"actual": 60.8, "basis": "营收", "consensus": null, "label": "FQ2 2026", "note": "同比 +28.0%", "note_cls": "beat", "yoy_pct": 27.95900328310464}, {"actual": 64.6, "basis": "营收", "consensus": 63.34, "label": "FQ3 2026", "note": "超预期 $1.26B", "note_cls": "beat", "yoy_pct": 26.070410990983962}, {"actual": null, "basis": "营收", "consensus": 74.1, "label": "FQ4 2026", "note": "同比 +23.7%", "note_cls": "beat", "yoy_pct": 23.72813035580117}, {"actual": null, "basis": "营收", "consensus": 68.24, "label": "FQ1 2027", "note": "同比 +21.2%", "note_cls": "beat", "yoy_pct": 21.19104498055442}], "sides": [{"cls": "up", "text": "本季 EPS Non-GAAP $7.40 · 一致预期 $6.54 +13.1%"}]}, "sides": [{"cls": "up", "text": "本季营收 实际 $64.60B · 预期 $63.34B +2.0%"}, {"cls": "up", "text": "下季营收指引 指引中值 $74.50B · 预期 $74.10B +0.5%"}]};
+  var spec = {"hint": "深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比", "note": "浅蓝柱是 Non-GAAP 实际，灰柱是 TradingView earnings_fq_h 的 street 一致预期。FQ4 2025 新闻稿没有每股收益剔除项，Non-GAAP 等于稀释每股收益 $8.88。FQ1 2026 是 GAAP $10.44 减去新闻稿所写的 $3.13，即 $7.31。FQ2 2026 公司没有公布剔除后的每股收益；按净利润 158.48 亿美元、稀释股本 25.66 亿股、法律费用 24 亿美元、遣散费 11.8 亿美元，并以当季 16% 有效税率税后加回，得到 $7.35。FQ3 2026 是新闻稿剔除诉讼费用后的 $7.40，不是 GAAP $3.83。未来四季只有预期。橙线同比用同一 Non-GAAP 口径。", "quarters": [{"actual": 8.88, "basis": "Non-GAAP", "consensus": 8.21, "label": "FQ4 2025", "note": "超预期 $0.67", "note_cls": "beat", "yoy_pct": 10.72319201995014}, {"actual": 7.31, "basis": "Non-GAAP", "consensus": 6.7, "label": "FQ1 2026", "note": "超预期 $0.61", "note_cls": "beat", "yoy_pct": 13.685847589424572}, {"actual": 7.35, "basis": "Non-GAAP", "consensus": 7.19, "label": "FQ2 2026", "note": "超预期 $0.16", "note_cls": "beat", "yoy_pct": 2.941176470588235}, {"actual": 7.4, "basis": "Non-GAAP", "consensus": 6.54, "label": "FQ3 2026", "note": "超预期 $0.86", "note_cls": "beat", "yoy_pct": 2.0689655172413843}, {"actual": null, "basis": "一致预期", "consensus": 8.29, "label": "FQ4 2026", "note": "同比 -6.6%", "note_cls": "miss", "yoy_pct": -6.633997747747758}, {"actual": null, "basis": "一致预期", "consensus": 7.63, "label": "FQ1 2027", "note": "同比 +4.3%", "note_cls": "beat", "yoy_pct": 4.312640218878254}, {"actual": null, "basis": "一致预期", "consensus": 7.87, "label": "FQ2 2027", "note": "同比 +7.0%", "note_cls": "beat", "yoy_pct": 7.035455782312925}, {"actual": null, "basis": "一致预期", "consensus": 8.21, "label": "FQ3 2027", "note": "同比 +10.9%", "note_cls": "beat", "yoy_pct": 10.885405405405399}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [{"label": "近 4 季（TTM）", "value": "$241.61B"}, {"label": "未来 12 个月（NTM）", "value": "$296.78B"}, {"label": "FY26E", "value": "$255.82B"}, {"label": "FY27E", "value": "$310.44B"}], "note": "浅蓝柱是公司营收，灰柱是已保存的一致预期。TradingView 的季度营收预期只有本季和下一季；快照另有再下一季，以及全年 0y / +1y。没有 +2y，所以没有更远的财年。更早的季度没有灰柱。橙线是同比。", "quarters": [{"actual": 59.89, "basis": "营收", "consensus": null, "label": "FQ4 2025", "note": "同比 +23.8%", "note_cls": "beat", "yoy_pct": 23.784230649994832}, {"actual": 56.31, "basis": "营收", "consensus": null, "label": "FQ1 2026", "note": "同比 +33.1%", "note_cls": "beat", "yoy_pct": 33.07888642057002}, {"actual": 60.8, "basis": "营收", "consensus": null, "label": "FQ2 2026", "note": "同比 +28.0%", "note_cls": "beat", "yoy_pct": 27.95900328310464}, {"actual": 64.6, "basis": "营收", "consensus": 63.34, "label": "FQ3 2026", "note": "超预期 $1.26B", "note_cls": "beat", "yoy_pct": 26.070410990983962}, {"actual": null, "basis": "营收", "consensus": 74.1, "label": "FQ4 2026", "note": "同比 +23.7%", "note_cls": "beat", "yoy_pct": 23.72813035580117}, {"actual": null, "basis": "营收", "consensus": 68.24, "label": "FQ1 2027", "note": "同比 +21.2%", "note_cls": "beat", "yoy_pct": 21.19104498055442}], "sides": [{"cls": "up", "text": "本季 EPS Non-GAAP $7.40 · 一致预期 $6.54 +13.1%"}]}, "sides": [{"cls": "up", "text": "本季营收 实际 $64.60B · 预期 $63.34B +2.0%"}, {"cls": "up", "text": "下季营收指引 指引中值 $74.50B · 预期 $74.10B +0.5%"}]};
   var canvas = document.getElementById('epsSurprise');
   if (!canvas || typeof Chart === 'undefined' || !spec) return;
   var css = getComputedStyle(document.documentElement);
@@ -1301,8 +1351,6 @@ function drawRowCharts() {
     if (hint) hint.textContent = view.hint;
     var note = document.getElementById('expectNote');
     if (note) note.textContent = view.note;
-    var horizons = document.getElementById('revHorizons');
-    if (horizons) horizons.hidden = name !== 'revenue';
   }
   document.querySelectorAll('[data-expect]').forEach(function (btn) {
     btn.addEventListener('click', function () {

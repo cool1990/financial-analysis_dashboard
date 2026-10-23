@@ -745,6 +745,12 @@ def _period_day_count(doc: dict[str, Any]) -> int | None:
     end = _as_date((doc.get("meta") or {}).get("period_end"))
     if start is None or end is None or end < start:
         return None
+    # 有的回补把上一季结束日写成了本季开始日（例如 3 月 31 日）。季末那天起算会多一天。
+    if start.day >= 28 and start.month in {3, 6, 9, 12}:
+        nxt = start + timedelta(days=1)
+        span = (end - nxt).days + 1
+        if 80 <= span <= 100:
+            return span
     return (end - start).days + 1
 
 
@@ -772,14 +778,18 @@ def _fmt_days(value: float | None) -> str:
 def _share_change(current: float | None, base: float | None) -> dict[str, str]:
     if current is None or not base:
         return dict(_NA)
-    shown = _change((current - base) / abs(base))
-    if shown["text"] in {"+0.0%", "-0.0%"}:
+    pct = (current - base) / abs(base)
+    # 股本变动通常不到 1%，百分比会写成 0.0%。改用百万股差额，同比和环比同一单位。
+    if abs(pct) < 0.01:
         delta = (current - base) / 1_000_000
         if abs(delta) < 0.05:
             return {"text": "0", "cls": "flat"}
         cls = "up" if delta > 0 else "down"
-        return {"text": f"{delta:+.0f}M 股", "cls": cls}
-    return shown
+        shown = round(delta)
+        if abs(delta - shown) < 0.05:
+            return {"text": f"{shown:+.0f}M 股", "cls": cls}
+        return {"text": f"{delta:+.1f}M 股", "cls": cls}
+    return _change(pct)
 
 
 def _day_change(current: float | None, base: float | None) -> dict[str, str]:
@@ -815,11 +825,126 @@ def _sum_columns(hits: list[list[float | None]], count: int) -> list[float | Non
     return [totals[index] if seen[index] else None for index in range(count)]
 
 
+_XBRL_ACTIVITY: dict[str, dict[str, Any]] = {}
+
+
+def _xbrl_activity(ticker: str) -> dict[str, Any]:
+    key = (ticker or "").upper()
+    if key in _XBRL_ACTIVITY:
+        return _XBRL_ACTIVITY[key]
+    path = data_dir(key) / "xbrl_activity.json"
+    data: dict[str, Any] = {}
+    if path.exists():
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            loaded = {}
+        if isinstance(loaded, dict):
+            data = loaded
+    _XBRL_ACTIVITY[key] = data
+    return data
+
+
+def _load_period_doc(ticker: str, period: str, docs: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    found = docs.get(period)
+    if isinstance(found, dict) and found:
+        return found
+    path = data_dir(ticker) / f"{period}.json"
+    if not path.exists():
+        return {}
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return loaded if isinstance(loaded, dict) else {}
+
+
+def _xbrl_level(rows: Any, end: date, *, quarterly: bool) -> float | None:
+    if not isinstance(rows, list):
+        return None
+    hits: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict) or row.get("value") is None:
+            continue
+        stop = _as_date(row.get("end"))
+        if stop != end:
+            continue
+        start = _as_date(row.get("start")) if row.get("start") else None
+        if quarterly:
+            if start is None or not (80 <= (stop - start).days <= 100):
+                continue
+        elif start is not None:
+            continue
+        hits.append(row)
+    if not hits:
+        return None
+    best = max(hits, key=lambda row: str(row.get("filed") or ""))
+    return _finite(best.get("value"))
+
+
+def _fill_activity_gaps(
+    ticker: str,
+    period: str,
+    docs: dict[str, dict[str, Any]],
+    facts: dict[str, Any],
+) -> None:
+    """新闻稿对比列没有上季或去年同季时，用该季新闻稿或已保存的 10-Q XBRL。"""
+    if not ticker or not period:
+        return
+    activity = _xbrl_activity(ticker)
+    share_rows = activity.get("diluted_shares")
+    ar_rows = activity.get("accounts_receivable")
+    for kind, other_period in (
+        ("qoq", prior_fiscal_period(period)),
+        ("yoy", yoy_fiscal_period(period)),
+    ):
+        other = _load_period_doc(ticker, other_period, docs)
+        end = _as_date((other.get("meta") or {}).get("period_end"))
+        other_facts = (
+            _statement_facts(ticker, other_period, other, docs, fill_gaps=False)
+            if other and _press_lines(ticker, other_period)
+            else {}
+        )
+        if facts.get(f"shares_{kind}") is None:
+            value = other_facts.get("shares")
+            source = "press" if value is not None else ""
+            if value is None and end is not None:
+                value = _xbrl_level(share_rows, end, quarterly=True)
+                source = "xbrl" if value is not None else ""
+            if value is not None:
+                facts[f"shares_{kind}"] = value
+                facts[f"shares_{kind}_external"] = source
+        if facts.get(f"ar_{kind}") is None:
+            value = other_facts.get("ar")
+            source = "press" if value is not None else ""
+            if value is None and end is not None:
+                value = _xbrl_level(ar_rows, end, quarterly=False)
+                source = "xbrl" if value is not None else ""
+            if value is not None:
+                facts[f"ar_{kind}"] = value
+                facts[f"ar_{kind}_external"] = source
+                facts[f"ar_{kind}_doc"] = other
+
+
+def _external_dso(facts: dict[str, Any], kind: str, flow_fallback: float | None, days: int | None) -> float | None:
+    """对比列来自另一季时，用那一季自己的营收和天数，不用本季天数重算。"""
+    other = facts.get(f"ar_{kind}_doc") if facts.get(f"ar_{kind}_external") else None
+    if isinstance(other, dict) and other:
+        flow = _finite(((other.get("financials") or {}).get("revenue") or {}).get("value"))
+        other_days = _period_day_count(other)
+        got = _turnover_days(facts.get(f"ar_{kind}"), flow, other_days)
+        if got is not None:
+            return got
+    return _turnover_days(facts.get(f"ar_{kind}"), flow_fallback, days)
+
+
 def _statement_facts(
     ticker: str,
     period: str,
     doc: dict[str, Any],
     docs: dict[str, dict[str, Any]],
+    *,
+    fill_gaps: bool = True,
 ) -> dict[str, Any]:
     """从已保存的新闻稿读股本、应收、存货、预收或合同负债。不重跑抽取。"""
     empty: dict[str, Any] = {"has_release": False}
@@ -934,6 +1059,9 @@ def _statement_facts(
         facts["has_contract_line"] = contract is not None
         facts["has_receivable_line"] = receivable is not None
 
+    if fill_gaps:
+        _fill_activity_gaps(ticker, period, docs, facts)
+
     days = _period_day_count(doc)
     revenue, revenue_yoy, revenue_qoq = _flow_levels(doc, "revenue")
     margin, margin_yoy, margin_qoq = _flow_levels(doc, "gross_margin_gaap", ratio=True)
@@ -952,12 +1080,14 @@ def _statement_facts(
     facts["revenue_yoy"] = revenue_yoy
     facts["revenue_qoq"] = revenue_qoq
     for kind, stock_key, flow_now, flow_qoq, flow_yoy in (
-        ("dso", "ar", revenue, revenue_qoq, revenue_yoy),
         ("dio", "inventory", cogs(revenue, margin), cogs(revenue_qoq, margin_qoq), cogs(revenue_yoy, margin_yoy)),
     ):
         facts[kind] = _turnover_days(facts.get(stock_key), flow_now, days)
         facts[f"{kind}_qoq"] = _turnover_days(facts.get(f"{stock_key}_qoq"), flow_qoq, days)
         facts[f"{kind}_yoy"] = _turnover_days(facts.get(f"{stock_key}_yoy"), flow_yoy, days)
+    facts["dso"] = _turnover_days(facts.get("ar"), revenue, days)
+    facts["dso_qoq"] = _external_dso(facts, "qoq", revenue_qoq, days)
+    facts["dso_yoy"] = _external_dso(facts, "yoy", revenue_yoy, days)
     prepay_key = "deferred" if facts.get("has_deferred_line") else "contract" if facts.get("has_contract_line") else None
     facts["prepay_key"] = prepay_key
     if prepay_key:
@@ -981,7 +1111,19 @@ def _pace_sentence(stock_now: float | None, stock_then: float | None, flow_now: 
     return f"{stock_name}和{flow_name}同比接近，周转天数变化不大。"
 
 
-def _activity_row(key: str, label: str, value: str, yoy: dict[str, str], qoq: dict[str, str], summary: str, drivers: list[dict[str, Any]]) -> dict[str, Any]:
+def _activity_row(
+    key: str,
+    label: str,
+    value: str,
+    yoy: dict[str, str],
+    qoq: dict[str, str],
+    summary: str,
+    drivers: list[dict[str, Any]],
+    *,
+    from_press: bool | None = None,
+) -> dict[str, Any]:
+    if from_press is None:
+        from_press = yoy.get("text") not in {None, "—"} or qoq.get("text") not in {None, "—"}
     return {
         "key": key,
         "label": label,
@@ -993,7 +1135,7 @@ def _activity_row(key: str, label: str, value: str, yoy: dict[str, str], qoq: di
         "summary": summary,
         "drivers": drivers,
         "conflicts": [],
-        "from_press": yoy.get("text") not in {None, "—"} or qoq.get("text") not in {None, "—"},
+        "from_press": from_press,
         "nested": False,
     }
 
@@ -1013,7 +1155,13 @@ def _activity_rows(
     if shares:
         gap = None if basic is None else shares - basic
         gap_text = "" if gap is None else f"比基本股多 {gap / 1_000_000:.0f}M，差额是潜在稀释。"
-        summary = f"稀释加权平均股 {_fmt_shares(shares)}。{gap_text}".strip()
+        pieces = []
+        if facts.get("shares_qoq_external") == "xbrl":
+            pieces.append("环比")
+        if facts.get("shares_yoy_external") == "xbrl":
+            pieces.append("同比")
+        compare = f"{'、'.join(pieces)}用对应季度 10-Q 的稀释加权平均股。" if pieces else ""
+        summary = f"稀释加权平均股 {_fmt_shares(shares)}。{gap_text}{compare}".strip()
         description = gap_text or "新闻稿只列了稀释股，没有基本股，潜在稀释看不出来。"
         rows.append(
             _activity_row(
@@ -1024,6 +1172,9 @@ def _activity_rows(
                 _share_change(shares, facts.get("shares_qoq")),
                 summary,
                 [_structure_driver(description, "用利润表稀释加权平均股。股数按百万股换回实际股数，不用每股收益那一行。")],
+                from_press=not pieces and (
+                    facts.get("shares_yoy") is not None or facts.get("shares_qoq") is not None
+                ),
             )
         )
     else:
@@ -1083,8 +1234,18 @@ def _activity_rows(
                 _day_change(facts.get("dso"), facts.get("dso_yoy")),
                 _day_change(facts.get("dso"), facts.get("dso_qoq")),
                 f"期末应收账款 {_fmt_money(facts.get('ar'))}，相当于本季营收 {facts['dso']:.1f} 天。{pace}"
-                + ("" if facts.get("ar_yoy") or facts.get("ar_qoq") else "资产负债表没有上季或去年同季的应收列。"),
+                + (
+                    "上季和去年同季的应收取自对应季度 10-Q 的期末余额。"
+                    if facts.get("ar_yoy_external") == "xbrl" or facts.get("ar_qoq_external") == "xbrl"
+                    else ""
+                    if facts.get("ar_yoy") or facts.get("ar_qoq")
+                    else "资产负债表没有上季或去年同季的应收列。"
+                ),
                 [_structure_driver(pace or "只有期末应收，天数变动不算。", "期末应收账款 ÷ 本季营收 × 本季天数，不是平均余额。")],
+                from_press=not (
+                    facts.get("ar_yoy_external") == "xbrl" or facts.get("ar_qoq_external") == "xbrl"
+                )
+                and (facts.get("ar_yoy") is not None or facts.get("ar_qoq") is not None),
             )
         )
     else:
@@ -1913,6 +2074,7 @@ _PERFORMANCE_GUIDE = (
     ("operating_margin", "营业利润率", ("operating_margin_nongaap", "operating_margin_gaap", "operating_margin"), True),
     ("net_margin", "净利润率", ("net_margin_nongaap", "net_margin_gaap", "net_margin"), True),
     ("eps", "调整后摊薄 EPS", ("eps_nongaap",), False),
+    ("capex", "资本开支", ("capex",), False),
 )
 
 _OUTLOOK_TOPICS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -1976,6 +2138,17 @@ def _actual_level(doc: dict[str, Any] | None, keys: tuple[str, ...], ratio: bool
     return None
 
 
+def _fiscal_year_level(docs: dict[str, dict[str, Any]], year: int, keys: tuple[str, ...]) -> float | None:
+    """四个季度都有已披露实际才相加。缺一季就不算全年同比。"""
+    total = 0.0
+    for quarter in range(1, 5):
+        value = _actual_level(docs.get(f"FY{year}Q{quarter}"), keys, False)
+        if value is None:
+            return None
+        total += value
+    return total
+
+
 def _performance_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     """管理层数字指引。没给的指标不占行；环比、同比、较共识算不出就空着。"""
     from pipeline.extract.guidance import normalize_period
@@ -2009,13 +2182,20 @@ def _performance_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]]) -> l
         key = item.get("metric_key") or keys[0]
         mid = _as_ratio(_guide_mid(item), ratio)
         basis = "Non-GAAP" if key.endswith("_nongaap") else "GAAP" if key.endswith("_gaap") else ""
-        shown = label if not basis or family in {"revenue", "eps"} else f"{label}（{basis}）"
+        shown = label if not basis or family in {"revenue", "eps", "capex"} else f"{label}（{basis}）"
         if family == "eps":
             shown = "调整后摊薄 EPS"
-        when = "下季" if period == nxt else period
+        if period == nxt:
+            when = "下季"
+        elif re.fullmatch(r"FY\d{4}", period or ""):
+            when = f"{period}全年"
+        else:
+            when = period
         current = _actual_level(doc, keys, ratio) if period == nxt else None
         yoy_doc = docs.get(yoy_fiscal_period(period)) if re.fullmatch(r"FY\d{4}Q[1-4]", period or "") else None
         yoy_base = _actual_level(yoy_doc, keys, ratio)
+        if yoy_base is None and re.fullmatch(r"FY\d{4}", period or "") and not ratio:
+            yoy_base = _fiscal_year_level(docs, int(period[2:6]) - 1, keys)
         qoq = _pp_change(mid, current) if ratio else _change((mid - current) / abs(current) if mid is not None and current else None)
         yoy = _pp_change(mid, yoy_base) if ratio else _change((mid - yoy_base) / abs(yoy_base) if mid is not None and yoy_base else None)
         versus = _blank_change()
@@ -2087,8 +2267,8 @@ def _outlook_similar(left: str, right: str) -> bool:
     return len(a & b) / min(len(a), len(b)) >= 0.34
 
 
-def _industry_outlook(doc: dict[str, Any]) -> list[dict[str, str]]:
-    """行业表述只从已抽取的电话会问答和定性指引里取，不补写没有的题目。"""
+def _keyword_outlook(doc: dict[str, Any]) -> list[dict[str, str]]:
+    """旧数据还没有 Stage2 行业展望时的兜底。新跑的季度以 guidance.industry_outlook 为准。"""
     snippets: list[tuple[str, int]] = []
     for item in (doc.get("guidance") or {}).get("items") or []:
         if item.get("type") == "numeric" and (item.get("metric_key") or "") not in {"other"}:
@@ -2113,6 +2293,16 @@ def _industry_outlook(doc: dict[str, Any]) -> list[dict[str, str]]:
             continue
         buckets[title].append(sentence)
     return [{"title": title, "text": "".join(buckets[title])} for title, _words in _OUTLOOK_TOPICS if buckets[title]]
+
+
+def _industry_outlook(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    """优先用 Stage2 写入的行业展望。字段还不存在时，才用旧的问答句子兜底。"""
+    from pipeline.analyze.outlook import normalize_industry_outlook
+
+    guidance = doc.get("guidance") or {}
+    if "industry_outlook" in guidance:
+        return normalize_industry_outlook(guidance.get("industry_outlook"))
+    return normalize_industry_outlook(_keyword_outlook(doc))
 
 
 def _guide_section(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -3473,14 +3663,13 @@ def _revenue_expect(
     if not quarters:
         return None
     horizons = _revenue_horizons(ticker, doc, docs, actuals, consensus) if ticker else []
-    horizon_labels = "、".join(item["label"] for item in horizons) or "没有更长的区间"
     return {
         "quarters": quarters,
         "horizons": horizons,
         "note": (
             "浅蓝柱是公司营收，灰柱是已保存的一致预期。TradingView 的季度营收预期只有本季和下一季；"
             "快照另有再下一季，以及全年 0y / +1y。没有 +2y，所以没有更远的财年。"
-            f"图下的区间是 {horizon_labels}。更早的季度没有灰柱。橙线是同比。"
+            "更早的季度没有灰柱。橙线是同比。"
         ),
         "hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比",
         "sides": eps_sides,
@@ -3749,7 +3938,6 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 fin_rows=_fin_rows(doc, docs),
                 segments=_business_split(t, period, doc, docs),
                 guidance=_guide_section(doc, docs),
-                revisions=_revision_rows(doc),
                 qa=_qa_view(doc, bool((prior.get("qa") or {}).get("items"))),
                 watchlist=_watchlist(doc),
                 next_earnings=_next_earnings(t),
