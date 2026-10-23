@@ -205,23 +205,6 @@
       <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
       {% endif %}
     </section>
-    {% if guidance.dimensions %}
-    <section class="guide-part">
-      <h3>五档指引</h3>
-      {% for dim in guidance.dimensions %}
-      <h4>{{ dim.label }}</h4>
-      <div class="gtiles">
-        {% for card in dim.cards %}
-        <div class="card gtile">
-          <div class="g-k">{{ card.label }}{% if card.sub %}<small> · {{ card.sub }}</small>{% endif %}</div>
-          <div class="g-v{% if card.textual %} textual{% endif %}">{{ card.value }}</div>
-          {% if card.source %}<div class="g-s">{{ card.source }}</div>{% endif %}
-        </div>
-        {% endfor %}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
     <section class="guide-part">
       <h3>行业展望</h3>
       {% if guidance.outlook %}
