@@ -12,6 +12,7 @@
     <div class="topbar-inner">
       <a class="brand" href="../../index.html">财报解读</a>
       <nav class="nav" aria-label="股票">
+        <a href="../../stocks/0700.HK/index.html">0700.HK</a>
         <a href="../../stocks/SNDK/index.html">SNDK</a>
         <a href="../../stocks/MCD/index.html">MCD</a>
         <a href="../../stocks/AMZN/index.html">AMZN</a>
@@ -85,8 +86,7 @@
   <div>
     <h1>GOOGL · Alphabet Inc. · FY2016Q4</h1>
     <div class="sub">
-2016-10-01 至 2016-12-31 · 发布 — · 业绩口径 GAAP
-    </div>
+2016-10-01 至 2016-12-31 · 发布 — · 业绩口径 GAAP    </div>
   </div>
 </div>
 
@@ -529,7 +529,9 @@ function drawRowCharts() {
       };
       var qoq = history.map(function (h) { return asChange(h[spec.v + '_qoq']); });
       var yoy = history.map(function (h) { return asChange(h[spec.v + '_yoy']); });
-      var unit = spec.kind === 'money' ? '十亿美元' : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : '美元')));
+      var moneyUnit = "十亿美元";
+      var epsUnit = "美元";
+      var unit = spec.kind === 'money' ? moneyUnit : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : epsUnit)));
       var changeUnit = spec.kind === 'ratio' ? '百分点' : (spec.kind === 'days' ? '天' : '%');
       var cards = row.querySelectorAll('.chart');
       if (cards[0]) cards[0].querySelector('.c-sub').textContent = unit;

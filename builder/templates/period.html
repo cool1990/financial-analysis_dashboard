@@ -95,7 +95,7 @@
             <tr{% if row.kind == 'ntm' %} class="fp-ntm"{% endif %}>
               <td>{{ row.label }}</td>
               <td>{{ row.eps }}</td>
-              <td>{{ row.pe }}</td>
+              <td>{{ row.pe }}{% if row.fx %} <span class="muted">{{ row.fx }}</span>{% endif %}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -295,7 +295,7 @@
   <div class="ev-body notes">
     <p>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}" rel="noopener">SEC EDGAR</a>{% else %}—{% endif %} · 文件编号 {{ doc.meta.accession or "—" }} · 文字稿：{{ doc.meta.transcript_source|source }}</p>
     {% if doc.meta.pre_earnings_snapshot_source %}<p>财报前一致预期：{{ doc.meta.pre_earnings_snapshot_source }}</p>{% endif %}
-    <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
+    <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±{{ eps_mark|default('$') }}0.01 以内为「符合预期」。</p>
     {% if warnings %}<ul class="warn-list">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
   </div>
 </details>
@@ -452,7 +452,9 @@ function drawRowCharts() {
       };
       var qoq = history.map(function (h) { return asChange(h[spec.v + '_qoq']); });
       var yoy = history.map(function (h) { return asChange(h[spec.v + '_yoy']); });
-      var unit = spec.kind === 'money' ? '十亿美元' : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : '美元')));
+      var moneyUnit = {{ money_unit|default('十亿美元')|tojson }};
+      var epsUnit = {{ eps_unit|default('美元')|tojson }};
+      var unit = spec.kind === 'money' ? moneyUnit : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : epsUnit)));
       var changeUnit = spec.kind === 'ratio' ? '百分点' : (spec.kind === 'days' ? '天' : '%');
       var cards = row.querySelectorAll('.chart');
       if (cards[0]) cards[0].querySelector('.c-sub').textContent = unit;
@@ -839,15 +841,15 @@ function drawRowCharts() {
   Chart.defaults.font.size = 12;
   var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
   var views = {
-    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: '美元', money: function (v) { return '$' + Number(v).toFixed(2); } }
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: {{ eps_unit|default('美元')|tojson }}, money: function (v) { var mark = {{ eps_unit|default('美元')|tojson }} === '人民币' ? '¥' : '$'; return mark + Number(v).toFixed(2); } }
   };
   if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
     views.revenue = {
       quarters: spec.revenue.quarters,
       hint: spec.revenue.hint || '',
       note: spec.revenue.note || '',
-      unit: '十亿美元',
-      money: function (v) { return '$' + Number(v).toFixed(2) + 'B'; }
+      unit: {{ money_unit|default('十亿美元')|tojson }},
+      money: function (v) { var mark = {{ money_unit|default('十亿美元')|tojson }}.indexOf('人民币') >= 0 ? '¥' : '$'; return mark + Number(v).toFixed(2) + 'B'; }
     };
   }
   var chart = null;

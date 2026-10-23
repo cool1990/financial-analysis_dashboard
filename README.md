@@ -96,5 +96,32 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 - Stage2 文字稿默认自动获取：`motley_fool`（主）→ `ir_page`/`ir_prepared_remarks_url`（备）→ `manual`。
 - `data/*/raw/*/transcript*` 不入库（电话会文字稿）；SEC 新闻稿 HTML 与 API 原始响应需提交。
 - 新增股票：复制 `config/tickers/MU.yaml`，改配置后 `init`，无需改代码。
+- 港股（`listing: hk`，例如 `0700.HK`）不走 SEC。`init` / `poll` / `backfill` / `av-estimates` 都不会替它查 Edgar 或拉 AV 共识。业绩公告和电话会用 `import-period` 放进 `data/0700.HK/raw/{FY…}/`。文件名可以带点，`0700.HK.yaml` 的股票代码就是 `0700.HK`，不要改成 `0700HK` 或 `TCEHY`。
+
+### 腾讯 0700.HK
+
+财报数字保持人民币（¥）。股价和市值按港股报价用港币（HK$）。Forward PE、TTM、NTM 先用当天 HKDCNY（Yahoo `HKDCNY=X`，1 港币折合的人民币）把股价换成人民币，再除以人民币 EPS，并在 P/E 旁标出汇率和日期。没有当天汇率时显示「待核对」。
+
+```bash
+python -m pipeline fx-refresh --date 2026-10-23
+```
+
+中期「六个月」不能写成 Q2。Non-IFRS 经营盈利进经营利润，不进 `eps_nongaap`。电话会原文不入库（`transcript*` 在 gitignore 里）。
+
+```bash
+python -m pipeline import-period --ticker 0700.HK --period FY2026Q1 \
+  --pdf "/path/腾讯2026年一季报.pdf" \
+  --transcript "/path/Tencent_2026_Q1.md"
+
+# 还没有更新的业绩公告时，只导入电话会，不写财务数字
+python -m pipeline import-period --ticker 0700.HK --period FY2026Q2 \
+  --transcript "/path/Tencent_2026_Q2_电话会原文.md"
+
+# 本地已有 PDF 时重跑 Stage1（仍不调用 SEC / LLM）
+python -m pipeline run --ticker 0700.HK --period FY2026Q1 --stage 1
+
+# Stage2 问答和变动原因需要 OPENROUTER_API_KEY，且 raw/FY2026Q1/transcript.txt 还在
+python -m pipeline run --ticker 0700.HK --period FY2026Q1 --stage 2
+```
 - 单季 JSON 经 `PeriodDoc`（`schema_version: 1`）校验后写入。
 - 需求细节见项目内开发文档。

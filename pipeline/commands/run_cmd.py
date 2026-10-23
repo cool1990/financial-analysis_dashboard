@@ -204,6 +204,10 @@ def detect_new_filings(ticker: str, *, now: datetime | None = None) -> list[dict
     若不按发布时间过滤，poll 会逐份回溯并调用 LLM。历史数据请走 backfill。
     """
     cfg = load_ticker_config(ticker)
+    from pipeline.config import is_hk_listing
+
+    if is_hk_listing(cfg):
+        raise RuntimeError(f"{ticker} listing=hk，不查询 SEC；请用 import-period")
     if not cfg.get("cik"):
         raise RuntimeError(f"{ticker} 尚未 init（缺少 CIK）")
     spec = resolve_earnings_spec(cfg)
@@ -246,6 +250,14 @@ def detect_new_filings(ticker: str, *, now: datetime | None = None) -> list[dict
 
 def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | None = None) -> dict[str, Any]:
     cfg = load_ticker_config(ticker)
+    from pipeline.config import is_hk_listing
+
+    if is_hk_listing(cfg):
+        if accession:
+            raise RuntimeError(f"{ticker} listing=hk，不使用 SEC accession")
+        from pipeline.commands.import_cmd import rerun_hk_stage1
+
+        return rerun_hk_stage1(ticker, fiscal_period)
     spec = resolve_earnings_spec(cfg)
     client = SecEdgarClient()
     if accession:
@@ -816,8 +828,11 @@ def _first_snap_on_or_after(
 
 def _benchmark_reaction(cfg: dict[str, Any], release: str, timing: str, own: dict[str, Any]) -> dict[str, Any]:
     """同一对交易日里对照指数（ETF）的涨跌，以及个股的超额涨跌。失败时只返回 benchmark 名称。"""
+    from pipeline.config import is_hk_listing
     from pipeline.sources.yfinance_src import YFinanceSource
 
+    if is_hk_listing(cfg):
+        return {"benchmark": None, "benchmark_pct": None, "excess_pct": None}
     symbol = (cfg.get("benchmark") or "SPY").upper()
     out: dict[str, Any] = {"benchmark": symbol, "benchmark_pct": None, "excess_pct": None}
     try:

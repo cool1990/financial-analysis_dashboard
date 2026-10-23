@@ -12,6 +12,7 @@
     <div class="topbar-inner">
       <a class="brand" href="../../index.html">财报解读</a>
       <nav class="nav" aria-label="股票">
+        <a href="../../stocks/0700.HK/index.html">0700.HK</a>
         <a href="../../stocks/SNDK/index.html">SNDK</a>
         <a href="../../stocks/MCD/index.html">MCD</a>
         <a href="../../stocks/AMZN/index.html">AMZN</a>
@@ -86,8 +87,7 @@
   <div>
     <h1>META · Meta Platforms, Inc. · FY2026Q3</h1>
     <div class="sub">
-2026-07-01 至 2026-09-30 · 发布 2026-10-21 16:03 美东（北京 10-22 04:03） · 业绩口径 GAAP
-    </div>
+2026-07-01 至 2026-09-30 · 发布 2026-10-21 16:03 美东（北京 10-22 04:03） · 业绩口径 GAAP    </div>
   </div>
   <div class="metric-strip" aria-label="行情与指引">
     <div class="m">
@@ -1050,7 +1050,9 @@ function drawRowCharts() {
       };
       var qoq = history.map(function (h) { return asChange(h[spec.v + '_qoq']); });
       var yoy = history.map(function (h) { return asChange(h[spec.v + '_yoy']); });
-      var unit = spec.kind === 'money' ? '十亿美元' : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : '美元')));
+      var moneyUnit = "十亿美元";
+      var epsUnit = "美元";
+      var unit = spec.kind === 'money' ? moneyUnit : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : epsUnit)));
       var changeUnit = spec.kind === 'ratio' ? '百分点' : (spec.kind === 'days' ? '天' : '%');
       var cards = row.querySelectorAll('.chart');
       if (cards[0]) cards[0].querySelector('.c-sub').textContent = unit;
@@ -1433,15 +1435,15 @@ function drawRowCharts() {
   Chart.defaults.font.size = 12;
   var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
   var views = {
-    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: '美元', money: function (v) { return '$' + Number(v).toFixed(2); } }
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: "美元", money: function (v) { var mark = "美元" === '人民币' ? '¥' : '$'; return mark + Number(v).toFixed(2); } }
   };
   if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
     views.revenue = {
       quarters: spec.revenue.quarters,
       hint: spec.revenue.hint || '',
       note: spec.revenue.note || '',
-      unit: '十亿美元',
-      money: function (v) { return '$' + Number(v).toFixed(2) + 'B'; }
+      unit: "十亿美元",
+      money: function (v) { var mark = "十亿美元".indexOf('人民币') >= 0 ? '¥' : '$'; return mark + Number(v).toFixed(2) + 'B'; }
     };
   }
   var chart = null;

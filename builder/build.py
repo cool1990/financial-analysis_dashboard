@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextvars
 import json
 import re
 import shutil
@@ -13,11 +14,43 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from pipeline import ROOT
 from pipeline.compute.periods import make_fiscal_period, parse_fiscal_period, prior_fiscal_period, yoy_fiscal_period
+from pipeline.compute.valuation import eps_currency, pe_multiple, price_currency
 from pipeline.compute.derived import derived_metrics, evaluate, merge_checks
 from pipeline.config import _plain, data_dir, list_tickers, load_position, load_settings, load_ticker_config, site_dir
 
 ET = ZoneInfo("America/New_York")
 BJ = ZoneInfo("Asia/Shanghai")
+_REPORTING_CCY: contextvars.ContextVar[str] = contextvars.ContextVar("reporting_ccy", default="USD")
+
+
+def _reporting_currency(ticker: str) -> str:
+    try:
+        cfg = load_ticker_config(ticker)
+    except (FileNotFoundError, OSError):
+        return "USD"
+    return str(cfg.get("reporting_currency") or "USD").upper()
+
+
+def _statement_basis(ticker: str) -> str:
+    try:
+        basis = str(load_ticker_config(ticker).get("accounting_basis") or "").lower()
+    except (FileNotFoundError, OSError):
+        return "GAAP"
+    return "IFRS" if basis in {"ifrs", "hkfrs"} else "GAAP"
+
+
+def _ccy_prefix(currency: str | None = None) -> str:
+    ccy = (currency or _REPORTING_CCY.get() or "USD").upper()
+    return {"CNY": "¥", "RMB": "¥", "HKD": "HK$", "USD": "$"}.get(ccy, "$")
+
+
+def _chart_units(currency: str | None = None) -> tuple[str, str]:
+    ccy = (currency or _REPORTING_CCY.get() or "USD").upper()
+    if ccy in {"CNY", "RMB"}:
+        return "十亿人民币", "人民币"
+    if ccy == "HKD":
+        return "十亿港元", "港元"
+    return "十亿美元", "美元"
 
 
 # ---------------------------------------------------------------- 数字格式
@@ -41,17 +74,18 @@ def _fmt_pct(value: float | None, pp: bool = False) -> str:
     return f"{v*100:+.2f}%"
 
 
-def _fmt_money(value: float | None) -> str:
+def _fmt_money(value: float | None, currency: str | None = None) -> str:
     v = _num(value)
     if v is None:
         return "—"
     av = abs(v)
     sign = "-" if v < 0 else ""
+    prefix = _ccy_prefix(currency)
     if av >= 1_000_000_000:
-        return f"{sign}${av/1_000_000_000:.2f}B"
+        return f"{sign}{prefix}{av/1_000_000_000:.2f}B"
     if av >= 1_000_000:
-        return f"{sign}${av/1_000_000:.2f}M"
-    return f"{sign}${av:,.2f}"
+        return f"{sign}{prefix}{av/1_000_000:.2f}M"
+    return f"{sign}{prefix}{av:,.2f}"
 
 
 def _is_ratio_key(key: str | None) -> bool:
@@ -67,7 +101,7 @@ def _fmt_value(value: float | None, key: str | None) -> str:
     if _is_ratio_key(key):
         return f"{v*100:.1f}%" if abs(v) <= 1.5 else f"{v:.1f}%"
     if "eps" in (key or ""):
-        return f"${v:.2f}"
+        return f"{_ccy_prefix()}{v:.2f}"
     return _fmt_money(v)
 
 
@@ -93,7 +127,7 @@ def _fmt_guide(value: float | None, metric_key: str | None) -> str:
     if "margin" in key or "rate" in key:
         return f"{v*100:.2f}%" if abs(v) <= 1 else f"{v:.2f}%"
     if "eps" in key:
-        return f"${v:.2f}"
+        return f"{_ccy_prefix()}{v:.2f}"
     if "share" in key:
         return f"{v/1e9:.2f}B 股" if abs(v) >= 1e9 else f"{v/1e6:.1f}M 股"
     return _fmt_money(v)
@@ -432,10 +466,17 @@ def _with_profit_companions(
 ) -> list[dict[str, Any]]:
     """营业利润率下面补利润额；营业利润块之后补净利润率与净利润。"""
     seen = {row["key"] for row in rows}
+    basis = _statement_basis(ticker)
+    adjusted = "Non-IFRS" if basis == "IFRS" else "Non-GAAP"
+    companions = (
+        ("operating_margin_nongaap", "operating_income_nongaap", f"营业利润（{adjusted}）"),
+        ("operating_margin_gaap", "operating_income_gaap", f"营业利润（{basis}）"),
+        ("operating_margin", "operating_income", "营业利润"),
+    )
     out: list[dict[str, Any]] = []
     for row in rows:
         out.append(row)
-        spec = next((item for item in _MARGIN_COMPANIONS if item[0] == row["key"]), None)
+        spec = next((item for item in companions if item[0] == row["key"]), None)
         if not spec or spec[1] in seen:
             continue
         margin_key, money_key, label = spec
@@ -459,8 +500,8 @@ def _with_profit_companions(
         return out
     net_rows: list[dict[str, Any]] = []
     for money_key, margin_label, money_label in (
-        ("net_income_nongaap", "净利润率（Non-GAAP）", "净利润（Non-GAAP）"),
-        ("net_income_gaap", "净利润率（GAAP）", "净利润（GAAP）"),
+        ("net_income_nongaap", f"净利润率（{adjusted}）", f"净利润（{adjusted}）"),
+        ("net_income_gaap", f"净利润率（{basis}）", f"净利润（{basis}）"),
     ):
         margin_key = money_key.replace("net_income", "net_margin")
         ni, ni_y, ni_q, ni_press = _levels(docs, doc, period, ticker, money_key, None)
@@ -3397,16 +3438,25 @@ def _saved_quote(ticker: str) -> dict[str, Any]:
         return {}
     quote = snap.get("quote") or {}
     cols = quote.get("columns") or {}
+    fx = quote.get("fx") if isinstance(quote.get("fx"), dict) else None
     return {
         "columns": cols,
         "fetched_at": quote.get("fetched_at") or snap.get("fetched_at") or "",
+        "fx": fx,
     }
 
 
-def _quote_view(cols: dict[str, Any] | None) -> dict[str, Any]:
+def _quote_view(
+    cols: dict[str, Any] | None,
+    *,
+    quote_ccy: str = "USD",
+    eps_ccy: str = "USD",
+    fx: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """股价、较昨日涨跌、RSI、Forward PE。缺列就留空，不临时拉行情。
 
-    Forward PE 与个股页相同：close ÷ eps_estimate_ntm。
+    同一币种时 Forward PE = close ÷ eps_estimate_ntm。
+    港币股价对人民币 EPS 时，先乘当天 HKDCNY。没有当天汇率则写「待核对」。
     涨跌只认已经存好的小数比例 day_change_pct / change_pct（0.012 = +1.2%）。
     现有快照没有上一交易日收盘，所以这一列通常是「—」。
     """
@@ -3414,8 +3464,9 @@ def _quote_view(cols: dict[str, Any] | None) -> dict[str, Any]:
     close = _finite(cols.get("close"))
     ntm = _finite(cols.get("eps_estimate_ntm"))
     rsi = _finite(cols.get("RSI"))
-    price = f"${close:,.2f}" if close is not None else "—"
-    pe = f"{close / ntm:.1f}×" if close is not None and ntm not in (None, 0) else "—"
+    price = f"{_ccy_prefix(quote_ccy)}{close:,.2f}" if close is not None else "—"
+    multiple = pe_multiple(close, ntm, price_ccy=quote_ccy, eps_ccy=eps_ccy, fx=fx)
+    pe = multiple["text"]
     rsi_text = f"{rsi:.1f}" if rsi is not None else "—"
     pct = _finite(cols.get("day_change_pct"))
     if pct is None:
@@ -3425,7 +3476,7 @@ def _quote_view(cols: dict[str, Any] | None) -> dict[str, Any]:
     else:
         shown = _change(pct)
         change = {"text": shown["text"], "cls": shown["cls"]}
-    return {"price": price, "pe": pe, "rsi": rsi_text, "change": change}
+    return {"price": price, "pe": pe, "pe_fx": multiple["fx"], "rsi": rsi_text, "change": change}
 
 
 def _pool_labels(cfg: dict[str, Any], pos: dict[str, Any] | None) -> dict[str, str]:
@@ -3593,7 +3644,15 @@ def _index_row(
     sc = {c["metric"]: c for c in doc.get("scorecard") or []}
     pos = load_position(t)
     labels = _pool_labels(cfg, pos)
-    quote = _quote_view(_saved_quote(t).get("columns"))
+    saved = _saved_quote(t)
+    quote_ccy = price_currency(cfg)
+    eps_ccy = eps_currency(cfg)
+    fx = None
+    if quote_ccy != eps_ccy:
+        from pipeline.sources.fx import rate_on
+
+        fx = rate_on(_market_day(saved.get("fetched_at"), quote_ccy), attached=saved.get("fx"))
+    quote = _quote_view(saved.get("columns"), quote_ccy=quote_ccy, eps_ccy=eps_ccy, fx=fx)
     status_key = (pos or {}).get("stage") or ""
     timing = "盘后" if (cfg.get("release_timing") or "amc") == "amc" else "盘前"
     when = _next_earnings(t)
@@ -3614,6 +3673,7 @@ def _index_row(
         "change": quote["change"],
         "rsi": quote["rsi"],
         "forward_pe": quote["pe"],
+        "forward_pe_fx": quote.get("pe_fx") or "",
         "target": labels["target"] or "—",
         "triggered": _trigger_view(pos, doc),
         "reported": _release_view(doc, t, today),
@@ -4174,12 +4234,12 @@ def _fy_estimate_label(year: int) -> str:
     return f"FY{year % 100:02d}E"
 
 
-def _fmt_px(value: float) -> str:
-    return f"${value:.2f}"
+def _fmt_px(value: float, currency: str = "USD") -> str:
+    return f"{_ccy_prefix(currency)}{value:.2f}"
 
 
-def _fmt_cap(value: float) -> str:
-    return f"${value / 1_000_000_000:.1f}B"
+def _fmt_cap(value: float, currency: str = "USD") -> str:
+    return f"{_ccy_prefix(currency)}{value / 1_000_000_000:.1f}B"
 
 
 def _latest_snapshot(ticker: str) -> dict[str, Any] | None:
@@ -4200,23 +4260,45 @@ def _latest_snapshot(ticker: str) -> dict[str, Any] | None:
 
 def _price_quote(ticker: str, doc: dict[str, Any]) -> dict[str, Any]:
     """最新股价只读已经落盘的行情，不在页面上留手填框。"""
+    try:
+        cfg = load_ticker_config(ticker)
+    except (FileNotFoundError, OSError):
+        cfg = {}
+    quote_ccy = price_currency(cfg)
     tv = _tradingview(ticker) or {}
     quote = tv.get("quote") or {}
     close = _finite((quote.get("columns") or {}).get("close"))
+    attached = quote.get("fx") if isinstance(quote.get("fx"), dict) else None
     if close is not None:
+        fetched = quote.get("fetched_at")
+        as_of = _market_day(fetched, quote_ccy) if quote_ccy == "HKD" else _session_date(fetched)
         return {
             "price": close,
-            "as_of": _session_date(quote.get("fetched_at")),
+            "as_of": as_of,
             "origin": "tradingview",
+            "currency": quote_ccy,
+            "fx": attached,
         }
     reaction = doc.get("price_reaction") or {}
     after = _finite(reaction.get("close_after"))
     before = _finite(reaction.get("close_before"))
     if after is not None:
-        return {"price": after, "as_of": str(reaction.get("after_date") or ""), "origin": "price_reaction"}
+        return {
+            "price": after,
+            "as_of": str(reaction.get("after_date") or ""),
+            "origin": "price_reaction",
+            "currency": quote_ccy,
+            "fx": None,
+        }
     if before is not None:
-        return {"price": before, "as_of": str(reaction.get("before_date") or ""), "origin": "price_reaction"}
-    return {"price": None, "as_of": "", "origin": ""}
+        return {
+            "price": before,
+            "as_of": str(reaction.get("before_date") or ""),
+            "origin": "price_reaction",
+            "currency": quote_ccy,
+            "fx": None,
+        }
+    return {"price": None, "as_of": "", "origin": "", "currency": quote_ccy}
 
 
 def _diluted_shares(ticker: str, period: str) -> float | None:
@@ -4442,15 +4524,24 @@ def _forward_pe_view(
         ntm = weight * fy_values[current] + (1 - weight) * fy_values[current + 1]
     ttm = _ttm_eps(doc, docs, annual, period)
 
+    quote_ccy = price_currency(cfg)
+    eps_ccy = eps_currency(cfg)
+    fx = None
+    if quote_ccy != eps_ccy:
+        from pipeline.sources.fx import rate_on
+
+        fx = rate_on(str(quote.get("as_of") or ""), attached=quote.get("fx") if isinstance(quote.get("fx"), dict) else None)
+
     def row(label: str, kind: str, eps: float) -> dict[str, Any]:
-        pe = price / eps if eps else None
+        multiple = pe_multiple(price, eps, price_ccy=quote_ccy, eps_ccy=eps_ccy, fx=fx)
         return {
             "label": label,
             "kind": kind,
-            "eps": f"${eps:.2f}",
-            "pe": f"{pe:.1f}×" if pe is not None else "—",
+            "eps": f"{_ccy_prefix(eps_ccy)}{eps:.2f}",
+            "pe": multiple["text"],
+            "fx": multiple["fx"],
             "eps_raw": eps,
-            "pe_raw": pe,
+            "pe_raw": multiple["pe"],
         }
 
     rows: list[dict[str, Any]] = []
@@ -4470,8 +4561,14 @@ def _forward_pe_view(
     )
     if missing:
         note += " " + "、".join(missing) + " 没有全年共识，也凑不满四个季度，所以不显示。"
+    if quote_ccy != eps_ccy:
+        if fx:
+            source = f"，{fx['source']}" if fx.get("source") else ""
+            note += f" 股价按 {fx['pair']} {float(fx['rate']):.4f}（{fx['date']}{source}）换成人民币后，再除以人民币 EPS。"
+        else:
+            note += " 股价是港币、EPS 是人民币。缺少当日 HKDCNY 时，P/E 显示待核对。"
     return {
-        "price": _fmt_px(price),
+        "price": _fmt_px(price, quote_ccy),
         "rows": rows,
         "note": note,
     }
@@ -4708,12 +4805,13 @@ def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: boo
     quote = _price_quote(ticker, doc)
     columns = _tv_columns(ticker)
     price = quote.get("price")
+    quote_ccy = str(quote.get("currency") or "USD")
     items: list[dict[str, Any]] = []
     if price is not None:
         sub = f"{quote['as_of']} 收盘" if quote.get("as_of") else "最新收盘"
         items.append({
             "label": "股价",
-            "value": _fmt_px(price),
+            "value": _fmt_px(price, quote_ccy),
             "sub": sub,
             "vendor": "TradingView" if quote.get("origin") == "tradingview" else None,
         })
@@ -4721,7 +4819,7 @@ def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: boo
         items.append({"label": "股价", "value": "未接入", "sub": "行情未接入"})
     shares = _diluted_shares(ticker, period)
     if price is not None and shares:
-        items.append({"label": "市值", "value": _fmt_cap(price * shares), "sub": "股价 × 稀释加权股本"})
+        items.append({"label": "市值", "value": _fmt_cap(price * shares, quote_ccy), "sub": "股价 × 稀释加权股本"})
     else:
         items.append({"label": "市值", "value": "未接入", "sub": "缺股价或股本"})
     rsi = _finite(columns.get("RSI"))
@@ -4748,6 +4846,23 @@ def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: boo
 
 
 _QUOTE_SOURCE_ORDER = ("TradingView", "Alpha Vantage", "新闻稿", "电话会")
+
+
+def _market_day(raw: str | None, quote_ccy: str) -> str:
+    """港股行情日用香港日历。美股仍走 _session_date。"""
+    if (quote_ccy or "").upper() != "HKD":
+        return _session_date(raw)
+    if not raw:
+        return ""
+    text = str(raw).strip()
+    try:
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        match = re.match(r"(\d{4}-\d{2}-\d{2})", text)
+        return match.group(1) if match else ""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(BJ).strftime("%Y-%m-%d")
 
 
 def _session_date(raw: str | None) -> str:
@@ -4853,6 +4968,7 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
 
     for t in tickers:
         cfg = load_ticker_config(t)
+        ccy_token = _REPORTING_CCY.set(_reporting_currency(t))
         docs = _load_docs(t)
         periods = sorted(docs, reverse=True)
         latest = periods[0] if periods else None
@@ -4911,6 +5027,9 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
                 watchlist=_watchlist(doc),
                 next_earnings=_next_earnings(t),
                 warnings=[_humanize_warning(w) for w in _dedupe((doc.get("status") or {}).get("warnings"))],
+                money_unit=_chart_units(cfg.get("reporting_currency"))[0],
+                eps_unit=_chart_units(cfg.get("reporting_currency"))[1],
+                eps_mark=_ccy_prefix(cfg.get("reporting_currency")),
             )
             path = stock_dir / f"{period}.html"
             path.write_text(html, encoding="utf-8")
@@ -4919,6 +5038,7 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
                 (stock_dir / "index.html").write_text(html, encoding="utf-8")
                 pages.append(stock_dir / "index.html")
 
+    _REPORTING_CCY.set("USD")
     av_note = ""
     if index_rows and not any(row["quarter"]["has_numbers"] for row in index_rows):
         av_note = (

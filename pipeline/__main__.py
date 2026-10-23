@@ -70,6 +70,15 @@ def main(argv: list[str] | None = None) -> int:
     p_av = sub.add_parser("av-estimates", help="用 EARNINGS_ESTIMATES 写入 data/{TICKER}/consensus/av_estimates.json")
     p_av.add_argument("--ticker", default=None, help="一只，或逗号分隔。缺省则全部股票")
 
+    p_fx = sub.add_parser("fx-refresh", help="写入当天 HKDCNY（1 港币折合人民币），来自 Yahoo HKDCNY=X")
+    p_fx.add_argument("--date", default=None, help="YYYY-MM-DD，缺省为香港当天")
+
+    p_imp = sub.add_parser("import-period", help="港股手工导入业绩公告 PDF 与本地电话会")
+    p_imp.add_argument("--ticker", required=True)
+    p_imp.add_argument("--period", required=True, help="例如 FY2026Q1。中期六个月不会写成 Q2")
+    p_imp.add_argument("--pdf", default=None, help="业绩公告 PDF（或已抽出的 .txt）")
+    p_imp.add_argument("--transcript", default=None, help="电话会 markdown / 文本，写入 raw/{period}/transcript.txt")
+
     p_ping = sub.add_parser("llm-ping", help="校验 OpenRouter 模型 slug 与 API key")
     p_ping.add_argument("--model", default=None, help="模型 slug，默认取 settings.yaml")
 
@@ -173,6 +182,32 @@ def main(argv: list[str] | None = None) -> int:
 
             paths = build_site(args.ticker, out_dir=args.out)
             print(json.dumps({"pages": [str(p) for p in paths]}, ensure_ascii=False, indent=2))
+            return 0
+        if args.cmd == "fx-refresh":
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+
+            from pipeline.sources.fx import fetch_hkd_cny
+
+            day = args.date or datetime.now(ZoneInfo("Asia/Hong_Kong")).date().isoformat()
+            record = fetch_hkd_cny(day)
+            if record is None:
+                print(json.dumps({"pair": "HKDCNY", "date": day, "rate": None}, ensure_ascii=False))
+                return 1
+            print(json.dumps(record, ensure_ascii=False, indent=2))
+            return 0
+        if args.cmd == "import-period":
+            from pathlib import Path
+
+            from pipeline.commands.import_cmd import import_period
+
+            out = import_period(
+                args.ticker,
+                args.period,
+                pdf=Path(args.pdf) if args.pdf else None,
+                transcript=Path(args.transcript) if args.transcript else None,
+            )
+            print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "av-estimates":
             from pipeline.commands.av_estimates_cmd import refresh_earnings_estimates

@@ -104,6 +104,13 @@ def list_tickers() -> list[str]:
     return sorted(p.stem for p in folder.glob("*.yaml"))
 
 
+def is_hk_listing(cfg: dict[str, Any] | None) -> bool:
+    """港股走手工导入，不调用 SecEdgar。`0700.HK.yaml` 的 stem 仍是 `0700.HK`。"""
+    if not cfg:
+        return False
+    return str(cfg.get("listing") or "").strip().lower() == "hk"
+
+
 def load_guidance_keys() -> list[str]:
     data = load_yaml(repo_path("config", "guidance_keys.yaml"))
     return list(data.get("keys", []))
