@@ -89,6 +89,77 @@ def test_poll_stops_stage2_after_transcript_deadline(monkeypatch, tmp_path):
     out = poll_cmd.poll_once(datetime(2026, 10, 1, 12, 0, tzinfo=timezone.utc))
     assert called == []
     assert out["did_work"] is False and out["actions"][0]["skipped"] is True
+    assert out["reported"] == []
+
+
+def test_poll_did_work_only_when_stage_runs(monkeypatch, tmp_path):
+    from pipeline.commands import poll_cmd
+
+    monkeypatch.setattr(poll_cmd, "list_tickers", lambda: ["NVDA"])
+    monkeypatch.setattr(poll_cmd, "load_ticker_config", lambda t: {"release_timing": "amc", "cik": "0001045810"})
+    monkeypatch.setattr(poll_cmd, "data_dir", lambda t=None: tmp_path)
+    monkeypatch.setattr(poll_cmd, "_in_window", lambda *a, **k: True)
+    monkeypatch.setattr(poll_cmd, "near_earnings", lambda *a, **k: True)
+    monkeypatch.setattr(poll_cmd, "detect_new_filings", lambda *a, **k: [])
+    monkeypatch.setattr(poll_cmd, "run_stage1", lambda *a, **k: (_ for _ in ()).throw(AssertionError("没有新 8-K 不应跑 Stage1")))
+    monkeypatch.setattr(poll_cmd, "run_stage2", lambda *a, **k: (_ for _ in ()).throw(AssertionError("不应跑 Stage2")))
+    quiet = poll_cmd.poll_once(datetime(2026, 10, 23, 21, 0, tzinfo=timezone.utc))
+    assert quiet["did_work"] is False and quiet["reported"] == []
+    assert quiet["actions"][0]["detail"] == "no new 8-K"
+
+    monkeypatch.setattr(poll_cmd, "detect_new_filings", lambda *a, **k: [{"accessionNumber": "new"}])
+    monkeypatch.setattr(poll_cmd, "run_stage1", lambda ticker: {"meta": {"fiscal_period": "FY2027Q3"}})
+    reported = poll_cmd.poll_once(datetime(2026, 10, 23, 21, 0, tzinfo=timezone.utc))
+    assert reported["did_work"] is True and reported["reported"] == ["NVDA"]
+
+    (tmp_path / "state").mkdir()
+    (tmp_path / "state" / "FY2027Q3.json").write_text(
+        json.dumps({"stage": "stage1_done", "fiscal_period": "FY2027Q3"}), encoding="utf-8"
+    )
+    (tmp_path / "FY2027Q3.json").write_text(
+        json.dumps({"meta": {"release_at_utc": "2026-10-23T20:00:00Z"}}), encoding="utf-8"
+    )
+    stage2 = []
+    monkeypatch.setattr(poll_cmd, "detect_new_filings", lambda *a, **k: [])
+    monkeypatch.setattr(poll_cmd, "run_stage1", lambda *a, **k: (_ for _ in ()).throw(AssertionError("不应跑 Stage1")))
+    monkeypatch.setattr(poll_cmd, "run_stage2", lambda *a, **k: stage2.append(a))
+    retried = poll_cmd.poll_once(datetime(2026, 10, 23, 22, 0, tzinfo=timezone.utc))
+    assert stage2 == [("NVDA", "FY2027Q3")]
+    assert retried["did_work"] is True and retried["reported"] == []
+
+
+def test_stage1_missing_period_end_uses_quarter_before_release_and_keeps_zero_eps():
+    from pipeline.commands.run_cmd import resolve_stage1_period_end, select_eps_actual
+    from pipeline.compute.periods import build_period_info
+
+    kept, inferred, label = resolve_stage1_period_end("2026-09-30", "2026-10-21T20:00:00Z", 12)
+    assert (kept, inferred, label) == ("2026-09-30", False, None)
+
+    # 11 月 20 日发布的仍是 9 月 30 日那季；直接拿发布日会标成 Q4
+    end, inferred, label = resolve_stage1_period_end(None, "2026-11-20T21:00:00Z", 12)
+    assert inferred is True and end == "2026-09-30" and label == "FY2026Q3"
+    assert build_period_info("2026-11-20", 12).fiscal_period == "FY2026Q4"
+    assert end != "2026-11-20"
+
+    # MU：8 月财年末，9 月 30 日发布对应 8 月 31 日结束的 Q4，不是发布日
+    end, inferred, label = resolve_stage1_period_end("", "2026-09-30T20:00:00Z", 8)
+    assert inferred is True and end == "2026-08-31" and label == "FY2026Q4"
+
+    try:
+        resolve_stage1_period_end(None, "", 12)
+    except ValueError as exc:
+        assert "period_end_date" in str(exc)
+    else:
+        raise AssertionError("推不出季末时应失败")
+
+    actual, warnings = select_eps_actual("unknown", 1.25, 0.0)
+    assert actual == 0.0 and warnings == ["eps_basis=unknown，记分卡待核对"]
+    actual, warnings = select_eps_actual("non_gaap", 1.25, 0.0)
+    assert actual == 0.0 and warnings == []
+    actual, warnings = select_eps_actual("gaap", 0.0, None)
+    assert actual == 0.0 and warnings == []
+    actual, warnings = select_eps_actual("non_gaap", 1.25, None)
+    assert actual == 1.25 and warnings == ["本季未披露 Non-GAAP EPS，改用 GAAP"]
 
 
 # ---- 新闻稿对比列 → 同比 / 环比 ----------------------------------------------------
@@ -1014,9 +1085,10 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance():
     assert row["reported"]["text"] == "2026-10-21"
     assert "16:03" in row["reported"]["title"]
     assert row["next_text"].startswith("2027-01-27")
-    assert row["quarter"]["analysts"] == "—" and row["quarter"]["eps"] == "—"
-    assert row["quarter"]["revisions"] == "—"
-    assert row["quarter"]["signal"] == "无数据/财报驱动"
+    assert row["quarter"]["analysts"] == "43" and row["quarter"]["eps"] == "$8.28"
+    assert row["quarter"]["revisions"] == "3 / 1"
+    assert row["quarter"]["signal"] == "中性/财报驱动"
+    assert row["quarter"]["chg"]["text"] == "+0.7%"
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_row = _index_row("MU", load_ticker_config("MU"), "FY2026Q4", mu, today=date(2026, 10, 23))
@@ -1025,7 +1097,9 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance():
     assert mu_row["guide"]["label"] == "beat 11.1%"
     assert mu_row["quote_price"] == "—" and mu_row["forward_pe"] == "—" and mu_row["rsi"] == "—"
     assert mu_row["reported"]["text"] == "2026-09-30"
-    assert mu_row["quarter"]["signal"] == "无数据/财报驱动"
+    assert mu_row["quarter"]["eps"] == "$38.23" and mu_row["quarter"]["analysts"] == "29"
+    assert mu_row["quarter"]["revisions"] == "1 / 1"
+    assert mu_row["quarter"]["signal"] == "中性/财报驱动"
 
     labeled = _index_row(
         "MU",
@@ -1073,11 +1147,12 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert "$73–76B" not in html and "$697.52" in html and "21.8×" in html and ">47.4<" in html
     assert ">2026-10-21</td>" in html and ">2026-09-30</td>" in html
     assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    assert "Yahoo 0q" not in html and "第一个未公布" not in html
     head = html.split("</thead>", 1)[0]
     assert head.index(">是否触发</th>") < head.index(">评价</th>") < head.index(">最近财报</th>")
     assert 'class="mid name"' in head and 'class="mid">评价</th>' in head and 'class="mid">下次财报</th>' in head
     assert "下季度" not in html and "温和上修" not in html and "温和下修" not in html
-    assert "无数据" in html and "ALPHAVANTAGE_API_KEY" in html
+    assert "ALPHAVANTAGE_API_KEY" not in html
     assert '<b>SNDK</b>' not in html and 'class="pool-name"' in html
     body = html.split("<tbody>", 1)[1]
     assert body.index("SNDK") < body.index("MCD") < body.index(">META<")
