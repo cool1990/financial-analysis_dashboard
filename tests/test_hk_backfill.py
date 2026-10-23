@@ -174,6 +174,48 @@ def test_nine_month_diluted_eps_is_not_the_quarter():
     assert parsed["rows"]["eps_nongaap"]["raw"] == "2.548"
 
 
+def test_split_quarter_labels_keep_the_prior_quarter_column():
+    text = """
+简明综合收益表
+未经审核
+1Q2024 1Q2023
+经重列
+1Q2024 4Q2023
+收入 159,501 149,986 159,501 155,196
+收入成本 80,000 75,000 80,000 78,000
+毛利 79,501 74,986 79,501 77,196
+经营盈利 52,556 40,429 52,556 41,401
+期内盈利 41,889 32,000 41,889 33,000
+每股盈利(每股人民币元)
+- 摊薄 4.386 2.639 4.386 2.807
+"""
+    parsed = parse_hk_quarter(text, "FY2024Q1")
+    revenue = parsed["rows"]["revenue"]
+    assert revenue["raw"] == "159,501"
+    assert revenue["year_ago_raw"] == "149,986"
+    assert revenue["prior_quarter_raw"] == "155,196"
+    assert parsed["rows"]["eps_gaap"]["raw"] == "4.386"
+
+
+def test_large_gain_quarter_keeps_smaller_nongaap_eps():
+    """处置收益把 GAAP 摊薄抬高时，非国际每股仍要留下，九个月数继续丢掉。"""
+    from pipeline.extract.hk_statement import _drop_unusable_nongaap_eps
+
+    kept = {
+        "eps_gaap": {"raw": "9.788"},
+        "eps_nongaap": {"raw": "2.547"},
+    }
+    _drop_unusable_nongaap_eps(kept)
+    assert kept["eps_nongaap"]["raw"] == "2.547"
+
+    dropped = {
+        "eps_gaap": {"raw": "2.127"},
+        "eps_nongaap": {"raw": "7.188"},
+    }
+    _drop_unusable_nongaap_eps(dropped)
+    assert "eps_nongaap" not in dropped
+
+
 def test_half_year_without_a_quarter_column_stays_cumulative():
     text = (
         "腾讯公布二零二六年中期业绩\n"

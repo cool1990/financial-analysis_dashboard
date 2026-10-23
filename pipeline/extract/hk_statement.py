@@ -519,11 +519,11 @@ def _candidates(text: str) -> list[_Candidate]:
         if not _is_quarter_header(header + "\n" + body[:200]):
             continue
         labels: list[str] = []
+        # 同比、环比列头经常分成两行：1Q2024 1Q2023 / 1Q2024 4Q2023。两行都要留下。
         for probe in header_lines[-6:] + lines[index:index + 2]:
             got = _Q_LABEL.findall(probe)
             if len(got) >= 2:
-                labels = got
-                break
+                labels.extend(got)
         try:
             period_end = _period_end_of(header, labels)
         except HkImportError:
@@ -692,7 +692,8 @@ def _drop_unusable_nongaap_eps(rows: dict[str, dict]) -> None:
         ratio = float(nongaap["raw"]) / float(gaap)
     except ValueError:
         return
-    if ratio > 2.5 or ratio < 0.35:
+    # 上限丢掉九个月摊薄。下限要留住大额处置收益把 GAAP EPS 抬高的季度（2021Q4 约 0.26）。
+    if ratio > 2.5 or ratio < 0.15:
         rows.pop("eps_nongaap", None)
 
 
