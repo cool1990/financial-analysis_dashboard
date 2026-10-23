@@ -127,6 +127,43 @@ def build_period_info(
     )
 
 
+def fiscal_quarter_end(fiscal_year: int, fiscal_quarter: int, fiscal_year_end_month: int) -> date:
+    """财季结束月的最后一天。Q4 落在财年结束月。"""
+    month = fiscal_year_end_month - (4 - fiscal_quarter) * 3
+    year = fiscal_year
+    while month <= 0:
+        month += 12
+        year -= 1
+    while month > 12:
+        month -= 12
+        year += 1
+    if month == 12:
+        return date(year, 12, 31)
+    return date(year, month + 1, 1) - timedelta(days=1)
+
+
+def next_fiscal_period(fiscal_period: FiscalPeriod) -> FiscalPeriod:
+    fy, fq = parse_fiscal_period(fiscal_period)
+    if fq == 4:
+        return make_fiscal_period(fy + 1, 1)
+    return make_fiscal_period(fy, fq + 1)
+
+
+def latest_closed_quarter(day: date, fiscal_year_end_month: int) -> tuple[date, int, int] | None:
+    """不晚于 day 的最近一个财季：(结束日, 财年, 财季)。
+
+    结束日按财年结束月推算（该月最后一天）。52/53 周财年的实际结束日可能偏几天，
+    这里只用来在新闻稿没写 period_end 时定季，不把发布日本身当成季末。
+    """
+    best: tuple[date, int, int] | None = None
+    for year in range(day.year - 1, day.year + 2):
+        for quarter in range(1, 5):
+            end = fiscal_quarter_end(year, quarter, fiscal_year_end_month)
+            if end <= day and (best is None or end > best[0]):
+                best = (end, year, quarter)
+    return best
+
+
 def prior_fiscal_period(fiscal_period: FiscalPeriod) -> FiscalPeriod:
     fy, fq = parse_fiscal_period(fiscal_period)
     if fq == 1:

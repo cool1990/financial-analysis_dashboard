@@ -65,15 +65,15 @@
             <td class="num{% if r.forward_pe == '—' %} muted{% endif %}">{{ r.forward_pe }}</td>
             <td class="num{% if r.target == '—' %} muted{% endif %}">{{ r.target }}</td>
             <td class="mid trig-cell t-{{ r.triggered.cls }}">{{ r.triggered.text }}</td>
-            <td class="mid sig c-{{ r.quarter.signal_cls }}">{{ r.quarter.signal }}</td>
+            <td class="mid sig c-{{ r.quarter.signal_cls }}{% if r.quarter.stale %} stale{% endif %}"{% if r.quarter.stale_title %} title="{{ r.quarter.stale_title }}"{% endif %}>{{ r.quarter.signal }}</td>
             <td class="mid when{% if r.reported.text == '—' %} muted{% endif %}"{% if r.reported.title %} title="{{ r.reported.title }}"{% endif %}>{{ r.reported.text }}</td>
             <td class="num">{% if r.revenue.verdict %}<b class="v-{{ r.revenue.verdict }}">{{ r.revenue.label }}</b>{% else %}<span class="muted">{{ r.revenue.label }}</span>{% endif %}</td>
             <td class="num">{% if r.eps.verdict %}<b class="v-{{ r.eps.verdict }}">{{ r.eps.label }}</b>{% else %}<span class="muted">{{ r.eps.label }}</span>{% endif %}</td>
             <td class="num">{% if r.guide.verdict %}<b class="v-{{ r.guide.verdict }}">{{ r.guide.label }}</b>{% else %}<span class="muted">{{ r.guide.label }}</span>{% endif %}</td>
             <td class="mid when{% if r.next_text == '下次财报日待定' %} muted{% endif %}">{{ r.next_text }}</td>
-            <td class="num{% if r.quarter.analysts == '—' %} muted{% endif %}">{{ r.quarter.analysts }}</td>
-            <td class="num{% if r.quarter.eps == '—' %} muted{% endif %}">{% if r.quarter.eps == '—' %}—{% else %}{{ r.quarter.eps }} <span class="c-{{ r.quarter.chg.cls }}">({{ r.quarter.chg.text }})</span>{% endif %}</td>
-            <td class="num{% if r.quarter.revisions == '—' %} muted{% endif %}">{{ r.quarter.revisions }}</td>
+            <td class="num{% if r.quarter.analysts == '—' %} muted{% endif %}{% if r.quarter.stale %} stale{% endif %}"{% if r.quarter.stale_title %} title="{{ r.quarter.stale_title }}"{% endif %}>{{ r.quarter.analysts }}</td>
+            <td class="num{% if r.quarter.eps == '—' %} muted{% endif %}{% if r.quarter.stale %} stale{% endif %}"{% if r.quarter.stale_title %} title="{{ r.quarter.stale_title }}"{% endif %}>{% if r.quarter.eps == '—' %}—{% else %}{{ r.quarter.eps }} <span class="c-{{ r.quarter.chg.cls }}">({{ r.quarter.chg.text }})</span>{% endif %}</td>
+            <td class="num{% if r.quarter.revisions == '—' %} muted{% endif %}{% if r.quarter.stale %} stale{% endif %}"{% if r.quarter.stale_title %} title="{{ r.quarter.stale_title }}"{% endif %}>{{ r.quarter.revisions }}</td>
           </tr>
           {% endfor %}
         </tbody>
