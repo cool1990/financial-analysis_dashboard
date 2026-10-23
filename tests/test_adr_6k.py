@@ -176,6 +176,9 @@ def test_currency_prompt_tells_model_to_prefer_adr_eps():
     note = currency_prompt_note("USD")
     assert "US$y.yy per ADR" in note
     assert "不要用汇率" in note
+    assert "NT$ million" in note
+    assert "没有 In US dollars" in note
+    assert "wafer revenue" in note
 
 
 def test_currency_guard_prefers_official_adr_usd_over_ntd_eps():
@@ -258,6 +261,156 @@ def test_v2_still_flags_adr_usd_when_quote_has_no_ordinary_eps():
     }
     checked = validate_extraction(extracted, "Net income 505,744 US$3.14 per ADR unit 25,931 million")
     assert any(item.startswith("V2:") and "GAAP EPS=" in item for item in checked["warnings"])
+
+
+_Q3_RELEASE = (
+    "TSMC today announced consolidated revenue of NT$1,494.24 billion, net income of NT$763.06 billion, "
+    "and diluted earnings per share of NT$29.43 (US$4.60 per ADR unit) for the third quarter ended September 30, 2026. "
+    "Year-over-year, third quarter revenue increased 50.9%, while net income and diluted EPS both increased 68.7%. "
+    "Compared to second quarter 2026, third quarter results represented a 17.6% increase in revenue and an 8.0% increase in net income. "
+    "In US dollars, third quarter revenue was $46.72 billion, which increased 41.2% year-over-year. "
+    "Gross margin for the quarter was 66.4%, operating margin was 58.7%, and net profit margin was 51.1%. "
+    "In the third quarter, shipments of 2-nanometer accounted for 8% of total wafer revenue; "
+    "3-nanometer accounted for 33%; 5-nanometer accounted for 28%; and 7-nanometer accounted for 10%. "
+    "Advanced technologies, defined as 7-nanometer and more advanced technologies, accounted for 79% of total wafer revenue. "
+    "Revenue is expected to be between US$52.3 billion and US$54.3 billion. "
+    "And, based on the exchange rate assumption of 1 US dollar to 31.8 NT dollars, "
+    "(Unit: NT$ million, except for EPS) Net income 763,064 Gross profit 992,379 Income from operations 876,445"
+)
+
+
+def test_currency_guard_drops_ntd_table_net_income_without_fx():
+    from pipeline.extract.currency_guard import stated_margin_ratios, stated_net_income_changes
+    from pipeline.extract.numbers import ParsedAmount
+
+    extracted = {
+        "revenue": {
+            "raw": "1,494,243",
+            "unit": "millions",
+            "source_quote": "Net sales 1,494,243",
+        },
+        "net_income_gaap": {
+            "raw": "763,064",
+            "unit": "millions",
+            "source_quote": "Net income 763,064",
+        },
+        "gross_profit_gaap": {
+            "raw": "992,379",
+            "unit": "millions",
+            "source_quote": "Gross profit 992,379",
+        },
+        "operating_income_gaap": {
+            "raw": "876,445",
+            "unit": "millions",
+            "source_quote": "Income from operations 876,445",
+        },
+        "diluted_shares": {
+            "raw": "25,932",
+            "unit": "millions",
+            "source_quote": "Based on 25,932 million weighted average outstanding shares",
+        },
+        "eps_gaap_diluted": {"raw": "29.43", "source_quote": "diluted earnings per share of NT$29.43"},
+        "kpis": {
+            "advanced_node_revenue": {
+                "raw": "79",
+                "unit": "percent",
+                "source_quote": "accounted for 79% of total wafer revenue",
+            },
+            "hpc_revenue": {"raw": None, "unit": None, "source_quote": ""},
+        },
+    }
+    warnings = apply_currency_guard(extracted, _Q3_RELEASE, "USD")
+    revenue = ParsedAmount.from_dict(extracted["revenue"])
+    assert revenue.value == 46_720_000_000
+    assert "In US dollars" in extracted["revenue"]["source_quote"] or "$46.72" in extracted["revenue"]["source_quote"]
+    assert extracted["net_income_gaap"]["raw"] is None
+    assert "NT$763.06 billion" in extracted["net_income_gaap"]["source_quote"]
+    assert extracted["gross_profit_gaap"]["raw"] is None
+    assert extracted["operating_income_gaap"]["raw"] is None
+    assert extracted["diluted_shares"]["raw"] == "25,932"
+    assert extracted["eps_gaap_diluted"]["raw"] == "4.60"
+    # 31.8 的汇率不能把 763.06 billion 换成约 240 亿美元
+    assert all("24.0" not in warning and "239" not in warning for warning in warnings)
+    assert "advanced_node_revenue" not in extracted["kpis"]
+    assert "hpc_revenue" not in extracted["kpis"]
+    lines = {line["key"]: line["value"] for line in extracted["kpis"]["wafer_revenue_mix"]["lines"]}
+    assert lines["2nm"] == 0.08
+    assert lines["3nm"] == 0.33
+    assert lines["advanced"] == 0.79
+    stated = stated_margin_ratios(_Q3_RELEASE)
+    assert stated["gross"] == pytest.approx(0.664)
+    assert stated["operating"] == pytest.approx(0.587)
+    changes = stated_net_income_changes(_Q3_RELEASE)
+    assert changes["yoy"] == 0.687
+    assert changes["qoq"] == 0.08
+    # 指引里的 US$52.3 billion 不能覆盖本季营收
+    assert revenue.value != 52_300_000_000
+
+
+def test_currency_guard_adopts_explicit_usd_net_income():
+    text = _Q3_RELEASE + " In US dollars, net income was $24.01 billion."
+    extracted = {
+        "net_income_gaap": {
+            "raw": "763,064",
+            "unit": "millions",
+            "source_quote": "Net income 763,064",
+        }
+    }
+    apply_currency_guard(extracted, text, "USD")
+    node = extracted["net_income_gaap"]
+    assert node["raw"] == "24.01"
+    assert node["unit"] == "billions"
+    assert "24.01" in node["source_quote"]
+    assert ParsedAmount.from_dict(node).value == 24_010_000_000
+
+
+def test_fin_rows_show_wafer_mix_not_blank_kpi_amount():
+    from builder.build import _fin_rows
+
+    doc = {
+        "meta": {"ticker": "", "fiscal_period": "FY2026Q3"},
+        "financials": {
+            "revenue": {"value": 46.72e9, "yoy_pct": None, "qoq_pct": None, "benchmark": {}},
+            "kpis": {
+                "wafer_revenue_mix": {
+                    "lines": [
+                        {"key": "2nm", "name": "2纳米晶圆收入占比", "value": 0.08},
+                        {"key": "advanced", "name": "先进制程（7纳米及更先进）", "value": 0.79, "yoy_pp": 0.02},
+                    ]
+                }
+            },
+            "net_income_gaap": {
+                "value": None,
+                "yoy_pct": 0.687,
+                "qoq_pct": 0.08,
+                "source_quote": "net income of NT$763.06 billion",
+            },
+        },
+        "drivers": {
+            "metrics": [
+                {
+                    "metric": "kpis.advanced_node_revenue",
+                    "summary": "先进制程收入占比79%，其中2纳米占8%。",
+                    "drivers": [],
+                },
+                {
+                    "metric": "net_income_gaap",
+                    "summary": "新闻稿未披露美元净利，仅有新台币口径，故不记入美元金额。净利同比增长 68.7%。",
+                    "drivers": [],
+                },
+            ]
+        },
+    }
+    rows = {row["key"]: row for row in _fin_rows(doc)}
+    assert "kpis.advanced_node_revenue" not in rows
+    assert rows["wafer_revenue_mix.2nm"]["value"] == "8.0%"
+    assert rows["wafer_revenue_mix.advanced"]["value"] == "79.0%"
+    assert rows["wafer_revenue_mix.advanced"]["yoy"]["text"] == "+2.0pp"
+    assert "79%" in rows["wafer_revenue_mix.advanced"]["summary"]
+    assert rows["net_income_gaap"]["value"] == "—"
+    assert rows["net_income_gaap"]["label"] == "净利润（GAAP）"
+    assert "新台币" in rows["net_income_gaap"]["summary"]
+    assert "$" not in rows["net_income_gaap"]["value"]
 
 
 def test_tsm_press_releases_resolve_to_official_adr_eps():

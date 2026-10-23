@@ -90,7 +90,7 @@ def _fmt_money(value: float | None, currency: str | None = None) -> str:
 
 def _is_ratio_key(key: str | None) -> bool:
     k = key or ""
-    return "margin" in k or k.endswith("_rate")
+    return "margin" in k or k.endswith("_rate") or k.startswith("wafer_revenue_mix.")
 
 
 def _fmt_value(value: float | None, key: str | None) -> str:
@@ -163,6 +163,8 @@ METRIC_LABELS = {
     "operating_cash_flow": "经营现金流",
     "capex": "资本开支",
     "fcf": "自由现金流",
+    "net_income_gaap": "净利润（GAAP）",
+    "net_income_nongaap": "净利润（Non-GAAP）",
     "opex_gaap": "运营费用（GAAP）",
     "opex_nongaap": "运营费用（Non-GAAP）",
     "share_count": "稀释股本",
@@ -294,6 +296,46 @@ def _is_quant_guidance(g: dict[str, Any]) -> bool:
 # ---------------------------------------------------------------- 视图模型
 
 
+def _empty_benchmark() -> dict[str, Any]:
+    return {"value": None, "source": "none", "diff": None, "diff_pct": None, "diff_pp": None}
+
+
+def _wafer_mix_sections(fin: dict[str, Any], drivers: dict[str, Any]) -> list[dict[str, Any]]:
+    """制程节点占晶圆收入的百分比。没有美元金额，不占金额行。"""
+    mix = ((fin.get("kpis") or {}).get("wafer_revenue_mix") or {})
+    lines = mix.get("lines") if isinstance(mix, dict) else None
+    if not lines:
+        return []
+    advanced_driver = drivers.get("wafer_revenue_mix.advanced") or drivers.get("kpis.advanced_node_revenue")
+    sections: list[dict[str, Any]] = []
+    for line in lines:
+        if not isinstance(line, dict) or line.get("value") is None:
+            continue
+        key = f"wafer_revenue_mix.{line.get('key')}"
+        driver = drivers.get(key)
+        if driver is None and line.get("key") == "advanced":
+            driver = advanced_driver
+        sections.append(
+            {
+                "key": key,
+                "label": line.get("name") or key,
+                "is_ratio": True,
+                "is_eps": False,
+                "metric": {
+                    "value": line.get("value"),
+                    "yoy_pct": None,
+                    "qoq_pct": None,
+                    "yoy_pp": line.get("yoy_pp"),
+                    "qoq_pp": line.get("qoq_pp"),
+                    "benchmark": _empty_benchmark(),
+                    "source_quote": line.get("source_quote") or mix.get("source_quote"),
+                },
+                "driver": driver,
+            }
+        )
+    return sections
+
+
 def _metric_sections(doc: dict[str, Any]) -> list[dict[str, Any]]:
     fin = doc.get("financials") or {}
     drivers = {(m.get("metric") or ""): m for m in ((doc.get("drivers") or {}).get("metrics") or [])}
@@ -314,14 +356,24 @@ def _metric_sections(doc: dict[str, Any]) -> list[dict[str, Any]]:
                 "driver": drivers.get(key),
             }
         )
+        if key == "revenue":
+            for section in _wafer_mix_sections(fin, drivers):
+                used.add(section["key"])
+                sections.append(section)
+            used.add("kpis.advanced_node_revenue")
     for key, drv in drivers.items():
         if key in used:
             continue
+        # 没有金额的 KPI 壳（例如只有先进制程占比）不渲染成空金额行。
+        if key.startswith("kpis.") or key.startswith("wafer_revenue_mix."):
+            metric = fin.get(key)
+            if not (isinstance(metric, dict) and metric.get("value") is not None):
+                continue
         sections.append(
             {
                 "key": key,
                 "label": _metric_label(key),
-                "is_ratio": "margin" in (key or ""),
+                "is_ratio": _is_ratio_key(key),
                 "is_eps": "eps" in (key or ""),
                 "metric": fin.get(key),
                 "driver": drv,
