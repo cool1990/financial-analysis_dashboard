@@ -2108,6 +2108,10 @@ def _cost_series(ticker: str) -> tuple[list[dict[str, Any]], str]:
     return _memo("cost", ident, _series_inputs(ticker), lambda: _cost_series_compute(ticker))
 
 
+_DERIVED_COST_METHODS = {"derived", "slide", "revenue_minus_gross_profit"}
+_PRESS_COST_METHODS = {"press", "press_release"}
+
+
 def _cost_series_compute(ticker: str) -> tuple[list[dict[str, Any]], str]:
     statement = _statement_cost_quarters(ticker)
     if statement:
@@ -2116,10 +2120,13 @@ def _cost_series_compute(ticker: str) -> tuple[list[dict[str, Any]], str]:
             for row in statement
             if row.get("cost_of_revenue") is not None
         }
-        if methods and methods <= {"derived", "slide"}:
+        if methods and methods <= _DERIVED_COST_METHODS:
             return statement, "derived"
-        if methods and methods <= {"press"}:
+        if methods and methods <= _PRESS_COST_METHODS:
             return statement, "press"
+        # 新闻稿倒算和幻灯片毛利倒算混在一起时，仍然不是 SEC companyfacts。
+        if methods and methods <= _DERIVED_COST_METHODS | _PRESS_COST_METHODS:
+            return statement, "derived"
         return statement, "xbrl"
     extracted = _extracted_cost_quarters(ticker)
     if extracted:

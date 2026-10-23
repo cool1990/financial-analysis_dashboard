@@ -276,6 +276,35 @@ def _write_manifest(raw: Path, payload: dict[str, Any]) -> None:
     )
 
 
+def _kept_transcript(raw: Path, transcript_meta: dict[str, Any] | None) -> dict[str, Any] | None:
+    """新导入业绩公告时保留已入库的电话会清单。不重写 transcript.txt。"""
+    if transcript_meta:
+        return transcript_meta
+    if not (raw / "transcript.txt").exists():
+        return None
+    manifest = raw / "import_manifest.json"
+    if manifest.exists():
+        try:
+            old = json.loads(manifest.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            old = {}
+        if isinstance(old.get("transcript"), dict):
+            return old["transcript"]
+    meta_path = raw / "transcript_meta.json"
+    if not meta_path.exists():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    text = (raw / "transcript.txt").read_text(encoding="utf-8")
+    return {
+        "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "filename": meta.get("source_url") or "transcript.txt",
+        "chars": meta.get("chars") if isinstance(meta.get("chars"), int) else len(text),
+    }
+
+
 def _copy_transcript(raw: Path, source: Path) -> dict[str, Any]:
     text = source.read_text(encoding="utf-8")
     save_transcript(raw, text, source="local_import", source_url=str(source))
@@ -528,14 +557,14 @@ def import_period(
             "period": period,
             "stage1": "skipped",
             "reason": "没有业绩公告。电话会里的数字未写入财务字段。",
-            "transcript": transcript_meta,
-            "transcript_source": "local_import" if transcript_meta else None,
+            "transcript": _kept_transcript(raw, transcript_meta),
+            "transcript_source": "local_import" if transcript_meta or (raw / "transcript.txt").exists() else None,
         })
         return {
             "ticker": ticker.upper(),
             "period": period,
             "stage1": "skipped",
-            "transcript_source": "local_import" if transcript_meta else None,
+            "transcript_source": "local_import" if transcript_meta or (raw / "transcript.txt").exists() else None,
             "reason": "没有业绩公告 PDF，未写单季财务数字",
         }
 
@@ -558,8 +587,8 @@ def import_period(
                     "period_end": (err.cumulative or {}).get("period_end"),
                     "months": (err.cumulative or {}).get("months"),
                 },
-                "transcript": transcript_meta,
-                "transcript_source": "local_import" if transcript_meta else None,
+                "transcript": _kept_transcript(raw, transcript_meta),
+                "transcript_source": "local_import" if transcript_meta or (raw / "transcript.txt").exists() else None,
             })
             return {
                 "ticker": ticker.upper(),
@@ -567,7 +596,7 @@ def import_period(
                 "stage1": "skipped",
                 "extract_mode": "blank",
                 "source_pdf": press.name,
-                "transcript_source": "local_import" if transcript_meta else None,
+                "transcript_source": "local_import" if transcript_meta or (raw / "transcript.txt").exists() else None,
                 "reason": reason or str(err),
             }
     stamped = _pdf_created_utc(press)
@@ -619,7 +648,7 @@ def import_period(
         "eps_gaap": (extracted.get("eps_gaap_diluted") or {}).get("raw"),
         "eps_nongaap": (extracted.get("eps_nongaap_diluted") or {}).get("raw"),
         "operating_income_nongaap_million": (extracted.get("operating_income_nongaap") or {}).get("raw"),
-        "transcript": transcript_meta,
+        "transcript": _kept_transcript(raw, transcript_meta),
         "transcript_source": source_name,
     })
     return {

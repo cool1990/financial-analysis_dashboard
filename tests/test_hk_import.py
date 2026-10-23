@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -106,9 +107,33 @@ def test_imported_period_json_and_homepage_stage(monkeypatch):
     assert row["ticker"] == "0700.HK"
     assert row["status_label"] == "持仓"
     assert row["market_cap"].startswith("HK$") and row["market_cap"] != "—"
-    assert not (ROOT / "data" / "0700.HK" / "FY2026Q2.json").exists()
-    manifest = (ROOT / "data" / "0700.HK" / "raw" / "FY2026Q2" / "import_manifest.json").read_text(encoding="utf-8")
-    assert "skipped" in manifest
+    q2_doc = load_period_json("0700.HK", "FY2026Q2")
+    assert q2_doc is not None
+    assert q2_doc["financials"]["revenue"]["value"] == 204_785_000_000
+    assert q2_doc["financials"]["eps_gaap"]["value"] == 6.104
+    assert q2_doc["meta"]["extract_mode"] == "disclosed"
+    manifest = json.loads((ROOT / "data" / "0700.HK" / "raw" / "FY2026Q2" / "import_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["stage1"] == "stage1_done"
+    assert manifest["transcript"]["filename"] == "Tencent_2026_Q2.md"
+    assert manifest["transcript_source"] == "local_import"
+
+
+def test_kept_transcript_survives_a_later_pdf_manifest(tmp_path):
+    from pipeline.commands.import_cmd import _kept_transcript
+
+    (tmp_path / "transcript.txt").write_text("call text", encoding="utf-8")
+    (tmp_path / "transcript_meta.json").write_text(
+        json.dumps({"source": "local_import", "source_url": "Tencent_2026_Q2.md", "chars": 9}),
+        encoding="utf-8",
+    )
+    (tmp_path / "import_manifest.json").write_text(
+        json.dumps({"stage1": "stage1_done", "transcript": None}),
+        encoding="utf-8",
+    )
+    kept = _kept_transcript(tmp_path, None)
+    assert kept["filename"] == "Tencent_2026_Q2.md"
+    assert kept["chars"] == 9
+    assert _kept_transcript(tmp_path, {"filename": "new.md", "chars": 1})["filename"] == "new.md"
 
 
 def test_committed_local_import_transcripts_load():
@@ -118,9 +143,15 @@ def test_committed_local_import_transcripts_load():
     from pipeline.sources.transcripts import load_manual_transcript
 
     raw_root = ROOT / "data" / "0700.HK" / "raw"
-    periods = sorted(path.name for path in raw_root.glob("FY*") if path.is_dir())
+    periods = sorted(
+        path.name
+        for path in raw_root.glob("FY*")
+        if path.is_dir() and (path / "transcript_meta.json").is_file()
+    )
     assert periods[0] == "FY2017Q1"
     assert "FY2026Q1" in periods and "FY2026Q2" in periods
+    assert (raw_root / "FY2016Q1" / "press_release.txt").is_file()
+    assert not (raw_root / "FY2016Q1" / "transcript.txt").exists()
     for period in periods:
         text = load_manual_transcript(raw_root / period)
         assert text and text.strip(), period
@@ -132,7 +163,7 @@ def test_committed_local_import_transcripts_load():
     q2 = json.loads((raw_root / "FY2026Q2" / "import_manifest.json").read_text(encoding="utf-8"))
     assert q2["transcript"]["filename"] == "Tencent_2026_Q2.md"
     assert q2["transcript_source"] == "local_import"
-    assert q2["stage1"] == "skipped"
+    assert q2["stage1"] == "stage1_done"
 
 
 def test_hk_paths_do_not_call_sec(monkeypatch):
@@ -154,7 +185,7 @@ def test_hk_paths_do_not_call_sec(monkeypatch):
 
     with pytest.raises(RuntimeError, match="listing=hk"):
         replay_cmd.replay_earnings_filters("0700.HK")
-    assert resolve_latest_period("0700.HK") == "FY2026Q1"
+    assert resolve_latest_period("0700.HK") == "FY2026Q2"
     assert "0700.HK" not in init_cmd.init_missing()
     monkeypatch.setattr(poll_cmd, "list_tickers", lambda: ["0700.HK"])
     monkeypatch.setattr(poll_cmd, "near_earnings", lambda *a, **k: (_ for _ in ()).throw(AssertionError("poll 不应探测财报日")))
@@ -289,7 +320,7 @@ def test_tencent_press_statement_matches_meta_charts():
     )
 
     text = PRESS.read_text(encoding="utf-8")
-    press_statement, press_segment = parse_tencent_statement(text)
+    press_statement, segment = parse_tencent_statement(text)
     by_press = {row["period"]: row for row in press_statement["quarters"]}
     current = by_press["FY2026Q1"]
     assert current["revenue"] == 196_458_000_000
@@ -297,45 +328,53 @@ def test_tencent_press_statement_matches_meta_charts():
     assert current["cost_of_revenue"] == 85_193_000_000
     assert current["opex"] == 45_143_000_000
     assert current["geo"] == []
-    # 单份新闻稿对照列只有三季，中间空季是解析器行为，不是全历史。
+    # 单份新闻稿对照列没有 2025Q2 营收，解析器留空。后面的分部行仍来自这份稿。
     assert by_press["FY2025Q2"]["revenue"] is None
-    press_lines = {row["period"]: row["lines"] for row in press_segment["quarters"]}
-    assert [line["name"] for line in press_lines["FY2026Q1"]] == ["增值服务", "营销服务", "金融科技及企业服务", "其他"]
-    assert abs(sum(line["share_pct"] for line in press_lines["FY2026Q1"]) - 100) < 0.2
 
     folder = ROOT / "data" / "0700.HK"
-    statement, segment = build_tencent_histories_from_periods(folder)
-    saved_statement = json.loads((folder / "statement_history.json").read_text(encoding="utf-8"))
-    saved_segment = json.loads((folder / "segment_history.json").read_text(encoding="utf-8"))
-    assert saved_statement["quarters"] == statement["quarters"]
-    assert saved_segment["quarters"] == segment["quarters"]
-
-    periods = [row["period"] for row in statement["quarters"]]
-    assert periods[0] == "FY2017Q1"
-    assert periods[-1] == "FY2026Q1"
-    assert len(periods) == 37
-    by_period = {row["period"]: row for row in statement["quarters"]}
-    assert by_period["FY2017Q1"]["revenue"] == 49_552_000_000
-    assert by_period["FY2025Q2"]["revenue"] == 184_504_000_000
-    assert by_period["FY2026Q1"]["revenue"] == 196_458_000_000
-    assert by_period["FY2026Q1"]["cost_of_revenue"] == 85_193_000_000
-    assert by_period["FY2026Q1"]["opex"] == 45_143_000_000
-    assert all(row.get("geo") == [] for row in statement["quarters"])
-    assert all(row.get("revenue") is not None for row in statement["quarters"])
+    built_statement, _built_segment = build_tencent_histories_from_periods(folder)
+    built_periods = [row["period"] for row in built_statement["quarters"]]
+    assert built_periods[0] == "FY2016Q1"
+    assert built_periods[-1] == "FY2026Q2"
+    assert len(built_periods) == 42
+    by_built = {row["period"]: row for row in built_statement["quarters"]}
+    assert by_built["FY2017Q1"]["revenue"] == 49_552_000_000
+    assert by_built["FY2025Q2"]["revenue"] == 184_504_000_000
+    assert by_built["FY2026Q1"]["revenue"] == 196_458_000_000
+    assert by_built["FY2026Q1"]["cost_of_revenue"] == 85_193_000_000
+    assert by_built["FY2026Q1"]["opex"] == 45_143_000_000
+    assert all(row.get("geo") == [] for row in built_statement["quarters"])
+    assert all(row.get("revenue") is not None for row in built_statement["quarters"])
 
     lines = {row["period"]: row["lines"] for row in segment["quarters"]}
     assert [line["name"] for line in lines["FY2026Q1"]] == ["增值服务", "营销服务", "金融科技及企业服务", "其他"]
     assert abs(sum(line["share_pct"] for line in lines["FY2026Q1"]) - 100) < 0.2
-    assert lines["FY2025Q2"]  # 全历史回填后 Q2 不再空
-    assert [line["name"] for line in lines["FY2017Q1"]] == ["增值服务", "营销服务", "其他"]
-    assert not any(line["key"] == "fintech" for line in lines["FY2017Q1"])
-    assert any(line["key"] == "fintech" for line in lines["FY2019Q1"])
+    assert lines["FY2025Q2"] == []
+    assert "FY2017Q1" not in lines
+
+    saved_statement = json.loads((ROOT / "data" / "0700.HK" / "statement_history.json").read_text(encoding="utf-8"))
+    saved_segment = json.loads((ROOT / "data" / "0700.HK" / "segment_history.json").read_text(encoding="utf-8"))
+    saved_by = {row["period"]: row for row in saved_statement["quarters"]}
+    saved_lines = {row["period"]: row["lines"] for row in saved_segment["quarters"]}
+    # history --from-periods 用季度 JSON 补上简明表没有的季度，2026Q1 仍用表内原数。
+    assert saved_by["FY2026Q1"]["revenue"] == current["revenue"]
+    assert saved_by["FY2026Q1"]["cost_of_revenue"] == current["cost_of_revenue"]
+    assert [line["name"] for line in saved_lines["FY2026Q1"]] == ["增值服务", "营销服务", "金融科技及企业服务", "其他"]
+    assert saved_by["FY2025Q2"]["revenue"] == 184_504_000_000
+    assert saved_lines["FY2025Q2"]  # 全历史回填后 Q2 不再空
+    assert [line["name"] for line in saved_lines["FY2017Q1"]] == ["增值服务", "营销服务"]
+    assert not any(line["key"] == "fintech" for line in saved_lines["FY2017Q1"])
+    assert any(line["key"] == "fintech" for line in saved_lines["FY2019Q1"])
+    assert saved_by["FY2016Q1"]["revenue"] == 31_995_000_000
+    assert "other" not in {line["key"] for line in saved_lines["FY2016Q1"]}
 
     view = _fin_view("0700.HK", "FY2026Q1")
     charts = view["by_key"]["revenue"]["charts"]
     assert [chart["title"] for chart in charts] == ["营业收入", "按业务", "按地区"]
     assert charts[0]["subtitle"] == "十亿人民币"
-    assert charts[0]["labels"][0] == "FY2017Q1"
+    assert charts[0]["labels"][0] == "FY2016Q1"
+    assert charts[0]["labels"][-1] == "FY2026Q2"
+    assert charts[0]["amount"][charts[0]["labels"].index("FY2016Q1")] == 32.0
     assert charts[0]["amount"][charts[0]["labels"].index("FY2026Q1")] == 196.46
     assert charts[0]["amount"][charts[0]["labels"].index("FY2017Q1")] == 49.55
     business = {point["period"]: point for point in charts[1]["points"]}
