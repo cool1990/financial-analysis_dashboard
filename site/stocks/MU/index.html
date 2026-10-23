@@ -965,42 +965,30 @@ function drawRowCharts() {
       return {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[ch];
     });
   }
-  function focusIndex(chart) {
-    var labels = chart.labels || [];
-    var focus = chart.focus || (labels[labels.length - 1] || '');
-    var index = labels.indexOf(focus);
-    return index < 0 ? labels.length - 1 : index;
-  }
   function writeReadout(slot, chart, index, seriesKey) {
+    document.querySelectorAll('[data-fin-readout]').forEach(function (node) {
+      node.hidden = true;
+      node.textContent = '';
+    });
     var node = document.querySelector('[data-fin-readout="' + slot + '"]');
     if (!node) return;
     var point = (chart.points || [])[index];
-    if (!point) { node.textContent = ''; return; }
+    if (!point) return;
+    node.hidden = false;
     if (point.gap || !point.items || !point.items.length) {
       node.textContent = point.period + ' 没有这项拆分。';
       return;
     }
-    var html = '<b>' + esc(point.period) + '</b>';
-    point.items.forEach(function (item) {
-      var mark = item.key === seriesKey ? ' readout-on' : '';
-      var share = item.share == null ? '—' : item.share.toFixed(1) + '%';
-      var extra = item.stack ? '' : '（母项，未计入柱）';
-      html += '<span class="readout-item' + mark + '">' + esc(item.name) + ' ' + share + ' · ' + esc(item.amount) + extra + '</span>';
+    var item = null;
+    (point.items || []).forEach(function (row) {
+      if (row.key === seriesKey && row.stack) item = row;
     });
-    node.innerHTML = html;
-  }
-  function writeAmount(slot, chart, index) {
-    var node = document.querySelector('[data-fin-readout="' + slot + '"]');
-    if (!node) return;
-    var label = (chart.labels || [])[index] || '';
-    var money = (chart.amount_text || [])[index];
-    var yoy = (chart.yoy || [])[index];
-    var yoyText = yoy == null ? '同比 —' : '同比 ' + (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
-    node.textContent = label + (money ? ' · ' + money : '') + ' · ' + yoyText;
+    if (!item) return;
+    var share = item.share == null ? '—' : item.share.toFixed(1) + '%';
+    node.textContent = point.period + ' · ' + item.name + ' · ' + share + (item.amount ? ' · ' + item.amount : '');
   }
   function drawAmount(canvas, chart) {
     var labels = chart.labels || [];
-    var picked = focusIndex(chart);
     var drawn = new Chart(canvas, {
       type: 'bar',
       data: {
@@ -1019,14 +1007,9 @@ function drawRowCharts() {
           y: { beginAtZero: true },
           y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + '%'; } } }
         },
-        onClick: function (_evt, elements) {
-          if (!elements.length) return;
-          writeAmount(canvas.getAttribute('data-fin-index'), chart, elements[0].index);
-        }
       }
     });
     live.push(drawn);
-    writeAmount(canvas.getAttribute('data-fin-index'), chart, picked);
   }
   function drawShare(canvas, chart) {
     var labels = chart.labels || [];
@@ -1041,7 +1024,6 @@ function drawRowCharts() {
       });
     });
     var colors = palette();
-    var picked = focusIndex(chart);
     var datasets = keys.map(function (key, seriesIndex) {
       return {
         label: legends[key] || key,
@@ -1077,8 +1059,6 @@ function drawRowCharts() {
       }
     });
     live.push(drawn);
-    var first = datasets[0] ? datasets[0].key : '';
-    writeReadout(canvas.getAttribute('data-fin-index'), chart, picked, first);
   }
   function genericSeries(metric, name) {
     var spec = (typeof ROW_SERIES !== 'undefined' && ROW_SERIES[metric]) || null;
@@ -1145,7 +1125,7 @@ function drawRowCharts() {
     var canvas = chart.kind === 'generic'
       ? '<canvas data-metric="' + esc(chart.metric) + '" data-series="' + esc(chart.series) + '" aria-label="' + esc(chart.title) + '"></canvas>'
       : '<canvas data-fin-kind="' + esc(chart.kind) + '" data-fin-index="' + index + '" aria-label="' + esc(chart.title) + '"></canvas>';
-    var readout = chart.kind === 'generic' ? '' : '<p class="fin-readout" data-fin-readout="' + index + '"></p>';
+    var readout = chart.kind === 'share' ? '<p class="fin-readout" data-fin-readout="' + index + '" hidden></p>' : '';
     return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><div class="c-body">' + canvas + '</div>' + readout + '</div>';
   }
   function show(key) {
