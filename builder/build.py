@@ -1662,6 +1662,7 @@ def _mix_points(rows: list[dict[str, Any]], grain: str) -> list[dict[str, Any]]:
                     "depth": int(line.get("depth") or 0),
                     "stack": bool(line.get("stack")),
                     "revenue": _fmt_money(value),
+                    "value": value,
                     "share": f"{share:.1f}%" if share is not None else "—",
                     "yoy": pace(label, key, "yoy"),
                     "qoq": pace(label, key, "qoq"),
@@ -1987,6 +1988,112 @@ def _with_cogs_row(rows: list[dict[str, Any]], ticker: str, period: str) -> list
     return [made] + rows
 
 
+def _fiscal_parts(period: str) -> tuple[int, int] | None:
+    match = re.fullmatch(r"FY(\d{4})Q([1-4])", str(period or ""))
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _annual_amount_series(quarters: list[dict[str, Any]], field: str) -> dict[str, Any] | None:
+    """四个季度都有金额才算一个财年。同比只对上一个完整财年，缺年不跨年比较。"""
+    buckets: dict[int, dict[int, float | None]] = {}
+    for row in quarters:
+        parts = _fiscal_parts(str(row.get("period") or ""))
+        if parts is None:
+            continue
+        year, quarter = parts
+        buckets.setdefault(year, {})[quarter] = row.get(field)
+    totals: dict[int, float] = {}
+    for year, slots in buckets.items():
+        if any(quarter not in slots or slots[quarter] is None for quarter in (1, 2, 3, 4)):
+            continue
+        totals[year] = sum(float(slots[quarter]) for quarter in (1, 2, 3, 4))
+    if not totals:
+        return None
+    labels: list[str] = []
+    amount: list[float] = []
+    yoy: list[float | None] = []
+    text: list[str] = []
+    for year in sorted(totals):
+        total = totals[year]
+        labels.append(f"FY{year}")
+        amount.append(round(total / 1_000_000_000, 2))
+        text.append(_fmt_money(total))
+        prior = totals.get(year - 1)
+        if prior in (None, 0):
+            yoy.append(None)
+        else:
+            yoy.append(round((total - float(prior)) / abs(float(prior)) * 100, 1))
+    return {"labels": labels, "amount": amount, "yoy": yoy, "amount_text": text}
+
+
+def _annual_share_series(points: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """先把四个季度的分项金额加总，再算占比。某季缺失、留空或分项没有金额，则整年省略。"""
+    buckets: dict[int, dict[int, dict[str, Any]]] = {}
+    for point in points:
+        parts = _fiscal_parts(str(point.get("period") or ""))
+        if parts is None:
+            continue
+        year, quarter = parts
+        buckets.setdefault(year, {})[quarter] = point
+    annual_points: list[dict[str, Any]] = []
+    for year in sorted(buckets):
+        slots = buckets[year]
+        if any(quarter not in slots for quarter in (1, 2, 3, 4)):
+            continue
+        quarters = [slots[quarter] for quarter in (1, 2, 3, 4)]
+        if any(point.get("gap") or not point.get("items") for point in quarters):
+            continue
+        sums: dict[str, float] = {}
+        meta: dict[str, dict[str, Any]] = {}
+        order: list[str] = []
+        incomplete = False
+        for point in quarters:
+            for item in point.get("items") or []:
+                if not item.get("stack"):
+                    continue
+                raw = item.get("value")
+                if raw is None:
+                    incomplete = True
+                    break
+                key = str(item["key"])
+                if key not in sums:
+                    sums[key] = 0.0
+                    order.append(key)
+                    meta[key] = item
+                sums[key] += float(raw)
+            if incomplete:
+                break
+        if incomplete or not order:
+            continue
+        total = sum(sums.values())
+        if total <= 0:
+            continue
+        items = []
+        for key in order:
+            value = sums[key]
+            items.append(
+                {
+                    "key": key,
+                    "name": meta[key]["name"],
+                    "legend": meta[key].get("legend") or meta[key]["name"],
+                    "share": round(value / total * 100, 1),
+                    "amount": _fmt_money(value),
+                    "value": value,
+                    "stack": True,
+                }
+            )
+        annual_points.append({"period": f"FY{year}", "gap": False, "items": items})
+    if not annual_points:
+        return None
+    return {
+        "labels": [point["period"] for point in annual_points],
+        "points": annual_points,
+        "focus": annual_points[-1]["period"],
+    }
+
+
 def _amount_yoy_chart(quarters: list[dict[str, Any]], field: str, title: str, subtitle: str) -> dict[str, Any]:
     labels: list[str] = []
     amount: list[float | None] = []
@@ -2012,6 +2119,7 @@ def _amount_yoy_chart(quarters: list[dict[str, Any]], field: str, title: str, su
         "amount": amount,
         "yoy": yoy,
         "amount_text": text,
+        "annual": _annual_amount_series(quarters, field),
     }
 
 
@@ -2027,6 +2135,7 @@ def _share_chart(points: list[dict[str, Any]], title: str, subtitle: str, focus:
         "labels": labels,
         "points": points,
         "focus": focus,
+        "annual": _annual_share_series(points),
     }
 
 
@@ -2051,6 +2160,7 @@ def _line_points(quarters: list[dict[str, Any]], field: str, *, denominator: str
                     "legend": "其他" if line["key"] == "other" else line["name"],
                     "share": None if share is None else round(share, 1),
                     "amount": _fmt_money(value),
+                    "value": value,
                     "stack": True,
                 }
             )
@@ -2080,6 +2190,7 @@ def _business_points(mix: dict[str, Any]) -> list[dict[str, Any]]:
                     "legend": "其他" if line["key"] == "other" else line["name"],
                     "share": share,
                     "amount": line["revenue"],
+                    "value": line.get("value"),
                     "stack": bool(line.get("stack")),
                 }
             )
@@ -2157,7 +2268,8 @@ def _fin_panel(rows: list[dict[str, Any]], view: dict[str, Any]) -> dict[str, An
     default = "revenue" if any(row["key"] == "revenue" for row in rows) else (rows[0]["key"] if rows else "")
     spec = (view.get("by_key") or {}).get(default) or {}
     charts = spec.get("charts") or (_generic_charts(default) if default else [])
-    return {**view, "default": default, "charts": charts, "note": spec.get("note") or ""}
+    grain = any(chart.get("kind") in {"amount_yoy", "share"} for chart in charts)
+    return {**view, "default": default, "charts": charts, "note": spec.get("note") or "", "grain": grain}
 
 
 def _price_view(doc: dict[str, Any]) -> dict[str, Any]:

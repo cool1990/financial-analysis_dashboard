@@ -115,7 +115,7 @@
     <span class="ev-meta">{{ fin_rows|length }} 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   {% if drivers_pending %}<p class="pending-note">{{ drivers_pending }}</p>{% endif %}
   <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
@@ -129,6 +129,12 @@
       <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif drivers_pending %}<span class="muted">变动原因待生成</span>{% else %}<span class="muted">—</span>{% endif %}</span>
     </button>
     <div class="fin-panel" id="fin-panel-{{ r.key }}" data-fin-panel="{{ r.key }}"{% if r.key != fin_view.default %} hidden{% endif %}>
+      <div class="fin-chart-bar" data-fin-grain-bar{% if r.key != fin_view.default or not fin_view.grain %} hidden{% endif %}>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
       <div class="charts fin-charts" data-fin-charts data-cols="{% if r.key == fin_view.default %}{{ fin_view.charts|length }}{% else %}0{% endif %}">
         {% if r.key == fin_view.default %}
         {% for chart in fin_view.charts %}
@@ -485,8 +491,11 @@ function drawRowCharts() {
     return {
       maxRotation: 0, autoSkip: false,
       callback: function (_val, i) {
-        var lab = labels[i] || '';
-        return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
+        var lab = String(labels[i] || '');
+        var match = /^FY(\d{4})/.exec(lab);
+        if (!match) return '';
+        if (/^FY\d{4}$/.test(lab) || lab.indexOf('Q1') === match[0].length) return match[1];
+        return '';
       }
     };
   }
@@ -642,20 +651,40 @@ function drawRowCharts() {
       }
     }));
   }
+  var openKey = view.default || '';
+  var grainByKey = {};
+  function currentGrain() {
+    return grainByKey[openKey] || 'quarter';
+  }
+  function presented(chart) {
+    if (!chart || currentGrain() !== 'year') return chart;
+    if (chart.kind !== 'amount_yoy' && chart.kind !== 'share') return chart;
+    var annual = chart.annual || null;
+    if (!annual || !annual.labels || !annual.labels.length) return null;
+    var copy = {};
+    Object.keys(chart).forEach(function (key) { copy[key] = chart[key]; });
+    Object.keys(annual).forEach(function (key) { copy[key] = annual[key]; });
+    return copy;
+  }
   function drawRoot(root) {
     if (typeof Chart === 'undefined') return;
     clearCharts();
     root.querySelectorAll('canvas[data-fin-kind="amount_yoy"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
-      if (chart) drawAmount(canvas, chart);
+      var shown = chart && presented(chart);
+      if (shown) drawAmount(canvas, shown);
     });
     root.querySelectorAll('canvas[data-fin-kind="share"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
-      if (chart) drawShare(canvas, chart);
+      var shown = chart && presented(chart);
+      if (shown) drawShare(canvas, shown);
     });
     root.querySelectorAll('canvas[data-series]').forEach(drawGeneric);
   }
   function cardHtml(chart, index) {
+    if (currentGrain() === 'year' && (chart.kind === 'amount_yoy' || chart.kind === 'share') && !presented(chart)) {
+      return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><p class="placeholder">没有完整财年</p></div>';
+    }
     var canvas = chart.kind === 'generic'
       ? '<canvas data-metric="' + esc(chart.metric) + '" data-series="' + esc(chart.series) + '" aria-label="' + esc(chart.title) + '"></canvas>'
       : '<canvas data-fin-kind="' + esc(chart.kind) + '" data-fin-index="' + index + '" aria-label="' + esc(chart.title) + '"></canvas>';
@@ -665,9 +694,31 @@ function drawRowCharts() {
   function visibleGrid() {
     return document.querySelector('[data-fin-panel]:not([hidden]) [data-fin-charts]');
   }
+  function rowByKey(key) {
+    var found = null;
+    document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+      if (btn.getAttribute('data-fin-metric') === key) found = btn;
+    });
+    return found;
+  }
+  function hasGrain(charts) {
+    return (charts || []).some(function (chart) {
+      return chart.kind === 'amount_yoy' || chart.kind === 'share';
+    });
+  }
+  function syncGrainBar(panel, charts) {
+    var bar = panel.querySelector('[data-fin-grain-bar]');
+    if (!bar) return;
+    bar.hidden = !hasGrain(charts);
+    var grain = grainByKey[panel.getAttribute('data-fin-panel')] || 'quarter';
+    bar.querySelectorAll('[data-fin-grain]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-grain') === grain ? 'true' : 'false');
+    });
+  }
   function collapseFin() {
     clearCharts();
     active = [];
+    openKey = '';
     document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
       panel.hidden = true;
       var charts = panel.querySelector('[data-fin-charts]');
@@ -678,6 +729,7 @@ function drawRowCharts() {
     });
   }
   function show(key) {
+    openKey = key;
     var spec = (view.by_key || {})[key];
     active = spec ? spec.charts : [
       { title: '水平值', kind: 'generic', subtitle: '本季水平', metric: key, series: 'level' },
@@ -695,6 +747,7 @@ function drawRowCharts() {
         charts.innerHTML = '';
         return;
       }
+      syncGrainBar(panel, active);
       charts.setAttribute('data-cols', String(active.length));
       charts.innerHTML = active.map(cardHtml).join('');
       var note = panel.querySelector('[data-fin-note]');
@@ -709,12 +762,61 @@ function drawRowCharts() {
     });
     if (grid) requestAnimationFrame(function () { drawRoot(grid); });
   }
-  document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      if (btn.getAttribute('aria-pressed') === 'true') collapseFin();
-      else show(btn.getAttribute('data-fin-metric'));
-    });
-  });
+  var rows = document.getElementById('finRows');
+  if (rows && rows.getAttribute('data-fin-bound') === '1') return;
+  if (rows) rows.setAttribute('data-fin-bound', '1');
+  var armed = null;
+  if (rows) rows.addEventListener('pointerdown', function (event) {
+    if (event.target.closest('[data-fin-grain], .fin-panel')) {
+      armed = null;
+      return;
+    }
+    var btn = event.target.closest('[data-fin-metric]');
+    if (!btn || !rows.contains(btn)) {
+      armed = null;
+      return;
+    }
+    armed = { key: btn.getAttribute('data-fin-metric'), open: openKey };
+  }, true);
+  if (rows) rows.addEventListener('click', function (event) {
+    var grainBtn = event.target.closest('[data-fin-grain]');
+    if (grainBtn) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      if (!openKey) return;
+      var grain = grainBtn.getAttribute('data-fin-grain');
+      if ((grainByKey[openKey] || 'quarter') === grain) return;
+      grainByKey[openKey] = grain;
+      show(openKey);
+      return;
+    }
+    var heading = event.target.closest('h3');
+    var openPanel = openKey ? document.querySelector('[data-fin-panel="' + openKey + '"]') : null;
+    if (heading && openPanel && heading.closest('.fin-panel') === openPanel) {
+      var row = rowByKey(openKey);
+      var label = row && row.querySelector('.m-name') ? row.querySelector('.m-name').textContent.replace(/\s+/g, '') : '';
+      if (label && heading.textContent.replace(/\s+/g, '') === label) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        armed = null;
+        collapseFin();
+        return;
+      }
+    }
+    if (event.target.closest('.fin-panel')) return;
+    var btn = event.target.closest('[data-fin-metric]');
+    if (!btn || !rows.contains(btn)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    var key = btn.getAttribute('data-fin-metric');
+    var wasOpen = armed && armed.key === key ? armed.open : openKey;
+    armed = null;
+    if (wasOpen === key) collapseFin();
+    else show(key);
+  }, true);
   var box = document.getElementById('fin');
   function drawInitial() {
     var grid = visibleGrid();

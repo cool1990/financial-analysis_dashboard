@@ -88,18 +88,67 @@
     <span class="ev-meta">11 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <p class="layer-sub">点一个指标，下面换成这个指标的图。营收给出金额、同比，以及业务占比；有地区拆分时再给地区占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
 <p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
-    <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true">
-      <span class="m-name">营收</span>
+    <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
+      <span class="m-name">营业收入</span>
       <span class="m-val num">$3.02B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+31.1%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="gross_margin_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="3">
+        <div class="card chart">
+          <h3>水平值</h3>
+          <p class="c-sub">本季水平</p>
+          <div class="c-body"><canvas data-metric="revenue" data-series="level" aria-label="水平值"></canvas></div>
+        </div>
+        <div class="card chart">
+          <h3>环比</h3>
+          <p class="c-sub">较上一季</p>
+          <div class="c-body"><canvas data-metric="revenue" data-series="qoq" aria-label="环比"></canvas></div>
+        </div>
+        <div class="card chart">
+          <h3>同比</h3>
+          <p class="c-sub">较去年同季</p>
+          <div class="c-body"><canvas data-metric="revenue" data-series="yoy" aria-label="同比"></canvas></div>
+        </div>
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
+      <span class="m-name">营业成本</span>
+      <span class="m-val num">$1.48B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+16.9%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-8.5%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">营业收入减去毛利，没有单独的营业成本科目。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-cost_of_revenue" data-fin-panel="cost_of_revenue" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="gross_margin_gaap" aria-pressed="false" aria-controls="fin-panel-gross_margin_gaap">
       <span class="m-name">毛利率（GAAP）</span>
       <span class="m-val num">50.9%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
@@ -107,15 +156,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="gross_profit_gaap" aria-pressed="false">
-      <span class="m-name">毛利润（GAAP）</span>
-      <span class="m-val num">$1.54B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+154.3%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+124.3%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_gaap">
       <span class="m-name">营业利润率（GAAP）</span>
       <span class="m-val num">35.2%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
@@ -123,7 +177,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
       <span class="m-name">营业利润（GAAP）</span>
       <span class="m-val num">$1.07B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+446.2%</span></span>
@@ -131,7 +198,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
       <span class="m-name">净利润率（GAAP）</span>
       <span class="m-val num">26.5%</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+21.0pp</span></span>
@@ -139,7 +219,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
       <span class="m-name">净利润（GAAP）</span>
       <span class="m-val num">$803.00M</span>
       <span class="num"><i class="m-label">同比</i><span class="c-up">+672.1%</span></span>
@@ -147,7 +240,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
       <span class="m-val num">$5.15</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
@@ -155,7 +261,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
       <span class="m-val num">$1.02B</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
@@ -163,7 +282,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
       <span class="m-val num">$39.00M</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
@@ -171,7 +303,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-    <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false">
+    <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
       <span class="m-name">自由现金流</span>
       <span class="m-val num">$980.00M</span>
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
@@ -179,46 +324,20 @@
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
-  </div>
-  <div class="charts fin-charts" id="finCharts" data-cols="3">
-    <div class="card chart">
-      <h3>水平值</h3>
-      <p class="c-sub">本季水平</p>
-      <div class="c-body"><canvas data-metric="revenue" data-series="level" aria-label="水平值"></canvas></div>
-    </div>
-    <div class="card chart">
-      <h3>环比</h3>
-      <p class="c-sub">较上一季</p>
-      <div class="c-body"><canvas data-metric="revenue" data-series="qoq" aria-label="环比"></canvas></div>
-    </div>
-    <div class="card chart">
-      <h3>同比</h3>
-      <p class="c-sub">较去年同季</p>
-      <div class="c-body"><canvas data-metric="revenue" data-series="yoy" aria-label="同比"></canvas></div>
+    <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+<p class="muted">历史回补不含变动原因</p>      </div>
     </div>
   </div>
-<p class="small muted mix-note" id="finNote" hidden></p>  <div class="fin-drivers" data-fin-drivers="revenue">
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="gross_margin_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="gross_profit_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_margin_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_income_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="net_margin_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="net_income_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="eps_gaap" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="operating_cash_flow" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="capex" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
-  <div class="fin-drivers" data-fin-drivers="fcf" hidden>
-<p class="muted">历史回补不含变动原因</p>  </div>
   </div>
 </details>
 
@@ -423,7 +542,7 @@ function drawRowCharts() {
 </script>
 <script>
 (function () {
-  var view = {"by_key": {}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "note": ""};
+  var view = {"by_key": {"cost_of_revenue": {"charts": [{"amount": [1.5, 1.24, 1.12, 1.16, 1.27, 1.31, 1.4, 1.62, 1.48, 1.29, 1.38], "amount_text": ["$1.50B", "$1.24B", "$1.12B", "$1.16B", "$1.27B", "$1.31B", "$1.40B", "$1.62B", "$1.48B", "$1.29B", "$1.38B"], "annual": {"amount": [5.14, 5.78], "amount_text": ["$5.14B", "$5.78B"], "labels": ["FY2025", "FY2026"], "yoy": [null, 12.3]}, "kind": "amount_yoy", "labels": ["FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3", "FY2026Q4"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, null, null, -15.6, 5.7, 24.8, 40.1, 16.9, -1.9, -1.4]}], "note": "营业成本由营业收入减去毛利得到。没有把营业成本再拆开。"}}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "grain": false, "note": ""};
   var history = [{"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": null, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": null, "gross_margin_gaap": null, "gross_margin_gaap_qoq": null, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": null, "gross_margin_yoy": null, "gross_profit_gaap": null, "gross_profit_gaap_qoq": null, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": -518000000.0, "net_income_gaap_qoq": null, "net_income_gaap_yoy": null, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": null, "operating_income_gaap_qoq": null, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": null, "operating_margin_gaap": null, "operating_margin_gaap_qoq": null, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": null, "operating_margin_yoy": null, "period": "FY2024Q1", "revenue": null, "revenue_qoq": null, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": null, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.0966966966966967, "gross_margin_gaap": 0.0966966966966967, "gross_margin_gaap_qoq": null, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": null, "gross_margin_yoy": null, "gross_profit_gaap": 161000000.0, "gross_profit_gaap_qoq": null, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": -301000000.0, "net_income_gaap_qoq": 0.4189189189189189, "net_income_gaap_yoy": null, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": -0.18078078078078078, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": -245000000.0, "operating_income_gaap_qoq": null, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": -0.14714714714714713, "operating_margin_gaap": -0.14714714714714713, "operating_margin_gaap_qoq": null, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": null, "operating_margin_yoy": null, "period": "FY2024Q2", "revenue": 1665000000.0, "revenue_qoq": null, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 29000000.0, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 0.19, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": -41000000.0, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.2715542521994135, "gross_margin_gaap": 0.2715542521994135, "gross_margin_gaap_qoq": 0.17485755550271678, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.17485755550271678, "gross_margin_yoy": null, "gross_profit_gaap": 463000000.0, "gross_profit_gaap_qoq": 1.875776397515528, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 27000000.0, "net_income_gaap_qoq": 1.089700996677741, "net_income_gaap_yoy": null, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.015835777126099706, "net_margin_gaap_qoq": 0.19661655790688048, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": -12000000.0, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 65000000.0, "operating_income_gaap_qoq": 1.2653061224489797, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.03812316715542522, "operating_margin_gaap": 0.03812316715542522, "operating_margin_gaap_qoq": 0.18527031430257235, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.18527031430257235, "operating_margin_yoy": null, "period": "FY2024Q3", "revenue": 1705000000.0, "revenue_qoq": 0.024024024024024024, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 38000000.0, "capex_qoq": 0.3103448275862069, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": null, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": -168000000.0, "fcf_qoq": -3.097560975609756, "fcf_yoy": null, "gross_margin": 0.3613636363636364, "gross_margin_gaap": 0.3613636363636364, "gross_margin_gaap_qoq": 0.0898093841642229, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.0898093841642229, "gross_margin_yoy": null, "gross_profit_gaap": 636000000.0, "gross_profit_gaap_qoq": 0.37365010799136067, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 120000000.0, "net_income_gaap_qoq": 3.4444444444444446, "net_income_gaap_yoy": null, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.06818181818181818, "net_margin_gaap_qoq": 0.05234604105571847, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": -130000000.0, "ocf_qoq": -9.833333333333334, "ocf_yoy": null, "operating_income_gaap": 199000000.0, "operating_income_gaap_qoq": 2.0615384615384613, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.11306818181818182, "operating_margin_gaap": 0.11306818181818182, "operating_margin_gaap_qoq": 0.0749450146627566, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.0749450146627566, "operating_margin_yoy": null, "period": "FY2024Q4", "revenue": 1760000000.0, "revenue_qoq": 0.03225806451612903, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 67000000.0, "capex_qoq": 0.7631578947368421, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 1.46, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": -198000000.0, "fcf_qoq": -0.17857142857142858, "fcf_yoy": null, "gross_margin": 0.385554965480616, "gross_margin_gaap": 0.385554965480616, "gross_margin_gaap_qoq": 0.024191329116979632, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.024191329116979632, "gross_margin_yoy": null, "gross_profit_gaap": 726000000.0, "gross_profit_gaap_qoq": 0.14150943396226415, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 211000000.0, "net_income_gaap_qoq": 0.7583333333333333, "net_income_gaap_yoy": 1.4073359073359073, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.11205523101433883, "net_margin_gaap_qoq": 0.04387341283252065, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": -131000000.0, "ocf_qoq": -0.007692307692307693, "ocf_yoy": null, "operating_income_gaap": 291000000.0, "operating_income_gaap_qoq": 0.4623115577889447, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.15454062665958576, "operating_margin_gaap": 0.15454062665958576, "operating_margin_gaap_qoq": 0.041472444841403944, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.041472444841403944, "operating_margin_yoy": null, "period": "FY2025Q1", "revenue": 1883000000.0, "revenue_qoq": 0.06988636363636364, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 48000000.0, "capex_qoq": -0.2835820895522388, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 0.72, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": -0.5068493150684932, "eps_yoy": null, "fcf": 47000000.0, "fcf_qoq": 1.2373737373737375, "fcf_yoy": null, "gross_margin": 0.3230277185501066, "gross_margin_gaap": 0.3230277185501066, "gross_margin_gaap_qoq": -0.06252724693050943, "gross_margin_gaap_yoy": 0.2263310218534099, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": -0.06252724693050943, "gross_margin_yoy": 0.2263310218534099, "gross_profit_gaap": 606000000.0, "gross_profit_gaap_qoq": -0.1652892561983471, "gross_profit_gaap_yoy": 2.7639751552795033, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 104000000.0, "net_income_gaap_qoq": -0.5071090047393365, "net_income_gaap_yoy": 1.345514950166113, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.05543710021321962, "net_margin_gaap_qoq": -0.05661813080111921, "net_margin_gaap_yoy": 0.2362178809940004, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 95000000.0, "ocf_qoq": 1.7251908396946565, "ocf_yoy": null, "operating_income_gaap": 195000000.0, "operating_income_gaap_qoq": -0.32989690721649484, "operating_income_gaap_yoy": 1.7959183673469388, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.10394456289978678, "operating_margin_gaap": 0.10394456289978678, "operating_margin_gaap_qoq": -0.050596063759798984, "operating_margin_gaap_yoy": 0.2510917100469339, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": -0.050596063759798984, "operating_margin_yoy": 0.2510917100469339, "period": "FY2025Q2", "revenue": 1876000000.0, "revenue_qoq": -0.0037174721189591076, "revenue_yoy": 0.12672672672672672, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 44000000.0, "capex_qoq": -0.08333333333333333, "capex_yoy": 0.5172413793103449, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": -13.33, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": -19.51388888888889, "eps_yoy": -71.1578947368421, "fcf": -18000000.0, "fcf_qoq": -1.3829787234042554, "fcf_yoy": 0.5609756097560976, "gross_margin": 0.22536873156342183, "gross_margin_gaap": 0.22536873156342183, "gross_margin_gaap_qoq": -0.09765898698668476, "gross_margin_gaap_yoy": -0.046185520635991656, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": -0.09765898698668476, "gross_margin_yoy": -0.046185520635991656, "gross_profit_gaap": 382000000.0, "gross_profit_gaap_qoq": -0.3696369636963696, "gross_profit_gaap_yoy": -0.17494600431965443, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": -1933000000.0, "net_income_gaap_qoq": -19.58653846153846, "net_income_gaap_yoy": -72.5925925925926, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": -1.1404129793510325, "net_margin_gaap_qoq": -1.1958500795642522, "net_margin_gaap_yoy": -1.1562487564771322, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 26000000.0, "ocf_qoq": -0.7263157894736842, "ocf_yoy": 3.1666666666666665, "operating_income_gaap": -1881000000.0, "operating_income_gaap_qoq": -10.646153846153846, "operating_income_gaap_yoy": -29.93846153846154, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": -1.1097345132743364, "operating_margin_gaap": -1.1097345132743364, "operating_margin_gaap_qoq": -1.2136790761741232, "operating_margin_gaap_yoy": -1.1478576804297616, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": -1.2136790761741232, "operating_margin_yoy": -1.1478576804297616, "period": "FY2025Q3", "revenue": 1695000000.0, "revenue_qoq": -0.0964818763326226, "revenue_yoy": -0.005865102639296188, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 45000000.0, "capex_qoq": 0.022727272727272728, "capex_yoy": 0.18421052631578946, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": null, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": 49000000.0, "fcf_qoq": 3.7222222222222223, "fcf_yoy": 1.2916666666666667, "gross_margin": 0.26196738558653343, "gross_margin_gaap": 0.26196738558653343, "gross_margin_gaap_qoq": 0.036598654023111604, "gross_margin_gaap_yoy": -0.09939625077710296, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.036598654023111604, "gross_margin_yoy": -0.09939625077710296, "gross_profit_gaap": 498000000.00000006, "gross_profit_gaap_qoq": 0.30366492146596874, "gross_profit_gaap_yoy": -0.2169811320754716, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": null, "net_income_gaap_yoy": null, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 94000000.0, "ocf_qoq": 2.6153846153846154, "ocf_yoy": 1.7230769230769232, "operating_income_gaap": 18000000.0, "operating_income_gaap_qoq": 1.0095693779904307, "operating_income_gaap_yoy": -0.9095477386934674, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.009468700683850605, "operating_margin_gaap": 0.009468700683850605, "operating_margin_gaap_qoq": 1.119203213958187, "operating_margin_gaap_yoy": -0.1035994811343312, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 1.119203213958187, "operating_margin_yoy": -0.1035994811343312, "period": "FY2025Q4", "revenue": 1901000000.0, "revenue_qoq": 0.1215339233038348, "revenue_yoy": 0.08011363636363636, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 50000000.0, "capex_qoq": 0.1111111111111111, "capex_yoy": -0.2537313432835821, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 0.75, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": -0.4863013698630137, "fcf": 438000000.0, "fcf_qoq": 7.938775510204081, "fcf_yoy": 3.212121212121212, "gross_margin": 0.29766031195840553, "gross_margin_gaap": 0.29766031195840553, "gross_margin_gaap_qoq": 0.0356929263718721, "gross_margin_gaap_yoy": -0.08789465352221049, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.0356929263718721, "gross_margin_yoy": -0.08789465352221049, "gross_profit_gaap": 687000000.0, "gross_profit_gaap_qoq": 0.37951807228915646, "gross_profit_gaap_yoy": -0.05371900826446281, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 112000000.0, "net_income_gaap_qoq": null, "net_income_gaap_yoy": -0.46919431279620855, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.04852686308492201, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": -0.06352836792941682, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 488000000.0, "ocf_qoq": 4.191489361702128, "ocf_yoy": 4.7251908396946565, "operating_income_gaap": 176000000.0, "operating_income_gaap_qoq": 8.777777777777779, "operating_income_gaap_yoy": -0.3951890034364261, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.07625649913344887, "operating_margin_gaap": 0.07625649913344887, "operating_margin_gaap_qoq": 0.06678779844959826, "operating_margin_gaap_yoy": -0.07828412752613689, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.06678779844959826, "operating_margin_yoy": -0.07828412752613689, "period": "FY2026Q1", "revenue": 2308000000.0, "revenue_qoq": 0.2140978432403998, "revenue_yoy": 0.2257036643653744, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 39000000.0, "capex_qoq": -0.22, "capex_yoy": -0.1875, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 5.15, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 5.866666666666667, "eps_yoy": 6.152777777777779, "fcf": 980000000.0, "fcf_qoq": 1.2374429223744292, "fcf_yoy": 19.851063829787233, "gross_margin": 0.5094214876033057, "gross_margin_gaap": 0.5094214876033057, "gross_margin_gaap_qoq": 0.2117611756449002, "gross_margin_gaap_yoy": 0.18639376905319915, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.2117611756449002, "gross_margin_yoy": 0.18639376905319915, "gross_profit_gaap": 1540999999.9999998, "gross_profit_gaap_qoq": 1.2430858806404654, "gross_profit_gaap_yoy": 1.5429042904290424, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 803000000.0, "net_income_gaap_qoq": 6.169642857142857, "net_income_gaap_yoy": 6.721153846153846, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.26545454545454544, "net_margin_gaap_qoq": 0.21692768236962343, "net_margin_gaap_yoy": 0.21001744524132582, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 1019000000.0, "ocf_qoq": 1.0881147540983607, "ocf_yoy": 9.726315789473684, "operating_income_gaap": 1065000000.0, "operating_income_gaap_qoq": 5.051136363636363, "operating_income_gaap_yoy": 4.461538461538462, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.35206611570247937, "operating_margin_gaap": 0.35206611570247937, "operating_margin_gaap_qoq": 0.27580961656903047, "operating_margin_gaap_yoy": 0.2481215528026926, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.27580961656903047, "operating_margin_yoy": 0.2481215528026926, "period": "FY2026Q2", "revenue": 3025000000.0, "revenue_qoq": 0.3106585788561525, "revenue_yoy": 0.6124733475479744, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 45000000.0, "capex_qoq": 0.15384615384615385, "capex_yoy": 0.022727272727272728, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 23.03, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 3.471844660194175, "eps_yoy": 2.72768192048012, "fcf": 2993000000.0, "fcf_qoq": 2.054081632653061, "fcf_yoy": 167.27777777777777, "gross_margin": 0.7835294117647059, "gross_margin_gaap": 0.7835294117647059, "gross_margin_gaap_qoq": 0.2741079241614002, "gross_margin_gaap_yoy": 0.5581606802012841, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.2741079241614002, "gross_margin_yoy": 0.5581606802012841, "gross_profit_gaap": 4662000000.0, "gross_profit_gaap_qoq": 2.0253082414016874, "gross_profit_gaap_yoy": 11.204188481675393, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 3615000000.0, "net_income_gaap_qoq": 3.5018679950186797, "net_income_gaap_yoy": 2.8701500258665287, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.607563025210084, "net_margin_gaap_qoq": 0.34210847975553854, "net_margin_gaap_yoy": 1.7479760045611163, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 3038000000.0, "ocf_qoq": 1.9813542688910697, "ocf_yoy": 115.84615384615384, "operating_income_gaap": 4111000000.0, "operating_income_gaap_qoq": 2.860093896713615, "operating_income_gaap_yoy": 3.185539606592238, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.6909243697478992, "operating_margin_gaap": 0.6909243697478992, "operating_margin_gaap_qoq": 0.3388582540454198, "operating_margin_gaap_yoy": 1.8006588830222356, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.3388582540454198, "operating_margin_yoy": 1.8006588830222356, "period": "FY2026Q3", "revenue": 5950000000.0, "revenue_qoq": 0.9669421487603306, "revenue_yoy": 2.510324483775811, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": 43000000.0, "capex_qoq": -0.044444444444444446, "capex_yoy": -0.044444444444444446, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": null, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": 7083000000.0, "fcf_qoq": 1.3665218843969262, "fcf_yoy": 143.55102040816325, "gross_margin": 0.8457334076965979, "gross_margin_gaap": 0.8457334076965979, "gross_margin_gaap_qoq": 0.062203995931891964, "gross_margin_gaap_yoy": 0.5837660221100645, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.062203995931891964, "gross_margin_yoy": 0.5837660221100645, "gross_profit_gaap": 7582000000.0, "gross_profit_gaap_qoq": 0.6263406263406264, "gross_profit_gaap_yoy": 14.224899598393572, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": 6903000000.0, "net_income_gaap_qoq": 0.9095435684647303, "net_income_gaap_yoy": null, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": 0.769994422755159, "net_margin_gaap_qoq": 0.16243139754507496, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": 7126000000.0, "ocf_qoq": 1.3456221198156681, "ocf_yoy": 74.80851063829788, "operating_income_gaap": 7037000000.0, "operating_income_gaap_qoq": 0.7117489661882753, "operating_income_gaap_yoy": 389.94444444444446, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.784941438929169, "operating_margin_gaap": 0.784941438929169, "operating_margin_gaap_qoq": 0.09401706918126984, "operating_margin_gaap_yoy": 0.7754727382453184, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.09401706918126984, "operating_margin_yoy": 0.7754727382453184, "period": "FY2026Q4", "revenue": 8965000000.0, "revenue_qoq": 0.5067226890756302, "revenue_yoy": 3.715938979484482, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}];
   var live = [];
   var active = view.charts || [];
@@ -438,8 +557,11 @@ function drawRowCharts() {
     return {
       maxRotation: 0, autoSkip: false,
       callback: function (_val, i) {
-        var lab = labels[i] || '';
-        return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
+        var lab = String(labels[i] || '');
+        var match = /^FY(\d{4})/.exec(lab);
+        if (!match) return '';
+        if (/^FY\d{4}$/.test(lab) || lab.indexOf('Q1') === match[0].length) return match[1];
+        return '';
       }
     };
   }
@@ -595,55 +717,176 @@ function drawRowCharts() {
       }
     }));
   }
+  var openKey = view.default || '';
+  var grainByKey = {};
+  function currentGrain() {
+    return grainByKey[openKey] || 'quarter';
+  }
+  function presented(chart) {
+    if (!chart || currentGrain() !== 'year') return chart;
+    if (chart.kind !== 'amount_yoy' && chart.kind !== 'share') return chart;
+    var annual = chart.annual || null;
+    if (!annual || !annual.labels || !annual.labels.length) return null;
+    var copy = {};
+    Object.keys(chart).forEach(function (key) { copy[key] = chart[key]; });
+    Object.keys(annual).forEach(function (key) { copy[key] = annual[key]; });
+    return copy;
+  }
   function drawRoot(root) {
     if (typeof Chart === 'undefined') return;
     clearCharts();
     root.querySelectorAll('canvas[data-fin-kind="amount_yoy"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
-      if (chart) drawAmount(canvas, chart);
+      var shown = chart && presented(chart);
+      if (shown) drawAmount(canvas, shown);
     });
     root.querySelectorAll('canvas[data-fin-kind="share"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
-      if (chart) drawShare(canvas, chart);
+      var shown = chart && presented(chart);
+      if (shown) drawShare(canvas, shown);
     });
     root.querySelectorAll('canvas[data-series]').forEach(drawGeneric);
   }
   function cardHtml(chart, index) {
+    if (currentGrain() === 'year' && (chart.kind === 'amount_yoy' || chart.kind === 'share') && !presented(chart)) {
+      return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><p class="placeholder">没有完整财年</p></div>';
+    }
     var canvas = chart.kind === 'generic'
       ? '<canvas data-metric="' + esc(chart.metric) + '" data-series="' + esc(chart.series) + '" aria-label="' + esc(chart.title) + '"></canvas>'
       : '<canvas data-fin-kind="' + esc(chart.kind) + '" data-fin-index="' + index + '" aria-label="' + esc(chart.title) + '"></canvas>';
     var readout = chart.kind === 'share' ? '<p class="fin-readout" data-fin-readout="' + index + '" hidden></p>' : '';
     return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><div class="c-body">' + canvas + '</div>' + readout + '</div>';
   }
+  function visibleGrid() {
+    return document.querySelector('[data-fin-panel]:not([hidden]) [data-fin-charts]');
+  }
+  function rowByKey(key) {
+    var found = null;
+    document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+      if (btn.getAttribute('data-fin-metric') === key) found = btn;
+    });
+    return found;
+  }
+  function hasGrain(charts) {
+    return (charts || []).some(function (chart) {
+      return chart.kind === 'amount_yoy' || chart.kind === 'share';
+    });
+  }
+  function syncGrainBar(panel, charts) {
+    var bar = panel.querySelector('[data-fin-grain-bar]');
+    if (!bar) return;
+    bar.hidden = !hasGrain(charts);
+    var grain = grainByKey[panel.getAttribute('data-fin-panel')] || 'quarter';
+    bar.querySelectorAll('[data-fin-grain]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-grain') === grain ? 'true' : 'false');
+    });
+  }
+  function collapseFin() {
+    clearCharts();
+    active = [];
+    openKey = '';
+    document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
+      panel.hidden = true;
+      var charts = panel.querySelector('[data-fin-charts]');
+      if (charts) charts.innerHTML = '';
+    });
+    document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', 'false');
+    });
+  }
   function show(key) {
+    openKey = key;
     var spec = (view.by_key || {})[key];
     active = spec ? spec.charts : [
       { title: '水平值', kind: 'generic', subtitle: '本季水平', metric: key, series: 'level' },
       { title: '环比', kind: 'generic', subtitle: '较上一季', metric: key, series: 'qoq' },
       { title: '同比', kind: 'generic', subtitle: '较去年同季', metric: key, series: 'yoy' }
     ];
-    var grid = document.getElementById('finCharts');
-    grid.setAttribute('data-cols', String(active.length));
-    grid.innerHTML = active.map(cardHtml).join('');
-    var note = document.getElementById('finNote');
-    if (note) {
-      note.textContent = spec && spec.note ? spec.note : '';
-      note.hidden = !note.textContent;
-    }
-    document.querySelectorAll('[data-fin-drivers]').forEach(function (node) {
-      node.hidden = node.getAttribute('data-fin-drivers') !== key;
+    clearCharts();
+    var grid = null;
+    document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
+      var on = panel.getAttribute('data-fin-panel') === key;
+      panel.hidden = !on;
+      var charts = panel.querySelector('[data-fin-charts]');
+      if (!charts) return;
+      if (!on) {
+        charts.innerHTML = '';
+        return;
+      }
+      syncGrainBar(panel, active);
+      charts.setAttribute('data-cols', String(active.length));
+      charts.innerHTML = active.map(cardHtml).join('');
+      var note = panel.querySelector('[data-fin-note]');
+      if (note) {
+        note.textContent = spec && spec.note ? spec.note : '';
+        note.hidden = !note.textContent;
+      }
+      grid = charts;
     });
     document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
       btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-metric') === key ? 'true' : 'false');
     });
-    requestAnimationFrame(function () { drawRoot(grid); });
+    if (grid) requestAnimationFrame(function () { drawRoot(grid); });
   }
-  document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
-    btn.addEventListener('click', function () { show(btn.getAttribute('data-fin-metric')); });
-  });
+  var rows = document.getElementById('finRows');
+  if (rows && rows.getAttribute('data-fin-bound') === '1') return;
+  if (rows) rows.setAttribute('data-fin-bound', '1');
+  var armed = null;
+  if (rows) rows.addEventListener('pointerdown', function (event) {
+    if (event.target.closest('[data-fin-grain], .fin-panel')) {
+      armed = null;
+      return;
+    }
+    var btn = event.target.closest('[data-fin-metric]');
+    if (!btn || !rows.contains(btn)) {
+      armed = null;
+      return;
+    }
+    armed = { key: btn.getAttribute('data-fin-metric'), open: openKey };
+  }, true);
+  if (rows) rows.addEventListener('click', function (event) {
+    var grainBtn = event.target.closest('[data-fin-grain]');
+    if (grainBtn) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      if (!openKey) return;
+      var grain = grainBtn.getAttribute('data-fin-grain');
+      if ((grainByKey[openKey] || 'quarter') === grain) return;
+      grainByKey[openKey] = grain;
+      show(openKey);
+      return;
+    }
+    var heading = event.target.closest('h3');
+    var openPanel = openKey ? document.querySelector('[data-fin-panel="' + openKey + '"]') : null;
+    if (heading && openPanel && heading.closest('.fin-panel') === openPanel) {
+      var row = rowByKey(openKey);
+      var label = row && row.querySelector('.m-name') ? row.querySelector('.m-name').textContent.replace(/\s+/g, '') : '';
+      if (label && heading.textContent.replace(/\s+/g, '') === label) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        armed = null;
+        collapseFin();
+        return;
+      }
+    }
+    if (event.target.closest('.fin-panel')) return;
+    var btn = event.target.closest('[data-fin-metric]');
+    if (!btn || !rows.contains(btn)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    var key = btn.getAttribute('data-fin-metric');
+    var wasOpen = armed && armed.key === key ? armed.open : openKey;
+    armed = null;
+    if (wasOpen === key) collapseFin();
+    else show(key);
+  }, true);
   var box = document.getElementById('fin');
   function drawInitial() {
-    if (box.open) drawRoot(document.getElementById('finCharts'));
+    var grid = visibleGrid();
+    if (box.open && grid) drawRoot(grid);
   }
   box.addEventListener('toggle', drawInitial);
   drawInitial();
