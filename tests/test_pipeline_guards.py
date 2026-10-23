@@ -485,7 +485,11 @@ def test_meta_quote_card_divides_tradingview_columns():
     assert by["股息率"]["value"] == f"{cols['dividends_yield']:.2f}%"
     assert by["RSI"]["value"] == f"{cols['RSI']:.1f}"
     shares = _diluted_shares("META", "FY2026Q3")
-    assert shares and by["市值"]["value"] == _fmt_cap(cols["close"] * shares)
+    assert shares
+    assert cols.get("market_cap_basic")
+    assert by["市值"]["value"] == _fmt_cap(cols["market_cap_basic"])
+    assert by["市值"]["sub"] == "TradingView"
+    assert "未接入" not in by["市值"]["value"] and "缺股价" not in by["市值"]["sub"]
     forward = _forward_pe_view("META", doc, "FY2026Q3", load_ticker_config("META"), active=True)
     assert forward["price"] == f"${cols['close']:.2f}"
     rows = {row["label"]: row for row in forward["rows"]}
@@ -498,6 +502,57 @@ def test_meta_quote_card_divides_tradingview_columns():
     # TV 未来季够拼出 FY28 时允许出现；没有也不强制
     assert "FY26E" in rows and "FY27E" in rows
     assert abs(rows["未来 12 个月（NTM）"]["eps_raw"] - cols["eps_estimate_ntm"]) < 1.5
+
+
+def test_market_cap_prefers_scan_then_stored_shares_and_does_not_invent(tmp_path, monkeypatch):
+    """有 market_cap_basic 就用它。没有时才用股价 × 已落盘股本。股本也没有就留空。"""
+    import builder.build as build
+
+    direct = build._market_cap_view(
+        {"market_cap_basic": 1_652_554_253_500, "currency": "USD", "close": 600},
+        price=600,
+        shares=2_500_000_000,
+        currency="USD",
+    )
+    assert direct["value"] == build._fmt_cap(1_652_554_253_500, "USD")
+    assert direct["sub"] == "TradingView"
+    assert direct["value"] != build._fmt_cap(600 * 2_500_000_000)
+
+    fallback = build._market_cap_view(
+        {},
+        price=400,
+        shares=9_000_000_000,
+        currency="HKD",
+        share_note="股价 × 稀释加权股本",
+    )
+    assert fallback["value"] == "HK$3600.0B"
+    assert fallback["sub"] == "股价 × 稀释加权股本"
+
+    empty = build._market_cap_view({"close": 10}, price=10, shares=None, currency="USD")
+    assert empty["value"] == "—" and empty["sub"] == ""
+    assert build._market_cap_view({"market_cap_basic": 0}, price=None, shares=None, currency="USD")["value"] == "—"
+
+    root = tmp_path / "data"
+    (root / "ZZZ" / "raw" / "FY2026Q1").mkdir(parents=True)
+    (root / "ZZZ" / "raw" / "FY2026Q1" / "extracted_financials.json").write_text(
+        json.dumps({"diluted_shares": {"raw": "2000", "unit": "million"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(build, "data_dir", lambda ticker=None: root if not ticker else root / str(ticker).upper())
+    monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {})
+    shares, note = build._stored_shares("ZZZ", "FY2026Q2")
+    assert shares == 2_000_000_000 and note == "股价 × 已披露股本"
+    priced = build._market_cap_view({}, price=50, shares=shares, currency="USD", share_note=note)
+    assert priced["value"] == "$100.0B"
+
+    monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {"shares_outstanding": 25})
+    (root / "ZZZ" / "raw" / "FY2026Q1" / "extracted_financials.json").unlink()
+    assert build._stored_shares("ZZZ", "FY2026Q2")[0] is None
+    assert build._market_cap_view({"close": 50}, price=50, shares=None, currency="USD")["value"] == "—"
+
+    monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {"shares_outstanding": 1_000_000_000})
+    configured, configured_note = build._stored_shares("ZZZ", "FY2026Q2")
+    assert configured == 1_000_000_000 and configured_note == "股价 × 已披露股本"
 
 
 def test_header_eps_guidance_uses_only_management_nongaap():
@@ -934,8 +989,17 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     derived = (15848 + (2400 + 1180) * (1 - 0.16)) / 2566
     assert q2["actual"] == round(derived, 2) == 7.35
     assert q2["note"] == "超预期 $0.16" and q2["basis"] == "Non-GAAP"
-    assert by_q["FQ4 2026"]["actual"] is None and by_q["FQ4 2026"]["consensus"] == 8.29
-    assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((7.867106 / 7.35 - 1) * 100)
+    scan = json.loads((ROOT / "data" / "META" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
+    forward = scan["future_quarters"]
+    assert [item["tv_label"] for item in forward] == ["2026-Q4", "2027-Q1", "2027-Q2", "2027-Q3"]
+    from pipeline.compute.metrics import round_eps
+
+    for item in forward:
+        label = f"FQ{item['tv_label'][-1]} {item['tv_label'][:4]}"
+        assert by_q[label]["actual"] is None
+        assert by_q[label]["consensus"] == round_eps(item["eps_est"])
+    assert by_q["FQ4 2026"]["consensus"] == round_eps(8.366721) == 8.37
+    assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((forward[2]["eps_est"] / 7.35 - 1) * 100)
     assert all(q["actual"] != 3.83 for q in chart["quarters"])
     assert all(q["basis"] == "Non-GAAP" for q in chart["quarters"] if q["actual"] is not None)
 
@@ -962,15 +1026,116 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     rev_q3 = next(q for q in revenue["quarters"] if q["label"] == "FQ3 2026")
     assert rev_q3["actual"] == 64.6 and rev_q3["consensus"] == 63.34
     assert rev_q3["note"] == "超预期 $1.26B" and rev_q3["basis"] == "营收"
-    rev_q4 = next(q for q in revenue["quarters"] if q["label"] == "FQ4 2026")
-    assert rev_q4["actual"] is None and rev_q4["consensus"] is not None
-    rev_nq = next(q for q in revenue["quarters"] if q["label"] == "FQ1 2027")
-    assert rev_nq["actual"] is None and rev_nq["consensus"] is not None
+    rev_by = {q["label"]: q for q in revenue["quarters"]}
+    for item in forward:
+        label = f"FQ{item['tv_label'][-1]} {item['tv_label'][:4]}"
+        assert rev_by[label]["actual"] is None
+        assert rev_by[label]["consensus"] == round(item["rev_est"] / 1_000_000_000, 2)
+    rev_q4 = rev_by["FQ4 2026"]
+    assert rev_q4["consensus"] == round(74882505478.0 / 1_000_000_000, 2)
+    rev_nq = rev_by["FQ1 2027"]
+    assert rev_nq["consensus"] is not None
     horizons = {item["label"]: item["value"] for item in revenue["horizons"]}
     assert horizons["近 4 季（TTM）"] == "$241.61B"
     assert "未来 12 个月（NTM）" in horizons and "FY26E" in horizons and "FY27E" in horizons
     assert all(q["actual"] != 3.83 for q in revenue["quarters"])
     assert any("EPS" in s["text"] for s in revenue["sides"])
+
+
+def test_amzn_expect_chart_shows_next_four_tv_quarters():
+    """没有手写 eps_surprise_chart 时，盈利预期仍画出扫描里的未来四季。"""
+    from builder.build import _eps_chart, _fq_label, _load_docs
+    from pipeline.compute.metrics import round_eps
+
+    docs = _load_docs("AMZN")
+    latest = sorted(docs)[-1]
+    chart = _eps_chart(docs[latest], docs)
+    assert chart is not None and chart["revenue"]
+    scan = json.loads((ROOT / "data" / "AMZN" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
+    forward = scan["future_quarters"]
+    assert len(forward) == 4
+    by_eps = {row["label"]: row for row in chart["quarters"]}
+    by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
+    for item in forward:
+        year, quarter = item["tv_label"].split("-Q")
+        label = _fq_label(f"FY{year}Q{quarter}")
+        eps = by_eps[label]
+        rev = by_rev[label]
+        assert eps["actual"] is None
+        assert eps["consensus"] == round_eps(item["eps_est"])
+        assert rev["actual"] is None
+        if item.get("rev_est") is None:
+            assert rev["consensus"] is None
+        else:
+            assert rev["consensus"] == round(float(item["rev_est"]) / 1_000_000_000, 2)
+
+
+def test_expect_chart_leaves_missing_scan_fields_empty(monkeypatch):
+    """未来季只取扫描已披露的 EPS / 营收。缺营收留空，不用全年 scalar 或更远的行补。"""
+    from builder.build import _eps_chart
+
+    tv = {
+        "fetched_at": "2026-10-23T12:00:00Z",
+        "quote": {"fetched_at": "2026-10-23T12:00:00Z"},
+        "scalars": {
+            "earnings_per_share_forecast_next_fy": 50.0,
+            "revenue_forecast_next_fy": 800_000_000_000.0,
+        },
+        "future_quarters": [
+            {"tv_label": "2026-Q4", "eps_est": 8.366721, "rev_est": 74_882_505_478.0},
+            {"tv_label": "2027-Q1", "eps_est": 7.558111, "rev_est": None},
+            {"tv_label": "2027-Q2", "eps_est": 7.811894, "rev_est": 73_784_201_435.0},
+            {"tv_label": "2027-Q3", "eps_est": 8.355748, "rev_est": 78_152_843_573.0},
+        ],
+        "rows_used": {
+            "earnings_fq_h": [
+                {"FiscalPeriod": "2028-Q1", "Estimate": 99.0, "IsReported": False},
+            ],
+            "revenues_fq_h": [
+                {"FiscalPeriod": "2028-Q1", "Estimate": 900_000_000_000.0, "IsReported": False},
+            ],
+        },
+    }
+    monkeypatch.setattr("builder.build._tradingview", lambda ticker: tv)
+    doc = {
+        "meta": {"ticker": "ZZZ", "fiscal_period": "FY2026Q3"},
+        "financials": {
+            "revenue": {"value": 64_601_000_000.0, "yoy_pct": 0.2},
+            "eps_nongaap": {"value": 7.4},
+        },
+        "scorecard": [
+            {"metric": "eps", "actual": 7.4, "basis": "non_gaap", "benchmark": {"source": "consensus", "value": 6.54}},
+        ],
+    }
+    chart = _eps_chart(doc, {"FY2026Q3": doc})
+    assert chart is not None and chart["revenue"]
+    assert [row["label"] for row in chart["quarters"]] == [
+        "FQ3 2026", "FQ4 2026", "FQ1 2027", "FQ2 2027", "FQ3 2027",
+    ]
+    by_eps = {row["label"]: row for row in chart["quarters"]}
+    by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
+    assert by_eps["FQ4 2026"]["consensus"] == 8.37
+    assert by_eps["FQ1 2027"]["consensus"] == 7.56
+    assert by_rev["FQ1 2027"]["consensus"] is None
+    assert by_rev["FQ1 2027"]["actual"] is None
+    assert by_rev["FQ4 2026"]["consensus"] == round(74_882_505_478.0 / 1_000_000_000, 2)
+    assert all(row["consensus"] not in {50.0, 99.0, 800.0, 900.0} for row in chart["quarters"])
+    assert all(row["consensus"] not in {50.0, 99.0, 800.0, 900.0} for row in chart["revenue"]["quarters"])
+    assert "FQ1 2028" not in by_eps and "FQ1 2028" not in by_rev
+
+    gap = {
+        **tv,
+        "future_quarters": [
+            {"tv_label": "2027-Q1", "eps_est": 7.5, "rev_est": 60_000_000_000.0},
+            {"tv_label": "2027-Q2", "eps_est": 7.8, "rev_est": 70_000_000_000.0},
+        ],
+    }
+    monkeypatch.setattr("builder.build._tradingview", lambda ticker: gap)
+    gapped = _eps_chart(doc, {"FY2026Q3": doc})
+    assert gapped is not None
+    assert [row["label"] for row in gapped["quarters"]] == ["FQ3 2026", "FQ1 2027", "FQ2 2027"]
+    assert "FQ4 2026" not in {row["label"] for row in gapped["quarters"]}
+    assert {row["label"]: row["consensus"] for row in gapped["quarters"]}["FQ1 2027"] == 7.5
 
 
 def test_fin_rows_pair_margins_with_absolute_profit():
@@ -1413,6 +1578,8 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     assert row["group"] == "—" and row["kind"] == ""
     assert row["target"] == "—" and row["triggered"]["text"] == "—"
     assert row["quote_price"] == "$100.00" and row["rsi"] == "47.4" and row["forward_pe"] == "20.0×"
+    meta_shares, _note = build._stored_shares("META", "FY2026Q3")
+    assert meta_shares and row["market_cap"] == build._fmt_cap(100 * meta_shares)
     assert row["change"]["text"] == "—"
     assert row["revenue"]["label"] == "beat 2.0%" and row["eps"]["label"] == "beat 13.1%"
     assert row["guide"]["label"] == "—"
@@ -1439,6 +1606,7 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     assert mu_row["eps"]["label"] == "beat 3.0%"
     assert mu_row["guide"]["label"] == "beat 11.1%"
     assert mu_row["quote_price"] == "—" and mu_row["forward_pe"] == "—" and mu_row["rsi"] == "—"
+    assert mu_row["market_cap"] == "—"
     assert mu_row["reported"]["text"] == "2026-09-30"
     assert mu_row["quarter"]["eps"] == "$1.25" and mu_row["quarter"]["analysts"] == "6"
     assert mu_row["quarter"]["revisions"] == "1 / 0"
@@ -1491,6 +1659,8 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert "$1.50" in html and "$0.10" not in html and "2 / 0" in html
     assert 'title="旧 2020-01-01T00:00:00+00:00"' in html
     assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    assert ">市值</th>" in html
+    assert "缺股价或股本" not in html
     assert "Yahoo 0q" not in html and "第一个未公布" not in html
     head = html.split("</thead>", 1)[0]
     assert head.index(">是否触发</th>") < head.index(">评价</th>") < head.index(">最近财报</th>")
