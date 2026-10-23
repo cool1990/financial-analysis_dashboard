@@ -123,7 +123,11 @@ def _prompt(llm: LLMClient, press_release_numbers: dict[str, Any] | None) -> str
 
 
 def _qa_client() -> LLMClient:
-    """问答用 settings.llm.qa_model。留空则回退到摘要用的默认模型。"""
+    """问答用 settings.llm.qa_model。留空则回退到摘要用的默认模型。
+
+    未配置 qa_reasoning_effort / qa_max_tokens / qa_request_timeout_sec 时，
+    沿用摘要模型的思考开关、输出上限和超时。DeepSeek 与摘要相同：关闭思考，4096。
+    """
     settings = load_settings().get("llm") or {}
     model = str(settings.get("qa_model") or "").strip() or None
     client = LLMClient(model=model)
