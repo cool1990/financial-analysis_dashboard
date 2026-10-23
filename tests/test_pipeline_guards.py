@@ -345,13 +345,6 @@ def test_change_formatting():
     assert _change(None)["cls"] == "na"
 
 
-def test_other_guidance_uses_raw_text():
-    from builder.build import _guidance_value
-
-    rng, mid = _guidance_value({"metric_key": "other", "mid": 75.0, "point_raw": "more than 75%"})
-    assert rng == "more than 75%" and "$" not in rng
-
-
 def _position(stage: str) -> dict:
     return {
         "stage": stage,
@@ -437,6 +430,7 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "增长质量" not in html and "下季验证清单" not in html and "观察仓" not in html
     assert 'id="quality"' not in html and 'id="thesis"' not in html
     assert "市场怎么判" not in html and "次日涨跌" not in html
+    assert "五档指引" not in html and "guidance.dimensions" not in html
     assert '<details class="ev" id="fin" open>' in html and 'data-series="level"' in html
     assert "财报分析" in html and "指引展望" in html and "问答交流" in html and "数据来源" in html
     assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
@@ -850,58 +844,34 @@ def test_extract_industry_outlook_uses_longer_deepseek_budget(monkeypatch):
     assert outlook_is_thin(topics) is False
 
 
-def test_guidance_view_tiles_and_outlook_categories():
-    from builder.build import _guidance_view, _guide_dimension
+def test_guide_section_drops_five_way_split():
+    """指引展望只渲染业绩指引和行业展望，不再拆业绩指标 / 经营指标 / 资本开支 / 股东回报 / 其他。"""
+    from builder.build import _REPORTING_CCY, _guide_section, _load_docs
 
-    doc = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
-    v = _guidance_view(doc)
-    labels = [t["label"] for t in v["tiles"]]
-    assert labels[:2] == ["营收", "毛利率"] and "每股收益" in labels
-    eps = next(t for t in v["tiles"] if t["label"] == "每股收益")
-    assert eps["value"] == "$38.15" and "GAAP $37.84" in eps["sub"] and eps["vs"]["text"] == "+11.1%"
-    # 同一指标并成一张卡，所以卡片数少于原始句子数
-    n_items = len(doc["guidance"]["items"])
-    assert v["outlook_count"] < n_items
-    assert v["card_count"] == v["outlook_count"]
-    dims = [d["key"] for d in v["dimensions"]]
-    assert dims[0] == "results" and "capex" in dims and "operating" in dims
-    assert all(d["cards"] for d in v["dimensions"])
-    assert _guide_dimension({"metric_key": "other", "metric_label": "HBM Pricing", "statement": "盈利差距"}) == "operating"
-    assert _guide_dimension({"metric_key": "other", "metric_label": "1-delta DRAM ramp", "statement": "产能爬坡"}) == "other"
-    assert _guide_dimension({"metric_key": "capex", "statement": "洁净室建设"}) == "capex"
-    assert _guide_dimension({"metric_key": "other", "metric_label": "Market conditions", "statement": "市场状况将保持紧张"}) == "other"
-    assert _guide_dimension({"metric_key": "other", "metric_label": "buyback", "statement": "加大回购"}) == "returns"
+    template = (ROOT / "builder" / "templates" / "period.html").read_text(encoding="utf-8")
+    guide = template.split('id="guide"', 1)[1].split('id="qa"', 1)[0]
+    assert "<h3>业绩指引</h3>" in guide and "<h3>行业展望</h3>" in guide
+    assert "五档指引" not in guide and "guidance.dimensions" not in guide
+    assert "经营指标" not in guide and "股东回报" not in guide and "市场怎么判" not in guide
 
-    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
-    view = _guidance_view(meta)
-    meta_dims = {d["key"]: d for d in view["dimensions"]}
-    assert [k for k in ("results", "operating", "capex", "returns", "other") if k in meta_dims] == [
-        "results", "operating", "capex", "returns", "other",
-    ]
-    from builder.build import _guide_section
-
-    assert [d["key"] for d in _guide_section(meta)["dimensions"]] == [
-        "results", "operating", "capex", "returns", "other",
-    ]
-    cards = [c for d in view["dimensions"] for c in d["cards"]]
-    assert view["card_count"] == len(cards) < len(meta["guidance"]["items"])
-    rev = [c for c in cards if c["label"] == "营收"]
-    assert len(rev) == 1 and rev[0]["value"] == "$73.00B – $76.00B" and rev[0]["source"] == "新闻稿 · 电话会"
-    expenses = [c for c in cards if c["label"] == "全年费用"]
-    assert len(expenses) == 1 and expenses[0]["value"] == "$175.00B – $179.00B"
-    capex = [c for c in cards if c["label"] == "资本开支"]
-    assert len(capex) == 1 and capex[0]["value"] == "$135.00B – $145.00B" and capex[0]["source"] == "新闻稿 · 电话会"
-    tax = [c for c in cards if c["label"] == "税率"]
-    assert len(tax) == 1 and tax[0]["value"] == "15% – 17%"
-    rl = [c for c in cards if c["label"] == "Reality Labs 亏损"]
-    assert {c["value"] for c in rl} >= {"$18.00B – $19.00B", "约 $15.00B"}
-    fx = [c for c in cards if c["label"] == "汇率"]
-    assert len(fx) == 1 and fx[0]["value"] == "约 1% 逆风"
-    eff = [c for c in cards if c["label"] == "Muse 算力效率"]
-    assert len(eff) == 1 and eff[0]["value"] == "超过 10×" and eff[0]["source"] == "电话会"
-    assert all(c["source"] in {"新闻稿", "电话会", "新闻稿 · 电话会"} for c in cards)
-    assert any(c["label"] == "拆股" and c["value"] == "1 拆 2" and c["source"] == "电话会" for c in meta_dims["returns"]["cards"])
-    assert "本季已披露" not in json.dumps(cards, ensure_ascii=False)
+    cases = (
+        ("META", "FY2026Q3", "USD", ["营收", "资本开支"]),
+        ("MU", "FY2026Q4", "USD", ["营收", "毛利率（Non-GAAP）", "调整后摊薄 EPS"]),
+        ("TSM", None, "USD", None),
+        ("0700.HK", "FY2026Q1", "CNY", ["营收", "毛利率（Non-GAAP）", "营业利润率", "调整后摊薄 EPS", "资本开支"]),
+    )
+    for ticker, period, ccy, labels in cases:
+        docs = _load_docs(ticker)
+        if period is None:
+            period = max(docs)
+        token = _REPORTING_CCY.set(ccy)
+        try:
+            view = _guide_section(docs[period], docs)
+        finally:
+            _REPORTING_CCY.reset(token)
+        assert set(view) == {"rows", "outlook"}
+        if labels is not None:
+            assert [row["label"] for row in view["rows"]] == labels
 
 
 def test_judgment_layer_rules():
