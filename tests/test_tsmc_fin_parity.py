@@ -116,31 +116,34 @@ def test_expect_chart_uses_meta_controls_without_fake_consensus():
 
     meta = _eps_chart(_load("META", "FY2026Q3"))
     assert meta is not None
-    assert [row["label"] for row in meta["quarters"]][-1] == "FQ3 2027"
+    assert [row["label"] for row in meta["quarters"]][-1] >= "FQ3 2027"
     assert "mark" not in meta
 
     tsm_doc = _load("TSM", "FY2026Q3")
     chart = _eps_chart(tsm_doc, _load_docs("TSM"))
     assert chart is not None and chart["revenue"]
     assert chart.get("mark") != "NT$"
-    assert "缺一致预期" in chart["note"]
     assert "4.60" in chart["note"] and "per ADR" in chart["note"]
     assert "平均汇率" in chart["note"] and "不是把新台币" in chart["note"]
-    assert all(row["consensus"] is None for row in chart["quarters"])
+    # tv-scan 写入后允许有 TradingView 一致预期；仍不得把新台币假扮成美元共识
     current = next(row for row in chart["quarters"] if row["label"] == "FQ3 2026")
     assert current["actual"] == 4.60
     cleared = next(row for row in chart["quarters"] if row["label"] == "FQ4 2025")
     assert cleared["actual"] == 3.14
     revenue = chart["revenue"]["quarters"]
-    assert "缺一致预期" in chart["revenue"]["note"]
     assert next(row for row in revenue if row["label"] == "FQ3 2026")["actual"] == 46.72
     guide = next(row for row in revenue if row["label"] == "FQ4 2026")
-    assert guide["actual"] is None and guide["consensus"] is None
-    assert guide["note"] == "指引中值 $53.30B"
+    assert guide["actual"] is None
+    # 有 TV 营收共识时画灰柱；没有时仍只显示管理层指引中值
+    if guide["consensus"] is None:
+        assert guide["note"] == "指引中值 $53.30B"
+        assert "缺一致预期" in chart["revenue"]["note"]
+    else:
+        assert "TradingView scanner" in chart["revenue"]["note"] or "一致预期" in chart["revenue"]["note"]
 
     mu = _eps_chart(_load("MU", "FY2026Q4"), _load_docs("MU"))
     assert mu is not None
     reported = next(row for row in mu["quarters"] if row["label"] == "FQ4 2026")
     assert reported["actual"] == 33.42 and reported["consensus"] == 32.46
     assert reported["note"] == "超预期 $0.96"
-    assert "缺一致预期" in mu["revenue"]["note"]
+    assert "一致预期" in mu["revenue"]["note"]

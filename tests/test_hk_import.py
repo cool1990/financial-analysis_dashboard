@@ -319,5 +319,6 @@ def test_tencent_press_statement_matches_meta_charts():
     assert "销售及市场推广" in rows["营业费用"]["summary"]
 
     bare = _forward_pe_view("0700.HK", {"meta": {"ticker": "0700.HK", "fiscal_period": "FY2026Q1"}}, "FY2026Q1", load_ticker_config("0700.HK"), _load_docs("0700.HK"), True)
-    assert bare is not None and bare["price"] == "未接入"
+    cols = json.loads((ROOT / "data" / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))["quote"]["columns"]
+    assert bare is not None and bare["price"] == f"HK${cols['close']:.2f}"
     assert "待核对" in bare["note"]

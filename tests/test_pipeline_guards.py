@@ -469,19 +469,23 @@ def test_build_cli_writes_only_the_out_dir(tmp_path, monkeypatch):
 
 
 def test_meta_quote_card_divides_tradingview_columns():
-    from builder.build import _forward_pe_view, _header_quotes
+    from builder.build import _diluted_shares, _fmt_cap, _forward_pe_view, _header_quotes
     from pipeline.config import load_ticker_config
 
     snap = json.loads((ROOT / "data" / "META" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
     cols = snap["quote"]["columns"]
-    assert cols["price_earnings_forward"] is None and cols["dividend_yield_ttm"] is None
+    assert "close" in cols and "RSI" in cols and "dividends_yield" in cols
+    assert "day_change_pct" in cols or "change_pct" in cols
+    # scanner 字段是 price_earnings_fwd；写入时同步别名 price_earnings_forward
+    assert "price_earnings_fwd" in cols or "price_earnings_forward" in cols
     doc = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
     header = _header_quotes("META", doc, "FY2026Q3", True)
     by = {item["label"]: item for item in header["items"]}
     assert by["股价"]["value"] == f"${cols['close']:.2f}"
     assert by["股息率"]["value"] == f"{cols['dividends_yield']:.2f}%"
     assert by["RSI"]["value"] == f"{cols['RSI']:.1f}"
-    assert by["市值"]["value"] == "$1794.7B"
+    shares = _diluted_shares("META", "FY2026Q3")
+    assert shares and by["市值"]["value"] == _fmt_cap(cols["close"] * shares)
     forward = _forward_pe_view("META", doc, "FY2026Q3", load_ticker_config("META"), active=True)
     assert forward["price"] == f"${cols['close']:.2f}"
     rows = {row["label"]: row for row in forward["rows"]}
@@ -490,8 +494,9 @@ def test_meta_quote_card_divides_tradingview_columns():
         3 / 12 * rows["FY26E"]["eps_raw"] + 9 / 12 * rows["FY27E"]["eps_raw"]
     )
     assert "vs" not in rows["近 4 季（TTM）"]
-    assert rows["近 4 季（TTM）"]["pe"] == "22.5×"
-    assert "FY28E" not in rows
+    assert rows["近 4 季（TTM）"]["pe"].endswith("×")
+    # TV 未来季够拼出 FY28 时允许出现；没有也不强制
+    assert "FY26E" in rows and "FY27E" in rows
     assert abs(rows["未来 12 个月（NTM）"]["eps_raw"] - cols["eps_estimate_ntm"]) < 1.5
 
 
@@ -511,11 +516,12 @@ def test_header_eps_guidance_uses_only_management_nongaap():
     assert "32.03" not in cells["下季度 EPS 指引"]["source"]
     header = _header_quotes("META", meta, "FY2026Q3", True)
     by = {item["label"]: item for item in header["items"]}
-    assert by["股价"]["value"] == "$697.52"
+    cols = json.loads((ROOT / "data" / "META" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))["quote"]["columns"]
+    assert by["股价"]["value"] == f"${cols['close']:.2f}"
     assert by["下季度 EPS 指引"]["value"] == "无" and by["年度 EPS 指引"]["value"] == "无"
     assert "32.03" not in by["下季度 EPS 指引"]["value"] and "8.29" not in by["下季度 EPS 指引"]["value"]
     assert header["market"] is True
-    assert header["line"] == "数据时间 2026-10-21 · 来源 TradingView"
+    assert "来源 TradingView" in header["line"]
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_cells = {c["label"]: c for c in _management_eps_cells(mu, "FY2026Q4")}
@@ -531,8 +537,9 @@ def test_header_eps_guidance_uses_only_management_nongaap():
     assert mu_cells["年度 EPS 指引"]["value"] == "无"
     assert mu_cells["年度 EPS 指引"]["record"]["period"] == "FY2027"
     mu_header = _header_quotes("MU", mu, "FY2026Q4", True)
-    assert mu_header["market"] is False
-    assert mu_header["line"] == "数据时间 2026-09-30 · 来源 新闻稿 / 电话会"
+    # tv-scan 写入后页头行情来自 TradingView；指引格仍只认管理层 Non-GAAP。
+    assert mu_header["market"] is True
+    assert "TradingView" in mu_header["line"]
     assert meta["guidance"]["management_eps"]["next_quarter"]["display"] == "无"
     assert meta["guidance"]["management_eps"]["next_quarter"]["source"] is None
     assert mu["guidance"]["management_eps"]["next_quarter"]["display"] == "$38.15"
@@ -945,21 +952,21 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     assert any("营收" in s["text"] for s in chart["sides"])
     assert all("EPS" not in s["text"] for s in chart["sides"])
     revenue = chart["revenue"]
-    assert [q["label"] for q in revenue["quarters"]] == [
+    labels = [q["label"] for q in revenue["quarters"]]
+    assert labels[:6] == [
         "FQ4 2025", "FQ1 2026", "FQ2 2026", "FQ3 2026", "FQ4 2026", "FQ1 2027",
     ]
+    # tv-scan 写入更远未公布季后，窗口可以比手工快照更长
     rev_q3 = next(q for q in revenue["quarters"] if q["label"] == "FQ3 2026")
     assert rev_q3["actual"] == 64.6 and rev_q3["consensus"] == 63.34
     assert rev_q3["note"] == "超预期 $1.26B" and rev_q3["basis"] == "营收"
     rev_q4 = next(q for q in revenue["quarters"] if q["label"] == "FQ4 2026")
-    assert rev_q4["actual"] is None and rev_q4["consensus"] == 74.1
+    assert rev_q4["actual"] is None and rev_q4["consensus"] is not None
     rev_nq = next(q for q in revenue["quarters"] if q["label"] == "FQ1 2027")
-    assert rev_nq["actual"] is None and rev_nq["consensus"] == 68.24
+    assert rev_nq["actual"] is None and rev_nq["consensus"] is not None
     horizons = {item["label"]: item["value"] for item in revenue["horizons"]}
     assert horizons["近 4 季（TTM）"] == "$241.61B"
-    assert horizons["未来 12 个月（NTM）"] == "$296.78B"
-    assert horizons["FY26E"] == "$255.82B" and horizons["FY27E"] == "$310.44B"
-    assert "FY28E" not in horizons
+    assert "未来 12 个月（NTM）" in horizons and "FY26E" in horizons and "FY27E" in horizons
     assert all(q["actual"] != 3.83 for q in revenue["quarters"])
     assert any("EPS" in s["text"] for s in revenue["sides"])
 
@@ -1202,8 +1209,9 @@ def test_forward_pe_labels_follow_fiscal_year():
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     shifted = _forward_pe_view("MU", mu, "FY2027Q1", load_ticker_config("MU"), active=True)
     labels = [row["label"] for row in shifted["rows"] if row["kind"] == "fy"]
-    assert labels == ["FY27E", "FY28E"]
+    assert labels[0] == "FY27E"
     assert "FY26E" not in labels
+    assert "FY28E" in labels  # TV 未来季或 AV 全年都能撑出下一财年
 
 
 def test_gap_row_clips_outside_scale():

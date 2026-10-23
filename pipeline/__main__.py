@@ -75,6 +75,9 @@ def main(argv: list[str] | None = None) -> int:
     p_av = sub.add_parser("av-estimates", help="用 EARNINGS_ESTIMATES 写入 data/{TICKER}/consensus/av_estimates.json")
     p_av.add_argument("--ticker", default=None, help="一只，或逗号分隔。缺省则全部股票")
 
+    p_tv = sub.add_parser("tv-scan", help="用 TradingView scanner 写入 data/{TICKER}/consensus/tradingview_scan.json")
+    p_tv.add_argument("--ticker", default=None, help="一只，或逗号分隔。缺省则全部股票")
+
     p_fx = sub.add_parser("fx-refresh", help="写入当天 HKDCNY（1 港币折合人民币），来自 Yahoo HKDCNY=X")
     p_fx.add_argument("--date", default=None, help="YYYY-MM-DD，缺省为香港当天")
 
@@ -256,6 +259,14 @@ def main(argv: list[str] | None = None) -> int:
             raw = args.ticker or ""
             tickers = [part.strip() for part in raw.split(",") if part.strip()] or None
             out = refresh_earnings_estimates(tickers)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if out.get("ok") else 1
+        if args.cmd == "tv-scan":
+            from pipeline.commands.tv_scan_cmd import refresh_tv_quotes
+
+            raw = args.ticker or ""
+            tickers = [part.strip() for part in raw.split(",") if part.strip()] or None
+            out = refresh_tv_quotes(tickers)
             print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0 if out.get("ok") else 1
         if args.cmd == "replay-filings":
