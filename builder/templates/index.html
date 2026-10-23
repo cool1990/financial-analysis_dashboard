@@ -55,7 +55,7 @@
           {% for r in rows %}
           <tr data-status="{{ r.status_key }}" data-kind="{{ r.kind }}">
             <td class="mid name">
-              <a class="pool-name" href="{{ r.href }}" title="{{ r.name }}{% if r.listing == 'adr' %} · ADR{% endif %}">{{ r.ticker }}</a>{% if r.listing == "adr" %} <span class="stage-badge s-adr" title="ADR：业绩来自 SEC 6-K 新闻稿，不是 8-K Item 2.02">ADR</span>{% endif %}
+              <a class="pool-name" href="{{ r.href }}" title="{{ r.name }}{% if r.listing == 'adr' %} · ADR{% endif %}">{{ r.display_name }}</a>{% if r.listing == "adr" %} <span class="stage-badge s-adr" title="ADR：业绩来自 SEC 6-K 新闻稿，不是 8-K Item 2.02">ADR</span>{% endif %}
             </td>
             <td class="mid{{ ' muted' if r.group == '—' else '' }}">{{ r.group }}</td>
             <td class="mid">{% if r.status_key %}<span class="stage-badge s-{{ r.status_key }}">{{ r.status_label }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>

@@ -4015,6 +4015,18 @@ def _quarter_view(
     )
 
 
+def _display_name(cfg: dict[str, Any], ticker: str) -> str:
+    """首页名称：中文简称 (英文简称/代码)。优先 name_zh / 简称。"""
+    zh = _plain_cfg(cfg.get("name_zh") or cfg.get("简称") or "")
+    if not zh:
+        name = str(cfg.get("name") or "").strip()
+        if any("\u4e00" <= ch <= "\u9fff" for ch in name):
+            zh = name.replace("控股", "").replace("集团", "").strip() or name
+        else:
+            zh = ticker
+    return f"{zh} ({ticker})"
+
+
 def _index_row(
     t: str,
     cfg: dict[str, Any],
@@ -4042,6 +4054,7 @@ def _index_row(
     return {
         "ticker": t,
         "name": cfg.get("name") or "",
+        "display_name": _display_name(cfg, t),
         "pos_stage": status_key,
         "status_key": status_key,
         "status_label": STATUS_SHORT.get(status_key, "—"),
