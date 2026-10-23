@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "company_ir",
+    "eps_basis": "gaap",
+    "transcript_url": "https://s21.q4cdn.com/399680738/files/doc_financials/2021/q2/FB-Q2-2021-Earnings-Call-Transcript.pdf",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -177,12 +183,324 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "指标表营收290.77亿美元，同比增55.6%，环比增11.1%。Sheryl（COO）称第二季总收入291亿美元、同比增56%。Dave（CFO）称固定汇率同比增50%，汇兑带来顺风；若汇率与去年第二季相同，总收入将低9.82亿美元。第二季广告收入286亿美元、同比增56%，展示量增6%、平均单价增47%。摘要金额与同比、环比采用指标表。",
+        "drivers": [
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": true,
+            "description": "平均广告单价同比增47%，是收入同比增56%的主因；展示量只增6%。Dave称定价增长来自广告主需求广泛走强，并在消化去年疫情导致的展示量偏高、价格偏低基数。",
+            "evidence_quote": "In Q2, the total number of ad impressions served across our services increased 6% and the average price per ad increased 47%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "广告展示量同比增6%，增量主要来自发展中市场尤其是亚太，对收入有贡献但弱于定价。",
+            "evidence_quote": "In Q2, the total number of ad impressions served across our services increased 6% and the average price per ad increased 47%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "电商、零售和快消等疫情期强势垂直行业继续拉动，旅游、娱乐等去年受压行业恢复。按用户地区，全球广告增速均加快，世界其他地区增86%最强。",
+            "evidence_quote": "Growth was strongest in Rest of World at 86%. Europe, Asia-Pacific, and the US & Canada grew 63%, 56%, and 48%, respectively.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "+",
+            "is_primary": false,
+            "description": "汇兑为收入带来顺风；若汇率与去年第二季相同，总收入将低9.82亿美元。欧洲、亚太和世界其他地区均受益于汇兑。",
+            "evidence_quote": "had foreign exchange rates remained constant with Q2 of last year, total revenue would have been $982 million lower.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第二季总收入291亿美元、同比增56%；指标表营收290.77亿美元、同比增55.6%、环比增11.1%。口头291亿美元为取整。摘要采用指标表。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "指标表GAAP毛利率81.4%，同比升1.9个百分点，环比升1.0个百分点。电话会未单列毛利率。Dave称营业成本同比增41%，主因消费硬件、合作伙伴分成和核心基础设施投入。收入增速快于成本增速，毛利率因此上升。摘要采用指标表。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": true,
+            "description": "营业成本同比增41%，来自硬件、分成和基础设施，是压制毛利率升幅的主要因素；但收入同比增56%更快，毛利率仍同比上升。",
+            "evidence_quote": "Cost of revenue increased 41%, driven primarily by consumer hardware costs, payments to partners, and core infrastructure investments.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "广告单价大幅上升推高收入增速，相对固定成本摊薄，有利于毛利率同比改善。",
+            "evidence_quote": "In Q2, the total number of ad impressions served across our services increased 6% and the average price per ad increased 47%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "指标表GAAP营业利润率42.5%，同比升10.6个百分点，环比降0.9个百分点。Dave称营业利润124亿美元、利润率43%。总费用167亿美元、同比增31%，慢于收入增速，利润率因此同比大幅扩张。摘要采用指标表。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "总费用同比增31%至167亿美元，研发增37%、营销与销售增15%、管理费用增23%，拖累利润率但增速低于收入。",
+            "evidence_quote": "Q2 total expenses were $16.7 billion, up 31% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "收入同比增56%快于费用增31%，营业利润率同比升10.6个百分点。",
+            "evidence_quote": "Q2 total revenue was $29.1 billion, up 56% or 50% on a constant currency basis.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称营业利润124亿美元、营业利润率43%；指标表营业利润123.67亿美元、营业利润率42.5%。口头为取整。摘要采用指标表。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "指标表GAAP稀释每股收益3.61美元，同比增100.6%，环比增9.4%。Dave称净利润104亿美元或每股3.61美元，与指标表每股收益一致。摘要采用指标表。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "费用同比增31%限制利润增速，但收入与营业利润增速更快，每股收益仍同比翻番。",
+            "evidence_quote": "Net income was $10.4 billion or $3.61 per share.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": true,
+            "description": "收入与营业利润同比大幅增长，推动稀释每股收益同比增100.6%。",
+            "evidence_quote": "Net income was $10.4 billion or $3.61 per share.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称净利润104亿美元；指标表净利润103.94亿美元。口头为取整。每股收益3.61美元与指标表一致。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "指标表经营现金流132.47亿美元，同比增241.7%，环比增8.2%。电话会未单列经营现金流。摘要采用指标表，不从自由现金流与资本开支倒推。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会未披露经营现金流科目。指标表同比大幅上升，方向与利润增长一致，会上未做营运资本拆解。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表经营现金流132.47亿美元，同比增241.7%、环比增8.2%。全文无经营现金流原句，仅披露自由现金流85亿美元与资本开支47亿美元，口径不同，不把两者相减回填经营现金流。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "指标表资本开支46.41亿美元，同比增42.6%，环比增7.9%。Dave称含融资租赁的资本开支47亿美元，投向数据中心、服务器、网络与办公设施。全年指引190亿至210亿美元不变。摘要金额与同比、环比采用指标表。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "当季资本开支同比增42.6%，投向数据中心、服务器、网络基础设施和办公设施。",
+            "evidence_quote": "Capital expenditures including capital leases were $4.7 billion, driven by investments in data centers, servers, network infrastructure and office facilities.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称资本开支47亿美元；指标表46.41亿美元。口头为取整或口径差异。摘要采用指标表。"
+        ]
+      },
+      {
+        "metric": "fcf",
+        "summary": "指标表自由现金流86.06亿美元。Dave称自由现金流85亿美元。同比与环比指标表增幅异常偏高，摘要只写绝对值，不写同比百分比。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "资本开支同比上升，叠加利润与现金流增长，共同决定自由现金流水平；电话会只给出当季85亿美元自由现金流。",
+            "evidence_quote": "Free cash flow was $8.5 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称自由现金流85亿美元；指标表86.06亿美元。摘要采用指标表绝对值。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "other",
+        "metric_label": "下半年营收增长与广告定价",
+        "period": "FY2021H2",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "down",
+        "statement": "管理层预计2021年下半年余下时间广告收入增长仍主要由广告价格同比涨幅驱动；第三、第四季总收入同比增速将较前期明显放缓，因基数走高；若以两年复合增速看并剔除疫情复苏影响，下半年两年复合增速将较第二季72%温和放缓。",
+        "source": "prepared_remarks",
+        "source_quote": "Similar to the second quarter, we expect that advertising revenue growth will be driven primarily by year-over-year advertising price increases during the rest of 2021. In the third and fourth quarters of 2021, we expect year-over-year total revenue growth rates to decelerate significantly on a sequential basis as we lap periods of increasingly strong growth. When viewing growth on a two-year basis to exclude the impacts from lapping the Covid recovery, we expect year-over-two-year total revenue growth rates to decelerate modestly in the second half compared to the second quarter rate.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "iOS定向与衡量逆风",
+        "period": "FY2021",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "down",
+        "statement": "公司预计2021年监管与平台变化带来的广告定向逆风加大，尤其近期iOS更新在第三季影响将大于第二季。",
+        "source": "prepared_remarks",
+        "source_quote": "We continue to expect increased ad targeting headwinds in 2021 from regulatory and platform changes, notably the recent iOS updates, which we expect to have a more significant impact in the third quarter compared to the second quarter.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "全年总费用",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "$70 billion",
+        "high_raw": "$73 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2021年全年总费用700亿至730亿美元，与先前展望不变，投向技术人才、基础设施和消费硬件。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect 2021 total expenses to be in the range of $70-73 billion, unchanged from our prior outlook.",
+        "low": 70000000000.0,
+        "mid": 71500000000.0,
+        "high": 73000000000.0
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "全年资本开支",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "$19 billion",
+        "high_raw": "$21 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2021年资本开支190亿至210亿美元，与先前估计不变，投向数据中心、服务器、网络与办公设施。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect 2021 capital expenditures to be in the range of $19-21 billion, unchanged from our prior estimate.",
+        "low": 19000000000.0,
+        "mid": 20000000000.0,
+        "high": 21000000000.0
+      },
+      {
+        "metric_key": "tax_rate",
+        "metric_label": "全年税率",
+        "period": "FY2021",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "high-teens",
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2021年全年税率处于十几的高段；第二季实际税率为17%。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect our full-year 2021 tax rate to be in the high-teens.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "FRL/metaverse投入",
+        "period": "FY2021",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "up",
+        "statement": "Dave（CFO）在问答中称Facebook Reality Labs是费用展望中的重点投入，每年投资数十亿美元，并预计在未来可预见期间持续投入，但未给出更细拆分。",
+        "source": "qa",
+        "source_quote": "So we have mentioned that we're investing billions of dollars annually, and we expect to invest in this area for the foreseeable future.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -192,6 +510,68 @@
       "t_plus_7": {},
       "gap_closure": null
     },
+    "industry_outlook": [
+      {
+        "title": "外部环境（宏观、汇兑与监管）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Dave（CFO）称在线广告宏观环境仍很强，但下半年同比增速将因高基数明显放缓；若以两年增速剔除疫情复苏影响，下半年仅温和放缓。汇兑在第二季为收入带来顺风，若汇率与去年第二季相同，总收入将低9.82亿美元。公司继续预期2021年监管与平台变化加大广告定向逆风，iOS更新在第三季影响大于第二季；跨大西洋数据传输前景仍在评估，可能影响欧洲运营。John Blackledge追问后，Dave称iOS可选率与整体影响符合预期，第三季将更接近全面落地。宏观广告需求强劲部分对冲了定向挑战，但广告主仍面临导航困难。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Sheryl（COO）称第二季总收入291亿美元、同比增56%，电商、零售和快消等疫情期强势品类继续领跑，旅游等品类恢复。Mark（CEO）强调视频已成主形态，Facebook上视频占时长近半，Instagram上Reels已是互动增长最大来源，短视频增长尤其快。按用户地区，世界其他地区广告收入增86%最强，欧洲、亚太和北美分别增长63%、56%和48%。展示量只增6%，平均单价增47%，定价是当季收入主引擎。Doug Anmuth问及下半年定价驱动时，Dave解释在消化去年北美封锁带来的高展示、低价格基数，同时视频占用时长更高、单位互动展示更少。Facebook日活19.1亿、同比增7%，月活29亿；北美与欧洲渗透率已高，Dave预期日活与月活会季度波动。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "广告库存增量来自Instagram Explore、视频、Marketplace以及刚全球铺开广告的Reels，但绝对规模仍远小于信息流和Stories。Sheryl称Reels广告已在几乎所有Reels上线市场向广告主开放，形式类似Stories，互动与效果与其他产品相近，仍处早期。供给侧投入更多体现在基础设施与人才：当季净增员工逾2700人，季末全职员工逾6.34万、同比增21%，研发增37%以支持核心产品与硬件。资本开支47亿美元投向数据中心、服务器与网络，全年指引190亿至210亿美元不变。Mark宣布向Facebook与Instagram创作者投入10亿美元，创作者工具免费至2023年，以换取更丰富内容供给。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark（CEO）在创作者经济问题上承认多平台争夺创作者，但认为创作者会多平台经营，Facebook要靠世界一流的广告变现、分发与推荐帮助创作者赚钱，从而赢得内容广度。Ross Sandler拿YouTube分成比例比较时，Dave称公司已向创意产业大量付费，例如音乐授权，10亿美元创作者承诺是在既有成本结构上的延伸，不改变商业模式。Sheryl在定价与投资回报问题上强调拍卖机制让广告主按效果出价，大广告主持续投入并更擅长个性化，小广告主也能有效竞争，价格上涨不必然挤出客户。短视频竞争上，Reels与TikTok等争夺时长，但管理层把重点放在自家推荐与变现工具迭代。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "广告仍是绝对收入主体，第二季广告收入286亿美元。Mark阐述commerce战略是从广告发现向下做原生店铺、Marketplace与WhatsApp、Messenger商业消息，再延伸到支付，认为体验优于跳转外部网页，但因广告基数太大，短期对收入与利润贡献有限。Sheryl把广告未来十年增长押在发现、commerce、隐私增强技术与超越营销的商业工具四条线。隐私方面与行业共建技术，在少处理个人信息下继续个性化投放与衡量。Michael Nathanson问电视预算转移时，Sheryl称每月20亿人观看可插播广告的视频，视频变现率仍低于信息流和Stories，但Watch、Feed与Reels增长强劲，并举例沃尔玛直播带货。Dave称直销与品牌广告本季均稳健，品牌反弹更强但直销仍占主体并驱动增长。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark（CEO）系统阐述元宇宙愿景：数字空间中的临场感、跨设备接入、数字商品与创作者经济，并预期用户将把公司从社交媒体公司视为元宇宙公司。Quest 2销售带动其他收入，将与Ray-Ban合作智能眼镜，FRL每年投资数十亿美元建设下一代计算平台。Justin Post问商业模式时，Mark称先追求数亿用户使用新平台，广告仍将是重要组成，commerce与数字商品长期空间大，设备不以高溢价为目标。Colin Sebastian问AI竞争力时，Mark称AI进展屡次超预期，基础模型改进同时提升推荐、广告、反垃圾与完整性，PyTorch生态加速研发。跨应用消息与点击即消息广告增长迅速，为commerce铺路。费用指引下半年增速加快，John Blackledge问及下半年费用同比39%隐含增速时，Dave称消费营销等非人头支出将在下半年加速。",
+            "items": []
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -217,18 +597,290 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "购物与Facebook、Instagram店铺建设逾一年，Mark称短期难有规模意义，关键执行难点是什么？创作者经济多平台竞争下如何争取独家内容？",
+        "answer_summary": "Mark（CEO）：广告业务体量太大，commerce要多年才能对整体有意义；策略是从广告发现向下做店铺与商业消息，并补齐网页端长期功能。\nMark（CEO）：创作者不会只待在一个平台，公司要用广告变现、分发和推荐帮助创作者赚钱，从而赢得内容优势。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "But I just think in terms of the scale of the ads business that we're starting at, I just think realistically, we shouldn't expect that this is going to be a meaningful driver of our business or profitability in the near term.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "美国与欧洲日活回到去年第一季水平， reopening如何影响活跃度与渗透率？元宇宙商业模式与AR/VR费用披露如何展望？",
+        "answer_summary": "Dave（CFO）：北美与欧洲高渗透率市场受疫情波动影响，日活与月活会季度波动；欧洲还叠加季节性疲软与解封后的疲软，Delta变种难预测。\nMark（CEO）：元宇宙要先做到数亿人使用新平台，广告仍重要，commerce与数字商品长期空间大，设备定价尽量亲民。\nDave（CFO）：资本配置聚焦增长，FRL是费用展望中的重大投入，每年数十亿美元，暂无更细披露。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "And I'd say in North America, given our high level of penetration, we do expect sort of MAU and DAU levels to sort of bounce around from quarter-to-quarter given kind of how significantly penetrated we are in that market.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "定价与 ASP",
+        "is_new_topic": false,
+        "question_summary": "展示增速放缓而价格驱动全年增长，除去年基数外还有什么因素？如何扩展版面增加库存？对ATT过去三个月看法是否变化，缓解措施早期成效如何？",
+        "answer_summary": "Dave（CFO）：去年北美封锁推高展示、压低价格是最大基数因素；视频占用时长更高、单位互动展示更少。\nDave（CFO）：增量来自Explore、视频、Marketplace与刚全球铺开广告的Reels。\nDave（CFO）：ATT影响大体符合预期，正用聚合事件管理等工具与机器学习帮助广告主，目标是用更少广告达成同样转化。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "In terms of your question on ATT, so the impact from the ATT changes has really generally been in line with our expectation.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "元宇宙相关费用是否约每年50亿美元？广告涨价是否会让部分广告主因投资回报率退出？",
+        "answer_summary": "Dave（CFO）：未单独披露FRL金额，但确认是数十亿美元级别，与分析师估算的数十亿一致，涵盖FRL全部工作不仅是元宇宙。\nSheryl（COO）：拍卖让广告主按效果出价，个性化提升下即使涨价仍可找到有效投放，大广告主持续投入，小广告主也能竞争。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出FRL具体金额区间，只确认数十亿美元且涵盖全部FRL工作。",
+        "tone": "neutral",
+        "answer_quote": "We've categorized it as billions and so your number is billions.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Youssef Squali",
+        "firm": "Truist",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "元宇宙所需积木有多少在公司内可控？iOS 14.5对定向与直销广告的影响，是否有广告主削减应用安装类投放？",
+        "answer_summary": "Mark（CEO）：元宇宙是宏观浪潮，芯片等由NVIDIA等伙伴提供，但公司在AR/VR硬件上投入很大以确保社交导向。\nDave（CFO）：直销与品牌本季均稳健增长，品牌反弹更强，直销仍为主体；电商等直销垂直行业仍强。\nSheryl（COO）：品牌与直销界限越来越模糊，大品牌广告主日益擅长效果类投放。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "we continue to see solid growth across both direct response and brand.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "相对YouTube分成模式，加大创作者投入会否压低利润率？创作者内容会限于Reels还是遍布信息流？",
+        "answer_summary": "Dave（CFO）：公司已向音乐授权等创意产业大量付费，10亿美元承诺在既有成本结构内，不改变商业模式；目标是帮助社区与商业持续繁荣。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "So I don't think it's a meaningful change in the business model or outlook, but it is something that we're committed to helping people continue to build vibrant communities and businesses on our platform just like we have with advertising.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Mark Shmulik",
+        "firm": "Alliance Bernstein",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "Reels广告互动与效果如何？120万店铺中Facebook卖家的广告与转化表现有何差异？",
+        "answer_summary": "Sheryl（COO）：Reels广告已在几乎所有市场开放，全屏插播最长30秒，互动与效果与其他产品相近，仍处早期。\nDave（CFO）：广告单元会优化到转化最好的体验，比较店铺与自有网店转化，以提升Shops效果，暂无具体数字。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出Shops转化率的量化对比，只说明优化逻辑。",
+        "tone": "neutral",
+        "answer_quote": "we're continuing to work to make our Shops convert better.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Brent Thill",
+        "firm": "Jefferies",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "两年复合增速“温和放缓”是指两三个百分点还是五到七个百分点？",
+        "answer_summary": "Dave（CFO）：未给出具体数字；第一季到第二季两年增速从74%降至72%，预计下半年温和放缓但未量化。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "We didn't provide specific guidance on it.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "John Blackledge",
+        "firm": "Cowen",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "iOS可选率是否符合预期？下半年费用增速加快的主要驱动是什么？",
+        "answer_summary": "Dave（CFO）：可选率与整体影响符合预期，第三季将更接近全面落地。\nDave（CFO）：下半年费用增速将加快，消费营销等非人头支出会在下半年加速。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "yes, we do expect accelerating expense growth in the back half of 2021, and we're going to see that in areas like consumer marketing.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "F8后跨应用消息整合与开放API如何促进商业活动？AI是否仍是显著竞争优势，PyTorch对新产品速度有多重要？",
+        "answer_summary": "Mark（CEO）：商业消息是commerce自然组成部分，跨应用通信契合元宇宙“传送”愿景；点击即消息广告增长很快。\nMark（CEO）：AI进展屡次超预期，基础改进同时提升推荐、广告与完整性；PyTorch生态让新项目可复用开源库。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "But one of the areas that I think has routinely outperformed our expectations is progress on AI.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Michael Nathanson",
+        "firm": "MoffettNathanson",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "电视展示量走弱后，公司如何争取电视预算？是否会扩展到体育等优质长视频？聚合事件衡量早期对信号、投资回报与投放有何影响？",
+        "answer_summary": "Sheryl（COO）：Watch、Feed与Reels视频变现增长强，每月20亿人观看可插播广告视频，仍低于信息流变现率；举例沃尔玛直播带货。\nDave（CFO）：聚合事件衡量是重建广告技术的一部分，配合机器学习在更少数据下维持效果，进展满意但对广告主仍具破坏性。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回答是否会收购体育或优质长视频内容，只强调现有视频与直播产品组合。",
+        "tone": "neutral",
+        "answer_quote": "We have 2 billion people watching in-stream ad eligible videos per month.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "产品结构": 3,
+      "需求与出货": 1,
+      "定价与 ASP": 1,
+      "费用与运营": 2,
+      "竞争格局": 1,
+      "指引与展望": 1,
+      "宏观与汇率": 1,
+      "AI 产品与模型": 1
+    },
+    "new_topics": [
+      "费用与运营"
+    ],
+    "dropped_topics": [
+      "公司战略",
+      "客户与订单"
+    ],
+    "hot_topics": [
+      "产品结构",
+      "费用与运营",
+      "需求与出货"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "元宇宙相关费用是否约每年50亿美元？广告涨价是否会让部分广告主因投资回报率退出？",
+        "answer_summary": "Dave（CFO）：未单独披露FRL金额，但确认是数十亿美元级别，与分析师估算的数十亿一致，涵盖FRL全部工作不仅是元宇宙。\nSheryl（COO）：拍卖让广告主按效果出价，个性化提升下即使涨价仍可找到有效投放，大广告主持续投入，小广告主也能竞争。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出FRL具体金额区间，只确认数十亿美元且涵盖全部FRL工作。",
+        "tone": "neutral",
+        "answer_quote": "We've categorized it as billions and so your number is billions.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Mark Shmulik",
+        "firm": "Alliance Bernstein",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "Reels广告互动与效果如何？120万店铺中Facebook卖家的广告与转化表现有何差异？",
+        "answer_summary": "Sheryl（COO）：Reels广告已在几乎所有市场开放，全屏插播最长30秒，互动与效果与其他产品相近，仍处早期。\nDave（CFO）：广告单元会优化到转化最好的体验，比较店铺与自有网店转化，以提升Shops效果，暂无具体数字。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出Shops转化率的量化对比，只说明优化逻辑。",
+        "tone": "neutral",
+        "answer_quote": "we're continuing to work to make our Shops convert better.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Michael Nathanson",
+        "firm": "MoffettNathanson",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "电视展示量走弱后，公司如何争取电视预算？是否会扩展到体育等优质长视频？聚合事件衡量早期对信号、投资回报与投放有何影响？",
+        "answer_summary": "Sheryl（COO）：Watch、Feed与Reels视频变现增长强，每月20亿人观看可插播广告视频，仍低于信息流变现率；举例沃尔玛直播带货。\nDave（CFO）：聚合事件衡量是重建广告技术的一部分，配合机器学习在更少数据下维持效果，进展满意但对广告主仍具破坏性。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回答是否会收购体育或优质长视频内容，只强调现有视频与直播产品组合。",
+        "tone": "neutral",
+        "answer_quote": "We have 2 billion people watching in-stream ad eligible videos per month.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "营收290.77亿美元增55.6%，下半年增速放缓",
+    "key_findings": [
+      {
+        "finding": "第二季营收290.77亿美元同比增55.6%，广告单价涨47%是主引擎，下半年同比增速将明显放缓。",
+        "text": "第二季营收290.77亿美元同比增55.6%，广告单价涨47%是主引擎，下半年同比增速将明显放缓。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "Mark（CEO）首次系统阐述元宇宙并称公司将转向元宇宙公司，FRL每年投资数十亿美元。",
+        "text": "Mark（CEO）首次系统阐述元宇宙并称公司将转向元宇宙公司，FRL每年投资数十亿美元。",
+        "evidence": "other"
+      },
+      {
+        "finding": "iOS定向逆风符合预期但第三季影响更大，全年费用700亿至730亿美元指引不变。",
+        "text": "iOS定向逆风符合预期但第三季影响更大，全年费用700亿至730亿美元指引不变。",
+        "evidence": "opex_gaap"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2021Q3总收入同比增速较FY2021Q2的56%明显放缓",
+        "threshold": "电话会所称显著环比放缓"
+      },
+      {
+        "metric_key": "other",
+        "condition": "FY2021Q3两年复合总收入增速较FY2021Q2的72%温和下降",
+        "threshold": "Brent追问的温和放缓是否兑现"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "FY2021下半年总费用同比增速高于上半年28%",
+        "threshold": "Dave所称消费营销等非人头支出加速"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "FY2021全年资本开支落在指引区间内",
+        "threshold": "190亿至210亿美元"
+      },
+      {
+        "metric_key": "eps_gaap",
+        "condition": "FY2021全年实际税率处于十几的高段",
+        "threshold": "high-teens指引"
+      }
+    ]
   },
   "thesis_review": {}
 }

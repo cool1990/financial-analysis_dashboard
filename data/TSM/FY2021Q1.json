@@ -9,15 +9,21 @@
     "release_at_utc": "2021-04-15T14:44:04.000Z",
     "accession": "0001564590-21-018896",
     "press_release_url": "https://www.sec.gov/Archives/edgar/data/1046179/000156459021018896/",
-    "transcript_source": null,
+    "transcript_source": "roic",
     "eps_basis": "gaap",
     "sec_form": "6-K",
     "reporting_currency": "USD",
     "accounting_basis": "taiwan_ifrs",
-    "extract_method": "adr_press"
+    "extract_method": "adr_press",
+    "transcript_url": "https://www.sec.gov/Archives/edgar/data/1046179/000156459021018896/",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_press",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：数字来自 SEC 6-K 新闻稿。只写入写明的美元金额和 US$ per ADR。",
@@ -230,12 +236,591 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "指标表营收129.2亿美元，环比增1.9%。指标表未给同比。电话会称美元营收环比增1.9%、新台币环比增0.2%，由高性能计算需求支撑，手机季节性较近年温和。Wendell（CFO）口述第一季营收新台币3624亿元或129亿美元，与指标表129.2亿美元接近；新闻稿口径同比25.4%未写入指标表同比栏，摘要不自行重算同比。5纳米占晶圆收入14%，7纳米35%，7纳米及以下先进制程合计49%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "美元营收环比增1.9%，电话会把第一季业务放在高性能计算需求上，手机季节性较近年温和。",
+            "evidence_quote": "First quarter revenue increased 0.2% sequentially in NT dollars or 1.9% in U.S. dollars. Our first quarter business was supported by HPC-related demand, balanced by a milder smartphone seasonality than in recent years.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "智能手机环比降11%至占营收45%；高性能计算占35%；物联网增10%至9%；汽车增31%至4%。",
+            "evidence_quote": "Smartphone decreased 11% quarter-over-quarter to account for 45% of our first quarter revenue.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "5纳米占晶圆收入14%，7纳米35%，7纳米及以下合计49%。",
+            "evidence_quote": "5-nanometer process technology contributed 14% of wafer revenue in the first quarter, while 7-nanometer accounted for 35%. Advanced technologies, which we now define as 7-nanometer and below, accounted for 49% of wafer revenue.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "新闻稿与电话会口述第一季美元营收约129亿美元或129.2亿美元；指标表为129.2亿美元，环比增1.9%，同比栏为空。摘要用指标表，不把新闻稿25.4%同比写成指标表同比。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "指标表毛利率52.4%，未给同比或环比百分点。电话会称环比降1.6个百分点至52.4%，主因产能利用率相对较低以及不利汇兑。第二季指引毛利率区间下移，Wendell（CFO）归因于5纳米占比提高带来的稀释、高利用率下成本改善放缓，以及当季没有正向库存重估。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": true,
+            "description": "毛利率环比降1.6个百分点至52.4%，电话会主因是产能利用率相对较低。",
+            "evidence_quote": "Gross margin decreased 1.6 percentage points sequentially to 52.4%, mainly due to relatively lower level of capacity utilization and an unfavorable foreign exchange rate.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "-",
+            "is_primary": false,
+            "description": "不利汇兑也是第一季毛利率环比下降的原因之一。",
+            "evidence_quote": "an unfavorable foreign exchange rate.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "准备发言解释第二季毛利率环比下滑时，把5纳米占比提高带来的稀释列为主因之一。",
+            "evidence_quote": "the margin dilution from higher 5-nanometer contribution",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "指标表营业利润率41.5%，未给同比百分点。电话会称环比降2个百分点至41.5%。营业费用略增新台币8亿元，主因N5家族研发活动增加。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "营业费用略增新台币8亿元，主因N5家族研发活动增加，营业利润率环比降2个百分点至41.5%。",
+            "evidence_quote": "Total operating expenses slightly increased by TWD 0.8 billion, mainly due to higher level of R&D activities for the N5 family. Therefore, operating margin decreased by 2 percentage points sequentially to 41.5%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": false,
+            "description": "毛利率环比下降也拖累营业利润率。",
+            "evidence_quote": "Gross margin decreased 1.6 percentage points sequentially to 52.4%, mainly due to relatively lower level of capacity utilization and an unfavorable foreign exchange rate.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "指标表每股收益0.96美元（每份美国存托凭证），环比降约1.0%。电话会口述普通股每股收益新台币5.39元，净资产收益率29.5%。摘要用0.96美元，不把新台币换算成美元。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": true,
+            "description": "指标表每股收益环比约降1.0%，与营收环比增1.9%但利润率环比下降的方向一致。电话会未给美元每股收益拆解。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表每股收益0.96美元，环比约降1.0%。营收环比增1.9%，毛利率和营业利润率环比下降，方向与每股收益环比小幅走弱一致。电话会只公布新台币5.39元和净资产收益率29.5%。",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "电话会公布的是新台币5.39元和净资产收益率29.5%，没有美元同比。",
+            "evidence_quote": "Overall, our first quarter EPS was TWD 5.39, and ROE was 29.5%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会口述第一季每股收益新台币5.39元，净资产收益率29.5%。指标表为每份美国存托凭证0.96美元，环比约降1.0%。摘要采用指标表0.96美元。"
+        ]
+      },
+      {
+        "metric": "gross_profit_gaap",
+        "summary": "指标表毛利67.70亿美元，未给同比或环比。电话会未单列美元毛利。该金额对应营收129.2亿美元和毛利率52.4%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营收环比增1.9%，对毛利金额是正向的量；毛利率环比下降则部分抵消。",
+            "evidence_quote": "First quarter revenue increased 0.2% sequentially in NT dollars or 1.9% in U.S. dollars.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": null,
+            "is_primary": true,
+            "description": "指标表毛利67.70亿美元。电话会没有口述美元毛利变动。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表毛利67.70亿美元，同比和环比栏为空。电话会只给毛利率环比降1.6个百分点，没有美元毛利，摘要不自行轧差。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "指标表营业利润53.62亿美元，未给同比或环比。电话会未单列美元营业利润。营业利润率41.5%与电话会一致。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "营业费用增加拖累营业利润率，从而压住营业利润。",
+            "evidence_quote": "Total operating expenses slightly increased by TWD 0.8 billion, mainly due to higher level of R&D activities for the N5 family.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": null,
+            "is_primary": false,
+            "description": "指标表营业利润53.62亿美元，电话会没有给美元营业利润同比或环比。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表营业利润53.62亿美元。电话会只讲营业利润率降至41.5%，没有美元营业利润变动。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "指标表资本开支未单列，不从电话会回填。电话会称第一季资本开支新台币2480亿元，美元口径88亿美元。全年预算上调至约300亿美元是指引，不是第一季实际数。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会给出第一季美元资本开支88亿美元。指标表为空，摘要不回填。",
+            "evidence_quote": "In U.S. dollar terms, our first quarter capital expenditures totaled $8.8 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "同一段还给出新台币2480亿元资本开支，不换算成美元写入指标表。",
+            "evidence_quote": "spent TWD 248 billion in CapEx",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表资本开支为空。电话会口述第一季资本开支新台币2480亿元、美元88亿美元。摘要不回填。全年约300亿美元是全年指引。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "指标表经营现金流未单列，不从电话会回填。电话会称第一季经营活动现金约新台币2280亿元。没有美元金额，不换算。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会称第一季经营现金约新台币2280亿元。指标表为空，摘要不回填。",
+            "evidence_quote": "During the first quarter, we generated about TWD 228 billion in cash from operations, spent TWD 248 billion in CapEx",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表经营现金流为空。电话会口述约新台币2280亿元。摘要不回填，也不换算成美元。"
+        ]
+      },
+      {
+        "metric": "fcf",
+        "summary": "指标表自由现金流未单列。电话会没有单列自由现金流，不把经营现金减资本开支估算，也不把新台币换算成美元。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": null,
+            "is_primary": true,
+            "description": "电话会没有给出自由现金流科目。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表自由现金流为空。电话会只给出经营现金和资本开支的新台币金额，没有自由现金流，摘要不相减估算。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表自由现金流为空，不回填。电话会没有单列自由现金流。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "第二季营收",
+        "period": "FY2021Q2",
+        "type": "numeric",
+        "low_raw": "USD 12.9 billion",
+        "high_raw": "USD 13.2 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "Wendell（CFO）预计第二季营收在129亿至132亿美元之间。中值对应环比增1%另列，避免和营收金额混在一起。指引已计入台南Fab14停电的轻微影响。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect our second quarter revenue to be between USD 12.9 billion and USD 13.2 billion, which represents a 1% sequential increase at the midpoint.",
+        "low": 12900000000,
+        "mid": 13050000000,
+        "high": 13200000000
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "第二季营收环比增速（中值）",
+        "period": "FY2021Q2",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "1% sequential increase",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "Wendell（CFO）说第二季营收区间中值对应环比增1%。这是增速，不是营收金额。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect our second quarter revenue to be between USD 12.9 billion and USD 13.2 billion, which represents a 1% sequential increase at the midpoint.",
+        "low": null,
+        "mid": 1,
+        "high": null
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "metric_label": "第二季毛利率",
+        "period": "FY2021Q2",
+        "type": "numeric",
+        "low_raw": "49.5%",
+        "high_raw": "51.5%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "在1美元兑28.4新台币的假设下，Wendell（CFO）预计第二季毛利率在49.5%至51.5%。汇率假设和环比桥另列。",
+        "source": "prepared_remarks",
+        "source_quote": "Based on the exchange rate assumption of USD 1 to TWD 28.4, gross margin is expected to be between 49.5% and 51.5%, operating margin between 38.5% and 40.5%.",
+        "low": 49.5,
+        "mid": 50.5,
+        "high": 51.5
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "metric_label": "第二季营业利润率",
+        "period": "FY2021Q2",
+        "type": "numeric",
+        "low_raw": "38.5%",
+        "high_raw": "40.5%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "Wendell（CFO）预计第二季营业利润率在38.5%至40.5%，汇率假设同样是1美元兑28.4新台币。",
+        "source": "prepared_remarks",
+        "source_quote": "Based on the exchange rate assumption of USD 1 to TWD 28.4, gross margin is expected to be between 49.5% and 51.5%, operating margin between 38.5% and 40.5%.",
+        "low": 38.5,
+        "mid": 39.5,
+        "high": 40.5
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "第二季汇率假设",
+        "period": "FY2021Q2",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "USD 1 to TWD 28.4",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "第二季毛利率和营业利润率指引的汇率假设是1美元兑28.4新台币。这是计算假设，不是对汇兑的预测。",
+        "source": "prepared_remarks",
+        "source_quote": "Based on the exchange rate assumption of USD 1 to TWD 28.4, gross margin is expected to be between 49.5% and 51.5%, operating margin between 38.5% and 40.5%.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "第二季毛利率环比桥",
+        "period": "下季环比",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "Wendell（CFO）说第二季毛利率环比下降，主因5纳米占比提高带来的稀释、工厂持续高利用率下成本改善放缓，以及当季没有正向库存重估。这是环比桥，不用毛利率指标键，陈述里不写汇率而用业务与成本因素。",
+        "source": "prepared_remarks",
+        "source_quote": "The sequential decline in second quarter gross margin is mainly due to the margin dilution from higher 5-nanometer contribution, the slower rate of cost improvement as our fabs continue to run at a very high level of utilization and the absence of positive inventory revaluation.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "2021年美元营收增速",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "around 20%",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "C.C. Wei（CEO）预计2021年美元营收增速约两成，并跑赢晶圆代工行业。这是全年增速，不与第二季营收金额合并。",
+        "source": "prepared_remarks",
+        "source_quote": "For TSMC, we are confident we can outperform the foundry revenue growth and grow by around 20% in 2021 in U.S. dollar terms.",
+        "low": null,
+        "mid": 20,
+        "high": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "2021年资本预算",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "around USD 30 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "公司决定把2021年全年资本预算上调至约300亿美元。约八成投向先进制程，一成先进封装与光罩，一成特殊制程。",
+        "source": "prepared_remarks",
+        "source_quote": "we have decided to raise our full year 2021 CapEx to be around USD 30 billion.",
+        "low": null,
+        "mid": 30000000000,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "三年资本开支计划",
+        "period": "FY2021-FY2023",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "USD 100 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "C.C. Wei（CEO）预计未来三年投入约1000亿美元资本开支以扩产并支持先进与特殊技术研发。Wendell（CFO）在问答中确认含2021年约300亿美元，覆盖2021至2023三年。",
+        "source": "prepared_remarks",
+        "source_quote": "TSMC expect to invest about USD 100 billion through the next 3 years to increase capacity, to support the manufacturing and R&D of leading-edge and specialty technologies.",
+        "low": null,
+        "mid": 100000000000,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "2021年资本预算结构",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "80%",
+        "high_raw": null,
+        "point_raw": "80%",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "约80%的2021年资本预算投向3纳米、5纳米和7纳米等先进制程；约10%用于先进封装与光罩，约10%用于特殊制程。这是占比指引，不是美元金额。",
+        "source": "prepared_remarks",
+        "source_quote": "About 80% of the 2021 capital budget will be allocated for advanced process technologies, including 3-nanometer, 5-nanometer and 7-nanometer.",
+        "low": 80,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "长期营收复合增速",
+        "period": "FY2020-FY2025",
+        "type": "numeric",
+        "low_raw": "10%",
+        "high_raw": "15%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "公司重申2020至2025年美元营收长期复合增速目标为10%至15%。",
+        "source": "prepared_remarks",
+        "source_quote": "We reiterate our long-term revenue to be 10% to 15% CAGR from 2020 to 2025 in U.S. dollar terms.",
+        "low": 10,
+        "mid": 12.5,
+        "high": 15
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "2021年行业增速",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "12%",
+        "high_raw": "16%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "不含存储器的半导体市场预计增约12%，晶圆代工行业约16%。这是行业展望，不是公司营收指引。",
+        "source": "prepared_remarks",
+        "source_quote": "we now forecast the overall semiconductor market, excluding memory, to grow about 12% while foundry industry growth is forecast to be about 16%.",
+        "low": 12,
+        "mid": null,
+        "high": 16
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "2021年5纳米占晶圆收入",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "around 20%",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "C.C. Wei（CEO）预计2021年5纳米约占晶圆收入两成。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect N5 to contribute around 20% of our wafer revenue in 2021.",
+        "low": null,
+        "mid": 20,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "第二季需求结构",
+        "period": "FY2021Q2",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "C.C. Wei（CEO）说第二季营收大致持平，高性能计算需求继续增长，手机季节性部分抵消。",
+        "source": "prepared_remarks",
+        "source_quote": "Moving into second quarter 2021, we expect our revenue to be flattish as HPC-related demand will continue to grow, offset by smartphone seasonality.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "长期毛利率目标",
+        "period": "长期",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "50%",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "Wendell（CFO）在问答中说，在成本挑战下通过稳价和降本争取合理回报，50%毛利率仍是目标且可以做到。",
+        "source": "qa",
+        "source_quote": "We expect that the 50% gross margin remains our target and is achievable.",
+        "low": null,
+        "mid": 50,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "下半年5纳米毛利率稀释",
+        "period": "FY2021H2",
+        "type": "numeric",
+        "low_raw": "2 percentage points",
+        "high_raw": "3 percentage points",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "down",
+        "statement": "Wendell（CFO）在问答中说，下半年5纳米收入占比更大，对毛利率仍有约2到3个百分点的稀释。这是稀释幅度，不用毛利率指标键。",
+        "source": "qa",
+        "source_quote": "become bigger in contribution to the revenue. It still has -- carries a negative or dilutive effect on the margins, about 2 to 3 percentage points.",
+        "low": 2,
+        "mid": 2.5,
+        "high": 3
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "2021年折旧增幅",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "around 30% higher",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "Wendell（CFO）说2021年折旧将比去年高约三成。这是增幅指引，不是折旧金额。",
+        "source": "qa",
+        "source_quote": "the depreciation this year will be around 30% higher than last year.",
+        "low": null,
+        "mid": 30,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -245,21 +830,502 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "外部环境",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "2021年，C.C. Wei（CEO）把行业短缺同时归因于5G与高性能计算的多年结构性需求，以及疫情和地缘紧张带来的短期供应链失衡。客户为保供愿意提高库存，Wendell（CFO）预计无晶圆厂客户库存会在全年逐步高于历史季节水平并持续一段时间。全年不含存储器的半导体市场他预计增约12%，晶圆代工约16%；台积电美元营收目标约增两成并跑赢代工行业。台湾缺水，他说已有节水与分阶段应对，目前不预期对运营有重大影响。台南Fab14停电的轻微影响已计入第二季营收指引。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "第一季指标表营收129.2亿美元，环比增1.9%，同比栏为空。电话会美元环比1.9%、新台币0.2%，由高性能计算支撑，手机季节性较近年温和。智能手机占45%且环比降11%，高性能计算占35%，物联网占9%且增10%，汽车占4%且增31%。7纳米及以下先进制程占晶圆收入49%，其中5纳米14%、7纳米35%。库存天数增10天至83天，Wendell归因于5纳米晶圆预建。C.C. Wei说第二季营收大致持平，高性能计算继续增、手机季节性抵消。下半年产能仍紧。汽车芯片短缺他预计下一季对台积电客户大幅缓解。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "5纳米进入量产第二年，良率优于原计划，2021年约占晶圆收入两成。N4从N5延伸，风险生产目标今年下半年，2022年量产。N3开发进度正常，客户参与度高于N5与N7同期，风险生产2021年、量产目标2022年下半年。成熟节点缺口大，公司投资特殊制程并与客户共研差异化技术；新厂从绿地到装机至少到2023年才有产能，今年和明年成熟节点仍紧。C.C. Wei规划1000亿美元三年资本开支，并与设备商提前协调，称不预期设备瓶颈。问答中SoIC 2022年小批量，InFO与CoWoS客户群继续扩大。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "面对Intel重返代工，C.C. Wei（CEO）称台积电是所有人的代工厂，Intel仍是重要客户，会在部分领域合作、部分领域竞争；三十年历史里从不缺对手，靠的是技术、制造与客户信任，且没有内部产品与客户争市场。Sebastian问各国建厂与IDM扩产是否削弱外包，他仍预期IDM外包比例上升，客户扩自有产能不会造成他眼中的过剩，因为技术领先才是关键。Aaron问N3与N5客户参与度提升是否意味着更高份额，他愿意把这看成技术领先的信号，但强调仍是与客户共研所需技术。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "第一季毛利率52.4%，电话会环比降1.6个百分点，主因利用率相对较低与不利汇兑。第二季指引毛利率49.5%至51.5%，Wendell解释环比下滑来自5纳米占比提高的稀释、高利用率下成本改善放缓，以及没有正向库存重估；问答中他还说5纳米对下半年毛利率仍有约2到3个百分点稀释。营业费用因N5研发略增，营业利润率41.5%。长期毛利率目标仍是50%且可达，同时承认先进与成熟节点投资、材料涨价带来制造成本挑战，将通过稳价与供应链降本争取合理回报。2021年折旧将比去年高约三成。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "资本预算上调至约300亿美元，八成先进制程、一成封装光罩、一成特殊制程，并宣布三年约1000亿美元投资计划，决策基于多年结构性需求与客户承诺。C.C. Wei说将努力把晶圆价格稳在合理水平，同时不做 opportunistic 短期涨价。制造布局上台湾仍是重心，亚利桑那12英寸厂按计划推进，南京一期2万片已在产、视经济与需求再扩；客户欢迎美国建厂，但最看重仍是技术、制造效率与产能支持。人才招募是近年优先事项，政府推半导体学科、公司内部加速新人培训。公司重申2020至2025年美元营收复合增速10%至15%。",
+            "items": []
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "non-GAAP",
+      "next_quarter": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2021Q2",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2021",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Randy Abrams",
+        "firm": "Crédit Suisse AG",
+        "topic": "竞争格局",
+        "question_summary": "Intel宣布重返代工并追求制造领先，台积电如何看待其为客户、业务可持续性保障，以及若其制造改善减少外包的风险。",
+        "answer_summary": "C.C. Wei（CEO）：台积电是所有人的代工厂，公平支持客户；Intel是重要客户，部分合作部分竞争。竞争三十年不缺，靠技术、制造卓越与客户信任；没有内部产品与客户竞争。对Intel按重要客户支持，产能按长期产业趋势规划，不是只看短期需求。",
+        "directness": "direct",
+        "tone": "confident",
+        "answer_quote": "Randy, let me start with TSMC is everyone's foundry and support all our customers openly and fairly. Intel is an important customer, and we will collaborate in some areas and compete in other area.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Randy Abrams",
+        "firm": "Crédit Suisse AG",
+        "topic": "宏观与汇率",
+        "question_summary": "地缘压力下各国推动本土产能，请更新美国、南京扩产策略，以及客户是否 increasingly 把产地纳入代工选择。",
+        "answer_summary": "C.C. Wei（CEO）：公司是全球布局，美国从1996年8英寸厂到亚利桑那12英寸厂按计划推进。南京一期2万片已投产，视客户需求与经济再扩。欧洲等地暂无新厂计划但不排除可能。台湾仍是研发与多数产线重心。客户欢迎亚利桑那厂，但最看重技术、效率与产能，地缘只是附加考量。",
+        "directness": "direct",
+        "tone": "neutral",
+        "answer_quote": "However, I want to emphasize, Taiwan will continue to be the main focus for TSMC. Our center of R&D and majority of production line will continue to be located in Taiwan, okay?",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Gokul Hariharan",
+        "firm": "JPMorgan Chase & Co.",
+        "topic": "产能与资本开支",
+        "question_summary": "三年1000亿美元是资本开支还是含研发，今年约300亿是否意味着后两年维持类似水平。",
+        "answer_summary": "Wendell（CFO）：1000亿美元是资本开支数字；今年约300亿已指引，后两年节奏不披露，但可据此感受开支规模。",
+        "directness": "partial",
+        "evasion_note": "没有给出2022与2023年资本开支金额或线性路径。",
+        "tone": "neutral",
+        "answer_quote": "Gokul, this is Wendell. Yes, $100 billion is CapEx number. Now we've already guided that this year will be $30 billion, but we're not going into the linearity in the next 2 years.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Gokul Hariharan",
+        "firm": "JPMorgan Chase & Co.",
+        "topic": "库存与供需",
+        "question_summary": "成熟制程扩产与库存周期下，何时能看到 older node 正常化，2022年是否仍短缺。",
+        "answer_summary": "C.C. Wei（CEO）：不排除库存修正或过度预订，但结构性需求会持续，将与客户共研技术方案。短缺今年持续，可能延续到2022。几乎所有客户都会准备更高库存，因地缘与疫情不确定性。",
+        "directness": "direct",
+        "tone": "cautious",
+        "answer_quote": "But actually, we expect the structural demand to continue and we will work with our customer closely actually to develop some technology solution to meet customers' requirement and create differentiation and long-lasting value to our customer.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Sebastian Hou",
+        "firm": "CLSA Limited",
+        "topic": "定价与 ASP",
+        "question_summary": "六个月前强调长期伙伴、成熟节点不轻易涨价，现在是否考虑上调价格，变化是什么。",
+        "answer_summary": "C.C. Wei（CEO）：三十多年来定价稳定可预测，不做 opportunistic 短期动作；但成本结构因先进与成熟投资而变，需出售价值、与客户合作把晶圆价格稳在合理水平，并与供应商降本以获合理回报支撑投资。",
+        "directness": "direct",
+        "tone": "neutral",
+        "answer_quote": "But now as I said in my statement, the cost structure start to change, structural change, because of -- we have to invest on the leading-edge technology, which is more complex than ever.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Sebastian Hou",
+        "firm": "CLSA Limited",
+        "topic": "竞争格局",
+        "question_summary": "各国建厂与IDM增加自有产能，是否削弱外包趋势并导致几年后过剩。",
+        "answer_summary": "C.C. Wei（CEO）：长期预测仍见IDM外包比例上升，扩自有产能不会造成他眼中的过剩，技术最重要；按客户需求扩产，客户愿与台积电共研产品。",
+        "directness": "direct",
+        "tone": "positive",
+        "answer_quote": "Well, Sebastian, let me say that in our long-term forecast, we continue to see the IDMs outsourcing continue to increase.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Charlie Chan",
+        "firm": "Morgan Stanley",
+        "topic": "指引与展望",
+        "question_summary": "2021年营收指引上修至约两成的驱动因素，按应用拆分，是否包含涨价。",
+        "answer_summary": "Wendell（CFO）：不评论价格。资本开支与产能按长期需求与产业趋势，非短期周期。5纳米与3纳米客户参与度较三个月前更强。今年高性能计算与汽车增速高于公司平均，手机与物联网接近平均；相对三个月前各平台都有上修空间。",
+        "directness": "partial",
+        "evasion_note": "没有确认指引是否包含涨价，也没有按应用量化上修幅度。",
+        "tone": "neutral",
+        "answer_quote": "Okay. Charlie, first of all, we don't comment on price. I can share with you that we're everyone's foundry, our CapEx and capacity planning are based on the long-term demand profile underpinned by the industry megatrends, not short-term cyclical factors.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Charlie Chan",
+        "firm": "Morgan Stanley",
+        "topic": "毛利率与成本",
+        "question_summary": "未来三年资本密集度与长期毛利率趋势，结构性成本上升的影响。",
+        "answer_summary": "Wendell（CFO）：结合三年1000亿、今年约300亿与5年营收复合10%至15%，可推算未来几年资本密集度；长期仍预期回到30%中段。制造成本因先进复杂度、成熟投资与材料上涨而承压，将通过稳价与降本争取合理回报，50%毛利率仍是目标且可达。",
+        "directness": "direct",
+        "tone": "cautious",
+        "answer_quote": "Now at this moment, we still expect that the capital intensity will go back to mid-30 level in the longer term. That's the capital intensity.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Bruce Lu",
+        "firm": "Goldman Sachs Group, Inc.",
+        "topic": "产能与资本开支",
+        "question_summary": "1000亿美元投资背后的应用需求信心，以及成熟节点紧缺何时缓解。",
+        "answer_summary": "C.C. Wei（CEO）：5纳米与3纳米客户参与度很强，必须为此准备产能，这是主因。成熟节点仍有缺口，正与客户分析并投资，同时开发特殊技术以锁定未来几年需求。",
+        "directness": "direct",
+        "tone": "positive",
+        "answer_quote": "In fact, we are seeing stronger engagement with more customers on 5-nanometer and 3-nanometer. And the engagement is so strong that we have to really prepare the capacity for it.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Robert Sanders",
+        "firm": "Deutsche Bank AG",
+        "topic": "客户与订单",
+        "question_summary": "高额资本开支是否要求客户更早承诺或预付款，以及产能预订多远、哪一节点缺口最大。",
+        "answer_summary": "Wendell（CFO）：1000亿投资基于多年结构性需求与数字化加速，不能披露商业条款，但投资决策需要合理回报与可靠客户承诺。C.C. Wei（CEO）：几乎各节点需求都高，与客户规划未来三到四年产品与产能，不评论单一节点。",
+        "directness": "partial",
+        "evasion_note": "没有说明是否要求预付款或更早承诺，也没有指出缺口最大的节点。",
+        "tone": "neutral",
+        "answer_quote": "Now we cannot disclose the detail of our commercial terms with our customers. However, for us to make the investment decision will definitely require proper returns and secure customer commitments.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Brett Simpson",
+        "firm": "Arete Research Services LLP",
+        "topic": "需求与出货",
+        "question_summary": "高性能计算中加密货币挖矿占比及下半年走势，以及是否仍是好业务。",
+        "answer_summary": "C.C. Wei（CEO）：领先技术吸引矿机采用，但不披露占比；挖矿较两三年前更成熟但仍波动，将继续与客户合作。",
+        "directness": "partial",
+        "evasion_note": "没有给出加密货币占营收或高性能计算的比例，也没有预测下半年走势。",
+        "tone": "cautious",
+        "answer_quote": "But I don't -- and I cannot comment on what is the percentage or how much of this particular market sector to our revenue.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Brett Simpson",
+        "firm": "Arete Research Services LLP",
+        "topic": "库存与供需",
+        "question_summary": "台积电库存天数大增且与5纳米预建有关，如何与客户端短缺 reconcile，第二季库存是否再升。",
+        "answer_summary": "Wendell（CFO）：在淡季为客户预建是惯例；进入旺季库存通常会自然下降。",
+        "directness": "partial",
+        "evasion_note": "没有直接解释与客户端短缺的矛盾，也没有明确第二季库存升或降。",
+        "tone": "neutral",
+        "answer_quote": "Okay, Brett. We prebuild for our customers during seasonal low level as we did before. Now when we start to ramp in the higher season, the inventory usually come down naturally as before.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "13",
+        "analyst": "Rick Hsu",
+        "firm": "Daiwa Securities Co. Ltd.",
+        "topic": "毛利率与成本",
+        "question_summary": "第二季营收、5纳米与汇兑看似有利，为何毛利率指引低于第一季。",
+        "answer_summary": "Wendell（CFO）：环比下滑主因产品组合，5纳米占比升但仍稀释毛利率；其次高利用率下成本改善放缓；最后当季没有正向库存重估。",
+        "directness": "direct",
+        "tone": "neutral",
+        "answer_quote": "The sequential decline is mainly due to mix as the contribution from N5 will increase, but it still carries a dilutive effect.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "14",
+        "analyst": "Mehdi Hosseini",
+        "firm": "Susquehanna Financial Group, LLLP",
+        "topic": "费用与运营",
+        "question_summary": "2020至2025年折旧增速相对2010至2015年如何变化。",
+        "answer_summary": "Wendell（CFO）：今年折旧将比去年高约30%，五年其余年份暂不便分享。",
+        "directness": "partial",
+        "evasion_note": "没有给出2022至2025年折旧增速路径。",
+        "tone": "neutral",
+        "answer_quote": "Okay. I can share with you that the depreciation this year will be around 30% higher than last year. And we are not ready to share with you the rest of the 5-year period depreciation at this moment.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "15",
+        "analyst": "Mehdi Hosseini",
+        "firm": "Susquehanna Financial Group, LLLP",
+        "topic": "指引与展望",
+        "question_summary": "资本开支上调为何不同时上调10%至15%的长期营收目标。",
+        "answer_summary": "Wendell（CFO）：5年复合10%至15%区间很大，按当前预测仍在区间内，可能更接近区间上端，较上次更高。",
+        "directness": "direct",
+        "tone": "neutral",
+        "answer_quote": "Mehdi, actually, if you think about this 10% to 15% 5-year CAGR, it's a pretty big range. From what we currently forecast, the revenue target is still within that range, maybe higher to the -- closer to the higher end than last time.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "16",
+        "analyst": "Sebastian Hou",
+        "firm": "CLSA Limited",
+        "topic": "库存与供需",
+        "question_summary": "剔除过度预订后成熟节点需求是否仍显著大于供给，以及紧张何时缓解。",
+        "answer_summary": "C.C. Wei（CEO）：与客户密切分析并准备成熟产能；绿地新厂到2023年才有产能，今年与明年仍紧，2023年希望提供更多产能使供应链略放松。未来18个月供应仍很紧的判断他认同。",
+        "directness": "direct",
+        "tone": "cautious",
+        "answer_quote": "However, building a fab from a green fab start and also to install the capacity, it won't be available until 2023.",
+        "evasion_note": "",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      }
+    ],
+    "topic_stats": {
+      "竞争格局": 2,
+      "宏观与汇率": 1,
+      "产能与资本开支": 2,
+      "库存与供需": 3,
+      "定价与 ASP": 1,
+      "指引与展望": 2,
+      "毛利率与成本": 2,
+      "客户与订单": 1,
+      "需求与出货": 1,
+      "费用与运营": 1
+    },
+    "new_topics": [
+      "宏观与汇率",
+      "定价与 ASP",
+      "客户与订单",
+      "竞争格局",
+      "需求与出货"
+    ],
+    "dropped_topics": [
+      "产品结构"
+    ],
+    "hot_topics": [
+      "竞争格局",
+      "宏观与汇率",
+      "库存与供需"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "3",
+        "analyst": "Gokul Hariharan",
+        "firm": "JPMorgan Chase & Co.",
+        "topic": "产能与资本开支",
+        "question_summary": "三年1000亿美元是资本开支还是含研发，今年约300亿是否意味着后两年维持类似水平。",
+        "answer_summary": "Wendell（CFO）：1000亿美元是资本开支数字；今年约300亿已指引，后两年节奏不披露，但可据此感受开支规模。",
+        "directness": "partial",
+        "evasion_note": "没有给出2022与2023年资本开支金额或线性路径。",
+        "tone": "neutral",
+        "answer_quote": "Gokul, this is Wendell. Yes, $100 billion is CapEx number. Now we've already guided that this year will be $30 billion, but we're not going into the linearity in the next 2 years.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Charlie Chan",
+        "firm": "Morgan Stanley",
+        "topic": "指引与展望",
+        "question_summary": "2021年营收指引上修至约两成的驱动因素，按应用拆分，是否包含涨价。",
+        "answer_summary": "Wendell（CFO）：不评论价格。资本开支与产能按长期需求与产业趋势，非短期周期。5纳米与3纳米客户参与度较三个月前更强。今年高性能计算与汽车增速高于公司平均，手机与物联网接近平均；相对三个月前各平台都有上修空间。",
+        "directness": "partial",
+        "evasion_note": "没有确认指引是否包含涨价，也没有按应用量化上修幅度。",
+        "tone": "neutral",
+        "answer_quote": "Okay. Charlie, first of all, we don't comment on price. I can share with you that we're everyone's foundry, our CapEx and capacity planning are based on the long-term demand profile underpinned by the industry megatrends, not short-term cyclical factors.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Robert Sanders",
+        "firm": "Deutsche Bank AG",
+        "topic": "客户与订单",
+        "question_summary": "高额资本开支是否要求客户更早承诺或预付款，以及产能预订多远、哪一节点缺口最大。",
+        "answer_summary": "Wendell（CFO）：1000亿投资基于多年结构性需求与数字化加速，不能披露商业条款，但投资决策需要合理回报与可靠客户承诺。C.C. Wei（CEO）：几乎各节点需求都高，与客户规划未来三到四年产品与产能，不评论单一节点。",
+        "directness": "partial",
+        "evasion_note": "没有说明是否要求预付款或更早承诺，也没有指出缺口最大的节点。",
+        "tone": "neutral",
+        "answer_quote": "Now we cannot disclose the detail of our commercial terms with our customers. However, for us to make the investment decision will definitely require proper returns and secure customer commitments.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Brett Simpson",
+        "firm": "Arete Research Services LLP",
+        "topic": "需求与出货",
+        "question_summary": "高性能计算中加密货币挖矿占比及下半年走势，以及是否仍是好业务。",
+        "answer_summary": "C.C. Wei（CEO）：领先技术吸引矿机采用，但不披露占比；挖矿较两三年前更成熟但仍波动，将继续与客户合作。",
+        "directness": "partial",
+        "evasion_note": "没有给出加密货币占营收或高性能计算的比例，也没有预测下半年走势。",
+        "tone": "cautious",
+        "answer_quote": "But I don't -- and I cannot comment on what is the percentage or how much of this particular market sector to our revenue.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Brett Simpson",
+        "firm": "Arete Research Services LLP",
+        "topic": "库存与供需",
+        "question_summary": "台积电库存天数大增且与5纳米预建有关，如何与客户端短缺 reconcile，第二季库存是否再升。",
+        "answer_summary": "Wendell（CFO）：在淡季为客户预建是惯例；进入旺季库存通常会自然下降。",
+        "directness": "partial",
+        "evasion_note": "没有直接解释与客户端短缺的矛盾，也没有明确第二季库存升或降。",
+        "tone": "neutral",
+        "answer_quote": "Okay, Brett. We prebuild for our customers during seasonal low level as we did before. Now when we start to ramp in the higher season, the inventory usually come down naturally as before.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      },
+      {
+        "exchange_id": "14",
+        "analyst": "Mehdi Hosseini",
+        "firm": "Susquehanna Financial Group, LLLP",
+        "topic": "费用与运营",
+        "question_summary": "2020至2025年折旧增速相对2010至2015年如何变化。",
+        "answer_summary": "Wendell（CFO）：今年折旧将比去年高约30%，五年其余年份暂不便分享。",
+        "directness": "partial",
+        "evasion_note": "没有给出2022至2025年折旧增速路径。",
+        "tone": "neutral",
+        "answer_quote": "Okay. I can share with you that the depreciation this year will be around 30% higher than last year. And we are not ready to share with you the rest of the 5-year period depreciation at this moment.",
+        "new_numbers": [],
+        "review_flags": [],
+        "is_new_topic": false
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "营收129.20亿美元，上修全年增速至约两成",
+    "key_findings": [
+      {
+        "finding": "第一季营收129.2亿美元，环比增1.9%；5纳米占晶圆收入14%。",
+        "text": "第一季营收129.2亿美元，环比增1.9%；5纳米占晶圆收入14%。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "毛利率52.4%，环比降1.6个百分点；第二季指引49.5%至51.5%。",
+        "text": "毛利率52.4%，环比降1.6个百分点；第二季指引49.5%至51.5%。",
+        "evidence": "gross_margin_gaap"
+      },
+      {
+        "finding": "全年资本预算约300亿美元，三年投资计划约1000亿美元；资本开支、经营现金流与自由现金流指标表未单列。",
+        "text": "全年资本预算约300亿美元，三年投资计划约1000亿美元；资本开支、经营现金流与自由现金流指标表未单列。",
+        "evidence": "capex"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "下一季披露的第二季营收落在本次美元指引内",
+        "threshold": "129亿至132亿美元"
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "condition": "下一季披露的第二季毛利率落在本次指引内",
+        "threshold": "49.5%至51.5%"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "下一季披露的第二季营业利润率落在本次指引内",
+        "threshold": "38.5%至40.5%"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "2021年全年资本开支仍约为300亿美元",
+        "threshold": "约300亿美元"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "2021年全年美元营收增速接近本次全年指引",
+        "threshold": "约增20%"
+      }
+    ]
   },
   "thesis_review": {}
 }

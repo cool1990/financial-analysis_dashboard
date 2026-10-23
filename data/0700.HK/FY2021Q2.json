@@ -9,16 +9,22 @@
     "release_at_utc": "2021-08-18T00:00:00Z",
     "accession": "manual:91cf8fbbf7a4",
     "press_release_url": "file:data/0700.HK/raw/FY2021Q2/press_release.pdf",
-    "transcript_source": "local_import",
+    "transcript_source": "roic",
     "eps_basis": "gaap",
     "listing": "hk",
     "reporting_currency": "CNY",
     "sec_form": null,
     "extract_method": "hk_results",
-    "extract_mode": "disclosed"
+    "extract_mode": "disclosed",
+    "transcript_url": "https://www.roic.ai/quote/TCEHY/transcripts/2021-year/2-quarter",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf",
@@ -436,12 +442,408 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "港股手工导入未调用变动原因模型"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "收入1382.59亿元，同比升20.3%，环比升2.2%。Pony（CEO）称总收入人民币1380亿元，同比升20%、环比升2%。John（CFO）称1383亿元，同比升20%、环比升2%。James（CSO）称同比升20%。增值服务720.13亿元，网络广告228.33亿元，金融科技及企业服务418.92亿元。James称增值服务720亿元、同比升11%、环比大致持平，广告230亿元、同比升23%，金融科技及企业服务420亿元、同比升40%、环比升7%。摘要金额和同比环比用指标表。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "金融科技及企业服务是增速最快的大块。James称420亿元、同比升40%、环比升7%，企业服务增速尤其快，公共事业数字化和平台软件采用增加。指标表418.92亿元。",
+            "evidence_quote": "segment revenue was RMB42 billion, up 40% year-on-year and 7% quarter-on-quarter with Business Services growing at a notably rapid rate.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "网络广告同比升23%。James称230亿元，互联网服务、消费品和汽车板块增长抵消教育走弱；5月起教培广告骤降也拖累行业。",
+            "evidence_quote": "total revenue was RMB23 billion in the second quarter, up 23% year-on-year as growth in Internet services, consumer staples, and automobile sectors outweighed weakness in education.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "增值服务同比升11%。游戏子板块430亿元、同比升12%，国际游戏110亿元、同比升29%、固定汇率升37%。社交网络290亿元、同比升9%。",
+            "evidence_quote": "Our international games revenue grew 29% to RMB11 billion, or 37% in constant currency terms.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "微信小程序交易额同比翻倍，帮助商户私域运营，也带动小程序内广告收入同比翻倍。",
+            "evidence_quote": "Mini Programs GMV more than doubled year-on-year as our decentralized commerce environment helps businesses drive their own channels and their own user relationships",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "Pony（CEO）称总收入人民币1380亿元，同比升20%，环比升2%。John（CFO）称1383亿元，同比升20%，环比升2%。指标表1382.59亿元，同比升20.3%，环比升2.2%。摘要用指标表。",
+          "James（CSO）称增值服务720亿元、广告230亿元、金融科技及企业服务420亿元。指标表分别为720.13亿元、228.33亿元、418.92亿元。23%和40%只作为电话会口述增速。"
+        ]
+      },
+      {
+        "metric": "gross_profit_gaap",
+        "summary": "毛利627.45亿元，同比升17.9%，环比升0.2%。Pony（CEO）称人民币630亿元，同比升18%、环比大致持平。John（CFO）称627亿元，同比升18%、环比大致持平。毛利增速慢于收入20.3%，对应毛利率同比下降。摘要用指标表。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "收入同比上升带动毛利增加，但增速低于收入，因为毛利率同比降约0.9个百分点。",
+            "evidence_quote": "Gross profit was RMB62.7 billion, up 18% year-on-year or stable quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "增值服务毛利率同比降0.8个百分点。John归因于特权订阅和个人电脑游戏贡献下降，这两块利润率相对较高。",
+            "evidence_quote": "The year-on-year decline was mainly due to lower contribution from privileged subscriptions and PC games, which carry relatively higher margins.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": false,
+            "description": "网络广告毛利率同比降2.6个百分点，主因带宽和服务器成本上升。",
+            "evidence_quote": "The year-on-year decrease was mainly due to increased bandwidth and server costs",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "Pony（CEO）称毛利人民币630亿元。John（CFO）称627亿元。指标表627.45亿元。摘要用指标表。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率45.4%，同比降0.9个百分点，环比降0.9个百分点。John（CFO）称45.4%、同比和环比均降0.9个百分点，与指标表一致。分部毛利率：增值服务52.9%，同比降0.8个百分点、环比降2.2个百分点；网络广告48.8%，同比降2.6个百分点、环比升3.7个百分点；金融科技及企业服务32.0%，同比升3.1个百分点、环比大致持平。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": true,
+            "description": "增值服务占收入约52%，其毛利率降至52.9%。同比下降来自特权订阅和个人电脑游戏占比下降，环比还因数字内容服务收入占比上升且内容成本更高。",
+            "evidence_quote": "The sequential decline was also due to lower revenue contributions from PC games and higher revenue mix of lower-margin digital content services with increased content costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": false,
+            "description": "广告毛利率48.8%，同比降2.6个百分点，带宽和服务器成本是主因。环比升3.7个百分点来自更高毛利的自有库存占比上升。",
+            "evidence_quote": "sequential increase mainly benefited from mix shift to higher-margin owned and operated inventories.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "金融科技及企业服务毛利率32.0%，同比升3.1个百分点，反映企业服务毛利改善以及金融科技内部结构变化。",
+            "evidence_quote": "The year-on-year increase reflected improvement in gross margin of Business Services and mix shifts within FinTech service.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "国际财务报告准则经营盈利524.87亿元，同比升33.5%，环比降6.7%。John（CFO）称525亿元，同比升34%、环比降7%。升幅大于毛利17.9%，因为其他收益净额同比升141%至208亿元，含被投公允价值上升和视同处置收益。非国际财务报告准则经营盈利428.02亿元另列。摘要用指标表。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": true,
+            "description": "其他收益净额208亿元，同比升141%、环比升6%，主要来自被投公允价值上升以及视同处置和处置收益，部分被减值抵消。这是经营盈利同比升33.5%的重要推手。",
+            "evidence_quote": "Net other gains were RMB20.8 billion, up 141% year-on-year or 6% quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "毛利627.45亿元、同比升17.9%，为经营盈利提供基础上行。",
+            "evidence_quote": "Gross profit was RMB62.7 billion, up 18% year-on-year or stable quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "销售及市场推广开支100.13亿元，电话会称100亿元、同比升29%、环比升17%，投向企业服务、数字内容和游戏营销。研发128亿元、同比升30%。一般及行政开支（不含研发）98亿元、同比升48%。费用上升部分对冲毛利增长。",
+            "evidence_quote": "Both year-on-year and quarter-on-quarter increase mainly reflected increased market spending on Business Services, digital content services and games",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John（CFO）称经营盈利525亿元，同比升34%，环比降7%。指标表524.87亿元，同比升33.5%，环比降6.7%。摘要用指标表。"
+        ]
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "国际财务报告准则经营利润率38.0%，同比升3.7个百分点，环比降3.6个百分点。电话会没有直接报这项比率。经营盈利升33.5%快于收入升20.3%，主要因为其他收益净额大增；环比利润率下降对应经营盈利环比降6.7%而收入仍升2.2%。非国际财务报告准则经营利润率31.0%，同比降1.8个百分点。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营利润率同比升3.7个百分点，首要因素是其他收益净额同比升141%，抬升了分子。",
+            "evidence_quote": "This mainly included non-IFRS adjustments relating to our invested companies, number one; net fair value gains, reflecting increased valuations of investees",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发占收入9%，销售费用占7%大致持平，但一般及行政开支同比升48%，拖累经营利润率环比表现。",
+            "evidence_quote": "G&A expenses, excluding R&D, were RMB9.8 billion, up 48% year-on-year or 28% quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "收入同比升20.3%扩大分母，但经营盈利升更快，净效果是利润率同比上升。",
+            "evidence_quote": "For the second quarter of 2021 total revenue was RMB138.3 billion, up 20% year-on-year or 2% quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "摊薄每股收益4.387元，同比升27.6%，环比降10.8%。John（CFO）称4.387元，同比升28%、环比降11%。国际财务报告准则净利润430.22亿元，同比升32.6%。有效税率7.9%。摘要每股收益用指标表。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营盈利同比升33.5%带动净利润和每股收益上升。",
+            "evidence_quote": "IFRS net profit attributable to shareholders was RMB42.6 billion, up 49% year-on-year or down 11% quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "其他收益净额大增也进入净利润路径，叠加被投估值上升。",
+            "evidence_quote": "net fair value gains, reflecting increased valuations of investees, in particular, in the sectors of transportation, services, FinTech Services and local services",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "应占联营及合营亏损39亿元，上年同期仅2.95亿元，来自若干联营的非国际财务报告准则调整及社区团购投资。",
+            "evidence_quote": "Share of losses of associates and joint ventures was RMB3.9 billion compared to RMB295 million a year ago.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John（CFO）称摊薄每股收益4.387元，同比升28%，环比降11%。指标表4.387元，同比升27.6%，环比降10.8%。摘要用指标表同比。"
+        ]
+      },
+      {
+        "metric": "capex",
+        "summary": "资本开支69.36亿元。指标表没有同比环比。John（CFO）称合计69亿元，同比降27%、环比降10%；其中经营性资本开支59亿元、同比降29%，因2020年二季度疫情期提前采购的高基数；非经营性资本开支11亿元、同比降11%。摘要金额用69.36亿元。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": true,
+            "description": "资本开支同比下降，经营性部分同比降29%，对比2020年二季度疫情期提前采购的高基数。",
+            "evidence_quote": "operating CapEx was RMB5.9 billion, down 29% from the high base in the second quarter of 2020 as we advance procurement and amidst the pandemic at that time.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "非经营性资本开支11亿元、同比降11%，反映土地使用权和数据中心建设支出减少。",
+            "evidence_quote": "Non-operating CapEx decreased 11% year-on-year to RMB1.1 billion, reflecting lower spending on land use rights and data center construction.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John（CFO）称资本开支69亿元，同比降27%，环比降10%。指标表69.36亿元，没有同比环比。摘要用指标表金额。"
+        ]
+      },
+      {
+        "metric": "free_cash_flow",
+        "summary": "自由现金流另列173亿元，与John（CFO）所称一致。财务指标表的自由现金流字段为空，不回填。电话会称同比降39%、环比降48%，主因并购和派息导致净债务上升，部分被自由现金流抵消。经营现金流指标表未单列，不回填。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": true,
+            "description": "自由现金流173亿元，同比降39%、环比降48%。季末净债务210亿元，上季净现金56亿元，因并购现金流出和125亿元股息，部分被自由现金流抵消。",
+            "evidence_quote": "Free cash flow for the quarter was RMB17.3 billion, down 39% year-on-year or 48% quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "资本开支同比降27%对自由现金流是正向，但不足以抵消其他现金用途。",
+            "evidence_quote": "Total CapEx was RMB6.9 billion, down 27% year-on-year or 10% quarter-on-quarter",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "自由现金流另列173亿元。财务指标表自由现金流为空，不回填，也不把39%或48%写成指标表增速。经营现金流指标表未单列。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "other",
+        "metric_label": "在线广告行业增速",
+        "period": "FY2021Q3",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "行业增速对比",
+        "direction": "down",
+        "statement": "James（CSO）预期第三季度整体在线广告行业增速将慢于第二季度，因教培广告整季影响、开屏广告监管以及消费活动可能放缓。这是行业层面判断，不是公司收入指引。",
+        "source": "qa",
+        "source_quote": "In the near term, our expectation is the overall online ad industry will experience slower growth in the third quarter than the second quarter",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "有效税率",
+        "period": "FY2021",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "全年水平",
+        "direction": null,
+        "statement": "John（CFO）预期2021全年有效税率与上半年约11%的水平相近。剔除非国际财务报告准则调整、预提税等噪音后，2020年有效税率约低十几，2021年约中十几，总差异约3个百分点。",
+        "source": "qa",
+        "source_quote": "We expect that the effective tax rate for the entire year will be at similar level.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "未成年人游戏总时长监管",
+        "period": "此后",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "政策讨论",
+        "direction": null,
+        "statement": "Martin（总裁）提议与监管和行业讨论按游戏品类限制未成年人总游戏时长，若实现可化解大部分对游戏业的批评。这是倡议方向，不是已宣布的规则。",
+        "source": "qa",
+        "source_quote": "if we can actually find a way to regulate the total amount of time that's spent across different games; that would address the problem.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "视频号变现时间",
+        "period": "此后",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "变现节奏",
+        "direction": null,
+        "statement": "Martin（总裁）称视频号当前重点是改善内容生态和推荐能力，变现不是现阶段焦点，但行业机制成熟后终将变现。",
+        "source": "qa",
+        "source_quote": "Monetization is not a focus for now; we know that at some point in time, there will be monetization because monetization mechanism is actually well established in that industry but for now our focus is not on monetization.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -451,21 +853,436 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "外部环境（监管与宏观）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Martin（总裁）在问答里把监管放在全球趋势下：美国、欧洲也在加强互联网监管，中国执行更靠前。监管重点是纠偏行业不当行为、强调合规与社会责任，并预期近期还会有更多规则出台。政府仍希望互联网长期健康发展，认可其经济与社会贡献。腾讯态度是全面拥抱合规；Martin称公司历来克制变现、开放平台、强调科技向善，相对同行更有准备。教培广告整顿是当季最直接冲击：本季已部分体现，下季将是整季影响，库存需时间用其他广告主填补。宏观上James（CSO）提到消费活动可能放缓，叠加开屏广告监管，使他对第三季度行业广告增速给出放缓判断。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "James（CSO）给出收入结构：增值服务占52%，其中游戏31%、社交网络21%；广告17%；金融科技及企业服务30%。指标表对应720.13亿元、228.33亿元、418.92亿元。游戏国际收入110亿元、固定汇率同比升37%，由PUBG Mobile和Clash of Clans等拉动；国内由王者荣耀和天涯明月刀等带动。社交网络订阅229百万、视频订阅125百万、音乐订阅66百万。广告230亿元、同比升23%，社交及其他广告200亿元、同比升28%，朋友圈更多广告主用小程序落地页，视频广告库存接近朋友圈收入的一半。小程序内广告收入同比翻倍。金融科技及企业服务420亿元、同比升40%，移动支付笔数和用户数上升，企业服务在公有事业和传统行业数字化需求旺盛。微信与WeChat合计月活12.5亿，QQ移动端月活5.91亿。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化（费用、人员与资本开支）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "费用端明显加码。销售及市场推广开支指标表100.13亿元，电话会称100亿元、同比升29%、环比升17%，投向企业服务、数字内容和游戏，占收入7%大致持平。研发128亿元、同比升30%、占收入9%。一般及行政开支（不含研发）98亿元、同比升48%，John归因于零售人员扩张；季末员工约9.4万人、同比升33%。资本开支指标表69.36亿元，电话会称69亿元、同比降27%，经营性部分对比2020年二季度疫情采购高基数下降，非经营性部分反映土地和数据中心建设减少。自由现金流另列173亿元、同比降39%，净债务210亿元，因并购和125亿元股息。经营现金流与财务自由现金流指标表未单列，摘要不回填。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "游戏侧，腾讯继续强化头部IP：王者荣耀改编剧集成为腾讯视频年内单集播放量最高剧集；PUBG Mobile与电影联动并改版战场。Valorant周年月活1400万；Supercell在开发三款Clash新游。未成年人收入占比很低：16岁以下占中国游戏流水2.6%，12岁以下0.3%，公司已把非节假日每日游戏时长降至1小时并禁止12岁以下内购。广告竞争上，教培广告主退出后其他行业填补，苹果IDFA变化在中国影响小于预期。云侧IDC称视频云收入中国第一；RT1网络整合实时通信、即时消息和CDN。生产力软件WeCom、腾讯会议、腾讯文档用户增长但直接收入仍很小，Martin称对标Zoom、Salesforce和Google Docs，长期可商业化。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "微信生态继续走 decentralized commerce：商户用二维码和微信支付获客，在群和公众号运营私域，小程序完成交易，视频号和直播是新增触点。金融科技对中小商户采取低甚至零支付费率以扩大生态。数字人民币试点中支持微众银行接口。企业服务以平台软件和垂直方案带动云销售；Martin说生产力套件当下几乎不直接收费，但部署后能打开云和广告销售大门。内容投资上James称加强上游文学、影视、动漫布局，王者荣耀剧集反哺游戏热度，阅文IP孵化多形态内容。元宇宙是长期话题，路径包括社交游戏、新游戏和社交网络演进，腾讯具备大规模社交、虚拟经济和快速三维化能力。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Pony（CEO）称二季度在增强服务的同时实现健康增长，企业服务与广告尤其突出，游戏受益于国际增长。战略上Martin强调通信与生产力SaaS助力产业数字化，虽当前收入贡献很小。James在William Packer提问时拒绝收窄非国际财务报告准则每股收益指引区间，称更应看再投资是否见效：企业服务收入加速、WeCom与腾讯会议用户增长、国际游戏固定汇率升37%、视频号日活和时长上升，这些才是管理层关注的五年、十年布局。国内游戏管线James称仍然积极；监管下Martin承认各业务需短期调整，但长期战略仍是用户价值、行业赋能、克制变现和社会责任。社会责任举措包括12岁以下停售、部分支付低费率，以及500亿元人民币社会价值投资计划，Martin称由国际财务报告准则利润池出资、不影响非国际财务报告准则利润。",
+            "items": []
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "non-GAAP",
+      "next_quarter": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2021Q3",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2021",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Alicia Yap",
+        "firm": "Citigroup",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "下半年广告增速如何平衡小程序落地页带来的朋友圈机会、开屏广告监管和宏观疲软？生产力软件未来还有哪些商业化可能？",
+        "answer_summary": "James（CSO）：长期看小程序企业采用提升微信内广告的性能属性，小程序本身也是广告库存，二季度小程序内广告收入同比翻倍；视频号日活和时长增长，长期变现的加载率和千次展示费用可能具吸引力。短期看第三季度在线广告行业增速将慢于第二季度，因教培广告整季影响、开屏监管和可能的消费放缓。\nMartin（总裁）：生产力套件当前不直接变现，但部署后能带动云和广告销售；对标美国Zoom、Salesforce和Google Docs，未来可对增值服务收费，并培育依托腾讯文档等的SaaS生态。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "In the near term, our expectation is the overall online ad industry will experience slower growth in the third quarter than the second quarter",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Han Joon Kim",
+        "firm": "Macquarie",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "哪些监管变化与此前预期不同、如何影响战略？优惠税率是否会随资本再投资社会而消退？",
+        "answer_summary": "Martin（总裁）：教培整顿是广告最直接冲击，下季整季体现。更系统性看，互联网监管是全球趋势，中国执行更前；监管强调合规与社会责任，还会有新规则，但政府仍支持行业长期发展，腾讯将全面拥抱合规。\nJohn（CFO）：软件企业税收优惠因更细分类而总体减少；仅在确定能获批时按10%优惠税率计提。2020年和2021年上半年有效税率约11%，预计全年相近；剔除非国际财务报告准则调整等噪音后，2020年约低十几、2021年约中十几，总差异约3个百分点。",
+        "new_numbers": [
+          {
+            "value": "约11%",
+            "number": "约11%",
+            "meaning": "2020年与2021年上半年有效税率水平，预期2021全年相近"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "We expect that the effective tax rate for the entire year will be at similar level.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Gary Yu",
+        "firm": "Morgan Stanley",
+        "topic": "其他",
+        "is_new_topic": true,
+        "question_summary": "与监管沟通后，游戏业是否会有更严厉措施，例如对18岁以下青少年游戏时长限制？",
+        "answer_summary": "Martin（总裁）：当前焦点仍是未成年人游戏时长和花费。公司已收紧时长并禁止12岁以下内购。腾讯主动向监管提议讨论按全品类限制未成年人总游戏时长，若达成可解决大部分行业批评，但需监管、行业和执法系统共识，技术上可行。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "if we can actually find a way to regulate the total amount of time that's spent across different games; that would address the problem.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Robin Zhu",
+        "firm": "Bernstein",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "与同业生态互通是否在推进、对腾讯有何影响？视频号变现策略与内容深度如何？",
+        "answer_summary": "Martin（总裁）：微信生态本质开放，优先服务中小商户；平台间互联互通问题复杂，涉及补贴、假货盗版和不同抽佣政策，需审慎处理，不是当前最高优先级。视频号日活、人均时长和内容创作者增长健康，奥运内容有助力；现阶段专注内容生态和推荐引擎，变现不是重点，但未来行业机制成熟后会变现。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "Monetization is not a focus for now; we know that at some point in time, there will be monetization because monetization mechanism is actually well established in that industry but for now our focus is not on monetization.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "John Choi",
+        "firm": "Daiwa Capital Markets",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "国内游戏下半年增长如何展望，监管收紧对未成年人影响多大？合规是否会放慢各业务增长？",
+        "answer_summary": "James（CSO）：12岁及以下停售仅影响中国游戏收入约0.3%，占整体游戏收入比例更小；国内与国际管线仍积极，近期在日本、韩国和Switch上取得进展。\nMartin（总裁）：各业务短期需要调整，但长期战略未变，仍围绕用户价值、行业赋能、克制变现和社会责任。",
+        "new_numbers": [
+          {
+            "value": "0.3%",
+            "number": "0.3%",
+            "meaning": "12岁及以下用户占中国游戏流水比例"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "which is 0.3% of our China again, revenue and therefore, a smaller percentage of aggregate game revenue.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Alex Yao",
+        "firm": "JPMorgan",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "更多社会责任举措对长期利润率有何影响？未来监管可能集中在哪些领域？",
+        "answer_summary": "Martin（总裁）：12岁以下收入仅占总收入0.3%；中小商户低费率会放缓收入增长但在可控范围。长期利润率由克制变现的盈利业务、未来可变现的免费业务和仍亏损但望收窄的业务组合驱动，策略多年稳定，盈利轮廓相对平稳但会有短期波动。500亿元社会责任投资由国际财务报告准则利润出资，不影响非国际财务报告准则利润。关于未来监管方向，此前已给出框架，各监管主体、各行业段都会有新规则，无法在未出台前做临床分析。",
+        "new_numbers": [
+          {
+            "value": "0.3%",
+            "number": "0.3%",
+            "meaning": "12岁以下用户占公司总收入比例"
+          },
+          {
+            "value": "500亿元",
+            "number": "500亿元",
+            "meaning": "社会责任投资计划规模，由国际财务报告准则利润出资"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "对具体未来监管领域拒绝逐项预测，只重复已有框架。",
+        "tone": "neutral",
+        "answer_quote": "if you look at the under 12-year old, it's only 0.3% of our total revenues.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Natalie Wu",
+        "firm": "Unknown",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "金融科技及企业服务快速增长中，支付与云各占多少？云毛利率是否与金融科技相近？",
+        "answer_summary": "James（CSO）：商业支付和云是增长的两大来源。云侧基础设施服务增速远高于行业，平台即服务和软件即服务更快；毛利率同比改善，主因结构从基础设施服务转向平台即服务和软件即服务，而非主动追求利润率优化，当前仍聚焦客户渗透和市场份额。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未拆分支付与云的收入占比，只定性两者都是主要贡献者。",
+        "tone": "positive",
+        "answer_quote": "both the commercial payment and the cloud were the 2 primary contributors to the growth.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Garret Wang",
+        "firm": "CITIC Securities",
+        "topic": "其他",
+        "is_new_topic": true,
+        "question_summary": "管理层调整是否意味着更重内容投资？元宇宙布局如何？",
+        "answer_summary": "James（CSO）：公司持续强化上游内容，文学、影视、动漫协同，王者荣耀剧集提升游戏热度，阅文IP多形态孵化。元宇宙是长期机会，路径包括社交游戏、新游戏和社交网络演进；腾讯具备大规模社交互动、用户间虚拟经济和快速三维化实体资产的能力，是全球少数同时具备这些能力的公司之一。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "And we believe there's a number of potential pathways to the Metaverse, including very popular existing games that are highly social in nature",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "William Packer",
+        "firm": "Exane BNP Paribas",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "能否细化2021再投资规模并收窄非国际财务报告准则每股收益0%至22%的指引区间？2022在再投资和监管下能否回到趋势利润增长？",
+        "answer_summary": "James（CSO）：通常不提供指引，上季给出区间是为提示再投资可能放缓增长。当前更应看再投资是否见效：企业服务收入加速、文档与企业微信用户强劲、国际游戏固定汇率升37%、视频号日活时长上升，这些证明方向正确。未来两季或六季利润受内外因素扰动很大，管理层更关注五到十年机会，包括企业软件、视频号广告和游戏全球化，而非优化短期利润。",
+        "new_numbers": [
+          {
+            "value": "37%",
+            "number": "37%",
+            "meaning": "国际游戏收入固定汇率同比增速"
+          }
+        ],
+        "directness": "evasive",
+        "evasion_note": "拒绝收窄每股收益指引或给出2022利润增长承诺，转向长期战略叙事。",
+        "tone": "positive",
+        "answer_quote": "unfortunately we typically don't provide guidance and we did so last quarter as a means of signaling that there could be a deceleration in growth because of the reinvestments",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Eddie Leung",
+        "firm": "Bank of America Merrill Lynch",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "数据隐私收紧对不同营销解决方案影响是否分化？海外扩张是否仍以手游为主，还是加大PC和主机？",
+        "answer_summary": "James（CSO）：腾讯在广告Targeting上一直比西方和部分本土同行更审慎，即使数据使用规则大幅变化，对公司实质性负面影响也可能较晚出现。海外游戏同时布局移动、PC和主机：Valorant是PC优先，Pokémon Unite是Switch主机；PC、Xbox和PlayStation架构趋同，移动与Switch芯片设计趋同，加上Unreal Engine等工具和美国工作室投资，使多平台开发比过去容易。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "our assumption is that there could be fairly substantial changes in terms of the regulations around the use of data for advertising targeting purposes before those would have any meaningful negative impact on us",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Thomas Chong",
+        "firm": "Jefferies",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "长视频监管是否放松、下半年剧集和综艺供给如何？国际游戏战略偏自研还是并购，二季度国际收入占比和长期目标？",
+        "answer_summary": "James（CSO）：二季度国际游戏收入占游戏板块约25%，固定汇率同比升37%。战略上中国偏内容加QQ微信分发，海外更纯内容驱动；增长主要来自现有工作室，并购用于补技术或能力缺口。国际收入一块是中国出品如PUBG Mobile，一块是Riot和Supercell等海外工作室，还有处于孵化期的外部工作室。长视频方面，上半年七一相关内容有约束，夏季剧集表现更好；综艺端有些扰动，综艺主要靠广告而剧集靠订阅，视频业务将越来越订阅驱动。",
+        "new_numbers": [
+          {
+            "value": "约25%",
+            "number": "约25%",
+            "meaning": "二季度国际游戏收入占游戏板块收入比例"
+          },
+          {
+            "value": "37%",
+            "number": "37%",
+            "meaning": "国际游戏收入固定汇率同比增速"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think 25% of games segment revenue.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "指引与展望": 2,
+      "宏观与汇率": 2,
+      "其他": 2,
+      "竞争格局": 1,
+      "需求与出货": 1,
+      "费用与运营": 1,
+      "产品结构": 2
+    },
+    "new_topics": [
+      "其他",
+      "竞争格局",
+      "需求与出货"
+    ],
+    "dropped_topics": [
+      "定价与 ASP",
+      "客户与订单",
+      "毛利率与成本"
+    ],
+    "hot_topics": [
+      "其他",
+      "宏观与汇率",
+      "竞争格局"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "6",
+        "analyst": "Alex Yao",
+        "firm": "JPMorgan",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "更多社会责任举措对长期利润率有何影响？未来监管可能集中在哪些领域？",
+        "answer_summary": "Martin（总裁）：12岁以下收入仅占总收入0.3%；中小商户低费率会放缓收入增长但在可控范围。长期利润率由克制变现的盈利业务、未来可变现的免费业务和仍亏损但望收窄的业务组合驱动，策略多年稳定，盈利轮廓相对平稳但会有短期波动。500亿元社会责任投资由国际财务报告准则利润出资，不影响非国际财务报告准则利润。关于未来监管方向，此前已给出框架，各监管主体、各行业段都会有新规则，无法在未出台前做临床分析。",
+        "new_numbers": [
+          {
+            "value": "0.3%",
+            "number": "0.3%",
+            "meaning": "12岁以下用户占公司总收入比例"
+          },
+          {
+            "value": "500亿元",
+            "number": "500亿元",
+            "meaning": "社会责任投资计划规模，由国际财务报告准则利润出资"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "对具体未来监管领域拒绝逐项预测，只重复已有框架。",
+        "tone": "neutral",
+        "answer_quote": "if you look at the under 12-year old, it's only 0.3% of our total revenues.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Natalie Wu",
+        "firm": "Unknown",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "金融科技及企业服务快速增长中，支付与云各占多少？云毛利率是否与金融科技相近？",
+        "answer_summary": "James（CSO）：商业支付和云是增长的两大来源。云侧基础设施服务增速远高于行业，平台即服务和软件即服务更快；毛利率同比改善，主因结构从基础设施服务转向平台即服务和软件即服务，而非主动追求利润率优化，当前仍聚焦客户渗透和市场份额。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未拆分支付与云的收入占比，只定性两者都是主要贡献者。",
+        "tone": "positive",
+        "answer_quote": "both the commercial payment and the cloud were the 2 primary contributors to the growth.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "William Packer",
+        "firm": "Exane BNP Paribas",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "能否细化2021再投资规模并收窄非国际财务报告准则每股收益0%至22%的指引区间？2022在再投资和监管下能否回到趋势利润增长？",
+        "answer_summary": "James（CSO）：通常不提供指引，上季给出区间是为提示再投资可能放缓增长。当前更应看再投资是否见效：企业服务收入加速、文档与企业微信用户强劲、国际游戏固定汇率升37%、视频号日活时长上升，这些证明方向正确。未来两季或六季利润受内外因素扰动很大，管理层更关注五到十年机会，包括企业软件、视频号广告和游戏全球化，而非优化短期利润。",
+        "new_numbers": [
+          {
+            "value": "37%",
+            "number": "37%",
+            "meaning": "国际游戏收入固定汇率同比增速"
+          }
+        ],
+        "directness": "evasive",
+        "evasion_note": "拒绝收窄每股收益指引或给出2022利润增长承诺，转向长期战略叙事。",
+        "tone": "positive",
+        "answer_quote": "unfortunately we typically don't provide guidance and we did so last quarter as a means of signaling that there could be a deceleration in growth because of the reinvestments",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "收入1382.59亿元，经营盈利524.87亿元增33.5%",
+    "key_findings": [
+      {
+        "finding": "收入1382.59亿元，同比升20.3%，环比升2.2%。增值服务720.13亿元，广告228.33亿元，金融科技及企业服务418.92亿元，后两者增速最快。",
+        "text": "收入1382.59亿元，同比升20.3%，环比升2.2%。增值服务720.13亿元，广告228.33亿元，金融科技及企业服务418.92亿元，后两者增速最快。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "毛利率45.4%，同比降0.9个百分点；经营盈利524.87亿元，同比升33.5%，经营利润率38.0%，同比升3.7个百分点，其他收益净额大增是主因。",
+        "text": "毛利率45.4%，同比降0.9个百分点；经营盈利524.87亿元，同比升33.5%，经营利润率38.0%，同比升3.7个百分点，其他收益净额大增是主因。",
+        "evidence": "operating_margin_gaap"
+      },
+      {
+        "finding": "摊薄每股收益4.387元，同比升27.6%。资本开支69.36亿元。另列自由现金流173亿元；经营现金流与财务自由现金流指标表未单列。",
+        "text": "摊薄每股收益4.387元，同比升27.6%。资本开支69.36亿元。另列自由现金流173亿元；经营现金流与财务自由现金流指标表未单列。",
+        "evidence": "eps_gaap"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2021Q3收入是否高于1382.59亿元，同比增速是否仍高于20%。本季1382.59亿元，同比升20.3%，环比升2.2%。",
+        "threshold": "高于1382.59亿元，同比增速高于20%"
+      },
+      {
+        "metric_key": "advertising_revenue",
+        "condition": "FY2021Q3网络广告收入是否仍高于228.33亿元，且同比增速是否仍为正。James预期行业第三季度增速慢于第二季度。",
+        "threshold": "高于228.33亿元，同比增速为正"
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "condition": "FY2021Q3毛利率是否不低于45.4%。本季45.4%，同比降0.9个百分点，环比降0.9个百分点。",
+        "threshold": "不低于45.4%"
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "condition": "FY2021Q3国际财务报告准则经营盈利是否高于524.87亿元。本季524.87亿元，同比升33.5%，环比降6.7%。",
+        "threshold": "高于524.87亿元"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "FY2021Q3资本开支是否低于69.36亿元或同比降幅是否扩大。本季69.36亿元，电话会称同比降27%。",
+        "threshold": "低于69.36亿元，或同比降幅大于27%"
+      }
+    ]
   },
   "thesis_review": {}
 }
