@@ -1067,6 +1067,9 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert "$73–76B" not in html and "$697.52" in html and "21.8×" in html and ">47.4<" in html
     assert ">2026-10-21</td>" in html and ">2026-09-30</td>" in html
     assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    head = html.split("</thead>", 1)[0]
+    assert head.index(">是否触发</th>") < head.index(">评价</th>") < head.index(">最近财报</th>")
+    assert "th.name" in html or 'class="name"' in head
     assert "下季度" not in html and "温和上修" not in html and "温和下修" not in html
     assert "无数据" in html and "ALPHAVANTAGE_API_KEY" in html
     assert '<b>SNDK</b>' not in html and 'class="pool-name"' in html
