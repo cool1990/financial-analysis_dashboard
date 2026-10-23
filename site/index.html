@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>财报解读 · 覆盖股票</title>
+  <title>观察池</title>
   <link rel="stylesheet" href="static/style.css" />
 </head>
-<body>
+<body class="pool-page">
   <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="index.html">财报解读</a>
@@ -22,86 +22,216 @@
     </div>
   </header>
   <main>
-<div class="page-head">
+<div class="page-head pool-head">
   <div>
-    <h1>财报解读</h1>
-    <div class="sub">按仓位分组：持仓看买卖时点，等待仓看买点，观察仓先了解事实</div>
+    <h1>观察池</h1>
+    <div class="sub"><span data-pool-count>6</span> 只股票 · 数据截至 2026-10-23 08:46 北京</div>
   </div>
 </div>
-<h2 class="group-h">持仓 <span class="muted small">1</span></h2>
-<div class="hub">
-  <a class="card off" href="stocks/SNDK/index.html">
-    <div class="h-top">
-      <h2>SNDK<small>Sandisk Corporation</small></h2>
-      <span class="tag-state">—</span>
-    </div>
-    <div class="h-foot">
-      <span>下次财报 2026-10-29 盘后</span>
-    </div>
-  </a>
+<div class="pool-filters">
+  <div class="pool-filter" role="group" aria-label="按状态筛选">
+    <span class="pool-filter-label">状态</span>
+    <button type="button" class="on" data-filter="status" data-value="" aria-pressed="true">全部</button>
+    <button type="button" data-filter="status" data-value="watch" aria-pressed="false">观察</button>
+    <button type="button" data-filter="status" data-value="wait" aria-pressed="false">等待</button>
+    <button type="button" data-filter="status" data-value="hold" aria-pressed="false">持仓</button>
+  </div>
+  <div class="pool-filter" role="group" aria-label="按类型筛选">
+    <span class="pool-filter-label">类型</span>
+    <button type="button" class="on" data-filter="kind" data-value="" aria-pressed="true">全部</button>
+  </div>
 </div>
-<h2 class="group-h">等待仓 <span class="muted small">1</span></h2>
-<div class="hub">
-  <a class="card off" href="stocks/MCD/index.html">
-    <div class="h-top">
-      <h2>MCD<small>McDonald&#39;s Corporation</small></h2>
-      <span class="tag-state">—</span>
+<section class="pool-section" aria-labelledby="compare-title">
+  <h2 id="compare-title">指标对比</h2>
+  <div class="card pool-card">
+    <div class="table-wrap">
+      <table class="data pool-table">
+        <thead>
+          <tr>
+            <th scope="col">名称</th>
+            <th scope="col">分组</th>
+            <th scope="col">状态</th>
+            <th scope="col" class="num">股价</th>
+            <th scope="col" class="num">涨跌</th>
+            <th scope="col" class="num">RSI</th>
+            <th scope="col" class="num">Forward PE</th>
+            <th scope="col" class="num">目标估值</th>
+            <th scope="col">是否触发</th>
+            <th scope="col">最近财报</th>
+            <th scope="col" class="num">营收</th>
+            <th scope="col" class="num">EPS</th>
+            <th scope="col" class="num">下季指引</th>
+            <th scope="col">下次财报</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-status="hold" data-kind="">
+            <td class="name">
+              <a class="pool-name" href="stocks/SNDK/index.html" title="Sandisk Corporation">
+                <b>SNDK</b><span>Sandisk Corporation</span>
+              </a>
+            </td>
+            <td class="muted">—</td>
+            <td><span class="stage-badge s-hold">持仓</span></td>
+            <td class="num muted">—</td>
+            <td class="num c-na">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="trig-cell t-na">—</td>
+            <td class="when" title="2026-08-05 16:00 美东">2026-08-05 16:00</td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="when">2026-10-29 盘后</td>
+          </tr>
+          <tr data-status="wait" data-kind="">
+            <td class="name">
+              <a class="pool-name" href="stocks/MCD/index.html" title="McDonald&#39;s Corporation">
+                <b>MCD</b><span>McDonald&#39;s Corporation</span>
+              </a>
+            </td>
+            <td class="muted">—</td>
+            <td><span class="stage-badge s-wait">等待</span></td>
+            <td class="num muted">—</td>
+            <td class="num c-na">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="trig-cell t-na">—</td>
+            <td class="when" title="2026-08-04 07:00 美东">2026-08-04 07:00</td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="when">2026-11-04 盘前</td>
+          </tr>
+          <tr data-status="watch" data-kind="">
+            <td class="name">
+              <a class="pool-name" href="stocks/META/index.html" title="Meta Platforms, Inc.">
+                <b>META</b><span>Meta Platforms, Inc.</span>
+              </a>
+            </td>
+            <td class="muted">—</td>
+            <td><span class="stage-badge s-watch">观察</span></td>
+            <td class="num">$697.52</td>
+            <td class="num c-na">—</td>
+            <td class="num">47.4</td>
+            <td class="num">21.8×</td>
+            <td class="num muted">—</td>
+            <td class="trig-cell t-na">—</td>
+            <td class="when" title="2026-10-21 16:03 美东（北京 10-22 04:03）">2026-10-21 16:03</td>
+            <td class="num"><b class="v-beat">beat 2.0%</b></td>
+            <td class="num"><b class="v-beat">beat 13.1%</b></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="when">2027-01-27 盘后</td>
+          </tr>
+          <tr data-status="watch" data-kind="">
+            <td class="name">
+              <a class="pool-name" href="stocks/MU/index.html" title="Micron Technology">
+                <b>MU</b><span>Micron Technology</span>
+              </a>
+            </td>
+            <td class="muted">—</td>
+            <td><span class="stage-badge s-watch">观察</span></td>
+            <td class="num muted">—</td>
+            <td class="num c-na">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="trig-cell t-na">—</td>
+            <td class="when" title="2026-09-30 16:02 美东（北京 10-01 04:02）">2026-09-30 16:02</td>
+            <td class="num"><b class="v-unknown">待核对</b></td>
+            <td class="num"><b class="v-beat">beat 3.0%</b></td>
+            <td class="num"><b class="v-beat">beat 11.1%</b></td>
+            <td class="when">2026-12-23 盘后</td>
+          </tr>
+          <tr data-status="watch" data-kind="">
+            <td class="name">
+              <a class="pool-name" href="stocks/NKE/index.html" title="NIKE, Inc.">
+                <b>NKE</b><span>NIKE, Inc.</span>
+              </a>
+            </td>
+            <td class="muted">—</td>
+            <td><span class="stage-badge s-watch">观察</span></td>
+            <td class="num muted">—</td>
+            <td class="num c-na">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="trig-cell t-na">—</td>
+            <td class="when" title="2026-10-01 16:00 美东">2026-10-01 16:00</td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="when">2026-12-17 盘后</td>
+          </tr>
+          <tr data-status="watch" data-kind="">
+            <td class="name">
+              <a class="pool-name" href="stocks/NVDA/index.html" title="NVIDIA Corporation">
+                <b>NVDA</b><span>NVIDIA Corporation</span>
+              </a>
+            </td>
+            <td class="muted">—</td>
+            <td><span class="stage-badge s-watch">观察</span></td>
+            <td class="num muted">—</td>
+            <td class="num c-na">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="num muted">—</td>
+            <td class="trig-cell t-na">—</td>
+            <td class="when" title="2026-08-26 16:00 美东">2026-08-26 16:00</td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="num"><span class="muted">—</span></td>
+            <td class="when">2026-11-17 盘后</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="h-foot">
-      <span>下次财报 2026-11-04 盘前</span>
-    </div>
-  </a>
-</div>
-<h2 class="group-h">观察仓 <span class="muted small">4</span></h2>
-<div class="hub">
-  <a class="card" href="stocks/META/index.html">
-    <div class="h-top">
-      <h2>META<small>Meta Platforms, Inc.</small></h2>
-      <span class="tag-state">FY2026Q3</span>
-    </div>
-<p class="h-head">营收与Non-GAAP EPS超预期，但诉讼费用与AI资本开支激增导致GAAP利润率骤降、自由现金流转负</p>    <div class="hub-grid">
-      <div><span>营收</span><b class="v-beat">beat 2.0%</b></div>
-      <div><span>每股收益</span><b class="v-beat">beat 13.1%</b></div>
-      <div><span>下季指引</span><b class="v-">$73–76B</b></div>
-    </div>
-    <div class="h-foot">
-      <span>下次财报 2027-01-27 盘后</span>
-    </div>
-  </a>
-  <a class="card" href="stocks/MU/index.html">
-    <div class="h-top">
-      <h2>MU<small>Micron Technology</small></h2>
-      <span class="tag-state">FY2026Q4</span>
-    </div>
-<p class="h-head">收入盈利创纪录，Q1指引强劲但毛利率环比回落</p>    <div class="hub-grid">
-      <div><span>营收</span><b class="v-unknown">待核对</b></div>
-      <div><span>每股收益</span><b class="v-beat">beat 3.0%</b></div>
-      <div><span>下季指引</span><b class="v-beat">beat 11.1%</b></div>
-    </div>
-    <div class="h-foot">
-      <span>下次财报 2026-12-23 盘后</span>
-    </div>
-  </a>
-  <a class="card off" href="stocks/NKE/index.html">
-    <div class="h-top">
-      <h2>NKE<small>NIKE, Inc.</small></h2>
-      <span class="tag-state">—</span>
-    </div>
-    <div class="h-foot">
-      <span>下次财报 2026-12-17 盘后</span>
-    </div>
-  </a>
-  <a class="card off" href="stocks/NVDA/index.html">
-    <div class="h-top">
-      <h2>NVDA<small>NVIDIA Corporation</small></h2>
-      <span class="tag-state">—</span>
-    </div>
-    <div class="h-foot">
-      <span>下次财报 2026-11-17 盘后</span>
-    </div>
-  </a>
-</div>
+    <p class="pool-empty" hidden>没有符合筛选的股票</p>
+  </div>
+</section>
   </main>
   <footer>数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿。解读由模型生成并经原文引用校验，仅供研究参考，不构成投资建议。</footer>
+<script>
+(function () {
+  var table = document.querySelector(".pool-table");
+  if (!table) return;
+  var rows = Array.prototype.slice.call(table.querySelectorAll("tbody tr"));
+  var empty = document.querySelector(".pool-empty");
+  var count = document.querySelector("[data-pool-count]");
+  var state = { status: "", kind: "" };
+
+  function matches(row) {
+    if (state.status && row.getAttribute("data-status") !== state.status) return false;
+    if (state.kind && row.getAttribute("data-kind") !== state.kind) return false;
+    return true;
+  }
+
+  function apply() {
+    var n = 0;
+    rows.forEach(function (row) {
+      var ok = matches(row);
+      row.hidden = !ok;
+      if (ok) n += 1;
+    });
+    if (count) count.textContent = String(n);
+    if (empty) empty.hidden = n !== 0;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".pool-filter button"), function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-filter");
+      state[key] = btn.getAttribute("data-value") || "";
+      Array.prototype.forEach.call(btn.parentElement.querySelectorAll("button"), function (other) {
+        var on = other === btn;
+        other.classList.toggle("on", on);
+        other.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      apply();
+    });
+  });
+})();
+</script>
 </body>
 </html>

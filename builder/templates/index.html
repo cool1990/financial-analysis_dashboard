@@ -1,34 +1,121 @@
 {% extends "base.html" %}
-{% block title %}财报解读 · 覆盖股票{% endblock %}
+{% block title %}观察池{% endblock %}
+{% block body_class %} class="pool-page"{% endblock %}
 {% block content %}
-<div class="page-head">
+<div class="page-head pool-head">
   <div>
-    <h1>财报解读</h1>
-    <div class="sub">按仓位分组：持仓看买卖时点，等待仓看买点，观察仓先了解事实</div>
+    <h1>观察池</h1>
+    <div class="sub"><span data-pool-count>{{ rows|length }}</span> 只股票{% if as_of %} · 数据截至 {{ as_of }} 北京{% endif %}</div>
   </div>
 </div>
-{% for g in groups %}
-<h2 class="group-h">{{ g.label }} <span class="muted small">{{ g.rows|length }}</span></h2>
-<div class="hub">
-  {% for r in g.rows %}
-  <a class="card{% if r.period == '—' %} off{% endif %}" href="{{ r.href }}">
-    <div class="h-top">
-      <h2>{{ r.ticker }}<small>{{ r.name }}</small></h2>
-      <span class="tag-state">{{ r.period }}</span>
-    </div>
-    {% if r.headline %}<p class="h-head">{{ r.headline }}</p>{% endif %}
-    {% if r.period != '—' %}
-    <div class="hub-grid">
-      <div><span>营收</span><b class="v-{{ r.revenue.verdict }}">{{ r.revenue.label }}</b></div>
-      <div><span>每股收益</span><b class="v-{{ r.eps.verdict }}">{{ r.eps.label }}</b></div>
-      <div><span>下季指引</span><b class="v-{{ r.guide.verdict }}">{{ r.guide.label }}</b></div>
-    </div>
-    {% endif %}
-    <div class="h-foot">
-      <span>{% if r.next_earnings %}下次财报 {{ r.next_earnings }} {{ r.timing }}{% else %}下次财报日待定{% endif %}</span>
-    </div>
-  </a>
-  {% endfor %}
+<div class="pool-filters">
+  <div class="pool-filter" role="group" aria-label="按状态筛选">
+    <span class="pool-filter-label">状态</span>
+    <button type="button" class="on" data-filter="status" data-value="" aria-pressed="true">全部</button>
+    <button type="button" data-filter="status" data-value="watch" aria-pressed="false">观察</button>
+    <button type="button" data-filter="status" data-value="wait" aria-pressed="false">等待</button>
+    <button type="button" data-filter="status" data-value="hold" aria-pressed="false">持仓</button>
+  </div>
+  <div class="pool-filter" role="group" aria-label="按类型筛选">
+    <span class="pool-filter-label">类型</span>
+    <button type="button" class="on" data-filter="kind" data-value="" aria-pressed="true">全部</button>
+    {% for kind in kinds %}
+    <button type="button" data-filter="kind" data-value="{{ kind }}" aria-pressed="false">{{ kind }}</button>
+    {% endfor %}
+  </div>
 </div>
-{% endfor %}
+<section class="pool-section" aria-labelledby="compare-title">
+  <h2 id="compare-title">指标对比</h2>
+  <div class="card pool-card">
+    <div class="table-wrap">
+      <table class="data pool-table">
+        <thead>
+          <tr>
+            <th scope="col">名称</th>
+            <th scope="col">分组</th>
+            <th scope="col">状态</th>
+            <th scope="col" class="num">股价</th>
+            <th scope="col" class="num">涨跌</th>
+            <th scope="col" class="num">RSI</th>
+            <th scope="col" class="num">Forward PE</th>
+            <th scope="col" class="num">目标估值</th>
+            <th scope="col">是否触发</th>
+            <th scope="col">最近财报</th>
+            <th scope="col" class="num">营收</th>
+            <th scope="col" class="num">EPS</th>
+            <th scope="col" class="num">下季指引</th>
+            <th scope="col">下次财报</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr data-status="{{ r.status_key }}" data-kind="{{ r.kind }}">
+            <td class="name">
+              <a class="pool-name" href="{{ r.href }}" title="{{ r.name }}">
+                <b>{{ r.ticker }}</b><span>{{ r.name }}</span>
+              </a>
+            </td>
+            <td class="{{ 'muted' if r.group == '—' else '' }}">{{ r.group }}</td>
+            <td>{% if r.status_key %}<span class="stage-badge s-{{ r.status_key }}">{{ r.status_label }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="num{% if r.quote_price == '—' %} muted{% endif %}">{{ r.quote_price }}</td>
+            <td class="num c-{{ r.change.cls }}">{{ r.change.text }}</td>
+            <td class="num{% if r.rsi == '—' %} muted{% endif %}">{{ r.rsi }}</td>
+            <td class="num{% if r.forward_pe == '—' %} muted{% endif %}">{{ r.forward_pe }}</td>
+            <td class="num{% if r.target == '—' %} muted{% endif %}">{{ r.target }}</td>
+            <td class="trig-cell t-{{ r.triggered.cls }}">{{ r.triggered.text }}</td>
+            <td class="when{% if r.reported.text == '—' %} muted{% endif %}"{% if r.reported.title %} title="{{ r.reported.title }}"{% endif %}>{{ r.reported.text }}</td>
+            <td class="num">{% if r.revenue.verdict %}<b class="v-{{ r.revenue.verdict }}">{{ r.revenue.label }}</b>{% else %}<span class="muted">{{ r.revenue.label }}</span>{% endif %}</td>
+            <td class="num">{% if r.eps.verdict %}<b class="v-{{ r.eps.verdict }}">{{ r.eps.label }}</b>{% else %}<span class="muted">{{ r.eps.label }}</span>{% endif %}</td>
+            <td class="num">{% if r.guide.verdict %}<b class="v-{{ r.guide.verdict }}">{{ r.guide.label }}</b>{% else %}<span class="muted">{{ r.guide.label }}</span>{% endif %}</td>
+            <td class="when{% if r.next_text == '下次财报日待定' %} muted{% endif %}">{{ r.next_text }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="pool-empty" hidden>没有符合筛选的股票</p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var table = document.querySelector(".pool-table");
+  if (!table) return;
+  var rows = Array.prototype.slice.call(table.querySelectorAll("tbody tr"));
+  var empty = document.querySelector(".pool-empty");
+  var count = document.querySelector("[data-pool-count]");
+  var state = { status: "", kind: "" };
+
+  function matches(row) {
+    if (state.status && row.getAttribute("data-status") !== state.status) return false;
+    if (state.kind && row.getAttribute("data-kind") !== state.kind) return false;
+    return true;
+  }
+
+  function apply() {
+    var n = 0;
+    rows.forEach(function (row) {
+      var ok = matches(row);
+      row.hidden = !ok;
+      if (ok) n += 1;
+    });
+    if (count) count.textContent = String(n);
+    if (empty) empty.hidden = n !== 0;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".pool-filter button"), function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-filter");
+      state[key] = btn.getAttribute("data-value") || "";
+      Array.prototype.forEach.call(btn.parentElement.querySelectorAll("button"), function (other) {
+        var on = other === btn;
+        other.classList.toggle("on", on);
+        other.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      apply();
+    });
+  });
+})();
+</script>
 {% endblock %}
