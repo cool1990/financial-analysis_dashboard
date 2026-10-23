@@ -31,7 +31,7 @@ from pipeline.extract.currency_guard import (
 )
 from pipeline.extract.numbers import ParsedAmount
 from pipeline.extract.press_release import load_press_release
-from pipeline.llm import LLMClient
+from pipeline.llm import LLMClient, bypass_llm_cache_read
 from pipeline.schemas import ExtractFinancials, GuidanceItem
 from pipeline.sources.sec_edgar import SecEdgarClient
 from pipeline.sources.transcripts import fetch_transcript
@@ -596,8 +596,6 @@ def _run_stage1_filing(
 
 
 def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[str, Any]:
-    import time as _time
-
     cfg = load_ticker_config(ticker)
     doc = load_period_json(ticker, fiscal_period)
     if not doc:
@@ -622,6 +620,23 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
             flush=True,
         )
         return doc
+
+    if force:
+        print("[stage2] --force：不读 LLM 缓存，重新调用模型", flush=True)
+        with bypass_llm_cache_read():
+            return _execute_stage2(ticker, fiscal_period, cfg, doc, force=True)
+    return _execute_stage2(ticker, fiscal_period, cfg, doc, force=False)
+
+
+def _execute_stage2(
+    ticker: str,
+    fiscal_period: str,
+    cfg: dict[str, Any],
+    doc: dict[str, Any],
+    *,
+    force: bool,
+) -> dict[str, Any]:
+    import time as _time
 
     raw_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / fiscal_period
     release_at = (doc.get("meta") or {}).get("release_at_utc")
@@ -727,9 +742,11 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
         **{k: stats[k] for k in ["topic_stats", "new_topics", "dropped_topics", "hot_topics", "evasive_list"]},
     }
 
-    # drivers stage2
+    # drivers stage2。先清掉上一轮的失败句，避免截断 / listing 校验永远留在季度 JSON。
+    # 港股 listing=hk 与 domestic 一样不做 ADR 对齐；不要用 resolve_earnings_spec 把整步打成失败。
     press_path = raw_dir / "press_release.html"
     press_text = load_press_release(press_path)["combined"] if press_path.exists() else ""
+    doc["status"]["warnings"] = strip_driver_warnings(doc["status"].get("warnings") or [])
     t0 = _step("analyze_drivers")
     try:
         drivers = analyze_drivers(
@@ -740,7 +757,8 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
             stage=2,
         )
         doc["drivers"] = {"stage": 2, "metrics": drivers.get("metrics", [])}
-        if resolve_earnings_spec(cfg).listing == "adr":
+        listing = str(cfg.get("listing") or "domestic").strip().lower()
+        if listing == "adr":
             align_adr_drivers(doc["drivers"], doc.get("financials") or {})
         doc["status"]["warnings"] = strip_driver_warnings(doc["status"]["warnings"]) + (drivers.get("warnings") or [])
     except Exception as e:
@@ -758,7 +776,7 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
 
     t0 = _step("review_theses")
     try:
-        _apply_thesis_review(ticker, doc)
+        _apply_thesis_review(ticker, doc, force=force)
     except Exception as e:
         doc["status"]["warnings"].append(f"论点评估失败: {e}")
     _done("review_theses", t0)

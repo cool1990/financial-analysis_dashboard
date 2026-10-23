@@ -77,9 +77,50 @@ def test_adr_schema_uses_6k_filters_not_item_202():
     assert any("press" in pattern for pattern in spec.earnings_6k.require_exhibit_desc_any)
 
 
-def test_listing_must_be_domestic_or_adr():
-    with pytest.raises(ValueError):
+def test_listing_rejects_unknown_market():
+    with pytest.raises(ValueError, match="hk"):
         resolve_earnings_spec({"listing": "twse"})
+
+
+def test_listing_hk_is_accepted_with_domestic_and_adr():
+    """港股与 domestic / adr 并列，drivers 用的 spec 不能再拒 hk。"""
+    from pipeline.config import load_ticker_config
+
+    spec = resolve_earnings_spec(
+        {
+            "listing": "hk",
+            "reporting_currency": "CNY",
+            "accounting_basis": "hkfrs",
+            "sec": None,
+        }
+    )
+    assert spec.listing == "hk"
+    assert spec.reporting_currency == "CNY"
+    assert spec.accounting_basis == "hkfrs"
+    assert spec.earnings_forms == []
+    assert spec.earnings_items == []
+    assert spec.earnings_6k is None
+
+    live = resolve_earnings_spec(load_ticker_config("0700.HK"))
+    assert live.listing == "hk"
+    assert live.reporting_currency == "CNY"
+    assert live.accounting_basis == "hkfrs"
+
+
+def test_sec_discovery_accepts_hk_listing_but_does_not_query(monkeypatch):
+    from pipeline.sources.sec_edgar import SecEdgarClient
+
+    client = SecEdgarClient(user_agent="test@example.com")
+
+    def boom(*_args, **_kwargs):
+        raise AssertionError("listing=hk 不应访问 SEC")
+
+    monkeypatch.setattr(client, "iter_filing_rows", boom)
+    with pytest.raises(RuntimeError, match="不查询 SEC"):
+        client.find_earnings_filings(
+            "0000000000",
+            {"listing": "hk", "reporting_currency": "CNY", "accounting_basis": "hkfrs"},
+        )
 
 
 def test_settings_profile_overrides_same_name(monkeypatch):

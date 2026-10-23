@@ -148,8 +148,10 @@ class SecEdgarClient:
         limit: int | None = None,
         accession: str | None = None,
     ) -> list[dict[str, Any]]:
-        """按 ticker listing 选发现路径。ADR 不把 6-K 并进 8-K 列表。"""
+        """按 ticker listing 选发现路径。ADR 不把 6-K 并进 8-K 列表。港股不查 EDGAR。"""
         spec = resolve_earnings_spec(cfg)
+        if spec.listing == "hk":
+            raise RuntimeError("listing=hk，不查询 SEC")
         if spec.listing == "adr":
             return self.scan_earnings_filings(
                 cik,

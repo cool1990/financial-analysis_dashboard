@@ -74,7 +74,7 @@ def refresh_earnings_estimates(
                 "ticker": symbol,
                 "ok": True,
                 "skipped": True,
-                "reason": "listing=hk，持仓阶段不做 AV 共识",
+                "reason": "listing=hk，持仓阶段不做 AV 共识（预期行为，不是失败）",
             })
             continue
         if cache_is_fresh(symbol, now=now):

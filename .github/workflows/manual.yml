@@ -130,6 +130,8 @@ jobs:
               if [ -n "${{ inputs.period }}" ]; then ARGS+=(--period "${{ inputs.period }}"); fi
               if [ -n "${{ inputs.accession }}" ]; then ARGS+=(--accession "${{ inputs.accession }}"); fi
               if [ "${{ inputs.force }}" = "true" ]; then ARGS+=(--force); fi
+              # --force 会进入 pipeline，并跳过 LLM 读缓存（仍写回新结果）
+              echo "pipeline run ${ARGS[*]}"
               python -m pipeline run "${ARGS[@]}" 2>&1 | tee logs/manual.log
               python -m pipeline av-estimates 2>&1 | tee -a logs/manual.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
               python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
