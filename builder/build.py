@@ -4712,9 +4712,9 @@ def _load_docs(ticker: str) -> dict[str, dict[str, Any]]:
     return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("FY*.json"))}
 
 
-def build_site(ticker: str | None = None) -> list[Path]:
+def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[Path]:
     env = _env()
-    out_dir = site_dir()
+    out_dir = Path(out_dir) if out_dir else site_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
     _copy_static(out_dir)
 
