@@ -273,8 +273,12 @@ def test_qa_model_falls_back_to_summary_model(monkeypatch):
 def test_workflows_pass_alphavantage_key():
     manual = (ROOT / ".github" / "workflows" / "manual.yml").read_text(encoding="utf-8")
     poll = (ROOT / ".github" / "workflows" / "poll.yml").read_text(encoding="utf-8")
-    assert "ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}" in manual
-    assert "ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}" in poll
+    daily = (ROOT / ".github" / "workflows" / "daily.yml").read_text(encoding="utf-8")
+    secret = "ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}"
+    assert secret in manual and secret in poll and secret in daily
+    assert "python -m pipeline av-estimates" in manual
+    assert "python -m pipeline av-estimates" in poll
+    assert "python -m pipeline av-estimates" in daily
 
 
 def test_review_prompt_checks_omitted_answers_and_mistranslation():

@@ -66,6 +66,9 @@ def main(argv: list[str] | None = None) -> int:
     p_build = sub.add_parser("build", help="生成静态页面到 site/")
     p_build.add_argument("--ticker", default=None)
 
+    p_av = sub.add_parser("av-estimates", help="用 EARNINGS_ESTIMATES 写入 data/{TICKER}/consensus/av_estimates.json")
+    p_av.add_argument("--ticker", default=None, help="缺省则全部股票")
+
     p_ping = sub.add_parser("llm-ping", help="校验 OpenRouter 模型 slug 与 API key")
     p_ping.add_argument("--model", default=None, help="模型 slug，默认取 settings.yaml")
 
@@ -165,6 +168,12 @@ def main(argv: list[str] | None = None) -> int:
             paths = build_site(args.ticker)
             print(json.dumps({"pages": [str(p) for p in paths]}, ensure_ascii=False, indent=2))
             return 0
+        if args.cmd == "av-estimates":
+            from pipeline.commands.av_estimates_cmd import refresh_earnings_estimates
+
+            out = refresh_earnings_estimates([args.ticker] if args.ticker else None)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if out.get("written") else 1
         if args.cmd == "llm-ping":
             require_openrouter_key(context="llm-ping")
             out = llm_ping(args.model)

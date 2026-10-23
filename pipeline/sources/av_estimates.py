@@ -80,6 +80,26 @@ def _read_json(path: Path) -> Any | None:
         return None
 
 
+_SECRET_KEYS = {"apikey", "api_key", "alphavantage_key"}
+
+
+def _clean_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in row.items() if str(key).lower() not in _SECRET_KEYS}
+
+
+def write_estimates_cache(symbol: str, estimates: list[dict[str, Any]]) -> Path:
+    record = {
+        "symbol": symbol,
+        "function": "EARNINGS_ESTIMATES",
+        "fetched_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "estimates": [_clean_row(row) for row in estimates],
+    }
+    path = cache_path(symbol)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 def load_earnings_estimates(
     ticker: str,
     *,
@@ -101,14 +121,5 @@ def load_earnings_estimates(
     estimates = [row for row in body.get("estimates") or [] if isinstance(row, dict)]
     if not estimates:
         return []
-    record = {
-        "symbol": symbol,
-        "function": "EARNINGS_ESTIMATES",
-        "fetched_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        "estimates": estimates,
-    }
-    path = cache_path(symbol)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    text = json.dumps(record, ensure_ascii=False, indent=2) + "\n"
-    path.write_text(text, encoding="utf-8")
+    write_estimates_cache(symbol, estimates)
     return estimates

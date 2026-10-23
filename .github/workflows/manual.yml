@@ -110,6 +110,7 @@ jobs:
               TH=(--ticker "${{ inputs.ticker }}" --period "${{ inputs.period }}" "${MODEL_ARGS[@]}")
               if [ "${{ inputs.force }}" = "true" ]; then TH+=(--force); fi
               python -m pipeline thesis "${TH[@]}" 2>&1 | tee logs/manual.log
+              python -m pipeline av-estimates 2>&1 | tee -a logs/manual.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
               python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
               ;;
             llm-ping)
@@ -120,6 +121,7 @@ jobs:
               if [ "${{ inputs.dry_run }}" = "true" ]; then BF+=(--dry-run); fi
               python -m pipeline backfill "${BF[@]}" 2>&1 | tee logs/manual.log
               if [ "${{ inputs.dry_run }}" != "true" ]; then
+                python -m pipeline av-estimates 2>&1 | tee -a logs/manual.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
                 python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
               fi
               ;;
@@ -129,6 +131,7 @@ jobs:
               if [ -n "${{ inputs.accession }}" ]; then ARGS+=(--accession "${{ inputs.accession }}"); fi
               if [ "${{ inputs.force }}" = "true" ]; then ARGS+=(--force); fi
               python -m pipeline run "${ARGS[@]}" 2>&1 | tee logs/manual.log
+              python -m pipeline av-estimates 2>&1 | tee -a logs/manual.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
               python -m pipeline build --ticker "${{ inputs.ticker }}" 2>&1 | tee -a logs/manual.log
               ;;
             *)

@@ -226,3 +226,47 @@ def test_av_cache_roundtrip_and_hermes_fallback(tmp_path, monkeypatch):
     assert "eps_estimate_revision_up_trailing_30_days" in cached
     assert av.load_earnings_estimates("SNDK", get=fake_get)[0]["eps_estimate_average"] == "38.28"
     assert called["n"] == 1
+
+
+def test_refresh_writes_cache_and_retries_rate_limit(tmp_path, monkeypatch):
+    from pipeline.commands import av_estimates_cmd as cmd
+    from pipeline.sources import av_estimates as av
+
+    monkeypatch.setattr(av, "data_dir", lambda ticker: tmp_path / ticker)
+    monkeypatch.setattr(cmd, "data_dir", lambda ticker: tmp_path / ticker)
+    monkeypatch.setenv("ALPHAVANTAGE_KEY", "secret-key")
+    calls = {"n": 0}
+    sleeps: list[float] = []
+
+    def fake_get(url, params):
+        calls["n"] += 1
+        assert params["apikey"] == "secret-key"
+        if calls["n"] == 1:
+            return {"Note": "Thank you for using Alpha Vantage! Please spread out your requests."}
+        return {
+            "estimates": [
+                {
+                    "date": "2026-12-31",
+                    "horizon": "next fiscal quarter",
+                    "eps_estimate_average": "8.29",
+                    "eps_estimate_analyst_count": "12",
+                    "eps_estimate_average_30_days_ago": "7.00",
+                    "eps_estimate_revision_up_trailing_30_days": "4",
+                    "eps_estimate_revision_down_trailing_30_days": "1",
+                    "apikey": "secret-key",
+                }
+            ]
+        }
+
+    out = cmd.refresh_earnings_estimates(["META"], get=fake_get, pause_seconds=0, sleep=sleeps.append)
+    assert out["written"] == 1 and out["results"][0]["analysts"] == "12"
+    assert out["results"][0]["eps"] == "$8.29" and out["results"][0]["revisions"] == "4 / 1"
+    cached = (tmp_path / "META" / "consensus" / "av_estimates.json").read_text(encoding="utf-8")
+    assert "secret-key" not in cached and "eps_estimate_average" in cached
+    assert calls["n"] == 2 and sleeps
+
+    monkeypatch.delenv("ALPHAVANTAGE_KEY", raising=False)
+    monkeypatch.delenv("ALPHAVANTAGE_API_KEY", raising=False)
+    monkeypatch.delenv("ALPHA_VANTAGE_API_KEY", raising=False)
+    skipped = cmd.refresh_earnings_estimates(["META"], get=lambda *a, **k: (_ for _ in ()).throw(AssertionError("不应发请求")))
+    assert skipped["written"] == 0 and "ALPHAVANTAGE_KEY" in skipped["reason"]
