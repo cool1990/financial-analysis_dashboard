@@ -281,6 +281,104 @@ def test_workflows_pass_alphavantage_key():
     assert "python -m pipeline av-estimates" in daily
 
 
+def test_hk_local_import_transcript_splits_into_analyst_exchanges():
+    """中文 local_import 文字稿要拆出问答，不能因为没有 Operator 就得到空列表。"""
+    from pipeline.analyze.qa import _split_exchanges
+    from pipeline.sources.transcripts import split_prepared_and_qa
+
+    text = (ROOT / "data" / "0700.HK" / "raw" / "FY2026Q1" / "transcript.txt").read_text(encoding="utf-8")
+    prepared, qa = split_prepared_and_qa(text)
+    assert "管理层陈述" in prepared and "问题 1" not in prepared
+    assert qa.startswith("## 分析师问答")
+    exchanges = _split_exchanges(qa)
+    assert [(ex["analyst"], ex["firm"]) for ex in exchanges] == [
+        ("Alicia Yap", "花旗"),
+        ("Kenneth Fong", "瑞银"),
+        ("Alex Yao", "摩根大通"),
+        ("William Packer", "法国巴黎银行"),
+        ("Robin Zhu", "Bernstein"),
+        ("Alex Liu", "美国银行证券"),
+        ("Charlene Liu", "汇丰"),
+        ("Ronald Keung", "高盛"),
+        ("Ellie Jiang", "麦格理"),
+        ("Thomas Chong", "杰富瑞"),
+    ]
+    assert "混元" in exchanges[0]["text"] and "问" in exchanges[0]["text"]
+
+    q2 = (ROOT / "data" / "0700.HK" / "raw" / "FY2026Q2" / "transcript.txt").read_text(encoding="utf-8")
+    prepared_q2, qa_q2 = split_prepared_and_qa(q2)
+    assert "开放提问" in prepared_q2
+    assert qa_q2.startswith("## 问答环节")
+    speaker_rounds = _split_exchanges(qa_q2)
+    assert [ex["analyst"] for ex in speaker_rounds] == [
+        "Robin Zhu",
+        "Kenneth Fong",
+        "Ronald Keung",
+        "Alicis a Yap",
+        "Alex Liu",
+        "Alex Yao",
+        "Gary Yu",
+    ]
+    assert speaker_rounds[0]["firm"] == "Bernstein Institutional Services LLC"
+    assert speaker_rounds[0]["text"].count("### Robin Zhu") == 2
+    assert "投资者关系" not in speaker_rounds[0]["text"]
+
+
+def test_structure_qa_keeps_items_for_chinese_local_import(monkeypatch):
+    import pipeline.analyze.qa as qa_mod
+    from pipeline.schemas import QAItem
+
+    transcript = """
+## 管理层陈述
+
+### Chi Ping Lau – 总裁
+
+一季度总收入 1,960 亿元。随后进入问答环节。
+
+## 分析师问答
+
+### 问题 1：Alicia Yap（花旗）— 资本开支
+
+**问｜Alicia Yap（花旗）：** 今年资本开支怎么看？
+
+**答｜Chi Ping Lau – 总裁：** 资本开支将高于去年，下半年更明显。
+"""
+
+    class Fake:
+        def load_prompt(self, name, **kwargs):
+            return "PROMPT"
+
+        def complete_json_list(self, prompt_name, user, schema):
+            assert schema is QAItem
+            if prompt_name == "review_qa.md":
+                body = user.split("已有摘要：\n", 1)[1].split("\n\n规则检查：", 1)[0]
+                return [schema.model_validate(item) for item in json.loads(body)]
+            batch = json.loads(user.rsplit("\n\n", 1)[-1])
+            ex = batch[0]
+            return [schema.model_validate({
+                "exchange_id": ex["exchange_id"],
+                "analyst": ex.get("analyst"),
+                "firm": ex.get("firm"),
+                "topic": "资本开支",
+                "question_summary": "分析师询问今年资本开支。",
+                "answer_summary": "Chi Ping（总裁）：资本开支将高于去年，下半年更明显。",
+                "directness": "direct",
+                "tone": "neutral",
+                "answer_quote": "资本开支将高于去年",
+                "new_numbers": [],
+                "evasion_note": "",
+            })]
+
+    monkeypatch.setattr(qa_mod, "_qa_client", lambda: Fake())
+    result = qa_mod.structure_qa(transcript, {"revenue": 1960})
+    assert len(result["items"]) == 1
+    assert result["items"][0]["analyst"] == "Alicia Yap"
+    assert result["items"][0]["firm"] == "花旗"
+    assert result["items"][0]["question_summary"]
+    assert "资本开支" in result["qa_text"]
+    assert "1,960" in result["prepared_remarks"]
+
+
 def test_review_prompt_checks_omitted_answers_and_mistranslation():
     text = (ROOT / "prompts" / "review_qa.md").read_text(encoding="utf-8")
     assert "现实实验室" in text

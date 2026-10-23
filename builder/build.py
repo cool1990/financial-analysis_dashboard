@@ -3047,8 +3047,48 @@ def _pp_change(current: float | None, base: float | None) -> dict[str, str]:
     if current is None or base is None:
         return _blank_change()
     delta = current - base
+    # 小于 0.05 个百分点按持平，避免 -0.0pp 被标成下跌。
+    if abs(delta) < 5e-4:
+        return {"text": "0.0pp", "cls": "flat"}
     cls = "up" if delta > 0 else "down" if delta < 0 else "flat"
     return {"text": f"{delta * 100:+.1f}pp", "cls": cls}
+
+
+def _safe_level_change(current: float | None, base: float | None) -> float | None:
+    """金额变化。两边数量级差到 20 倍以上时留空，避免亿元和元直接相除。"""
+    if current is None or base in (None, 0):
+        return None
+    if abs(current) > 0 and (abs(current) / abs(base) >= 20 or abs(base) / abs(current) >= 20):
+        return None
+    return (current - base) / abs(base)
+
+
+def _cn_amount_scale(item: dict[str, Any]) -> float:
+    """电话会把 1,960 亿元存成 1960。财务实际数是元，比较前乘回去。"""
+    raws = " ".join(str(item.get(key) or "") for key in ("point_raw", "low_raw", "high_raw", "plus_minus_raw"))
+    blob = raws if raws.strip() else str(item.get("source_quote") or "")
+    if "万亿" in blob:
+        return 1e12
+    if "亿" in blob:
+        return 1e8
+    if "万" in blob and "%" not in blob and "百分" not in blob:
+        return 1e4
+    return 1.0
+
+
+def _scaled_guide_item(item: dict[str, Any], ratio: bool) -> dict[str, Any]:
+    if ratio:
+        return item
+    scale = _cn_amount_scale(item)
+    if scale == 1:
+        return item
+    out = dict(item)
+    for key in ("low", "mid", "high"):
+        value = _finite(out.get(key))
+        if value is None or abs(value) >= 1_000_000:
+            continue
+        out[key] = value * scale
+    return out
 
 
 def _guide_display(item: dict[str, Any], key: str) -> str:
@@ -3111,7 +3151,7 @@ def _performance_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]]) -> l
                 0 if item.get("source") == "press_release" else 1,
             )
 
-        item = sorted(chosen, key=rank)[0]
+        item = _scaled_guide_item(sorted(chosen, key=rank)[0], ratio)
         period = normalize_period(item.get("period"))
         key = item.get("metric_key") or keys[0]
         mid = _as_ratio(_guide_mid(item), ratio)
@@ -3124,33 +3164,51 @@ def _performance_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]]) -> l
         elif re.fullmatch(r"FY\d{4}", period or ""):
             when = f"{period}全年"
         else:
-            when = period
-        current = _actual_level(doc, keys, ratio) if period == nxt else None
+            when = _period_label(period) or period
+        # 下季指引的环比基数是本季实际。已经披露的那一季，环比基数是上一季实际。
+        qoq_base = None
+        if re.fullmatch(r"FY\d{4}Q[1-4]", period or ""):
+            if period == nxt:
+                qoq_base = _actual_level(doc, keys, ratio)
+            else:
+                qoq_base = _actual_level(docs.get(_shift_period(period, -1) or ""), keys, ratio)
         yoy_doc = docs.get(yoy_fiscal_period(period)) if re.fullmatch(r"FY\d{4}Q[1-4]", period or "") else None
         yoy_base = _actual_level(yoy_doc, keys, ratio)
         if yoy_base is None and re.fullmatch(r"FY\d{4}", period or "") and not ratio:
             yoy_base = _fiscal_year_level(docs, int(period[2:6]) - 1, keys)
-        qoq = _pp_change(mid, current) if ratio else _change((mid - current) / abs(current) if mid is not None and current else None)
-        yoy = _pp_change(mid, yoy_base) if ratio else _change((mid - yoy_base) / abs(yoy_base) if mid is not None and yoy_base else None)
+        if ratio:
+            qoq = _pp_change(mid, qoq_base)
+            yoy = _pp_change(mid, yoy_base)
+        else:
+            qoq_rel = _safe_level_change(mid, qoq_base)
+            yoy_rel = _safe_level_change(mid, yoy_base)
+            qoq = _change(qoq_rel) if qoq_rel is not None else _blank_change()
+            yoy = _change(yoy_rel) if yoy_rel is not None else _blank_change()
         versus = _blank_change()
         bench_row = None
+        forward = period == nxt and family in {"revenue", "eps"}
         if period == nxt and family == "revenue":
             bench_row = score.get("next_q_revenue_guidance")
         elif period == nxt and family == "eps":
             bench_row = score.get("next_q_eps_guidance")
+        elif period == page and family in {"revenue", "eps", "gross_margin", "operating_margin", "net_margin", "capex"}:
+            bench_row = score.get(family)
         bench = (bench_row or {}).get("benchmark") or {}
-        if bench.get("value") is not None and bench.get("diff_pct") is not None:
+        if forward and bench.get("value") is not None and bench.get("diff_pct") is not None:
             versus = _change(bench.get("diff_pct"))
         elif bench.get("value") is not None and mid is not None:
             base = _as_ratio(_finite(bench.get("value")), ratio)
             if ratio:
                 versus = _pp_change(mid, base)
-            elif base:
-                versus = _change((mid - base) / abs(base))
+            else:
+                rel = _safe_level_change(mid, base)
+                versus = _change(rel) if rel is not None else _blank_change()
         if qoq.get("text") in {None, "", "—"}:
             qoq = _blank_change()
         if yoy.get("text") in {None, "", "—"}:
             yoy = _blank_change()
+        if versus.get("text") in {None, "", "—"}:
+            versus = _blank_change()
         rows.append(
             {
                 "label": shown,

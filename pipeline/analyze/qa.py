@@ -35,21 +35,120 @@ def clean_firm(text: str | None) -> str | None:
     return None
 
 
-def _split_exchanges(qa_text: str) -> list[dict[str, Any]]:
-    """粗拆 exchanges：以 Operator 引出下一位分析师为界。"""
+_CN_QUESTION_HEAD = re.compile(
+    r"^###\s*问题\s*(?P<num>\d+)\s*[：:]\s*(?P<name>.+?)\s*(?:[（(](?P<firm>[^）)]+)[）)])?\s*(?:[—\-–].*)?$"
+)
+_SPEAKER_HEADING = re.compile(r"^###\s+(?P<name>.+?)\s+[-–—]\s+(?P<title>.+?)\s*$")
+_OPERATOR_TITLE = re.compile(r"投资者关系|投资关系|Operator|主持人|Moderator", re.I)
+_ANALYST_TITLE = re.compile(
+    r"研究|分析师|Research|Securities|Institutional|Investment Bank|Capital Markets",
+    re.I,
+)
+
+
+def _split_operator_exchanges(qa_text: str) -> list[dict[str, Any]]:
+    """英文稿：以 Operator 引出下一位分析师为界。"""
     parts = re.split(r"\n(?=Operator:)", qa_text)
     exchanges = []
     for i, part in enumerate(parts):
         if not part.strip():
             continue
         analyst = None
-        firm = None
         firm = clean_firm(part)
         name_m = re.search(r"\n([A-Z][a-z]+(?:\s[A-Z][a-z]+)+):", part)
         if name_m:
             analyst = name_m.group(1)
         exchanges.append({"exchange_id": str(i + 1), "analyst": analyst, "firm": firm, "text": part.strip()})
     return exchanges
+
+
+def _split_cn_numbered_exchanges(qa_text: str) -> list[dict[str, Any]]:
+    """「### 问题 1：Alicia Yap（花旗）— …」一轮一条，追问留在同一轮里。"""
+    parts = re.split(r"(?m)(?=^###\s*问题\s*\d+\s*[：:])", qa_text)
+    exchanges: list[dict[str, Any]] = []
+    for part in parts:
+        text = part.strip()
+        if not text:
+            continue
+        first = text.splitlines()[0].strip()
+        match = _CN_QUESTION_HEAD.match(first)
+        if not match:
+            continue
+        analyst = re.sub(r"\s+", " ", (match.group("name") or "")).strip(" ：:—-")
+        if not analyst:
+            continue
+        firm = (match.group("firm") or "").strip() or None
+        exchanges.append(
+            {
+                "exchange_id": str(int(match.group("num"))),
+                "analyst": analyst,
+                "firm": firm,
+                "text": text,
+            }
+        )
+    return exchanges
+
+
+def _firm_from_title(title: str) -> str | None:
+    head = re.split(r"[,，]", title or "", maxsplit=1)[0].strip()
+    head = re.sub(r"\s*(Research Division|研究部|分析师)$", "", head, flags=re.I).strip(" -–—")
+    return head[:80] or None
+
+
+def _split_speaker_heading_exchanges(qa_text: str) -> list[dict[str, Any]]:
+    """「### Robin Zhu - Bernstein …, Research Division」按分析师轮次切开。
+
+    投资者关系的串场不单独成轮。同一位分析师的追问并进当前轮。
+    """
+    parts = re.split(r"(?m)(?=^###\s+)", qa_text)
+    exchanges: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for part in parts:
+        text = part.strip()
+        if not text:
+            continue
+        first = text.splitlines()[0].strip()
+        match = _SPEAKER_HEADING.match(first)
+        if not match:
+            if current is not None:
+                current["text"] += "\n\n" + text
+            continue
+        name = re.sub(r"\s+", " ", match.group("name")).strip()
+        title = match.group("title").strip()
+        if _OPERATOR_TITLE.search(title):
+            continue
+        if _ANALYST_TITLE.search(title):
+            if current is not None and current.get("analyst") == name:
+                current["text"] += "\n\n" + text
+                continue
+            if current is not None:
+                exchanges.append(current)
+            current = {
+                "exchange_id": str(len(exchanges) + 1),
+                "analyst": name,
+                "firm": _firm_from_title(title),
+                "text": text,
+            }
+            continue
+        if current is not None:
+            current["text"] += "\n\n" + text
+    if current is not None:
+        exchanges.append(current)
+    return exchanges
+
+
+def _split_exchanges(qa_text: str) -> list[dict[str, Any]]:
+    """按文字稿体例拆轮次。英文 Operator、中文「问题 N」、发言人标题互不覆盖。"""
+    if re.search(r"(?m)^###\s*问题\s*\d+\s*[：:]", qa_text or ""):
+        numbered = _split_cn_numbered_exchanges(qa_text)
+        if numbered:
+            return numbered
+    if re.search(r"(?m)^Operator:", qa_text or ""):
+        return _split_operator_exchanges(qa_text)
+    headed = _split_speaker_heading_exchanges(qa_text or "")
+    if headed:
+        return headed
+    return _split_operator_exchanges(qa_text or "")
 
 
 def _fallback_item(ex: dict[str, Any], reason: str) -> dict[str, Any]:

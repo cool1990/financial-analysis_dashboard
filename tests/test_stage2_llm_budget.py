@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import httpx
@@ -243,6 +244,78 @@ def test_reasoning_param_mapping():
     assert _reasoning_param(False) == {"enabled": False}  # YAML 里不加引号的 off 会被解析成 False
     assert _reasoning_param("high") == {"effort": "high", "exclude": True}
     assert _reasoning_param(None) is None
+
+
+def test_drivers_budget_is_raised_above_global_cap():
+    from pipeline.config import load_settings
+
+    settings = load_settings()["llm"]
+    assert settings["max_tokens"] == 4096
+    assert "qa_max_tokens" not in settings
+    assert settings["drivers_max_tokens"] >= 16384
+    assert settings["drivers_request_timeout_sec"] >= 180
+
+
+def test_analyze_drivers_asks_for_full_json_and_splits_when_truncated(monkeypatch):
+    import pipeline.analyze.drivers as drivers
+    from pipeline.llm import LLMTruncatedError
+    from pipeline.schemas import DriversResult
+
+    calls: list[dict] = []
+
+    class Fake:
+        def load_prompt(self, name):
+            assert name == "analyze_drivers.md"
+            return "PROMPT"
+
+        def complete_json(self, name, user, schema, **kwargs):
+            assert schema is DriversResult
+            calls.append({"max_tokens": kwargs.get("max_tokens"), "timeout": kwargs.get("timeout_sec"), "user": user})
+            table = json.loads(user.split("指标表:\n", 1)[1].split("\n\n新闻稿:\n", 1)[0])
+            if len(table) > 1:
+                raise LLMTruncatedError("truncated")
+            metric = next(iter(table))
+            return schema.model_validate({
+                "metrics": [{"metric": metric, "summary": "原因", "drivers": [], "conflicts": []}],
+            })
+
+    monkeypatch.setattr(drivers, "LLMClient", Fake)
+    out = drivers.analyze_drivers(
+        {"revenue": {"value": 1}, "eps_gaap": {"value": 2}},
+        "新闻稿原文",
+        "管理层发言",
+        "问答",
+        stage=2,
+    )
+    assert calls[0]["max_tokens"] == 16384
+    assert calls[0]["timeout"] == 240
+    assert len(calls) == 3
+    assert {item["metric"] for item in out["metrics"]} == {"revenue", "eps_gaap"}
+    assert out["stage"] == 2
+    assert any("完整 JSON" in warning for warning in out["warnings"])
+
+    calls.clear()
+
+    class Ok(Fake):
+        def complete_json(self, name, user, schema, **kwargs):
+            calls.append(kwargs)
+            return schema.model_validate({
+                "metrics": [{"metric": "revenue", "summary": "原因", "drivers": [], "conflicts": []}],
+            })
+
+    monkeypatch.setattr(drivers, "LLMClient", Ok)
+    done = drivers.analyze_drivers({"revenue": {"value": 1}}, "新闻稿", "", "")
+    assert len(calls) == 1 and calls[0]["max_tokens"] == 16384
+    assert done["warnings"] == []
+    assert done["metrics"][0]["metric"] == "revenue"
+
+    class Boom(Fake):
+        def complete_json(self, name, user, schema, **kwargs):
+            raise LLMTruncatedError("still truncated")
+
+    monkeypatch.setattr(drivers, "LLMClient", Boom)
+    with pytest.raises(LLMTruncatedError):
+        drivers.analyze_drivers({"revenue": {"value": 1}}, "新闻稿", "", "")
 
 
 def test_settings_disable_reasoning_by_default():

@@ -13,6 +13,11 @@ llm:
   # 问答、摘要、指引、变动原因、行业展望用同一个 DeepSeek。留空则回退到上面的 model。
   # 行业展望在 Stage2 读取 prompts/extract_industry_outlook.md，这一步单独把输出上限放到 8192，
   # 避免六题展开被全局 4096 截断。页面只渲染这次写入的 guidance.industry_outlook。
+  # 变动原因要覆盖整张指标表。0700 FY2026Q1 的中文电话会在 4096 上被截断
+  # （completion_tokens=4096，正文约 1.2 万字且 JSON 不完整）。这一步单独放宽；
+  # 仍截断时按指标拆开，每次都要完整 JSON，再合并。不要把截断的半截写入 drivers。
+  drivers_max_tokens: 16384
+  drivers_request_timeout_sec: 240
   # 不单独设 qa_reasoning_effort / qa_max_tokens：沿用 reasoning_effort=off 和 max_tokens=4096。
   # DeepSeek V4 Pro 不支持 low；打开思考会耗尽 4096，正文为空。
   qa_model: "deepseek/deepseek-v4-pro-0813"

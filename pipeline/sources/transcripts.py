@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -89,8 +90,16 @@ def fetch_transcript(
     return None, None
 
 
+# 只认标题行。正文里的「随后进入问答环节」不能当成切分点。
+_CN_QA_HEADING = re.compile(r"(?m)^#{1,3}[ \t]*(?:分析师问答|问答环节)[ \t]*$")
+
+
 def split_prepared_and_qa(transcript: str) -> tuple[str, str]:
-    """启发式拆分 prepared remarks 与 Q&A。"""
+    """启发式拆分 prepared remarks 与 Q&A。
+
+    英文稿认 Question-and-Answer / Operator。港股 local_import 的中文稿认
+    「## 分析师问答」或「## 问答环节」标题，避免整份文字稿被当成没有问答。
+    """
     markers = [
         "Question-and-Answer Session",
         "QUESTION AND ANSWER",
@@ -98,12 +107,14 @@ def split_prepared_and_qa(transcript: str) -> tuple[str, str]:
         "Q&A Session",
         "Operator:",
     ]
-    lower = transcript
     cut = None
     for m in markers:
-        idx = lower.find(m)
+        idx = transcript.find(m)
         if idx != -1:
             cut = idx if cut is None else min(cut, idx)
+    for match in _CN_QA_HEADING.finditer(transcript):
+        idx = match.start()
+        cut = idx if cut is None else min(cut, idx)
     if cut is None:
         return transcript, ""
     return transcript[:cut], transcript[cut:]
