@@ -47,7 +47,7 @@ def fetch_transcript(
 ) -> tuple[str | None, str | None]:
     """按配置顺序尝试获取文字稿，返回 (text, source_name)。
 
-    成功时会写入 raw_dir/transcript.txt（gitignore，仅供本机/Actions 作业内使用）。
+    成功时会写入 raw_dir/transcript.txt。0700.HK 的 local_import 文字稿随仓库提交，供 Actions Stage2 读取；其他来源的文字稿仍不入库。
     """
     order = sources or ticker_cfg.get("transcript_sources") or [
         "motley_fool",

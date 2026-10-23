@@ -96,7 +96,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 ## 说明
 
 - Stage2 文字稿默认自动获取：`motley_fool`（主）→ `ir_page`/`ir_prepared_remarks_url`（备）→ `manual`。
-- `data/*/raw/*/transcript*` 不入库（电话会文字稿）；SEC 新闻稿 HTML 与 API 原始响应需提交。
+- 电话会文字稿默认不入库（`data/*/raw/*/transcript*`）。0700.HK 的 local_import `transcript.txt` 与 `transcript_meta.json` 入库，供 Actions Stage2 读取。SEC 新闻稿 HTML 与 API 原始响应需提交。
 - 新增股票：复制 `config/tickers/MU.yaml`，改配置后 `init`，无需改代码。
 - 港股（`listing: hk`，例如 `0700.HK`）不走 SEC。`init` / `poll` / `backfill` / `av-estimates` 都不会替它查 Edgar 或拉 AV 共识。业绩公告和电话会用 `import-period` 放进 `data/0700.HK/raw/{FY…}/`。文件名可以带点，`0700.HK.yaml` 的股票代码就是 `0700.HK`，不要改成 `0700HK` 或 `TCEHY`。
 
@@ -108,7 +108,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 python -m pipeline fx-refresh --date 2026-10-23
 ```
 
-中期「六个月」不能写成 Q2。Non-IFRS 经营盈利进经营利润，不进 `eps_nongaap`。电话会原文不入库（`transcript*` 在 gitignore 里）。
+中期「六个月」不能写成 Q2。Non-IFRS 经营盈利进经营利润，不进 `eps_nongaap`。0700.HK 的 local_import 电话会写入 `raw/*/transcript.txt` 并随仓库提交，Actions Stage2 才能读到。
 
 ```bash
 python -m pipeline import-period --ticker 0700.HK --period FY2026Q1 \
@@ -117,7 +117,7 @@ python -m pipeline import-period --ticker 0700.HK --period FY2026Q1 \
 
 # 还没有更新的业绩公告时，只导入电话会，不写财务数字
 python -m pipeline import-period --ticker 0700.HK --period FY2026Q2 \
-  --transcript "/path/Tencent_2026_Q2_电话会原文.md"
+  --transcript "/path/Tencent_2026_Q2.md"
 
 # 本地已有 PDF 时重跑 Stage1（仍不调用 SEC / LLM）
 python -m pipeline run --ticker 0700.HK --period FY2026Q1 --stage 1
