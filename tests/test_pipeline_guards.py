@@ -313,6 +313,7 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert fin.index('data-fin-metric="cost_of_revenue"') < fin.index('data-fin-panel="cost_of_revenue"') < fin.index(">毛利率（GAAP）<")
     assert 'aria-label="营业收入"' in fin[: fin.index('data-fin-metric="cost_of_revenue"')]
     assert "毛利润" not in fin and 'id="finCharts"' not in meta_html
+    assert "再点同一行就收起" in meta_html and "function collapseFin()" in meta_html
     assert "营业费用" in meta_html and "$38.24B" in meta_html
     assert "FY2016Q1" in meta_html and "$63.06B" in meta_html and "应用家族" in meta_html
     assert "财务数据" not in meta_html and "业务拆分" not in meta_html
