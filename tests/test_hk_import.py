@@ -386,6 +386,15 @@ def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
     assert missing["rows"][0]["fx"] == ""
     assert "没有可用的 HKDCNY 时，P/E 显示待核对" in missing["note"]
 
+    header = build._header_quotes("0700.HK", {"meta": {}}, "FY2026Q1", True)
+    shown = {item["label"]: item for item in header["items"]}
+    assert shown["股价"]["value"] == "HK$400.00"
+    cap_cols = build._tv_columns("0700.HK")
+    assert cap_cols.get("market_cap_basic") and cap_cols.get("currency") == "HKD"
+    assert shown["市值"]["value"] == build._fmt_cap(cap_cols["market_cap_basic"], "HKD")
+    assert shown["市值"]["value"].startswith("HK$")
+    assert "未接入" not in shown["市值"]["value"]
+
 
 def test_forward_pe_uses_latest_hkdcny_when_quote_day_has_no_close(tmp_path, monkeypatch):
     import builder.build as build
@@ -412,15 +421,6 @@ def test_forward_pe_uses_latest_hkdcny_when_quote_day_has_no_close(tmp_path, mon
     assert "2026-10-23" in view["note"]
     assert "2026-10-24" in view["note"]
     assert "待核对" not in view["rows"][0]["pe"]
-
-    header = build._header_quotes("0700.HK", {"meta": {}}, "FY2026Q1", True)
-    shown = {item["label"]: item for item in header["items"]}
-    assert shown["股价"]["value"] == "HK$400.00"
-    cap_cols = build._tv_columns("0700.HK")
-    assert cap_cols.get("market_cap_basic") and cap_cols.get("currency") == "HKD"
-    assert shown["市值"]["value"] == build._fmt_cap(cap_cols["market_cap_basic"], "HKD")
-    assert shown["市值"]["value"].startswith("HK$")
-    assert "未接入" not in shown["市值"]["value"]
 
 
 def test_tencent_press_statement_matches_meta_charts():
