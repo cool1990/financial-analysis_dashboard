@@ -265,7 +265,14 @@ def backfill(
             model=model,
         )
     if xbrl_only:
-        return write_xbrl_history(ticker, start=start)
+        out = write_xbrl_history(ticker, start=start)
+        try:
+            from pipeline.commands.history_cmd import refresh_history
+
+            out["history"] = refresh_history(ticker, start=start)
+        except Exception as exc:
+            out["history"] = {"ticker": ticker.upper(), "skipped": False, "ok": False, "error": str(exc)}
+        return out
     if not cfg.get("cik"):
         raise RuntimeError("请先运行 init")
     client = SecEdgarClient()

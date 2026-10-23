@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 import xml.etree.ElementTree as ET
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 REVENUE_TAGS = {
@@ -121,7 +121,76 @@ def parse_axis_facts(xml_bytes: bytes, axis: str) -> list[dict[str, Any]]:
     return facts
 
 
-def assemble_geography(filings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _shift_month(year: int, month: int) -> tuple[int, int]:
+    while month <= 0:
+        month += 12
+        year -= 1
+    while month > 12:
+        month -= 12
+        year += 1
+    return year, month
+
+
+def _quarter_month_end(fiscal_year: int, fiscal_quarter: int, fiscal_year_end_month: int) -> date:
+    """财季结束月的最后一天。与 pipeline.compute.periods.fiscal_quarter_end 同一套月份。"""
+    year, month = _shift_month(fiscal_year, fiscal_year_end_month - (4 - fiscal_quarter) * 3)
+    if month == 12:
+        return date(year, 12, 31)
+    return date(year, month + 1, 1) - timedelta(days=1)
+
+
+def _quarter_anchor(fiscal_year: int, fiscal_quarter: int, fiscal_year_end_month: int) -> date:
+    """财季锚点用结束月的 28 日，和财季推断保持一致。"""
+    end = _quarter_month_end(fiscal_year, fiscal_quarter, fiscal_year_end_month)
+    return date(end.year, end.month, 28)
+
+
+def fiscal_quarter_key(end: str, fiscal_year_end_month: int) -> tuple[int, int] | None:
+    """结束日所属财季。离该季月末超过 20 天的不算，避免把任意区间当成财季。"""
+    try:
+        day = date.fromisoformat(str(end)[:10])
+    except ValueError:
+        return None
+    best: tuple[int, int] | None = None
+    best_dist = 10**9
+    for year in range(day.year - 1, day.year + 2):
+        for quarter in range(1, 5):
+            dist = abs((day - _quarter_anchor(year, quarter, fiscal_year_end_month)).days)
+            if dist < best_dist:
+                best_dist = dist
+                best = (year, quarter)
+    if best is None:
+        return None
+    month_end = _quarter_month_end(best[0], best[1], fiscal_year_end_month)
+    if abs((day - month_end).days) > 20:
+        return None
+    return best
+
+
+def _nine_and_year_ends(
+    grouped: dict[tuple[str, str], Any],
+    fiscal_year_end_month: int,
+) -> tuple[dict[int, Any], list[tuple[int, str]]]:
+    """前九个月按财年归集；全年只留财年结束月那一季，不写死 12 月。"""
+    nine_by_fy: dict[int, Any] = {}
+    year_ends: list[tuple[int, str]] = []
+    for (end, bucket), payload in grouped.items():
+        key = fiscal_quarter_key(end, fiscal_year_end_month)
+        if key is None:
+            continue
+        fiscal_year, fiscal_quarter = key
+        if bucket == "nine" and fiscal_quarter == 3:
+            nine_by_fy[fiscal_year] = payload
+        elif bucket == "year" and fiscal_quarter == 4:
+            year_ends.append((fiscal_year, end))
+    year_ends.sort(key=lambda item: item[1])
+    return nine_by_fy, year_ends
+
+
+def assemble_geography(
+    filings: list[dict[str, Any]],
+    fiscal_year_end_month: int = 12,
+) -> list[dict[str, Any]]:
     """filings 的 facts 已是 parse_axis_facts 的结果。没有单季事实时，用全年减前九个月。"""
     best: dict[tuple[str, str, str], dict[str, Any]] = {}
     history: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
@@ -163,12 +232,11 @@ def assemble_geography(filings: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "accession": info["accession"],
             "method": "xbrl",
         }
-    years = sorted({end[:4] for (end, bucket) in grouped if bucket == "year" and end.endswith("-12-31")})
-    for year in years:
-        end = f"{year}-12-31"
+    nine_by_fy, year_ends = _nine_and_year_ends(grouped, fiscal_year_end_month)
+    for fy, end in year_ends:
         if end in direct:
             continue
-        nine = grouped.get((f"{year}-09-30", "nine")) or {}
+        nine = nine_by_fy.get(fy) or {}
         # 后来的 10-K 会把 Rest of World 收窄。只拿仍大于前九个月的那条全年数，避免两套口径相减。
         residual = {}
         members = {member for (mend, bucket, member) in history if mend == end and bucket == "year"}
@@ -343,7 +411,10 @@ def _index_filing(facts: list[dict[str, Any]]) -> dict[tuple, float]:
     return {key: fact["value"] for key, fact in picked.items()}
 
 
-def assemble_periods(filings: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+def assemble_periods(
+    filings: list[dict[str, Any]],
+    fiscal_year_end_month: int = 12,
+) -> dict[str, list[dict[str, Any]]]:
     """filings: {filed, form, accession, report, facts}，facts 来自 parse_instance。
 
     额外的构成表用 members 字典放在 composition 字段，report 是该季结束日。
@@ -371,36 +442,36 @@ def assemble_periods(filings: list[dict[str, Any]]) -> dict[str, list[dict[str, 
                         "method": "xbrl",
                     }
             if bucket == "year":
-                year = end[:4]
-                prev = annual.get(year)
-                if prev is None or filing["filed"] >= prev["filed"]:
-                    annual[year] = {
-                        "end": end,
-                        "lines": lines_for(member_values),
-                        "filed": filing["filed"],
-                        "form": filing["form"],
-                        "accession": filing["accession"],
-                        "method": "xbrl",
-                    }
-        # 同一份文件里的全年 − 前九个月。
-        years = {end[:4] for (end, bucket) in by_end_bucket if bucket == "year" and end[5:7] == "12"}
-        for year in years:
-            fy_key = (f"{year}-12-31", "year")
-            nine_key = (f"{year}-09-30", "nine")
-            fy = by_end_bucket.get(fy_key) or {}
-            nine = by_end_bucket.get(nine_key) or {}
-            if not fy or not nine:
+                # 全年行只收财年 Q4。结束月不是 fiscal_year_end_month 的跨年区间不写入。
+                year_key = fiscal_quarter_key(end, fiscal_year_end_month)
+                if year_key and year_key[1] == 4:
+                    year = str(year_key[0])
+                    prev = annual.get(year)
+                    if prev is None or filing["filed"] >= prev["filed"]:
+                        annual[year] = {
+                            "end": end,
+                            "lines": lines_for(member_values),
+                            "filed": filing["filed"],
+                            "form": filing["form"],
+                            "accession": filing["accession"],
+                            "method": "xbrl",
+                        }
+        # 同一份文件里的财年全年 − 前九个月。结束月来自 fiscal_year_end_month。
+        nine_by_fy, year_ends = _nine_and_year_ends(by_end_bucket, fiscal_year_end_month)
+        for fy, end in year_ends:
+            annual_members = by_end_bucket.get((end, "year")) or {}
+            nine = nine_by_fy.get(fy) or {}
+            if not annual_members or not nine:
                 continue
-            shared = set(fy) & set(nine)
+            shared = set(annual_members) & set(nine)
             q4_members = {}
             for member in shared:
-                gap = fy[member] - nine[member]
+                gap = annual_members[member] - nine[member]
                 if gap > 0:
                     q4_members[member] = gap
             lines = lines_for(q4_members)
             if not lines:
                 continue
-            end = f"{year}-12-31"
             prev = residual.get(end)
             if prev is None or filing["filed"] >= prev["filed"]:
                 residual[end] = {
@@ -443,7 +514,7 @@ def assemble_periods(filings: list[dict[str, Any]]) -> dict[str, list[dict[str, 
     quarters.sort(key=lambda row: row["end"])
     years = [row for row in annual.values() if row["lines"]]
     years.sort(key=lambda row: row["end"])
-    quarters = _fill_q4_from_three_quarters(quarters, years)
+    quarters = _fill_q4_from_three_quarters(quarters, years, fiscal_year_end_month)
     quarters = _drop_incomplete_residuals(quarters)
     return {"quarters": quarters, "years": years}
 
@@ -461,16 +532,29 @@ def _drop_incomplete_residuals(quarters: list[dict[str, Any]]) -> list[dict[str,
     return kept
 
 
-def _fill_q4_from_three_quarters(quarters: list[dict[str, Any]], years: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """全年和前三季都有同一分部、但没有单季第四季时，用差额。差额不是正数就跳过。"""
+def _fill_q4_from_three_quarters(
+    quarters: list[dict[str, Any]],
+    years: list[dict[str, Any]],
+    fiscal_year_end_month: int = 12,
+) -> list[dict[str, Any]]:
+    """全年和前三季都有同一分部、但没有单季第四季时，用差额。差额不是正数就跳过。
+
+    第四季是财年结束月，不写死 12 月。前三季按财季对齐；缺任何一季就留空。
+    """
     by_end = {row["end"]: row for row in quarters}
+    by_key: dict[tuple[int, int], dict[str, Any]] = {}
+    for row in quarters:
+        key = fiscal_quarter_key(row["end"], fiscal_year_end_month)
+        if key:
+            by_key[key] = row
     extra: list[dict[str, Any]] = []
     for year_row in years:
         end = year_row["end"]
-        if not end.endswith("-12-31") or end in by_end:
+        key = fiscal_quarter_key(end, fiscal_year_end_month)
+        if not key or key[1] != 4 or end in by_end or key in by_key:
             continue
-        year = end[:4]
-        prior = [by_end.get(f"{year}-03-31"), by_end.get(f"{year}-06-30"), by_end.get(f"{year}-09-30")]
+        fiscal_year = key[0]
+        prior = [by_key.get((fiscal_year, quarter)) for quarter in (1, 2, 3)]
         if any(row is None for row in prior):
             continue
         year_lines = {row["key"]: row for row in year_row["lines"]}
@@ -485,19 +569,19 @@ def _fill_q4_from_three_quarters(quarters: list[dict[str, Any]], years: list[dic
                 depths[line["key"]] = line["depth"]
                 stacks[line["key"]] = line["stack"]
         q4_lines = []
-        for key, annual in year_lines.items():
-            if key not in sums:
+        for line_key, annual in year_lines.items():
+            if line_key not in sums:
                 continue
-            gap = annual["value"] - sums[key]
+            gap = annual["value"] - sums[line_key]
             if gap <= 0:
                 continue
             q4_lines.append(
                 {
-                    "key": key,
-                    "name": names.get(key, annual["name"]),
+                    "key": line_key,
+                    "name": names.get(line_key, annual["name"]),
                     "value": gap,
-                    "depth": depths.get(key, annual["depth"]),
-                    "stack": stacks.get(key, annual["stack"]),
+                    "depth": depths.get(line_key, annual["depth"]),
+                    "stack": stacks.get(line_key, annual["stack"]),
                 }
             )
         if not q4_lines:
