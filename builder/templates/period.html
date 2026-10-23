@@ -112,148 +112,58 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="seg fin-toggle" role="group" aria-label="切换财务数据或业务拆分">
-      <button type="button" data-fin="statements" aria-pressed="true">财务数据</button>
-      <button type="button" data-fin="split" aria-pressed="false">业务拆分</button>
-    </span>
-    <span class="ev-meta">{{ fin_rows|length }} 项指标 · 同比 / 环比 · 变动原因与原文{% if history %} · 趋势图{% endif %}</span>
+    <span class="ev-meta">{{ fin_rows|length }} 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <div class="fin-layout">
-  <div data-fin-panel="statements">
-  <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开水平值、环比、同比三张图；有原文时同时展开驱动因素。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一个指标，下面换成这个指标的图。营收给出金额、同比，以及业务占比；有地区拆分时再给地区占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   {% if drivers_pending %}<p class="pending-note">{{ drivers_pending }}</p>{% endif %}
-  <div class="card rows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     {% for r in fin_rows %}
-    <details class="mrow">
-      <summary>
-        <span class="m-name">{{ r.label }}</span>
-        <span class="m-val num">{{ r.value }}</span>
-        <span class="num"><i class="m-label">同比</i><span class="c-{{ r.yoy.cls }}">{{ r.yoy.text }}</span></span>
-        <span class="num"><i class="m-label">环比</i><span class="c-{{ r.qoq.cls }}">{{ r.qoq.text }}</span></span>
-        <span class="num"><i class="m-label">对比预期</i><span class="c-{{ r.vs.cls }}">{{ r.vs.text }}</span></span>
-        <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif drivers_pending %}<span class="muted">变动原因待生成</span>{% else %}<span class="muted">—</span>{% endif %}</span>
-      </summary>
-      <div class="m-body">
-        {% if history %}
-        <div class="charts">
-          <div class="card chart">
-            <h3>水平值</h3>
-            <p class="c-sub">本季水平</p>
-            <div class="c-body"><canvas data-metric="{{ r.key }}" data-series="level" aria-label="{{ r.label }} 水平值"></canvas></div>
-          </div>
-          <div class="card chart">
-            <h3>环比</h3>
-            <p class="c-sub">较上一季</p>
-            <div class="c-body"><canvas data-metric="{{ r.key }}" data-series="qoq" aria-label="{{ r.label }} 环比"></canvas></div>
-          </div>
-          <div class="card chart">
-            <h3>同比</h3>
-            <p class="c-sub">较去年同季</p>
-            <div class="c-body"><canvas data-metric="{{ r.key }}" data-series="yoy" aria-label="{{ r.label }} 同比"></canvas></div>
-          </div>
-        </div>
-        {% endif %}
-        {% for drv in r.drivers %}
-        <div class="drv">
-          <div class="drv-meta">
-            {% if drv.type %}<span class="pill">{{ drv.type }}</span>{% endif %}
-            {% if drv.direction == '+' %}<span class="pill ok">正贡献</span>{% elif drv.direction == '-' %}<span class="pill alert">负贡献</span>{% endif %}
-            {% if drv.quote_unverified %}<span class="pill warn">引文未核实</span>{% elif drv.is_inference %}<span class="pill warn">推测</span>{% endif %}
-            {% if drv.source %}<span>{{ drv.source|source }}</span>{% endif %}
-          </div>
-          <p>{{ drv.description }}</p>
-          {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
-          {% if drv.is_inference and drv.reasoning %}<p class="small muted">依据：{{ drv.reasoning }}</p>{% endif %}
-        </div>
-        {% else %}
-        <p class="muted">{% if drivers_pending %}{{ drivers_pending }}{% else %}暂无单独解读。{% endif %}</p>
-        {% endfor %}
-        {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
-        {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
-      </div>
-    </details>
+    <button type="button" class="mrow" data-fin-metric="{{ r.key }}" aria-pressed="{{ 'true' if r.key == fin_view.default else 'false' }}">
+      <span class="m-name">{{ r.label }}</span>
+      <span class="m-val num">{{ r.value }}</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-{{ r.yoy.cls }}">{{ r.yoy.text }}</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-{{ r.qoq.cls }}">{{ r.qoq.text }}</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-{{ r.vs.cls }}">{{ r.vs.text }}</span></span>
+      <span class="m-sum">{% if r.summary %}{{ r.summary }}{% elif drivers_pending %}<span class="muted">变动原因待生成</span>{% else %}<span class="muted">—</span>{% endif %}</span>
+    </button>
     {% else %}
     <p class="placeholder">财务数据尚未生成。</p>
     {% endfor %}
   </div>
+  <div class="charts fin-charts" id="finCharts">
+    {% for chart in fin_view.charts %}
+    <div class="card chart">
+      <h3>{{ chart.title }}</h3>
+      <p class="c-sub">{{ chart.subtitle }}</p>
+      <div class="c-body"><canvas {% if chart.kind == 'generic' %}data-metric="{{ chart.metric }}" data-series="{{ chart.series }}"{% else %}data-fin-kind="{{ chart.kind }}" data-fin-index="{{ loop.index0 }}"{% endif %} aria-label="{{ chart.title }}"></canvas></div>
+      {% if chart.kind != 'generic' %}<p class="fin-readout" data-fin-readout="{{ loop.index0 }}"></p>{% endif %}
+    </div>
+    {% endfor %}
   </div>
-  <div class="card split-card" data-fin-panel="split" hidden>
-    <div class="split-head">
-      <span class="seg" role="group" aria-label="按业务或按地理">
-        <button type="button" data-split="business" aria-pressed="true">按业务</button>
-        <button type="button" data-split="geo" aria-pressed="false">按地理</button>
-      </span>
+  {% if fin_view.note %}<p class="small muted mix-note" id="finNote">{{ fin_view.note }}</p>{% else %}<p class="small muted mix-note" id="finNote" hidden></p>{% endif %}
+  {% for r in fin_rows %}
+  <div class="fin-drivers" data-fin-drivers="{{ r.key }}"{% if r.key != fin_view.default %} hidden{% endif %}>
+    {% for drv in r.drivers %}
+    <div class="drv">
+      <div class="drv-meta">
+        {% if drv.type %}<span class="pill">{{ drv.type }}</span>{% endif %}
+        {% if drv.direction == '+' %}<span class="pill ok">正贡献</span>{% elif drv.direction == '-' %}<span class="pill alert">负贡献</span>{% endif %}
+        {% if drv.quote_unverified %}<span class="pill warn">引文未核实</span>{% elif drv.is_inference %}<span class="pill warn">推测</span>{% endif %}
+        {% if drv.source %}<span>{{ drv.source|source }}</span>{% endif %}
+      </div>
+      <p>{{ drv.description }}</p>
+      {% if drv.evidence_quote %}<blockquote>{{ drv.evidence_quote }}</blockquote>{% endif %}
+      {% if drv.is_inference and drv.reasoning %}<p class="small muted">依据：{{ drv.reasoning }}</p>{% endif %}
     </div>
-    {% macro split_table(rows, empty) %}
-    <div class="table-wrap">
-      <table class="data split-table">
-        <thead><tr><th>指标</th><th>金额</th><th>同比</th><th>环比</th><th>占比</th></tr></thead>
-        <tbody>
-        {% for row in rows %}
-          <tr>
-            <td>{{ row.name }}</td>
-            <td>{{ row.revenue }}</td>
-            <td class="c-{{ row.yoy.cls }}">{{ row.yoy.text }}</td>
-            <td class="c-{{ row.qoq.cls }}">{{ row.qoq.text }}</td>
-            <td>{{ row.share or "—" }}</td>
-          </tr>
-          {% for child in row.children or [] %}
-          <tr class="split-child">
-            <td>{{ child.name }}</td>
-            <td>{{ child.revenue }}</td>
-            <td class="c-{{ child.yoy.cls }}">{{ child.yoy.text }}</td>
-            <td class="c-{{ child.qoq.cls }}">{{ child.qoq.text }}</td>
-            <td>{{ child.share or "—" }}</td>
-          </tr>
-          {% endfor %}
-        {% else %}
-          <tr><td class="split-empty" colspan="5">{{ empty }}</td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endmacro %}
-    <div data-split-panel="business">
-      {{ split_table(segments.business, segments.business_note) }}
-    </div>
-    <div data-split-panel="geo" hidden>
-      {{ split_table(segments.geo, segments.geo_note) }}
-    </div>
+    {% else %}
+    {% if not r.summary %}<p class="muted">{% if drivers_pending %}{{ drivers_pending }}{% else %}暂无单独解读。{% endif %}</p>{% endif %}
+    {% endfor %}
+    {% if r.conflicts %}<p class="conflict">冲突：{{ r.conflicts if r.conflicts is string else r.conflicts|join('；') }}</p>{% endif %}
+    {% if r.from_press %}<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>{% endif %}
   </div>
-  </div>
-  <script>
-  (function () {
-    var root = document.getElementById('fin');
-    if (!root) return;
-    root.querySelectorAll('[data-fin]').forEach(function (btn) {
-      btn.addEventListener('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        var mode = btn.getAttribute('data-fin');
-        root.querySelectorAll('[data-fin]').forEach(function (other) {
-          other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
-        });
-        root.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
-          panel.hidden = panel.getAttribute('data-fin-panel') !== mode;
-        });
-      });
-    });
-    root.querySelectorAll('[data-split]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var mode = btn.getAttribute('data-split');
-        root.querySelectorAll('[data-split]').forEach(function (other) {
-          other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
-        });
-        root.querySelectorAll('[data-split-panel]').forEach(function (panel) {
-          panel.hidden = panel.getAttribute('data-split-panel') !== mode;
-        });
-      });
-    });
-  })();
-  </script>
-
+  {% endfor %}
   {% if history_derived %}<p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>{% endif %}
   </div>
 </details>
@@ -412,8 +322,10 @@ function openFromHash() {
 window.addEventListener('hashchange', openFromHash);
 openFromHash();
 </script>
-{% if history %}
+{% if history or fin_view.charts %}
 <script src="{{ root }}static/vendor/chart.umd.min.js"></script>
+{% endif %}
+{% if history %}
 <script>
 // 图表在「财务」证据块第一次展开时才绘制：折叠状态下画布尺寸为 0
 (function () {
@@ -549,6 +461,255 @@ function drawRowCharts() {
     draw();
   });
 }
+</script>
+{% endif %}
+{% if fin_view.charts %}
+<script>
+(function () {
+  var view = {{ fin_view|tojson }};
+  var history = {{ history|tojson }};
+  var live = [];
+  var active = view.charts || [];
+  function cssColor(name, fallback) {
+    var value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+  function palette() {
+    return [cssColor('--s1', '#2a78d6'), cssColor('--s4', '#eda100'), cssColor('--s2', '#eb6834'), cssColor('--s3', '#1baf7a'), '#7c6ad6', '#1aa6a6', '#c45c8a'];
+  }
+  function yearTicks(labels) {
+    return {
+      maxRotation: 0, autoSkip: false,
+      callback: function (_val, i) {
+        var lab = labels[i] || '';
+        return String(lab).endsWith('Q1') ? String(lab).slice(2, 6) : '';
+      }
+    };
+  }
+  function clearCharts() {
+    live.forEach(function (chart) { chart.destroy(); });
+    live = [];
+  }
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>]/g, function (ch) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[ch];
+    });
+  }
+  function focusIndex(chart) {
+    var labels = chart.labels || [];
+    var focus = chart.focus || (labels[labels.length - 1] || '');
+    var index = labels.indexOf(focus);
+    return index < 0 ? labels.length - 1 : index;
+  }
+  function writeReadout(slot, chart, index, seriesKey) {
+    var node = document.querySelector('[data-fin-readout="' + slot + '"]');
+    if (!node) return;
+    var point = (chart.points || [])[index];
+    if (!point) { node.textContent = ''; return; }
+    if (point.gap || !point.items || !point.items.length) {
+      node.textContent = point.period + ' 没有这项拆分。';
+      return;
+    }
+    var html = '<b>' + esc(point.period) + '</b>';
+    point.items.forEach(function (item) {
+      var mark = item.key === seriesKey ? ' readout-on' : '';
+      var share = item.share == null ? '—' : item.share.toFixed(1) + '%';
+      var extra = item.stack ? '' : '（母项，未计入柱）';
+      html += '<span class="readout-item' + mark + '">' + esc(item.name) + ' ' + share + ' · ' + esc(item.amount) + extra + '</span>';
+    });
+    node.innerHTML = html;
+  }
+  function writeAmount(slot, chart, index) {
+    var node = document.querySelector('[data-fin-readout="' + slot + '"]');
+    if (!node) return;
+    var label = (chart.labels || [])[index] || '';
+    var money = (chart.amount_text || [])[index];
+    var yoy = (chart.yoy || [])[index];
+    var yoyText = yoy == null ? '同比 —' : '同比 ' + (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
+    node.textContent = label + (money ? ' · ' + money : '') + ' · ' + yoyText;
+  }
+  function drawAmount(canvas, chart) {
+    var labels = chart.labels || [];
+    var picked = focusIndex(chart);
+    var drawn = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { type: 'bar', label: '金额', data: chart.amount, backgroundColor: cssColor('--s1', '#2a78d6'), yAxisID: 'y', order: 2, maxBarThickness: 18 },
+          { type: 'line', label: '同比', data: chart.yoy, borderColor: cssColor('--s2', '#eb6834'), backgroundColor: cssColor('--s2', '#eb6834'), yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 0, borderWidth: 1.5, order: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } } },
+        scales: {
+          x: { grid: { display: false }, ticks: yearTicks(labels) },
+          y: { beginAtZero: true, title: { display: true, text: '十亿美元' } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + '%'; } }, title: { display: true, text: '同比' } }
+        },
+        onClick: function (_evt, elements) {
+          if (!elements.length) return;
+          writeAmount(canvas.getAttribute('data-fin-index'), chart, elements[0].index);
+        }
+      }
+    });
+    live.push(drawn);
+    writeAmount(canvas.getAttribute('data-fin-index'), chart, picked);
+  }
+  function drawShare(canvas, chart) {
+    var labels = chart.labels || [];
+    var points = chart.points || [];
+    var keys = [];
+    var legends = {};
+    points.forEach(function (point) {
+      (point.items || []).forEach(function (item) {
+        if (!item.stack) return;
+        if (keys.indexOf(item.key) < 0) keys.push(item.key);
+        legends[item.key] = item.legend || item.name;
+      });
+    });
+    var colors = palette();
+    var picked = focusIndex(chart);
+    var datasets = keys.map(function (key, seriesIndex) {
+      return {
+        label: legends[key] || key,
+        key: key,
+        data: points.map(function (point) {
+          var item = (point.items || []).filter(function (row) { return row.key === key && row.stack; })[0];
+          return item ? item.share : null;
+        }),
+        backgroundColor: colors[seriesIndex % colors.length],
+        stack: 'mix',
+        maxBarThickness: 18
+      };
+    });
+    var drawn = new Chart(canvas, {
+      type: 'bar',
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: 'nearest', intersect: true },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(1) + '%'); } } }
+        },
+        scales: {
+          x: { stacked: true, grid: { display: false }, ticks: yearTicks(labels) },
+          y: { stacked: true, min: 0, max: 100, ticks: { callback: function (v) { return v + '%'; } } }
+        },
+        onClick: function (_evt, elements) {
+          if (!elements.length) return;
+          var hit = elements[0];
+          writeReadout(canvas.getAttribute('data-fin-index'), chart, hit.index, datasets[hit.datasetIndex].key);
+        }
+      }
+    });
+    live.push(drawn);
+    var first = datasets[0] ? datasets[0].key : '';
+    writeReadout(canvas.getAttribute('data-fin-index'), chart, picked, first);
+  }
+  function genericSeries(metric, name) {
+    var spec = (typeof ROW_SERIES !== 'undefined' && ROW_SERIES[metric]) || null;
+    if (!spec) return null;
+    var level = history.map(function (h) {
+      var x = h[spec.v];
+      if (x == null) return null;
+      if (spec.kind === 'money') return x / 1e9;
+      if (spec.kind === 'ratio') return x * 100;
+      if (spec.kind === 'shares') return x / 1e6;
+      return x;
+    });
+    var asChange = function (x) {
+      if (x == null) return null;
+      return spec.kind === 'days' ? x : x * 100;
+    };
+    if (name === 'qoq') return history.map(function (h) { return asChange(h[spec.v + '_qoq']); });
+    if (name === 'yoy') return history.map(function (h) { return asChange(h[spec.v + '_yoy']); });
+    return level;
+  }
+  function drawGeneric(canvas) {
+    var metric = canvas.getAttribute('data-metric');
+    var name = canvas.getAttribute('data-series');
+    var series = genericSeries(metric, name);
+    if (!series || !series.some(function (x) { return x != null; })) {
+      canvas.parentNode.innerHTML = '<p class="placeholder">这个指标没有这段历史。</p>';
+      return;
+    }
+    var labels = history.map(function (h) { return h.period; });
+    var hue = name === 'qoq' ? '--s3' : (name === 'yoy' ? '--s2' : '--s1');
+    var line = name !== 'level';
+    live.push(new Chart(canvas, {
+      type: line ? 'line' : 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: series,
+          borderColor: cssColor(hue, '#2a78d6'),
+          backgroundColor: cssColor(hue, '#2a78d6'),
+          tension: 0.25, spanGaps: true, pointRadius: 0, borderWidth: 1.5, borderRadius: 3, maxBarThickness: 18
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false }, ticks: yearTicks(labels) }, y: { border: { display: false } } }
+      }
+    }));
+  }
+  function drawRoot(root) {
+    if (typeof Chart === 'undefined') return;
+    clearCharts();
+    root.querySelectorAll('canvas[data-fin-kind="amount_yoy"]').forEach(function (canvas) {
+      var chart = active[Number(canvas.getAttribute('data-fin-index'))];
+      if (chart) drawAmount(canvas, chart);
+    });
+    root.querySelectorAll('canvas[data-fin-kind="share"]').forEach(function (canvas) {
+      var chart = active[Number(canvas.getAttribute('data-fin-index'))];
+      if (chart) drawShare(canvas, chart);
+    });
+    root.querySelectorAll('canvas[data-series]').forEach(drawGeneric);
+  }
+  function cardHtml(chart, index) {
+    var canvas = chart.kind === 'generic'
+      ? '<canvas data-metric="' + esc(chart.metric) + '" data-series="' + esc(chart.series) + '" aria-label="' + esc(chart.title) + '"></canvas>'
+      : '<canvas data-fin-kind="' + esc(chart.kind) + '" data-fin-index="' + index + '" aria-label="' + esc(chart.title) + '"></canvas>';
+    var readout = chart.kind === 'generic' ? '' : '<p class="fin-readout" data-fin-readout="' + index + '"></p>';
+    return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><div class="c-body">' + canvas + '</div>' + readout + '</div>';
+  }
+  function show(key) {
+    var spec = (view.by_key || {})[key];
+    active = spec ? spec.charts : [
+      { title: '水平值', kind: 'generic', subtitle: '本季水平', metric: key, series: 'level' },
+      { title: '环比', kind: 'generic', subtitle: '较上一季', metric: key, series: 'qoq' },
+      { title: '同比', kind: 'generic', subtitle: '较去年同季', metric: key, series: 'yoy' }
+    ];
+    var grid = document.getElementById('finCharts');
+    grid.innerHTML = active.map(cardHtml).join('');
+    var note = document.getElementById('finNote');
+    if (note) {
+      note.textContent = spec && spec.note ? spec.note : '';
+      note.hidden = !note.textContent;
+    }
+    document.querySelectorAll('[data-fin-drivers]').forEach(function (node) {
+      node.hidden = node.getAttribute('data-fin-drivers') !== key;
+    });
+    document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-fin-metric') === key ? 'true' : 'false');
+    });
+    requestAnimationFrame(function () { drawRoot(grid); });
+  }
+  document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+    btn.addEventListener('click', function () { show(btn.getAttribute('data-fin-metric')); });
+  });
+  var box = document.getElementById('fin');
+  function drawInitial() {
+    if (box.open) drawRoot(document.getElementById('finCharts'));
+  }
+  box.addEventListener('toggle', drawInitial);
+  drawInitial();
+})();
 </script>
 {% endif %}
 {% if eps_chart %}

@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from pipeline import ROOT
-from pipeline.compute.periods import prior_fiscal_period, yoy_fiscal_period
+from pipeline.compute.periods import make_fiscal_period, parse_fiscal_period, prior_fiscal_period, yoy_fiscal_period
 from pipeline.compute.derived import derived_metrics, evaluate, merge_checks
 from pipeline.config import data_dir, list_tickers, load_position, load_settings, load_ticker_config, site_dir
 
@@ -1527,6 +1527,158 @@ def _business_split(ticker: str, period: str, doc: dict[str, Any], docs: dict[st
     }
 
 
+_MIX_KEYS = ("ads", "other", "rl")
+
+
+def _mix_period_key(label: str, grain: str) -> tuple[int, int]:
+    if grain == "year":
+        return int(label[2:6]), 0
+    year, quarter = parse_fiscal_period(label)
+    return year, quarter
+
+
+def _mix_span(start: str, end: str, grain: str) -> list[str]:
+    if grain == "year":
+        return [f"FY{year}" for year in range(int(start[2:6]), int(end[2:6]) + 1)]
+    year, quarter = parse_fiscal_period(start)
+    labels: list[str] = []
+    while True:
+        label = make_fiscal_period(year, quarter)
+        labels.append(label)
+        if label == end:
+            return labels
+        quarter += 1
+        if quarter == 5:
+            year += 1
+            quarter = 1
+
+
+def _mix_prior(label: str, grain: str, kind: str) -> str | None:
+    if grain == "year":
+        if kind == "qoq":
+            return None
+        return f"FY{int(label[2:6]) - 1}"
+    return yoy_fiscal_period(label) if kind == "yoy" else prior_fiscal_period(label)
+
+
+def _segment_mix(ticker: str, period: str) -> dict[str, Any]:
+    """历史分部占比。没有 segment_history.json 的公司返回空，页面只留本季五列表。"""
+    empty: dict[str, Any] = {
+        "quarters": [],
+        "years": [],
+        "note": "",
+        "default_period": "",
+        "selected": None,
+    }
+    path = data_dir(ticker) / "segment_history.json"
+    if not path.exists():
+        return empty
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return empty
+    quarters = _mix_points(raw.get("quarters") or [], "quarter")
+    years = _mix_points(raw.get("years") or [], "year")
+    if not quarters and not years:
+        return empty
+    present = [row["period"] for row in quarters if not row["gap"]]
+    default = period if period in present else (present[-1] if present else "")
+    selected = next((row for row in quarters if row["period"] == default), None)
+    gaps = [row["period"] for row in quarters if row["gap"]]
+    methods = {row.get("method") for row in (raw.get("quarters") or [])}
+    note_bits = ["占比按披露的分部收入。柱是广告、其他、Reality Labs；有母项时母项不重复计入。"]
+    if quarters:
+        note_bits.append(f"最早一期是 {quarters[0]['period']}。")
+    if "table" in methods:
+        note_bits.append("部分季度来自 10-Q 收入构成表。")
+    if "residual" in methods:
+        note_bits.append("没有单季事实的第四季，用全年减去已披露季度；差额不完整则留空。")
+    if "xbrl" in methods:
+        note_bits.append("单季数来自 10-Q/10-K XBRL。")
+    if gaps:
+        note_bits.append(f"{'、'.join(gaps)} 没有完整分部，留空。")
+    note_bits.append("来源 SEC EDGAR。")
+    return {
+        "quarters": quarters,
+        "years": years,
+        "note": "".join(note_bits),
+        "default_period": default,
+        "selected": selected,
+    }
+
+
+def _mix_points(rows: list[dict[str, Any]], grain: str) -> list[dict[str, Any]]:
+    usable = [row for row in rows if row.get("period") and row.get("lines")]
+    if not usable:
+        return []
+    usable.sort(key=lambda row: _mix_period_key(str(row["period"]), grain))
+    by_period = {str(row["period"]): row for row in usable}
+    amounts: dict[tuple[str, str], float] = {}
+    for row in usable:
+        for line in row["lines"]:
+            amounts[(str(row["period"]), str(line["key"]))] = float(line["value"])
+
+    def pace(label: str, key: str, kind: str) -> dict[str, str]:
+        prior = _mix_prior(label, grain, kind)
+        if prior is None or (prior, key) not in amounts:
+            return {"text": "—", "cls": "na"}
+        base = amounts[(prior, key)]
+        if base == 0:
+            return {"text": "—", "cls": "na"}
+        current = amounts[(label, key)]
+        return _change((current - base) / abs(base))
+
+    points: list[dict[str, Any]] = []
+    for label in _mix_span(str(usable[0]["period"]), str(usable[-1]["period"]), grain):
+        row = by_period.get(label)
+        if row is None:
+            points.append(
+                {
+                    "period": label,
+                    "gap": True,
+                    "method": "",
+                    "rows": [],
+                    "series": {key: None for key in _MIX_KEYS},
+                }
+            )
+            continue
+        lines = row["lines"]
+        company = sum(float(line["value"]) for line in lines if int(line.get("depth") or 0) == 0)
+        stacked = sum(float(line["value"]) for line in lines if line.get("stack"))
+        if company <= 0:
+            company = stacked
+        packed = []
+        series = {key: None for key in _MIX_KEYS}
+        for line in lines:
+            value = float(line["value"])
+            key = str(line["key"])
+            share = value / company * 100 if company else None
+            if line.get("stack") and key in series and stacked:
+                series[key] = round(value / stacked * 100, 1)
+            packed.append(
+                {
+                    "key": key,
+                    "name": line["name"],
+                    "depth": int(line.get("depth") or 0),
+                    "stack": bool(line.get("stack")),
+                    "revenue": _fmt_money(value),
+                    "share": f"{share:.1f}%" if share is not None else "—",
+                    "yoy": pace(label, key, "yoy"),
+                    "qoq": pace(label, key, "qoq"),
+                }
+            )
+        points.append(
+            {
+                "period": label,
+                "gap": False,
+                "method": row.get("method") or "",
+                "rows": packed,
+                "series": series,
+            }
+        )
+    return points
+
+
 def _fin_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """财务解读表：每行一个指标，展开后看变动原因与原文引用。"""
     meta = doc.get("meta") or {}
@@ -1560,8 +1712,240 @@ def _fin_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None
             }
         )
     rows = _with_profit_companions(rows, doc, docs, ticker, period)
+    rows = _with_opex_row(rows, ticker, period)
     rows.extend(_activity_rows(ticker, period, doc, docs))
     return rows
+
+
+def _load_statement(ticker: str) -> dict[str, Any]:
+    path = data_dir(ticker) / "statement_history.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _with_opex_row(rows: list[dict[str, Any]], ticker: str, period: str) -> list[dict[str, Any]]:
+    """营业费用放在营业利润前面。没有费用历史的公司不加这一行。"""
+    if any(row["key"] == "opex" for row in rows):
+        return rows
+    quarters = {row["period"]: row for row in (_load_statement(ticker).get("quarters") or []) if row.get("opex") is not None}
+    current = quarters.get(period)
+    if not current:
+        return rows
+    yoy_row = quarters.get(yoy_fiscal_period(period))
+    qoq_row = quarters.get(prior_fiscal_period(period))
+    names = "、".join(line["name"] for line in current.get("opex_lines") or [])
+    made = {
+        "key": "opex",
+        "label": "营业费用",
+        "value": _fmt_money(current["opex"]),
+        "yoy": _change(_rel(current["opex"], None if yoy_row is None else yoy_row.get("opex"), False)),
+        "qoq": _change(_rel(current["opex"], None if qoq_row is None else qoq_row.get("opex"), False)),
+        "vs": {"text": "—", "cls": "na"},
+        "vs_source": "",
+        "summary": f"{names}合计，不含营业成本。" if names else "不含营业成本。",
+        "drivers": [],
+        "conflicts": [],
+        "from_press": False,
+        "nested": False,
+    }
+    for index, row in enumerate(rows):
+        if str(row["key"]).startswith("operating_margin") or str(row["key"]).startswith("operating_income"):
+            return rows[:index] + [made] + rows[index:]
+    return rows + [made]
+
+
+def _amount_yoy_chart(quarters: list[dict[str, Any]], field: str, title: str, subtitle: str) -> dict[str, Any]:
+    labels: list[str] = []
+    amount: list[float | None] = []
+    yoy: list[float | None] = []
+    text: list[str | None] = []
+    values = {str(row["period"]): row.get(field) for row in quarters}
+    for row in quarters:
+        label = str(row["period"])
+        value = row.get(field)
+        labels.append(label)
+        amount.append(None if value is None else round(float(value) / 1_000_000_000, 2))
+        text.append(None if value is None else _fmt_money(value))
+        prior = values.get(yoy_fiscal_period(label))
+        if value is None or prior in (None, 0):
+            yoy.append(None)
+        else:
+            yoy.append(round((float(value) - float(prior)) / abs(float(prior)) * 100, 1))
+    return {
+        "title": title,
+        "kind": "amount_yoy",
+        "subtitle": subtitle,
+        "labels": labels,
+        "amount": amount,
+        "yoy": yoy,
+        "amount_text": text,
+    }
+
+
+def _share_chart(points: list[dict[str, Any]], title: str, subtitle: str, focus: str) -> dict[str, Any]:
+    labels = [point["period"] for point in points]
+    if focus not in labels:
+        present = [point["period"] for point in points if not point.get("gap")]
+        focus = present[-1] if present else (labels[-1] if labels else "")
+    return {
+        "title": title,
+        "kind": "share",
+        "subtitle": subtitle,
+        "labels": labels,
+        "points": points,
+        "focus": focus,
+    }
+
+
+def _line_points(quarters: list[dict[str, Any]], field: str, *, denominator: str) -> list[dict[str, Any]]:
+    points = []
+    for row in quarters:
+        lines = list(row.get(field) or [])
+        if field == "cogs_lines" and row.get("gross_profit"):
+            lines = lines + [{"key": "gp", "name": "毛利", "value": row["gross_profit"]}]
+        if not lines:
+            points.append({"period": row["period"], "gap": True, "items": []})
+            continue
+        total = sum(float(line["value"]) for line in lines)
+        if denominator == "revenue" and row.get("revenue"):
+            total = float(row["revenue"])
+        items = []
+        for line in lines:
+            value = float(line["value"])
+            share = value / total * 100 if total else None
+            items.append(
+                {
+                    "key": line["key"],
+                    "name": line["name"],
+                    "legend": "其他" if line["key"] == "other" else line["name"],
+                    "share": None if share is None else round(share, 1),
+                    "amount": _fmt_money(value),
+                    "stack": True,
+                }
+            )
+        points.append({"period": row["period"], "gap": False, "items": items})
+    return points
+
+
+def _business_points(mix: dict[str, Any]) -> list[dict[str, Any]]:
+    points = []
+    for row in mix.get("quarters") or []:
+        if row.get("gap"):
+            points.append({"period": row["period"], "gap": True, "items": []})
+            continue
+        items = []
+        for line in row.get("rows") or []:
+            share_text = line.get("share") or ""
+            share = None
+            if share_text.endswith("%"):
+                try:
+                    share = float(share_text[:-1])
+                except ValueError:
+                    share = None
+            items.append(
+                {
+                    "key": line["key"],
+                    "name": line["name"],
+                    "legend": "其他" if line["key"] == "other" else line["name"],
+                    "share": share,
+                    "amount": line["revenue"],
+                    "stack": bool(line.get("stack")),
+                }
+            )
+        points.append({"period": row["period"], "gap": not items, "items": items})
+    return points
+
+
+def _generic_charts(key: str) -> list[dict[str, Any]]:
+    return [
+        {"title": "水平值", "kind": "generic", "subtitle": "本季水平", "metric": key, "series": "level"},
+        {"title": "环比", "kind": "generic", "subtitle": "较上一季", "metric": key, "series": "qoq"},
+        {"title": "同比", "kind": "generic", "subtitle": "较去年同季", "metric": key, "series": "yoy"},
+    ]
+
+
+def _fin_view(ticker: str, period: str) -> dict[str, Any]:
+    """点指标后要画的图。没有历史文件的科目走原来的水平值 / 环比 / 同比。"""
+    by_key: dict[str, dict[str, Any]] = {}
+    statement = _load_statement(ticker)
+    quarters = [row for row in (statement.get("quarters") or []) if row.get("period")]
+    if quarters:
+        by_key["revenue"] = {
+            "note": statement.get("source") or "",
+            "charts": [_amount_yoy_chart(quarters, "revenue", "营收", "金额（十亿美元）与同比")],
+        }
+        if any(row.get("gross_profit") is not None for row in quarters):
+            gross_charts = [_amount_yoy_chart(quarters, "gross_profit", "毛利", "金额（十亿美元）与同比")]
+            if any(row.get("cogs_lines") or row.get("cost_of_revenue") for row in quarters):
+                # 成本项用申报里的名字；毛利是营收减这些成本后的剩余。
+                prepared = []
+                for row in quarters:
+                    lines = list(row.get("cogs_lines") or [])
+                    if not lines and row.get("cost_of_revenue"):
+                        lines = [{"key": "cogs", "name": "营业成本", "value": row["cost_of_revenue"]}]
+                    prepared.append({**row, "cogs_lines": lines})
+                gross_charts.append(
+                    _share_chart(
+                        _line_points(prepared, "cogs_lines", denominator="revenue"),
+                        "毛利构成",
+                        "点一根柱看占营收的比例和金额",
+                        period,
+                    )
+                )
+            gross_note = "毛利 = 营收 − 申报中的营业成本。成本项用文件里的科目，没有再拆的不补。"
+            for key in ("gross_profit_gaap", "gross_profit_nongaap", "gross_profit"):
+                by_key[key] = {"note": gross_note, "charts": gross_charts}
+        if any(row.get("opex_lines") for row in quarters):
+            by_key["opex"] = {
+                "note": "营业费用按申报列出的费用项加总，不含营业成本。占比以这些费用项合计为分母。",
+                "charts": [
+                    _amount_yoy_chart(quarters, "opex", "营业费用", "金额（十亿美元）与同比"),
+                    _share_chart(
+                        _line_points(quarters, "opex_lines", denominator="lines"),
+                        "费用构成",
+                        "点一根柱看占营业费用的比例和金额",
+                        period,
+                    ),
+                ],
+            }
+        if any(row.get("geo") for row in quarters):
+            by_key["revenue"]["charts"].append(
+                _share_chart(
+                    _line_points(quarters, "geo", denominator="lines"),
+                    "按地区",
+                    "点一根柱看该季地区占比和金额",
+                    period,
+                )
+            )
+            by_key["revenue"]["note"] = (by_key["revenue"]["note"] + " 2016 年地区是美国与美国以外，2017 起改为美国和加拿大、欧洲、亚太、世界其他地区。").strip()
+    mix = _segment_mix(ticker, period)
+    business = _business_points(mix)
+    if business and "revenue" in by_key:
+        gaps = [point["period"] for point in business if point.get("gap")]
+        note = by_key["revenue"]["note"]
+        if gaps:
+            note = f"{note} {'、'.join(gaps)} 没有完整的业务分部，柱上留空。"
+        note = f"{note} 业务柱只计广告、其他和 Reality Labs；应用家族是母项，不重复计入。"
+        by_key["revenue"]["note"] = note.strip()
+        charts = by_key["revenue"]["charts"]
+        charts.insert(1, _share_chart(business, "按业务", "点一根柱看该季分部占比和金额", period))
+    elif business:
+        by_key["revenue"] = {
+            "note": mix.get("note") or "",
+            "charts": [_share_chart(business, "按业务", "点一根柱看该季分部占比和金额", period)],
+        }
+    return {"by_key": by_key}
+
+
+def _fin_panel(rows: list[dict[str, Any]], view: dict[str, Any]) -> dict[str, Any]:
+    default = "revenue" if any(row["key"] == "revenue" for row in rows) else (rows[0]["key"] if rows else "")
+    spec = (view.get("by_key") or {}).get(default) or {}
+    charts = spec.get("charts") or (_generic_charts(default) if default else [])
+    return {**view, "default": default, "charts": charts, "note": spec.get("note") or ""}
 
 
 def _price_view(doc: dict[str, Any]) -> dict[str, Any]:
@@ -3935,8 +4319,8 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 history_derived=any(h.get("derived") for h in history),
                 waiting_transcript=(doc.get("status") or {}).get("stage") == "stage1_done",
                 findings=_findings(doc),
-                fin_rows=_fin_rows(doc, docs),
-                segments=_business_split(t, period, doc, docs),
+                fin_rows=(fin_rows := _fin_rows(doc, docs)),
+                fin_view=_fin_panel(fin_rows, _fin_view(t, period)),
                 guidance=_guide_section(doc, docs),
                 qa=_qa_view(doc, bool((prior.get("qa") or {}).get("items"))),
                 watchlist=_watchlist(doc),
