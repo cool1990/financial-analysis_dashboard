@@ -48,6 +48,7 @@ python -m pipeline build
 | `python -m pipeline run --ticker MU --period FY2026Q4 --stage 1` | 重跑阶段 |
 | `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补。ADR 只走 6-K 新闻稿，拒绝 `--xbrl-only` |
 | `python -m pipeline replay-filings --ticker TSM` | 回放 6-K 过滤器（不调用 LLM） |
+| `python -m pipeline history --ticker META` | 生成分部、报表和 XBRL 活动历史。`listing: hk` / `adr` 跳过。`--if-new` 只在新的 10-Q/10-K 时刷新；全池扫描不会给还没有这三份文件的股票做首次抓取 |
 | `python -m pipeline build` | 生成 `site/` |
 | `python -m pipeline stage3-recent` | 近期财报的股价反应 + T+1/3/7 分析师修正（daily 自动跑，无 LLM） |
 | `python -m pipeline thesis --ticker MU` | 按仓位档案评估本季（1 次小调用；档案和数据都没变时跳过） |

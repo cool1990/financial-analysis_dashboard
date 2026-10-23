@@ -269,11 +269,27 @@ def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | N
         raise RuntimeError(f"未发现可处理的近期{kind}（历史季度请用 backfill 或 --accession）")
     filing = filings[0]
     try:
-        return _run_stage1_filing(ticker, cfg, client, filing, fiscal_period)
+        doc = _run_stage1_filing(ticker, cfg, client, filing, fiscal_period)
     except Exception:
         # 失败计数：poll 每 15 分钟一次，若不封顶会对同一份 8-K 反复调用 LLM
         record_filing_failure(ticker, filing["accessionNumber"])
         raise
+    _attach_history(ticker, doc)
+    return doc
+
+
+def _attach_history(ticker: str, doc: dict[str, Any]) -> None:
+    """Stage1 已经成功后刷新分部和报表历史。刷新失败只记警告，不推翻这份新闻稿。"""
+    try:
+        from pipeline.commands.history_cmd import refresh_history
+
+        refresh_history(ticker)
+    except Exception as exc:
+        warnings = doc.setdefault("status", {}).setdefault("warnings", [])
+        warnings.append(f"分部与报表历史未刷新: {exc}")
+        period = (doc.get("meta") or {}).get("fiscal_period")
+        if period:
+            save_period_json(ticker, period, doc)
 
 
 def _run_stage1_filing(

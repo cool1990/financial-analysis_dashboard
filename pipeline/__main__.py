@@ -63,6 +63,11 @@ def main(argv: list[str] | None = None) -> int:
     p_val.add_argument("--ticker", required=True)
     p_val.add_argument("--period", required=True)
 
+    p_hist = sub.add_parser("history", help="生成分部、报表和 XBRL 活动历史")
+    p_hist.add_argument("--ticker", default=None, help="一只股票。与 --if-new 合用时只检查这一只")
+    p_hist.add_argument("--if-new", action="store_true", help="仅在出现新的 10-Q/10-K，或历史文件还不齐时刷新")
+    p_hist.add_argument("--start", default="2016-01-01", help="季度结束日的起点")
+
     p_build = sub.add_parser("build", help="生成静态页面到 site/")
     p_build.add_argument("--ticker", default=None)
     p_build.add_argument("--out", default=None, help="输出目录。缺省写到 site/")
@@ -183,6 +188,18 @@ def main(argv: list[str] | None = None) -> int:
                 print("not found", file=sys.stderr)
                 return 1
             print(json.dumps(doc.get("status"), ensure_ascii=False, indent=2))
+            return 0
+        if args.cmd == "history":
+            from pipeline.commands.history_cmd import refresh_history, refresh_history_if_new
+
+            if args.if_new:
+                out = refresh_history_if_new(args.ticker, start=args.start)
+            elif args.ticker:
+                out = refresh_history(args.ticker, start=args.start)
+            else:
+                print("需要 --ticker，或加上 --if-new", file=sys.stderr)
+                return 2
+            print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "build":
             from builder.build import build_site
