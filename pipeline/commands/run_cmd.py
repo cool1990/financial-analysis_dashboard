@@ -19,6 +19,8 @@ from pipeline.compute.periods import (
 )
 from pipeline.compute.scorecard import build_scorecard
 from pipeline.config import load_guidance_keys, load_settings, load_ticker_config
+from pipeline.earnings_config import earnings_filter_fingerprint, resolve_earnings_spec
+from pipeline.extract.currency_guard import apply_currency_guard, currency_prompt_note
 from pipeline.extract.numbers import ParsedAmount
 from pipeline.extract.press_release import load_press_release
 from pipeline.llm import LLMClient
@@ -27,8 +29,10 @@ from pipeline.sources.sec_edgar import SecEdgarClient
 from pipeline.sources.transcripts import fetch_transcript
 from pipeline.sources.yfinance_src import estimate_row
 from pipeline.state import (
+    add_ignored,
     add_processed,
     load_failures,
+    load_ignored,
     record_filing_failure,
     empty_period_doc,
     load_period_json,
@@ -193,14 +197,16 @@ def _accepted_dt(raw: str) -> datetime | None:
 
 
 def detect_new_filings(ticker: str, *, now: datetime | None = None) -> list[dict[str, Any]]:
-    """只返回「近期」且未处理、未超失败上限的 Item 2.02 8-K。
+    """只返回近期、未处理、未超失败上限的业绩申报。
 
-    历史 8-K 不在 processed.json 里是常态（新加股票时尤其如此）；若不按发布时间过滤，
-    poll 每天财报窗口都会逐份回溯历史新闻稿并调用 LLM。历史数据请走 backfill。
+    domestic：8-K 且 items 含 2.02。adr：6-K 且 exhibit 描述通过过滤器。
+    两条路径不要合成一份全局列表。历史稿不在 processed.json 里是常态；
+    若不按发布时间过滤，poll 会逐份回溯并调用 LLM。历史数据请走 backfill。
     """
     cfg = load_ticker_config(ticker)
     if not cfg.get("cik"):
         raise RuntimeError(f"{ticker} 尚未 init（缺少 CIK）")
+    spec = resolve_earnings_spec(cfg)
     polling = load_settings().get("polling") or {}
     max_age = timedelta(days=float(polling.get("new_filing_max_age_days", 4)))
     max_fail = int(polling.get("max_retries", 5))
@@ -208,27 +214,47 @@ def detect_new_filings(ticker: str, *, now: datetime | None = None) -> list[dict
     client = SecEdgarClient()
     processed = load_processed(ticker)
     failures = load_failures(ticker)
+    if spec.listing == "adr":
+        fingerprint = earnings_filter_fingerprint(spec)
+        ignored = load_ignored(ticker, fingerprint)
+        cutoff = (now - max_age).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        scan = client.scan_earnings_filings(
+            cfg["cik"],
+            cfg,
+            after=cutoff,
+            skip_accessions=ignored | processed,
+        )
+        for skip in scan.skips:
+            acc = str(skip.get("accessionNumber") or "")
+            reason = str(skip.get("reason") or "skip")
+            if acc and acc not in processed and not reason.startswith("fetch_error"):
+                add_ignored(ticker, acc, reason, fingerprint)
+        filings = scan.hits
+    else:
+        filings = client.find_earnings_8k(cfg["cik"])
     out = []
-    for f in client.find_earnings_8k(cfg["cik"]):
-        acc = f["accessionNumber"]
+    for filing in filings:
+        acc = filing["accessionNumber"]
         if acc in processed or failures.get(acc, 0) >= max_fail:
             continue
-        accepted = _accepted_dt(f.get("acceptanceDateTime") or "")
+        accepted = _accepted_dt(filing.get("acceptanceDateTime") or "")
         if accepted is None or now - accepted > max_age:
             continue
-        out.append(f)
+        out.append(filing)
     return out
 
 
 def run_stage1(ticker: str, fiscal_period: str | None = None, accession: str | None = None) -> dict[str, Any]:
     cfg = load_ticker_config(ticker)
+    spec = resolve_earnings_spec(cfg)
     client = SecEdgarClient()
     if accession:
-        filings = [f for f in client.find_earnings_8k(cfg["cik"]) if f["accessionNumber"] == accession]
+        filings = client.find_earnings_filings(cfg["cik"], cfg, accession=accession)
     else:
         filings = detect_new_filings(ticker)
     if not filings:
-        raise RuntimeError("未发现可处理的近期 8-K Item 2.02（历史季度请用 backfill 或 --accession）")
+        kind = "6-K 新闻稿" if spec.listing == "adr" else "8-K Item 2.02"
+        raise RuntimeError(f"未发现可处理的近期{kind}（历史季度请用 backfill 或 --accession）")
     filing = filings[0]
     try:
         return _run_stage1_filing(ticker, cfg, client, filing, fiscal_period)
@@ -245,6 +271,7 @@ def _run_stage1_filing(
     filing: dict[str, Any],
     fiscal_period: str | None,
 ) -> dict[str, Any]:
+    spec = resolve_earnings_spec(cfg)
     acc = filing["accessionNumber"]
     release_at = filing["acceptanceDateTime"]
     if release_at.endswith("Z") is False and "T" in release_at:
@@ -256,7 +283,16 @@ def _run_stage1_filing(
     raw_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / period
     # download first to _tmp then rename after period known
     tmp_dir = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / "_tmp" / acc.replace("-", "")
-    html_path = client.download_press_release(cfg["cik"], acc, tmp_dir / "press_release.html")
+    download_kwargs: dict[str, Any] = {}
+    if spec.listing == "adr":
+        press_name = filing.get("press_release_file") or ""
+        if not press_name:
+            raise FileNotFoundError(f"ADR 6-K 未选定 Press release: {acc}")
+        download_kwargs["press_release_file"] = press_name
+        if filing.get("presentation_file"):
+            download_kwargs["presentation_file"] = filing["presentation_file"]
+            download_kwargs["presentation_dest"] = tmp_dir / "presentation.html"
+    html_path = client.download_press_release(cfg["cik"], acc, tmp_dir / "press_release.html", **download_kwargs)
     parsed = load_press_release(html_path)
     if parsed.get("is_preliminary"):
         add_processed(ticker, acc)
@@ -266,7 +302,8 @@ def _run_stage1_filing(
     llm = LLMClient()
     kpis = json.dumps(cfg.get("kpis") or [], ensure_ascii=False)
     prompt = llm.load_prompt("extract_financials.md", kpis=kpis)
-    user = prompt + "\n\n----\n" + parsed["combined"][:80000]
+    currency_note = currency_prompt_note(spec.reporting_currency) if spec.listing == "adr" else ""
+    user = prompt + currency_note + "\n\n----\n" + parsed["combined"][:80000]
     extracted_model = llm.complete_json("extract_financials.md", user, ExtractFinancials)
     extracted = extracted_model.model_dump()
 
@@ -276,6 +313,8 @@ def _run_stage1_filing(
     if extracted.get("has_nongaap_eps") != regex_flag:
         warnings.append("LLM has_nongaap_eps 与正则不一致，以正则为准")
         extracted["has_nongaap_eps"] = regex_flag
+    if spec.listing == "adr":
+        warnings.extend(apply_currency_guard(extracted, parsed.get("combined") or "", spec.reporting_currency))
 
     # determine period。没有季末时不用发布日充数，否则季末落在下一季时会标错。
     try:
@@ -296,6 +335,9 @@ def _run_stage1_filing(
     final_raw.mkdir(parents=True, exist_ok=True)
     dest = final_raw / "press_release.html"
     dest.write_bytes(html_path.read_bytes())
+    presentation_tmp = tmp_dir / "presentation.html"
+    if presentation_tmp.exists():
+        (final_raw / "presentation.html").write_bytes(presentation_tmp.read_bytes())
     (final_raw / "extracted_financials.json").write_text(
         json.dumps(extracted, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -403,7 +445,7 @@ def _run_stage1_filing(
 
     # guidance from press release (module C stage1)
     g_prompt = llm.load_prompt("extract_guidance.md", guidance_keys=", ".join(load_guidance_keys()))
-    g_user = g_prompt + "\n\n----\n" + parsed["combined"][:80000]
+    g_user = g_prompt + currency_note + "\n\n----\n" + parsed["combined"][:80000]
     try:
         g_items_models = llm.complete_json_list("extract_guidance.md", g_user, GuidanceItem)
         guidance_items = [parse_guidance_item(m.model_dump()) for m in g_items_models]
@@ -458,6 +500,10 @@ def _run_stage1_filing(
         press_release_url=f"https://www.sec.gov/Archives/edgar/data/{int(cfg['cik'])}/{acc.replace('-', '')}/",
         eps_basis=basis,
     )
+    doc["meta"]["sec_form"] = filing.get("form") or ""
+    doc["meta"]["reporting_currency"] = spec.reporting_currency
+    if spec.accounting_basis:
+        doc["meta"]["accounting_basis"] = spec.accounting_basis
     doc["status"] = {
         "stage": "stage1_done",
         "needs_review": v["needs_review"] or basis == "unknown" or inferred_end,

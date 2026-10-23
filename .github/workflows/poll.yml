@@ -55,7 +55,7 @@ jobs:
           if [ -z "${OPENROUTER_API_KEY}" ]; then
             echo "::warning::OPENROUTER_API_KEY 未配置：命中财报窗口时 Stage1/2 会失败"
           fi
-          # poll 内部已按「财报窗口 + 财报日附近 + 近期 8-K + 失败上限 + 文字稿时限」过滤，
+          # poll 内部已按「财报窗口 + 财报日附近 + 近期业绩申报（国内 8-K / ADR 6-K）+ 失败上限 + 文字稿时限」过滤，
           # 不在窗口时几秒内退出，不调用 LLM
           python -m pipeline poll 2>&1 | tee logs/poll.log
 

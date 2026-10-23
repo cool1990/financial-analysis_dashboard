@@ -3,8 +3,8 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{{ ticker }} · {{ company }}{% if thesis %} <span class="stage-badge s-{{ thesis.stage }}">{{ thesis.stage_label }}</span>{% endif %}</h1>
-    <div class="sub">还没有财季数据：daily 会自动完成初始化，下一次财报发布后自动生成解读。</div>
+    <h1>{{ ticker }} · {{ company }}{% if listing == "adr" %} <span class="stage-badge s-adr" title="NYSE/Nasdaq ADR，SEC 6-K">ADR</span>{% endif %}{% if thesis %} <span class="stage-badge s-{{ thesis.stage }}">{{ thesis.stage_label }}</span>{% endif %}</h1>
+    <div class="sub">{% if listing == "adr" %}NYSE/Nasdaq ADR。业绩来自 SEC 6-K 新闻稿，不是 8-K Item 2.02{% if reporting_currency %}，披露币种 {{ reporting_currency }}{% endif %}{% if accounting_basis %}，会计基准 {{ accounting_basis }}{% endif %}。{% endif %}还没有财季数据：daily 会自动完成初始化，下一次财报发布后自动生成解读。</div>
   </div>
 </div>
 {% if thesis %}

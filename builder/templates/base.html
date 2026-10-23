@@ -13,7 +13,7 @@
       <a class="brand" href="{{ root }}index.html">财报解读</a>
       <nav class="nav" aria-label="股票">
         {% for n in nav %}
-        <a href="{{ root }}{{ n.href }}"{% if n.ticker == active %} class="active"{% endif %}>{{ n.ticker }}</a>
+        <a href="{{ root }}{{ n.href }}"{% if n.ticker == active %} class="active"{% endif %}>{{ n.ticker }}{% if n.listing == "adr" %}<span class="nav-adr">ADR</span>{% endif %}</a>
         {% endfor %}
       </nav>
       {% block topbar_extra %}{% endblock %}

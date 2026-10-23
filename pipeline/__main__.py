@@ -73,6 +73,9 @@ def main(argv: list[str] | None = None) -> int:
     p_ping = sub.add_parser("llm-ping", help="校验 OpenRouter 模型 slug 与 API key")
     p_ping.add_argument("--model", default=None, help="模型 slug，默认取 settings.yaml")
 
+    p_replay = sub.add_parser("replay-filings", help="回放 ADR 6-K 业绩过滤器（不调用 LLM）")
+    p_replay.add_argument("--ticker", required=True)
+
     p_eval = sub.add_parser("eval", help="多模型评测（仅 Actions）")
     p_eval.add_argument("--models", required=True, help="逗号分隔模型 slug")
     p_eval.add_argument("--samples", required=True, help="逗号分隔样本，如 MU 或 MU:FY2025Q4")
@@ -177,6 +180,12 @@ def main(argv: list[str] | None = None) -> int:
             raw = args.ticker or ""
             tickers = [part.strip() for part in raw.split(",") if part.strip()] or None
             out = refresh_earnings_estimates(tickers)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if out.get("ok") else 1
+        if args.cmd == "replay-filings":
+            from pipeline.commands.replay_cmd import replay_earnings_filters
+
+            out = replay_earnings_filters(args.ticker)
             print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0 if out.get("ok") else 1
         if args.cmd == "llm-ping":

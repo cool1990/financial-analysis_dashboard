@@ -46,7 +46,8 @@ python -m pipeline build
 | `python -m pipeline snapshot` | 全部股票预期快照 |
 | `python -m pipeline poll` | 财报窗口检测 / 文字稿 |
 | `python -m pipeline run --ticker MU --period FY2026Q4 --stage 1` | 重跑阶段 |
-| `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补 |
+| `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补。ADR 只走 6-K 新闻稿，拒绝 `--xbrl-only` |
+| `python -m pipeline replay-filings --ticker TSM` | 回放 6-K 过滤器（不调用 LLM） |
 | `python -m pipeline build` | 生成 `site/` |
 | `python -m pipeline stage3-recent` | 近期财报的股价反应 + T+1/3/7 分析师修正（daily 自动跑，无 LLM） |
 | `python -m pipeline thesis --ticker MU` | 按仓位档案评估本季（1 次小调用；档案和数据都没变时跳过） |
@@ -74,6 +75,8 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 - 增长质量 = 通用层（`settings.yaml` 的 `quality.defaults`，会计质量类）+ 公司层（股票配置 `quality_checks`，同 key 覆盖通用阈值）。
 - 次日涨跌同时计算相对对照指数（股票配置 `benchmark`，默认 SPY）的超额涨跌。
 - 新增股票：加 `config/tickers/{TICKER}.yaml` 和仓位档案即可，daily 会自动补 CIK（`init-missing`）。
+- 上市地：`listing: domestic`（默认）走 **8-K Item 2.02** + EX-99。`listing: adr` 走 **6-K / 6-K/A**，用 `sec.earnings_6k` 的 exhibit 描述过滤（Press release / earnings），并排除月报、合并报表、股息、董事会。不要用 Item 2.02 滤 6-K，也不要把 TWSE / 港交所 / 巨潮接成 poll。第二只 ADR 只加一份 yaml，不要为单票写死文件名。
+- ADR 另写 `reporting_currency`（TSM 为 USD）和 `accounting_basis`（备注，不参与 FY 计算）。稿里的 NT$ / TWD 不能当成美元。历史回补走 6-K 新闻稿：`python -m pipeline backfill --ticker TSM --limit 4`。`backfill --xbrl-only` 会拒绝 ADR。过滤器回放：`python -m pipeline replay-filings --ticker TSM`（不调用 LLM）。确认回放命中 Press release、排除 monthend / revenue / fsx / dividend / board 之后，这只 ADR 才随 poll 自动检查近期 6-K。
 
 ## LLM 成本护栏
 

@@ -9,6 +9,16 @@ import requests
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from pipeline.config import cache_dir, sec_user_agent
+from pipeline.earnings_config import resolve_earnings_spec
+from pipeline.sources.earnings_6k import (
+    classify_6k,
+    exhibit_descriptions_from_html,
+    exhibits_from_index,
+    form_matches,
+    is_newer_than,
+    merge_exhibits,
+    select_press_and_presentation,
+)
 
 
 class SecRateLimitError(RuntimeError):
@@ -96,35 +106,182 @@ class SecEdgarClient:
         url = self.ARCHIVES_FILE.format(cik=cik_num, accession=acc, filename=filename)
         return self.get(url, raw=True)
 
-    def find_earnings_8k(self, cik: str, *, after: str | None = None) -> list[dict[str, Any]]:
-        """返回 Item 2.02 的 8-K 列表（新→旧）。"""
+    def iter_filing_rows(self, cik: str) -> list[dict[str, Any]]:
+        """submissions 最近一批申报（新→旧）。历史归档不并进默认扫描。"""
         data = self.submissions(cik)
         recent = data.get("filings", {}).get("recent", {})
-        forms = recent.get("form", [])
-        items = recent.get("items", [])
-        dates = recent.get("acceptanceDateTime", [])
-        accessions = recent.get("accessionNumber", [])
-        primary = recent.get("primaryDocument", [])
+        return _rows_from_columns(recent)
+
+    def find_earnings_8k(
+        self,
+        cik: str,
+        *,
+        after: str | None = None,
+        forms: list[str] | None = None,
+        items: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """返回 Item 2.02 的 8-K 列表（新→旧）。
+
+        forms/items 缺省时保持原行为：只要 8-K，且 items 含 2.02。
+        """
+        wanted_forms = forms or ["8-K"]
+        item_filters = ["2.02"] if items is None else list(items)
         out: list[dict[str, Any]] = []
-        for i, form in enumerate(forms):
-            if form != "8-K":
+        for row in self.iter_filing_rows(cik):
+            if row["form"] not in wanted_forms:
                 continue
-            item = items[i] if i < len(items) else ""
-            if "2.02" not in str(item):
+            item = str(row.get("items") or "")
+            if item_filters and not any(code in item for code in item_filters):
                 continue
-            accepted = dates[i] if i < len(dates) else ""
+            accepted = row.get("acceptanceDateTime") or ""
             if after and accepted <= after:
                 continue
-            out.append(
+            out.append(row)
+        return out
+
+    def find_earnings_filings(
+        self,
+        cik: str,
+        cfg: dict[str, Any],
+        *,
+        after: str | None = None,
+        limit: int | None = None,
+        accession: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """按 ticker listing 选发现路径。ADR 不把 6-K 并进 8-K 列表。"""
+        spec = resolve_earnings_spec(cfg)
+        if spec.listing == "adr":
+            return self.scan_earnings_filings(
+                cik,
+                cfg,
+                after=after,
+                limit=limit,
+                accession=accession,
+            ).hits
+        if after is None and limit is None and accession is None:
+            rows = self.find_earnings_8k(cik)
+        else:
+            rows = self.find_earnings_8k(
+                cik,
+                after=after,
+                forms=list(spec.earnings_forms),
+                items=list(spec.earnings_items),
+            )
+        if accession:
+            rows = [row for row in rows if row.get("accessionNumber") == accession]
+        if limit is not None:
+            rows = rows[:limit]
+        return rows
+
+    def scan_earnings_filings(
+        self,
+        cik: str,
+        cfg: dict[str, Any],
+        *,
+        after: str | None = None,
+        limit: int | None = None,
+        accession: str | None = None,
+        skip_accessions: set[str] | None = None,
+        progress: Any = None,
+    ) -> "EarningsScan":
+        """ADR：6-K / 6-K/A，主文档噪声先丢，再用 exhibit 描述确认业绩新闻稿。"""
+        spec = resolve_earnings_spec(cfg)
+        if spec.listing != "adr" or spec.earnings_6k is None:
+            raise ValueError(f"scan_earnings_filings 只用于 listing=adr，当前是 {spec.listing}")
+        filters = spec.earnings_6k.model_dump()
+        skipped_ids = skip_accessions or set()
+        hits: list[dict[str, Any]] = []
+        skips: list[dict[str, Any]] = []
+        for row in self.iter_filing_rows(cik):
+            if not form_matches(str(row.get("form") or ""), list(spec.earnings_forms), amendments=True):
+                continue
+            accepted = str(row.get("acceptanceDateTime") or "")
+            acc = str(row.get("accessionNumber") or "")
+            if accession:
+                if acc != accession:
+                    continue
+            elif after and not is_newer_than(accepted, after):
+                break
+            if acc in skipped_ids:
+                continue
+            decision, reason, press, presentation = self._classify_6k_row(cik, row, filters)
+            if progress is not None:
+                progress(len(hits) + (1 if decision == "hit" and press is not None else 0), len(skips) + 1)
+            if decision != "hit" or press is None:
+                skips.append(
+                    {
+                        "form": row.get("form"),
+                        "acceptanceDateTime": accepted,
+                        "accessionNumber": acc,
+                        "primaryDocument": row.get("primaryDocument") or "",
+                        "reason": reason if press is not None or decision != "hit" else "no_press_file",
+                    }
+                )
+                if accession:
+                    break
+                continue
+            hits.append(
                 {
-                    "form": form,
-                    "items": item,
-                    "acceptanceDateTime": accepted,
-                    "accessionNumber": accessions[i],
-                    "primaryDocument": primary[i] if i < len(primary) else "",
+                    **row,
+                    "press_release_file": press.get("name") or "",
+                    "presentation_file": (presentation or {}).get("name") or "",
+                    "press_description": str(press.get("description") or "")[:240],
+                    "match_reason": reason,
                 }
             )
-        return out
+            if accession or (limit is not None and len(hits) >= limit):
+                break
+        return EarningsScan(hits=hits, skips=skips)
+
+    def _classify_6k_row(
+        self,
+        cik: str,
+        row: dict[str, Any],
+        filters: dict[str, Any],
+    ) -> tuple[str, str, dict[str, str] | None, dict[str, str] | None]:
+        primary = str(row.get("primaryDocument") or "")
+        decision, reason = classify_6k(primary, [], filters)
+        if decision == "skip" and reason == "primary_doc":
+            return decision, reason, None, None
+        accession = str(row.get("accessionNumber") or "")
+        try:
+            index = self._cached_filing_index(cik, accession)
+            cover = ""
+            if primary.lower().endswith((".htm", ".html", ".txt")):
+                raw = self._cached_filing_bytes(cik, accession, primary)
+                cover = raw.decode("utf-8", "replace")
+        except Exception as exc:
+            return "skip", f"fetch_error:{exc.__class__.__name__}", None, None
+        exhibits = merge_exhibits(exhibits_from_index(index), exhibit_descriptions_from_html(cover))
+        decision, reason = classify_6k(primary, exhibits, filters)
+        if decision != "hit":
+            return decision, reason, None, None
+        press, presentation = select_press_and_presentation(
+            exhibits,
+            filters,
+            primary_document=primary,
+        )
+        if press is None:
+            return "skip", "no_press_file", None, None
+        return "hit", reason, press, presentation
+
+    def _cached_filing_index(self, cik: str, accession: str) -> dict[str, Any]:
+        path = cache_dir() / "sec" / "filings" / accession.replace("-", "") / "index.json"
+        if path.exists() and path.stat().st_size > 0:
+            return json.loads(path.read_text(encoding="utf-8"))
+        data = self.filing_index(cik, accession)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data), encoding="utf-8")
+        return data
+
+    def _cached_filing_bytes(self, cik: str, accession: str, filename: str) -> bytes:
+        path = cache_dir() / "sec" / "filings" / accession.replace("-", "") / filename
+        if path.exists() and path.stat().st_size > 0:
+            return path.read_bytes()
+        data = self.download_file(cik, accession, filename)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return data
 
     def find_press_release_files(self, cik: str, accession: str) -> list[str]:
         index = self.filing_index(cik, accession)
@@ -148,17 +305,60 @@ class SecEdgarClient:
         matches.sort(key=lambda n: (0 if "99.1" in n.upper() else 1, n))
         return matches
 
-    def download_press_release(self, cik: str, accession: str, dest: Path) -> Path:
+    def download_press_release(
+        self,
+        cik: str,
+        accession: str,
+        dest: Path,
+        *,
+        press_release_file: str | None = None,
+        presentation_file: str | None = None,
+        presentation_dest: Path | None = None,
+    ) -> Path:
+        """国内 8-K：拼接全部 EX-99 HTML。ADR：只写 Press release，演示文稿另存。"""
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if press_release_file:
+            dest.write_bytes(self._cached_filing_bytes(cik, accession, press_release_file))
+            if presentation_file and presentation_dest is not None:
+                presentation_dest.parent.mkdir(parents=True, exist_ok=True)
+                presentation_dest.write_bytes(self._cached_filing_bytes(cik, accession, presentation_file))
+            return dest
         files = self.find_press_release_files(cik, accession)
         if not files:
             raise FileNotFoundError(f"未找到 EX-99 新闻稿: {accession}")
         parts: list[bytes] = []
         for name in files:
             parts.append(self.download_file(cik, accession, name))
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        content = b"\n".join(parts)
-        dest.write_bytes(content)
+        dest.write_bytes(b"\n".join(parts))
         return dest
+
+
+def _rows_from_columns(recent: dict[str, Any]) -> list[dict[str, Any]]:
+    forms = recent.get("form") or []
+    items = recent.get("items") or []
+    dates = recent.get("acceptanceDateTime") or []
+    accessions = recent.get("accessionNumber") or []
+    primary = recent.get("primaryDocument") or []
+    rows: list[dict[str, Any]] = []
+    for index, form in enumerate(forms):
+        rows.append(
+            {
+                "form": form,
+                "items": items[index] if index < len(items) else "",
+                "acceptanceDateTime": dates[index] if index < len(dates) else "",
+                "accessionNumber": accessions[index] if index < len(accessions) else "",
+                "primaryDocument": primary[index] if index < len(primary) else "",
+            }
+        )
+    return rows
+
+
+class EarningsScan:
+    """hits 进入 Stage1；skips 只记 ignore，不进 failure。"""
+
+    def __init__(self, hits: list[dict[str, Any]], skips: list[dict[str, Any]]):
+        self.hits = hits
+        self.skips = skips
 
 
 def extract_quarterly_gaap_eps(facts: dict[str, Any]) -> list[dict[str, Any]]:

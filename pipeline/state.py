@@ -87,8 +87,30 @@ def add_processed(ticker: str, accession: str) -> None:
 
 
 def load_failures(ticker: str) -> dict[str, int]:
-    """每份 8-K 的 Stage1 失败次数；达到 polling.max_retries 后 poll 不再自动重试。"""
+    """每份申报的 Stage1 失败次数；达到 polling.max_retries 后 poll 不再自动重试。"""
     return {k: int(v) for k, v in (_load_processed_file(ticker).get("failures") or {}).items()}
+
+
+def load_ignored(ticker: str, fingerprint: str | None = None) -> set[str]:
+    """过滤器跳过的 accession。fingerprint 变了就重新判断，避免旧规则把业绩稿藏住。"""
+    raw = _load_processed_file(ticker).get("ignored") or {}
+    out: set[str] = set()
+    for accession, info in raw.items():
+        if not isinstance(info, dict):
+            continue
+        if fingerprint is None or info.get("fingerprint") == fingerprint:
+            out.add(str(accession))
+    return out
+
+
+def add_ignored(ticker: str, accession: str, reason: str, fingerprint: str) -> None:
+    """记入 ignore，不进 failure，也不因此调用 LLM。"""
+    data = _load_processed_file(ticker)
+    if accession in set(data.get("accessions") or []):
+        return
+    ignored = data.setdefault("ignored", {})
+    ignored[accession] = {"reason": reason, "fingerprint": fingerprint}
+    _save_processed_file(ticker, data)
 
 
 def record_filing_failure(ticker: str, accession: str) -> int:

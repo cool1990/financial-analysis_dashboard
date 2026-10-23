@@ -66,7 +66,10 @@ def _hours_since(release_at: str | None, now: datetime) -> float | None:
 
 
 def poll_once(now: datetime | None = None) -> dict[str, Any]:
-    """财报窗口内检测新 8-K；等待文字稿的季度在时限内重试 Stage2。无事可做则立即返回。"""
+    """财报窗口内检测新业绩申报；等待文字稿的季度在时限内重试 Stage2。无事可做则立即返回。
+
+    domestic 找 8-K Item 2.02，adr 找 6-K 新闻稿。不在窗口时几秒内退出。
+    """
     now = (now or datetime.now(tz=ET)).astimezone(ET)
     polling = load_settings().get("polling") or {}
     transcript_max_hours = float(polling.get("transcript_max_hours", 36))
@@ -112,7 +115,8 @@ def poll_once(now: datetime | None = None) -> dict[str, Any]:
             continue
         try:
             if not detect_new_filings(ticker, now=now.astimezone(timezone.utc)):
-                results["actions"].append({"ticker": ticker, "action": "poll", "ok": True, "detail": "no new 8-K"})
+                form = "6-K" if (cfg.get("listing") or "domestic") == "adr" else "8-K"
+                results["actions"].append({"ticker": ticker, "action": "poll", "ok": True, "detail": f"no new {form}"})
                 continue
             doc = run_stage1(ticker)
             any_work = True
@@ -127,8 +131,15 @@ def poll_once(now: datetime | None = None) -> dict[str, Any]:
     results["reported"] = reported
     if not any_work:
         results["skipped"] = True
-        if any(item.get("detail") == "no new 8-K" for item in results["actions"]):
+        details = {item.get("detail") for item in results["actions"]}
+        saw_8k = "no new 8-K" in details
+        saw_6k = "no new 6-K" in details
+        if saw_8k and saw_6k:
+            results["reason"] = "没有新的 8-K 或 6-K，也没有需要重试的文字稿"
+        elif saw_8k:
             results["reason"] = "没有新的 8-K，也没有需要重试的文字稿"
+        elif saw_6k:
+            results["reason"] = "没有新的 6-K，也没有需要重试的文字稿"
         else:
             results["reason"] = "不在财报窗口/财报日附近，且无等待文字稿的任务"
     return results
