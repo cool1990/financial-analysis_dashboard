@@ -12,11 +12,23 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{{ ticker }} · {{ company }} · {{ current_period }}{% if thesis %} <span class="stage-badge s-{{ thesis.stage }}">{{ thesis.stage_label }}</span>{% endif %}</h1>
+    <h1>{{ ticker }} · {{ company }} · {{ current_period }}</h1>
     <div class="sub">
       {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }}
     </div>
   </div>
+  {% if quotes %}
+  <div class="metric-strip" aria-label="行情与指引">
+    {% for q in quotes["items"] %}
+    <div class="m"{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
+      <div class="k">{{ q.label }}</div>
+      <div class="v{% if q.value in ['无', '未接入'] %} is-empty{% endif %}">{{ q.value }}</div>
+      {% if q.sub %}<div class="s">{{ q.sub }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if quotes.line %}<p class="strip-asof">{{ quotes.line }}</p>{% endif %}
+  {% endif %}
 </div>
 
 <nav class="section-nav" aria-label="分区">
@@ -24,21 +36,33 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#quality">质量与验证</a>
-    {% if thesis %}<a href="#thesis">{{ thesis.stage_label }}</a>{% endif %}
-    <a href="#qa">问答{% if qa.evasive_count %}<b>{{ qa.evasive_count }}</b>{% endif %}</a>
-    <a href="#notes">来源{% if warnings %}<b>{{ warnings|length }}</b>{% endif %}</a>
+    <a href="#qa">问答交流{% if qa.evasive_count %}<b>{{ qa.evasive_count }}</b>{% endif %}</a>
+    <a href="#notes">数据来源{% if warnings %}<b>{{ warnings|length }}</b>{% endif %}</a>
   </div>
 </nav>
 
 <section class="dim" id="expect">
-  <div class="judge lead{% if not quotes %} solo{% endif %}">
-    <div class="card gapcard{% if eps_chart %} charted{% endif %}">
+  <div class="card expect-frame{% if not forward_pe %} solo{% endif %}">
+    <div class="expect-chart">
       {% if eps_chart %}
-      <h2>盈利预期 <small>深灰柱 = street 一致预期，浅蓝柱 = Non-GAAP 实际，橙线 = 同比</small></h2>
-      {% if eps_chart.sides %}<div class="eps-side">{% for s in eps_chart.sides %}<span class="vchip {{ s.cls }}">{{ s.text }}</span>{% endfor %}</div>{% endif %}
+      <h2>盈利预期
+        {% if eps_chart.revenue %}
+        <span class="seg expect-toggle" role="group" aria-label="切换每股收益或营收">
+          <button type="button" data-expect="eps" aria-pressed="true">EPS</button>
+          <button type="button" data-expect="revenue" aria-pressed="false">营收</button>
+        </span>
+        {% endif %}
+        <small id="expectHint">{{ eps_chart.hint }}</small>
+      </h2>
       <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
-      <p class="eps-note">{{ eps_chart.note }}</p>
+      {% if eps_chart.revenue and eps_chart.revenue.horizons %}
+      <div class="rev-horizons" id="revHorizons" hidden>
+        {% for h in eps_chart.revenue.horizons %}
+        <div><span>{{ h.label }}</span><b>{{ h.value }}</b></div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <p class="eps-note" id="expectNote">{{ eps_chart.note }}</p>
       {% else %}
       <h2>盈利预期 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
       <div class="gap-rows">
@@ -60,30 +84,35 @@
       </div>
       {% endif %}
     </div>
-
-    {% if quotes %}
-    <div class="card quote-card">
-      <h2>估值与技术</h2>
-      <div class="quote-grid">
-        {% for q in quotes["items"] %}
-        <div{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
-          <span>{{ q.label }}</span>
-          <b>{{ q.value }}</b>
-        </div>
-        {% endfor %}
+    {% if forward_pe %}
+    <div class="expect-pe" id="forward-pe">
+      <h2>Forward PE <small>本财年与下财年按剩余月份加权</small></h2>
+      {% if forward_pe.rows %}
+      <div class="table-wrap">
+        <table class="data fp">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>EPS</th>
+              <th>P/E</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in forward_pe.rows %}
+            <tr{% if row.kind == 'ntm' %} class="fp-ntm"{% endif %}>
+              <td>{{ row.label }}</td>
+              <td>{{ row.eps }}</td>
+              <td>{{ row.pe }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      {% if quotes.line %}<p class="quote-asof">{{ quotes.line }}</p>{% endif %}
+      {% endif %}
+      <p class="eps-note">{{ forward_pe.note }}</p>
     </div>
     {% endif %}
   </div>
-
-  {% if chips %}
-  <div class="card verdict">
-    <div class="vchips">
-      {% for c in chips %}<span class="vchip {{ c.cls }}">{{ c.text }}</span>{% endfor %}
-    </div>
-  </div>
-  {% endif %}
 </section>
 
 
@@ -92,7 +121,9 @@
   <div class="ev-body">
   <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开水平值、环比、同比三张图；有原文时同时展开驱动因素。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   {% if drivers_pending %}<p class="pending-note">{{ drivers_pending }}</p>{% endif %}
+  <div class="fin-layout">
   <div class="card rows">
+    <h3 class="fin-title">财务数据</h3>
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     {% for r in fin_rows %}
     <details class="mrow">
@@ -147,33 +178,125 @@
     <p class="placeholder">财务数据尚未生成。</p>
     {% endfor %}
   </div>
+  <div class="card split-card">
+    <div class="split-head">
+      <h3 class="fin-title">业务拆分</h3>
+      <span class="seg" role="group" aria-label="按业务或按地理">
+        <button type="button" data-split="business" aria-pressed="true">按业务</button>
+        <button type="button" data-split="geo" aria-pressed="false">按地理</button>
+      </span>
+    </div>
+    <div data-split-panel="business">
+      {% if segments.business %}
+      <ul class="split-list">
+        {% for row in segments.business %}
+        <li>
+          <div class="split-row">
+            <span class="split-name">{{ row.name }}{% if row.share %}<small>{{ row.share }}</small>{% endif %}</span>
+            <b>{{ row.revenue }}</b>
+            <span class="split-chg">同比 <span class="c-{{ row.yoy.cls }}">{{ row.yoy.text }}</span>{% if row.qoq.text != '—' %} · 环比 <span class="c-{{ row.qoq.cls }}">{{ row.qoq.text }}</span>{% endif %}</span>
+          </div>
+          {% if row.extra %}<p class="split-extra">{{ row.extra }}</p>{% endif %}
+          {% if row.children %}
+          <ul class="split-list">
+            {% for child in row.children %}
+            <li class="split-child">
+              <div class="split-row">
+                <span class="split-name">{{ child.name }}{% if child.share %}<small>{{ child.share }}</small>{% endif %}</span>
+                <b>{{ child.revenue }}</b>
+                <span class="split-chg">同比 <span class="c-{{ child.yoy.cls }}">{{ child.yoy.text }}</span></span>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if segments.note %}<p class="split-note">{{ segments.note }}</p>{% endif %}
+      {% else %}
+      <p class="muted">{{ segments.business_note }}</p>
+      {% endif %}
+    </div>
+    <div data-split-panel="geo" hidden>
+      {% if segments.geo %}
+      <ul class="split-list">
+        {% for row in segments.geo %}
+        <li>
+          <div class="split-row">
+            <span class="split-name">{{ row.name }}</span>
+            <b>{{ row.revenue }}</b>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">{{ segments.geo_note }}</p>
+      {% endif %}
+    </div>
+  </div>
+  </div>
+  <script>
+  (function () {
+    var root = document.getElementById('fin');
+    if (!root) return;
+    root.querySelectorAll('[data-split]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mode = btn.getAttribute('data-split');
+        root.querySelectorAll('[data-split]').forEach(function (other) {
+          other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+        });
+        root.querySelectorAll('[data-split-panel]').forEach(function (panel) {
+          panel.hidden = panel.getAttribute('data-split-panel') !== mode;
+        });
+      });
+    });
+  })();
+  </script>
 
   {% if history_derived %}<p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>{% endif %}
   </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">{% if guidance.dimensions %}{{ guidance.dimensions|map(attribute='label')|join(' · ') }}{% else %}暂无分项{% endif %}{% if guidance.card_count %} · {{ guidance.card_count }} 项{% endif %}</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引{% if guidance.rows %} {{ guidance.rows|length }} 项{% endif %} · 行业展望{% if guidance.outlook %} {{ guidance.outlook|length }} 题{% else %} 无{% endif %}</span></summary>
   <div class="ev-body">
-  <p class="layer-sub">同一指标只留一张卡片。来源标在卡片上。没有抽到的维度不显示，也不补写数字。</p>
-
-  {% for d in guidance.dimensions %}
-  <div class="group-title">{{ d.label }}</div>
-  <div class="gtiles">
-    {% for t in d.cards %}
-    <div class="card gtile">
-      <div class="g-k">{{ t.label }}{% if t.basis %}<span class="basis">{{ t.basis }}</span>{% endif %}{% if t.source %}<span class="basis">{{ t.source }}</span>{% endif %}</div>
-      <div class="g-v{% if t.textual %} textual{% endif %}">{{ t.value }}</div>
-      {% if t.sub %}<div class="g-s">{{ t.sub }}</div>{% endif %}
-      {% if t.vs %}<div class="g-s">{{ t.vs_label }} · <b class="c-{{ t.vs.cls }}">{{ t.vs.text }}</b></div>{% endif %}
-      {% if t.variant %}<div class="g-s"><span class="pill warn">电话会口径不同</span></div>{% endif %}
+  <div class="group-title">业绩指引</div>
+  <p class="layer-sub">只列管理层给出数字的营收、毛利率、营业利润率、净利润率和调整后摊薄 EPS。没给的不占行。隐含环比、隐含同比用指引中值对比已披露实际，较共识用已保存的一致预期。算不出就空着。</p>
+  {% if guidance.rows %}
+  <div class="card" style="padding:4px 16px 10px">
+    <div class="table-wrap">
+    <table class="data guide-table">
+      <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+      <tbody>
+      {% for row in guidance.rows %}
+        <tr>
+          <td>{{ row.label }}{% if row.period %}<small class="basis">{{ row.period }}</small>{% endif %}</td>
+          <td>{{ row.value }}</td>
+          <td class="c-{{ row.qoq.cls }}">{{ row.qoq.text }}</td>
+          <td class="c-{{ row.yoy.cls }}">{{ row.yoy.text }}</td>
+          <td class="c-{{ row.vs.cls }}">{{ row.vs.text }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
     </div>
-    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card placeholder">这五项没有管理层数字指引。</div>
+  {% endif %}
+
+  <div class="group-title">行业展望</div>
+  <p class="layer-sub">只写电话会里管理层对行业和经营环境的表述，不重复上面的数字指引。没有对应表述的题目不写。</p>
+  {% if guidance.outlook %}
+  {% for block in guidance.outlook %}
+  <div class="outlook-block">
+    <h4>{{ block.title }}</h4>
+    <p>{{ block.text }}</p>
   </div>
   {% endfor %}
-
-  {% if not guidance.dimensions %}
-  <div class="card placeholder">指引数据生成中或尚未抽取。</div>
+  {% else %}
+  <div class="card placeholder">电话会里没有可归入这些题目的行业表述。</div>
   {% endif %}
 
   <div class="group-title">分析师修正</div>
@@ -204,44 +327,8 @@
   </div>
 </details>
 
-<section class="dim" id="quality">
-  <div class="judge even">
-    <div class="card qcard">
-      <h2>增长质量 <small>通用规则 + 本公司规则，阈值写在配置里</small></h2>
-      {% if checks %}
-      <ul class="checks">
-        {% for c in checks %}
-        <li><i class="ck {{ c.status }}" aria-label="{{ {'ok':'通过','warn':'注意','info':'中性'}[c.status] }}">{{ {'ok':'✓','warn':'!','info':'·'}[c.status] }}</i><b>{{ c.name }}<small>{{ c.layer }}</small></b><span>{{ c.text }}</span></li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="muted">财务数据不足，暂不检查。</p>
-      {% endif %}
-    </div>
-    <div class="card wcard">
-      <h2>下季验证清单 <small>下次财报逐条核对</small></h2>
-      {% if watchlist %}
-      <ul class="wl">
-        {% for w in watchlist %}
-        <li><span>{{ w.text }}</span><span class="w-th">{{ w.threshold }}</span></li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="muted">总结生成后填写。</p>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-{% if thesis %}
-<section class="dim" id="thesis">
-  {% set has_data = true %}
-  {% include "_position.html" %}
-</section>
-{% endif %}
-
 <details class="ev" id="qa">
-  <summary><span class="ev-t">电话会问答</span><span class="ev-meta">{% if qa['items'] %}{{ qa['items']|length }} 轮{% if qa.evasive_count %} · 部分回答 / 回避 {{ qa.evasive_count }}{% endif %}{% else %}等待文字稿{% endif %}</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">{% if qa['items'] %}{{ qa['items']|length }} 轮{% if qa.evasive_count %} · 部分回答 / 回避 {{ qa.evasive_count }}{% endif %}{% else %}等待文字稿{% endif %}</span></summary>
   <div class="ev-body">
   {% if qa['items'] %}
   <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
@@ -297,11 +384,11 @@
 </details>
 
 <details class="ev" id="notes">
-  <summary><span class="ev-t">来源与数据提示</span><span class="ev-meta">新闻稿 · 文字稿{% if warnings %} · 数据提示 {{ warnings|length }} 条{% endif %}</span></summary>
+  <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿{% if warnings %} · 数据提示 {{ warnings|length }} 条{% endif %}</span></summary>
   <div class="ev-body notes">
     <p>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}" rel="noopener">SEC EDGAR</a>{% else %}—{% endif %} · 文件编号 {{ doc.meta.accession or "—" }} · 文字稿：{{ doc.meta.transcript_source|source }}</p>
     {% if doc.meta.pre_earnings_snapshot_source %}<p>财报前一致预期：{{ doc.meta.pre_earnings_snapshot_source }}</p>{% endif %}
-    <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。增长质量规则：现金转化 ≥80% 为好、&lt;50% 提示；口径差 ≥10% 提示；同比 &gt;100% 提示基数效应；资本开支环比快于营收环比 5 个百分点以上提示。</p>
+    <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
     {% if warnings %}<ul class="warn-list">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
   </div>
 </details>
@@ -354,13 +441,25 @@ var ROW_SERIES = {
   revenue: { v: 'revenue', kind: 'money' },
   gross_margin_gaap: { v: 'gross_margin_gaap', kind: 'ratio' },
   gross_margin_nongaap: { v: 'gross_margin_nongaap', kind: 'ratio' },
+  gross_profit_gaap: { v: 'gross_profit_gaap', kind: 'money' },
+  gross_profit_nongaap: { v: 'gross_profit_nongaap', kind: 'money' },
   operating_margin_gaap: { v: 'operating_margin_gaap', kind: 'ratio' },
   operating_margin_nongaap: { v: 'operating_margin_nongaap', kind: 'ratio' },
+  operating_income_gaap: { v: 'operating_income_gaap', kind: 'money' },
+  operating_income_nongaap: { v: 'operating_income_nongaap', kind: 'money' },
+  net_margin_gaap: { v: 'net_margin_gaap', kind: 'ratio' },
+  net_margin_nongaap: { v: 'net_margin_nongaap', kind: 'ratio' },
+  net_income_gaap: { v: 'net_income_gaap', kind: 'money' },
+  net_income_nongaap: { v: 'net_income_nongaap', kind: 'money' },
   eps_gaap: { v: 'eps', kind: 'eps' },
   eps_nongaap: { v: 'eps_nongaap', kind: 'eps' },
   operating_cash_flow: { v: 'ocf', kind: 'money' },
   capex: { v: 'capex', kind: 'money' },
-  fcf: { v: 'fcf', kind: 'money' }
+  fcf: { v: 'fcf', kind: 'money' },
+  share_count: { v: 'share_count', kind: 'shares' },
+  dso_days: { v: 'dso_days', kind: 'days' },
+  dio_days: { v: 'dio_days', kind: 'days' },
+  deferred_days: { v: 'deferred_days', kind: 'days' }
 };
 function drawRowCharts() {
   var history = {{ history|tojson }};
@@ -422,20 +521,25 @@ function drawRowCharts() {
         if (x == null) return null;
         if (spec.kind === 'money') return x / 1e9;
         if (spec.kind === 'ratio') return x * 100;
+        if (spec.kind === 'shares') return x / 1e6;
         return x;
       });
-      var asPct = function (x) { return x == null ? null : x * 100; };
-      var qoq = history.map(function (h) { return asPct(h[spec.v + '_qoq']); });
-      var yoy = history.map(function (h) { return asPct(h[spec.v + '_yoy']); });
-      var unit = spec.kind === 'money' ? '十亿美元' : (spec.kind === 'ratio' ? '%' : '美元');
-      var changeUnit = spec.kind === 'ratio' ? '百分点' : '%';
+      var asChange = function (x) {
+        if (x == null) return null;
+        if (spec.kind === 'days') return x;
+        return x * 100;
+      };
+      var qoq = history.map(function (h) { return asChange(h[spec.v + '_qoq']); });
+      var yoy = history.map(function (h) { return asChange(h[spec.v + '_yoy']); });
+      var unit = spec.kind === 'money' ? '十亿美元' : (spec.kind === 'ratio' ? '%' : (spec.kind === 'shares' ? '百万股' : (spec.kind === 'days' ? '天' : '美元')));
+      var changeUnit = spec.kind === 'ratio' ? '百分点' : (spec.kind === 'days' ? '天' : '%');
       var cards = row.querySelectorAll('.chart');
       if (cards[0]) cards[0].querySelector('.c-sub').textContent = unit;
       if (cards[1]) cards[1].querySelector('.c-sub').textContent = changeUnit;
       if (cards[2]) cards[2].querySelector('.c-sub').textContent = changeUnit;
       var bySeries = { level: level, qoq: qoq, yoy: yoy };
       var hue = { level: '--s1', qoq: '--s3', yoy: '--s2' };
-      var shape = { level: spec.kind === 'ratio' ? 'line' : 'bar', qoq: 'line', yoy: 'line' };
+      var shape = { level: (spec.kind === 'ratio' || spec.kind === 'days') ? 'line' : 'bar', qoq: 'line', yoy: 'line' };
       canvases.forEach(function (canvas) {
         var name = canvas.getAttribute('data-series');
         paint(canvas, bySeries[name] || [], shape[name] || 'bar', name === 'level' ? unit : changeUnit, hue[name] || '--s1');
@@ -459,80 +563,112 @@ function drawRowCharts() {
   Chart.defaults.font.family = color('--font') || 'system-ui';
   Chart.defaults.font.size = 12;
   var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
-  var quarters = spec.quarters || [];
-  new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: quarters.map(function (q) { return q.label; }),
-      datasets: [
-        { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
-        { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
-        { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: { top: 18, bottom: 22 } },
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
-        tooltip: {
-          callbacks: {
-            label: function (ctx) {
-              var q = quarters[ctx.dataIndex] || {};
-              if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
-              if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
-              if (ctx.dataset.label === '实际') {
-                return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' $' + ctx.parsed.y.toFixed(2);
+  var views = {
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: '美元', money: function (v) { return '$' + Number(v).toFixed(2); } }
+  };
+  if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
+    views.revenue = {
+      quarters: spec.revenue.quarters,
+      hint: spec.revenue.hint || '',
+      note: spec.revenue.note || '',
+      unit: '十亿美元',
+      money: function (v) { return '$' + Number(v).toFixed(2) + 'B'; }
+    };
+  }
+  var chart = null;
+  function draw(name) {
+    var view = views[name] || views.eps;
+    var quarters = view.quarters;
+    if (chart) chart.destroy();
+    chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: quarters.map(function (q) { return q.label; }),
+        datasets: [
+          { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
+          { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
+          { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 18, bottom: 22 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var q = quarters[ctx.dataIndex] || {};
+                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+                if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+                var text = view.money(ctx.parsed.y);
+                if (ctx.dataset.label === '实际') return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' ' + text;
+                return ctx.dataset.label + ' ' + text;
               }
-              return ctx.dataset.label + ' $' + ctx.parsed.y.toFixed(2);
             }
           }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: view.unit }, grid: { color: color('--grid') } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
         }
       },
-      scales: {
-        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
-        y: { beginAtZero: true, position: 'left', title: { display: true, text: '美元' }, grid: { color: color('--grid') } },
-        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
-      }
-    },
-    plugins: [{
-      id: 'epsMarks',
-      afterDatasetsDraw: function (chart) {
-        var ctx = chart.ctx;
-        chart.data.datasets.forEach(function (ds, di) {
-          if (ds.type !== 'bar') return;
-          var meta = chart.getDatasetMeta(di);
-          meta.data.forEach(function (bar, i) {
-            var val = ds.data[i];
-            if (val == null) return;
+      plugins: [{
+        id: 'epsMarks',
+        afterDatasetsDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          drawn.data.datasets.forEach(function (ds, di) {
+            if (ds.type !== 'bar') return;
+            var meta = drawn.getDatasetMeta(di);
+            meta.data.forEach(function (bar, i) {
+              var val = ds.data[i];
+              if (val == null) return;
+              ctx.save();
+              ctx.fillStyle = color('--ink-2') || '#52514e';
+              ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(view.money(val), bar.x, bar.y - 2);
+              ctx.restore();
+            });
+          });
+        },
+        afterDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          var x = drawn.scales.x;
+          quarters.forEach(function (q, i) {
+            if (!q.note) return;
             ctx.save();
-            ctx.fillStyle = color('--ink-2') || '#52514e';
+            ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
             ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            ctx.fillText('$' + Number(val).toFixed(2), bar.x, bar.y - 2);
+            ctx.textBaseline = 'top';
+            ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
             ctx.restore();
           });
-        });
-      },
-      afterDraw: function (chart) {
-        var ctx = chart.ctx;
-        var x = chart.scales.x;
-        quarters.forEach(function (q, i) {
-          if (!q.note) return;
-          ctx.save();
-          ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
-          ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
-          ctx.restore();
-        });
-      }
-    }]
+        }
+      }]
+    });
+    var hint = document.getElementById('expectHint');
+    if (hint) hint.textContent = view.hint;
+    var note = document.getElementById('expectNote');
+    if (note) note.textContent = view.note;
+    var horizons = document.getElementById('revHorizons');
+    if (horizons) horizons.hidden = name !== 'revenue';
+  }
+  document.querySelectorAll('[data-expect]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-expect');
+      document.querySelectorAll('[data-expect]').forEach(function (other) {
+        other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+      });
+      draw(mode);
+    });
   });
+  draw('eps');
 })();
 </script>
 {% endif %}

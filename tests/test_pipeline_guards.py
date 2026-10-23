@@ -282,7 +282,9 @@ def test_build_site_renders(tmp_path, monkeypatch):
     monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
     pages = b.build_site()
     html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
-    assert "盈利预期" in html and "增长质量" in html and "{{" not in html
+    assert "盈利预期" in html and "{{" not in html
+    assert "增长质量" not in html and "下季验证清单" not in html and "观察仓" not in html
+    assert 'id="quality"' not in html and 'id="thesis"' not in html
     assert "预期差" not in html and 'class="v-lines"' not in html and 'class="v-head"' not in html
     assert "市场怎么判" not in html and "次日涨跌" not in html
     # 财报分析默认展开；点指标行才画水平值 / 环比 / 同比
@@ -294,59 +296,97 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert 'id="epsSurprise"' in meta_html and "超预期 $0.86" in meta_html
     assert "实际 $3.83 · 预期 $6.54" not in meta_html and "GAAP $3.83" in meta_html
     assert 'class="v-lines"' not in meta_html and 'class="v-head"' not in meta_html
-    assert "问题有答案 3/3" in meta_html and "本季营收 beat 2.0%" in meta_html
-    assert "本季 EPS beat 13.1%" in meta_html
+    assert "问题有答案" not in meta_html and "本季营收 beat" not in meta_html
+    assert "本季 EPS beat" not in meta_html and 'class="vchip"' not in meta_html
     assert "本季 EPS（Non-GAAP）" not in meta_html
+    assert "增长质量" not in meta_html and "下季验证清单" not in meta_html and "观察仓" not in meta_html
+    assert "问答交流" in meta_html and "数据来源" in meta_html
+    assert 'id="quality"' not in meta_html and 'id="thesis"' not in meta_html and 'class="card verdict"' not in meta_html
     assert "市场怎么判" not in meta_html and "阶段1" not in meta_html
     assert "财报分析" in meta_html and '<details class="ev" id="fin" open>' in meta_html
-    assert "业绩指标" in meta_html and "经营指标" in meta_html and "资本开支" in meta_html and "其他" in meta_html
-    assert "股东回报" in meta_html
-    guide = meta_html.split('id="guide"', 1)[1].split('id="quality"', 1)[0]
-    assert guide.count("$73.00B") == 1 and guide.count("$175.00B") == 1
-    assert "ol-card" not in guide and "全年费用" in guide and "新闻稿 · 电话会" in guide
+    assert "财务数据" in meta_html and "业务拆分" in meta_html and 'class="fin-layout"' in meta_html
+    assert "按业务" in meta_html and "按地理" in meta_html
+    assert "股份数量" in meta_html and "存货周转天数" in meta_html and "应收账款周转天数" in meta_html
+    assert "预收账款周转天数" in meta_html and "未披露" in meta_html
+    assert 'class="nest"' not in meta_html and "└" not in meta_html
+    assert "广告" in meta_html and "应用家族" in meta_html and "本季新闻稿没有按地区列示收入" in meta_html
+    assert "估值与技术" not in meta_html and 'class="card quote-card"' not in meta_html
+    assert 'class="metric-strip"' in meta_html and 'id="forward-pe"' in meta_html
+    assert 'data-expect="eps"' in meta_html and 'data-expect="revenue"' in meta_html
+    strip = meta_html.split('class="metric-strip"', 1)[1].split('class="strip-asof"', 1)[0]
+    assert "股价" in strip and "$697.52" in strip
+    assert "市值" in strip and "$1794.7B" in strip
+    assert "股息率" in strip and "0.30%" in strip and "TTM" in strip
+    assert "RSI" in strip and "47.4" in strip
+    assert "下季度 EPS 指引" in strip and "年度 EPS 指引" in strip
+    assert strip.count(">无<") == 2
+    assert "$32.03" not in strip and "8.29" not in strip
+    assert 'data-provided="0"' in strip and 'data-basis="non-GAAP"' in strip
+    assert 'data-source-period="FY2026Q4"' in strip and 'data-source-period="FY2026"' in strip
+    assert "数据时间 2026-10-21 · 来源 TradingView" in meta_html
+    expect = meta_html.split('id="expect"', 1)[1].split('id="fin"', 1)[0]
+    assert 'expect-frame' in expect and 'id="epsSurprise"' in expect and 'id="forward-pe"' in expect
+    assert expect.count('class="card') == 1
+    forward = meta_html.split('id="forward-pe"', 1)[1].split('id="fin"', 1)[0]
+    assert "<th>时间</th>" in forward and "<th>EPS</th>" in forward and "<th>P/E</th>" in forward
+    assert "相当于 TTM PE 的" not in forward and "$697.52" not in forward
+    assert "近 4 季（TTM）" in forward and "未来 12 个月（NTM）" in forward
+    table = forward.split("</table>", 1)[0]
+    assert "FY26E" in table and "FY27E" in table and "FY28E" not in table
+    assert "FY28E 没有全年共识" in forward
+    assert "<input" not in forward
+    assert "eps_estimate_ntm" not in forward and "price_earnings_forward" not in forward
+    assert "剩余 3 个月" in forward
+    mu_strip = html.split('class="metric-strip"', 1)[1].split('class="strip-asof"', 1)[0]
+    assert "下季度 EPS 指引" in mu_strip and "$38.15" in mu_strip
+    assert "年度 EPS 指引" in mu_strip and ">无<" in mu_strip
+    assert 'data-source-kind="press_release"' in mu_strip and 'data-metric-key="eps_nongaap"' in mu_strip
+    assert "数据时间 2026-09-30 · 来源 新闻稿 / 电话会" in html
+    assert "$37.84" not in mu_strip and "8.29" not in mu_strip and "Exhibit 99.1" not in mu_strip
+    mu_forward = html.split('id="forward-pe"', 1)[1]
+    assert "FY26E" in mu_forward and "FY27E" in mu_forward and "FY28E" in mu_forward
+    guide = meta_html.split('id="guide"', 1)[1].split('id="qa"', 1)[0]
+    assert "业绩指引" in guide and "行业展望" in guide and "gtile" not in guide
+    assert "隐含环比" in guide and "隐含同比" in guide and "较共识" in guide
+    assert "$73.00B – $76.00B" in guide and "+15.3%" in guide and "+24.4%" in guide and "+0.5%" in guide
+    assert "外部环境" in guide and "需求变化" in guide and "公司战略" in guide
+    assert "$175.00B" not in guide and "全年费用" not in guide
     assert "文本不足" not in meta_html
     assert "未调用模型，变动原因未生成" not in meta_html
-    assert "广告量价齐升" in meta_html
+    assert "量价齐升" in meta_html
     index_html = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert "beat 2.0%" in index_html and "beat 13.1%" in index_html
     assert "超预期 · Non-GAAP" not in index_html and "次日涨跌" not in index_html
     assert "阶段1 · 新闻稿" not in index_html and "下次财报日待定" in index_html
-    assert "股息率（TTM）" in meta_html
-    assert "Forward EPS" in meta_html and "$32.03" in meta_html
-    assert "Forward PE" in meta_html and "21.8×" in meta_html
-    assert "股息率" in meta_html and "0.30%" in meta_html and "RSI" in meta_html and "47.4" in meta_html
-    quote = meta_html.split('class="card quote-card"', 1)[1].split('class="card verdict"', 1)[0]
-    assert "下季度EPS指引" in quote and "年度EPS指引" in quote
-    assert quote.count(">无<") == 2
-    assert quote.count("$32.03") == 1
-    assert 'data-provided="0"' in quote and 'data-basis="non-GAAP"' in quote
-    assert 'data-source-period="FY2026Q4"' in quote and 'data-source-period="FY2026"' in quote
-    assert "数据时间 2026-10-21 · 来源 TradingView" in quote
-    assert "eps_estimate_ntm" not in quote and "price_earnings_forward" not in quote
-    assert "Alpha Vantage" not in quote and "未来 12 个月" not in quote
-    mu_quote = html.split('class="card quote-card"', 1)[1].split('class="card verdict"', 1)[0]
-    assert "下季度EPS指引" in mu_quote and "$38.15" in mu_quote
-    assert "年度EPS指引" in mu_quote and ">无<" in mu_quote
-    assert 'data-source-kind="press_release"' in mu_quote and 'data-metric-key="eps_nongaap"' in mu_quote
-    assert "数据时间 2026-09-30 · 来源 新闻稿 / 电话会" in mu_quote
-    assert "$37.84" not in mu_quote and "8.29" not in mu_quote and "Exhibit 99.1" not in mu_quote
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
 
 
 def test_meta_quote_card_divides_tradingview_columns():
-    from builder.build import _market_quotes
+    from builder.build import _forward_pe_view, _header_quotes
+    from pipeline.config import load_ticker_config
 
     snap = json.loads((ROOT / "data" / "META" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
     cols = snap["quote"]["columns"]
     assert cols["price_earnings_forward"] is None and cols["dividend_yield_ttm"] is None
-    quote = _market_quotes("META")
-    by = {item["label"]: item for item in quote["items"]}
-    assert by["Forward EPS"]["value"] == f"${cols['eps_estimate_ntm']:.2f}"
-    assert by["Forward PE"]["value"] == f"{cols['close'] / cols['eps_estimate_ntm']:.1f}×"
-    assert by["股息率（TTM）"]["value"] == f"{cols['dividends_yield']:.2f}%"
+    doc = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    header = _header_quotes("META", doc, "FY2026Q3", True)
+    by = {item["label"]: item for item in header["items"]}
+    assert by["股价"]["value"] == f"${cols['close']:.2f}"
+    assert by["股息率"]["value"] == f"{cols['dividends_yield']:.2f}%"
     assert by["RSI"]["value"] == f"{cols['RSI']:.1f}"
-    assert "Alpha Vantage" in quote["note"]
+    assert by["市值"]["value"] == "$1794.7B"
+    forward = _forward_pe_view("META", doc, "FY2026Q3", load_ticker_config("META"), active=True)
+    assert forward["price"] == f"${cols['close']:.2f}"
+    rows = {row["label"]: row for row in forward["rows"]}
+    # NTM 按剩余月份加权表内两个财年，不再用 close ÷ eps_estimate_ntm 单独占一格。
+    assert rows["未来 12 个月（NTM）"]["eps_raw"] == pytest.approx(
+        3 / 12 * rows["FY26E"]["eps_raw"] + 9 / 12 * rows["FY27E"]["eps_raw"]
+    )
+    assert "vs" not in rows["近 4 季（TTM）"]
+    assert rows["近 4 季（TTM）"]["pe"] == "22.5×"
+    assert "FY28E" not in rows
+    assert abs(rows["未来 12 个月（NTM）"]["eps_raw"] - cols["eps_estimate_ntm"]) < 1.5
 
 
 def test_header_eps_guidance_uses_only_management_nongaap():
@@ -355,24 +395,25 @@ def test_header_eps_guidance_uses_only_management_nongaap():
 
     meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
     cells = {c["label"]: c for c in _management_eps_cells(meta, "FY2026Q3")}
-    assert cells["下季度EPS指引"]["value"] == "无"
-    assert cells["年度EPS指引"]["value"] == "无"
-    assert cells["下季度EPS指引"]["record"]["provided"] is False
-    assert cells["下季度EPS指引"]["record"]["source"] is None
-    assert cells["下季度EPS指引"]["record"]["period"] == "FY2026Q4"
-    assert cells["年度EPS指引"]["record"]["period"] == "FY2026"
-    assert "8.29" not in cells["下季度EPS指引"]["value"]
-    assert "32.03" not in cells["下季度EPS指引"]["source"]
+    assert cells["下季度 EPS 指引"]["value"] == "无"
+    assert cells["年度 EPS 指引"]["value"] == "无"
+    assert cells["下季度 EPS 指引"]["record"]["provided"] is False
+    assert cells["下季度 EPS 指引"]["record"]["source"] is None
+    assert cells["下季度 EPS 指引"]["record"]["period"] == "FY2026Q4"
+    assert cells["年度 EPS 指引"]["record"]["period"] == "FY2026"
+    assert "8.29" not in cells["下季度 EPS 指引"]["value"]
+    assert "32.03" not in cells["下季度 EPS 指引"]["source"]
     header = _header_quotes("META", meta, "FY2026Q3", True)
     by = {item["label"]: item for item in header["items"]}
-    assert by["Forward EPS"]["value"] == "$32.03"
-    assert by["下季度EPS指引"]["value"] == "无" and by["年度EPS指引"]["value"] == "无"
+    assert by["股价"]["value"] == "$697.52"
+    assert by["下季度 EPS 指引"]["value"] == "无" and by["年度 EPS 指引"]["value"] == "无"
+    assert "32.03" not in by["下季度 EPS 指引"]["value"] and "8.29" not in by["下季度 EPS 指引"]["value"]
     assert header["market"] is True
     assert header["line"] == "数据时间 2026-10-21 · 来源 TradingView"
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_cells = {c["label"]: c for c in _management_eps_cells(mu, "FY2026Q4")}
-    nq = mu_cells["下季度EPS指引"]
+    nq = mu_cells["下季度 EPS 指引"]
     assert nq["value"] == "$38.15"
     assert nq["record"]["provided"] is True
     assert nq["record"]["source"] == "press_release"
@@ -381,8 +422,8 @@ def test_header_eps_guidance_uses_only_management_nongaap():
     assert nq["record"]["source_quote"] == "Diluted earnings per share $38.15 ± $1.00"
     assert "Exhibit 99.1" in nq["source"] and "电话会" in nq["source"]
     assert "$37.84" not in nq["value"]
-    assert mu_cells["年度EPS指引"]["value"] == "无"
-    assert mu_cells["年度EPS指引"]["record"]["period"] == "FY2027"
+    assert mu_cells["年度 EPS 指引"]["value"] == "无"
+    assert mu_cells["年度 EPS 指引"]["record"]["period"] == "FY2027"
     mu_header = _header_quotes("MU", mu, "FY2026Q4", True)
     assert mu_header["market"] is False
     assert mu_header["line"] == "数据时间 2026-09-30 · 来源 新闻稿 / 电话会"
@@ -402,7 +443,7 @@ def test_header_eps_guidance_uses_only_management_nongaap():
         "scorecard": [{"metric": "next_q_eps_guidance", "benchmark": {"value": 8.29, "source": "consensus"}}],
     }
     blank = {c["label"]: c for c in _management_eps_cells(gaap_only, "FY2026Q3")}
-    assert blank["下季度EPS指引"]["value"] == "无" and blank["年度EPS指引"]["value"] == "无"
+    assert blank["下季度 EPS 指引"]["value"] == "无" and blank["年度 EPS 指引"]["value"] == "无"
 
     # 电话会里的全年 Non-GAAP 区间记来源，不改写成中值以外的数字
     call_year = {
@@ -420,12 +461,43 @@ def test_header_eps_guidance_uses_only_management_nongaap():
             "source_quote": "Adjusted EPS of $7.10 to $7.40",
         }]}
     }
-    year = {c["label"]: c for c in _management_eps_cells(call_year, "FY2026Q3")}["年度EPS指引"]
+    year = {c["label"]: c for c in _management_eps_cells(call_year, "FY2026Q3")}["年度 EPS 指引"]
     assert year["value"] == "$7.10 – $7.40"
     assert year["record"]["source"] == "prepared_remarks"
     assert year["record"]["period"] == "FY2026"
     assert "电话会" in year["source"] and "原文：Adjusted EPS of $7.10 to $7.40" in year["source"]
-    assert {c["label"]: c for c in _management_eps_cells(call_year, "FY2026Q3")}["下季度EPS指引"]["value"] == "无"
+    assert {c["label"]: c for c in _management_eps_cells(call_year, "FY2026Q3")}["下季度 EPS 指引"]["value"] == "无"
+
+
+def test_guide_section_splits_performance_and_industry():
+    """指引展望的两半：有数字的管理层指引进表，没有的指标不占行；行业句子不另编。"""
+    from builder.build import _guide_section, _load_docs
+
+    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    view = _guide_section(meta, _load_docs("META"))
+    assert [row["label"] for row in view["rows"]] == ["营收"]
+    revenue = view["rows"][0]
+    assert revenue["value"] == "$73.00B – $76.00B"
+    assert revenue["qoq"]["text"] == "+15.3%" and revenue["qoq"]["cls"] == "up"
+    assert revenue["yoy"]["text"] == "+24.4%"
+    assert revenue["vs"]["text"] == "+0.5%"
+    titles = [block["title"] for block in view["outlook"]]
+    assert titles == ["外部环境", "需求变化", "供给变化", "竞争变化", "商业模式", "公司战略"]
+    assert "青少年" in view["outlook"][0]["text"]
+    assert "强劲增长" in next(block["text"] for block in view["outlook"] if block["title"] == "需求变化")
+    assert all(title in {"外部环境", "需求变化", "供给变化", "竞争变化", "商业模式", "公司战略"} for title in titles)
+
+    mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    mu_view = _guide_section(mu, _load_docs("MU"))
+    mu_rows = {row["label"]: row for row in mu_view["rows"]}
+    assert mu_rows["营收"]["value"] == "$61.50B" and mu_rows["营收"]["qoq"]["text"] == "+13.4%"
+    assert mu_rows["营收"]["yoy"]["text"] == "" and mu_rows["营收"]["vs"]["text"] == ""
+    assert mu_rows["毛利率（Non-GAAP）"]["value"] == "86.25%" and mu_rows["毛利率（Non-GAAP）"]["qoq"]["text"] == "-0.8pp"
+    assert mu_rows["调整后摊薄 EPS"]["value"] == "$38.15"
+    assert mu_rows["调整后摊薄 EPS"]["qoq"]["text"] == "+14.2%"
+    assert mu_rows["调整后摊薄 EPS"]["vs"]["text"] == "+11.1%"
+    assert "净利润率" not in mu_rows and "营业利润率" not in mu_rows
+    assert "供给变化" in {block["title"] for block in mu_view["outlook"]}
 
 
 def test_guidance_view_tiles_and_outlook_categories():
@@ -467,7 +539,6 @@ def test_guidance_view_tiles_and_outlook_categories():
     tax = [c for c in cards if c["label"] == "税率"]
     assert len(tax) == 1 and tax[0]["value"] == "15% – 17%"
     rl = [c for c in cards if c["label"] == "Reality Labs 亏损"]
-    assert len(rl) == 2
     assert {c["value"] for c in rl} >= {"$18.00B – $19.00B", "约 $15.00B"}
     fx = [c for c in cards if c["label"] == "汇率"]
     assert len(fx) == 1 and fx[0]["value"] == "约 1% 逆风"
@@ -579,6 +650,118 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     assert hist["FY2026Q3"]["eps_nongaap"] == 7.40
     assert any("营收" in s["text"] for s in chart["sides"])
     assert all("EPS" not in s["text"] for s in chart["sides"])
+    revenue = chart["revenue"]
+    assert [q["label"] for q in revenue["quarters"]] == [
+        "FQ4 2025", "FQ1 2026", "FQ2 2026", "FQ3 2026", "FQ4 2026", "FQ1 2027",
+    ]
+    rev_q3 = next(q for q in revenue["quarters"] if q["label"] == "FQ3 2026")
+    assert rev_q3["actual"] == 64.6 and rev_q3["consensus"] == 63.34
+    assert rev_q3["note"] == "超预期 $1.26B" and rev_q3["basis"] == "营收"
+    rev_q4 = next(q for q in revenue["quarters"] if q["label"] == "FQ4 2026")
+    assert rev_q4["actual"] is None and rev_q4["consensus"] == 74.1
+    rev_nq = next(q for q in revenue["quarters"] if q["label"] == "FQ1 2027")
+    assert rev_nq["actual"] is None and rev_nq["consensus"] == 68.24
+    horizons = {item["label"]: item["value"] for item in revenue["horizons"]}
+    assert horizons["近 4 季（TTM）"] == "$241.61B"
+    assert horizons["未来 12 个月（NTM）"] == "$296.78B"
+    assert horizons["FY26E"] == "$255.82B" and horizons["FY27E"] == "$310.44B"
+    assert "FY28E" not in horizons
+    assert all(q["actual"] != 3.83 for q in revenue["quarters"])
+    assert any("EPS" in s["text"] for s in revenue["sides"])
+
+
+def test_fin_rows_pair_margins_with_absolute_profit():
+    """利润率下面跟利润额；净利润率排在营业利润块之后，再跟净利润。"""
+    from builder.build import _fin_rows
+
+    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    labels = [row["label"] for row in _fin_rows(meta)]
+    assert labels[labels.index("毛利率（GAAP）") + 1] == "毛利润（GAAP）"
+    assert "毛利润（Non-GAAP）" not in labels
+    op = labels.index("营业利润率（GAAP）")
+    assert labels[op + 1 : op + 4] == ["营业利润（GAAP）", "净利润率（GAAP）", "净利润（GAAP）"]
+    assert labels.index("净利润率（GAAP）") > labels.index("营业利润率（Non-GAAP）")
+    by = {row["label"]: row for row in _fin_rows(meta)}
+    assert by["毛利润（GAAP）"]["nested"] is False and by["毛利润（GAAP）"]["value"] == "$51.23B"
+    assert by["毛利润（GAAP）"]["yoy"]["text"] == "+21.9%" and by["毛利润（GAAP）"]["qoq"]["text"] == "+3.6%"
+    assert by["营业利润（GAAP）"]["value"] == "$12.99B"
+    assert by["营业利润（GAAP）"]["yoy"]["text"] == "-36.8%" and by["营业利润（GAAP）"]["qoq"]["text"] == "-30.8%"
+    assert by["净利润率（GAAP）"]["nested"] is False and by["净利润率（GAAP）"]["value"] == "15.3%"
+    assert by["净利润率（GAAP）"]["yoy"]["text"] == "+10.0pp" and by["净利润率（GAAP）"]["qoq"]["text"] == "-10.8pp"
+    assert by["净利润（GAAP）"]["nested"] is False and by["净利润（GAAP）"]["value"] == "$9.86B"
+    assert by["净利润（GAAP）"]["yoy"]["text"] == "+264.0%" and by["净利润（GAAP）"]["qoq"]["text"] == "-37.8%"
+    assert by["净利润（GAAP）"]["vs"]["text"] == "—"
+
+    mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    mu_labels = [row["label"] for row in _fin_rows(mu)]
+    assert mu_labels[mu_labels.index("毛利率（Non-GAAP）") + 1] == "毛利润（Non-GAAP）"
+    assert mu_labels[mu_labels.index("毛利率（GAAP）") + 1] == "毛利润（GAAP）"
+    assert mu_labels[mu_labels.index("营业利润率（Non-GAAP）") + 1] == "营业利润（Non-GAAP）"
+    assert mu_labels[mu_labels.index("营业利润率（GAAP）") + 1] == "营业利润（GAAP）"
+    after_oi = mu_labels.index("营业利润（GAAP）")
+    assert mu_labels[after_oi + 1 : after_oi + 3] == ["净利润率（GAAP）", "净利润（GAAP）"]
+    mu_by = {row["label"]: row for row in _fin_rows(mu)}
+    assert mu_by["毛利润（Non-GAAP）"]["value"] == "$47.20B"
+    assert mu_by["毛利润（GAAP）"]["value"] == "$47.05B"
+    assert mu_by["营业利润（Non-GAAP）"]["value"] == "$44.64B"
+    assert mu_by["营业利润（GAAP）"]["value"] == "$43.75B"
+    assert mu_by["净利润（GAAP）"]["value"] == "$37.70B"
+    assert mu_by["净利润（GAAP）"]["yoy"]["text"] != "—" and mu_by["净利润（GAAP）"]["qoq"]["text"] != "—"
+
+
+def test_activity_rows_and_business_split_read_press_release():
+    """股本、周转天数和业务拆分只读已保存的新闻稿。META 没有存货和预收；MU 用合同负债。"""
+    from builder.build import _activity_rows, _business_split
+
+    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    rows = {row["label"]: row for row in _activity_rows("META", "FY2026Q3", meta, {})}
+    assert rows["股份数量"]["value"] == "2,573M 股"
+    assert rows["股份数量"]["yoy"]["text"] == "+1M 股"
+    assert "潜在稀释" in rows["股份数量"]["summary"]
+    assert rows["存货周转天数"]["value"] == "未披露"
+    assert rows["应收账款周转天数"]["value"] == "32.4天"
+    assert rows["应收账款周转天数"]["yoy"]["text"] == "—"
+    assert rows["预收账款周转天数"]["value"] == "未披露"
+    assert any(item["type"] == "结构" for item in rows["应收账款周转天数"]["drivers"])
+    split = _business_split("META", "FY2026Q3", meta, {})
+    assert [row["name"] for row in split["business"]] == ["应用家族", "Reality Labs"]
+    assert [child["name"] for child in split["business"][0]["children"]] == ["广告", "其他收入"]
+    assert split["business"][0]["children"][0]["revenue"] == "$63.06B"
+    assert "广告占营收 97.6%" in split["note"]
+    assert split["geo"] == [] and "没有按地区" in split["geo_note"]
+
+    mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    mu_rows = {row["label"]: row for row in _activity_rows("MU", "FY2026Q4", mu, {})}
+    assert mu_rows["股份数量"]["value"] == "1,147M 股"
+    assert mu_rows["存货周转天数"]["value"] == "132.9天" and mu_rows["存货周转天数"]["yoy"]["text"] == "+10.1天"
+    assert mu_rows["应收账款周转天数"]["value"] == "61.4天" and mu_rows["应收账款周转天数"]["yoy"]["text"] == "-13.9天"
+    assert "合同负债周转天数" in mu_rows and mu_rows["合同负债周转天数"]["value"] == "21.9天"
+    assert "预收账款周转天数" not in mu_rows
+    mu_split = _business_split("MU", "FY2026Q4", mu, {})
+    assert [row["name"] for row in mu_split["business"]] == ["云存储", "核心数据中心", "移动与客户端", "汽车与嵌入式"]
+    assert mu_split["business"][0]["revenue"] == "$16.28B" and mu_split["business"][0]["yoy"]["text"] == "+258.4%"
+    assert "各业务收入相加等于公司营收" in mu_split["note"]
+
+
+def test_forward_pe_labels_follow_fiscal_year():
+    """财年列随公司财年滚动，模板里不写死 FY26–FY28。"""
+    from builder.build import _current_fiscal_year, _forward_pe_view, _fy_estimate_label, _months_remaining
+    from pipeline.config import load_ticker_config
+
+    assert _current_fiscal_year(date(2026, 10, 23), 12) == 2026
+    assert _current_fiscal_year(date(2026, 10, 23), 8) == 2027
+    assert _current_fiscal_year(date(2027, 1, 15), 12) == 2027
+    assert _months_remaining(date(2026, 10, 23), 12) == 3
+    assert _months_remaining(date(2026, 10, 1), 8) == 11
+    assert _fy_estimate_label(2026) == "FY26E" and _fy_estimate_label(2027) == "FY27E"
+    template = (ROOT / "builder" / "templates" / "period.html").read_text(encoding="utf-8")
+    assert "FY26E" not in template and "FY2026E" not in template
+
+    mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    shifted = _forward_pe_view("MU", mu, "FY2027Q1", load_ticker_config("MU"), active=True)
+    labels = [row["label"] for row in shifted["rows"] if row["kind"] == "fy"]
+    assert labels == ["FY27E", "FY28E"]
+    assert "FY26E" not in labels
 
 
 def test_gap_row_clips_outside_scale():
