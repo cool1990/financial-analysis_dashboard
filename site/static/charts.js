@@ -283,7 +283,29 @@ if (page.finView) {
       options: {
         responsive: true, maintainAspectRatio: false, animation: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } } },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                if (ctx.dataset.label === '同比') {
+                  if (ctx.parsed.y == null) return '同比 缺去年同期';
+                  var v = ctx.parsed.y;
+                  return '同比 ' + (v > 0 ? '+' : '') + v + '%';
+                }
+                if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+                var text = (chart.amount_text || [])[ctx.dataIndex];
+                return '金额 ' + (text || ctx.parsed.y);
+              },
+              afterBody: function (items) {
+                if (!items.length) return;
+                var yoy = (chart.yoy || [])[items[0].dataIndex];
+                var hasLine = items.some(function (item) { return item.dataset.label === '同比'; });
+                if (yoy == null && !hasLine) return '同比 缺去年同期';
+              }
+            }
+          }
+        },
         scales: {
           x: { grid: { display: false }, ticks: yearTicks(labels) },
           y: { beginAtZero: true },
@@ -620,11 +642,17 @@ if (page.epsChart) {
             callbacks: {
               label: function (ctx) {
                 var q = quarters[ctx.dataIndex] || {};
-                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 缺去年同期' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
                 if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
                 var text = view.money(ctx.parsed.y);
                 if (ctx.dataset.label === '实际') return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' ' + text;
                 return ctx.dataset.label + ' ' + text;
+              },
+              afterBody: function (items) {
+                if (!items.length) return;
+                var q = quarters[items[0].dataIndex] || {};
+                var hasLine = items.some(function (item) { return item.dataset.label === '同比'; });
+                if (q.yoy_pct == null && !hasLine) return '同比 缺去年同期';
               }
             }
           }
