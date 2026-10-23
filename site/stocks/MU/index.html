@@ -88,29 +88,15 @@
 <section class="dim" id="expect">
   <div class="card expect-frame">
     <div class="expect-chart">
-      <h2>盈利预期 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
-      <div class="gap-rows">
-        <div class="gap">
-          <span class="g-lab">本季营收<small>实际 $54.23B</small></span>
-          <div class="track none"><span>缺一致预期</span></div>
-          <span class="g-val c-na">—</span>
-        </div>
-        <div class="gap">
-          <span class="g-lab">本季 EPS（Non-GAAP）<small>Non-GAAP $33.42 · 一致预期 $32.46</small></span>
-          <div class="track" role="img" aria-label="本季 EPS（Non-GAAP） 相对预期 +3.0%"><i class="dot v-beat" style="left:59.9%"></i></div>
-          <span class="g-val c-up">+3.0%</span>
-        </div>
-        <div class="gap">
-          <span class="g-lab">下季营收指引<small>指引中值 $61.50B</small></span>
-          <div class="track none"><span>缺一致预期</span></div>
-          <span class="g-val c-na">—</span>
-        </div>
-        <div class="gap">
-          <span class="g-lab">下季 EPS 指引<small>指引中值 $38.15 · 预期 $34.33</small></span>
-          <div class="track" role="img" aria-label="下季 EPS 指引 相对预期 +11.1%"><i class="dot v-beat" style="left:87.1%"></i></div>
-          <span class="g-val c-up">+11.1%</span>
-        </div>
-<div class="gap axis"><span></span><div><span>-15%</span><span>0</span><span>+15%</span></div><span></span></div>      </div>
+      <h2>盈利预期
+        <span class="seg expect-toggle" role="group" aria-label="切换每股收益或营收">
+          <button type="button" data-expect="eps" aria-pressed="true">EPS</button>
+          <button type="button" data-expect="revenue" aria-pressed="false">营收</button>
+        </span>
+        <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比</small>
+      </h2>
+      <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
+      <p class="eps-note" id="expectNote">深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。</p>
     </div>
     <div class="expect-pe" id="forward-pe">
       <h2>Forward PE <small>本财年与下财年按剩余月份加权</small></h2>
@@ -733,6 +719,109 @@
           </tr>
         </tbody>
       </table>
+      </div>
+    </section>
+    <section class="guide-part">
+      <h3>五档指引</h3>
+      <h4>业绩指标</h4>
+      <div class="gtiles">
+        <div class="card gtile">
+          <div class="g-k">营收<small> · 2027财年Q1 · $60.00B – $63.00B</small></div>
+          <div class="g-v">$61.50B</div>
+<div class="g-s">新闻稿 · 电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">毛利率<small> · 2027财年Q1 · GAAP 86%</small></div>
+          <div class="g-v">86.25%</div>
+<div class="g-s">新闻稿 · 电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">营业利润率<small> · 2027财年余下季度</small></div>
+          <div class="g-v textual">2027财年剩余时间利润率将相对第一季度扩张，受持续价格温和上涨…</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">运营费用<small> · 2027财年Q1 · GAAP $2.31B</small></div>
+          <div class="g-v">$2.06B</div>
+<div class="g-s">新闻稿</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">每股收益<small> · 2027财年Q1 · $37.15 – $39.15 · GAAP $37.84</small></div>
+          <div class="g-v">$38.15</div>
+<div class="g-s">新闻稿 · 电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">稀释股本<small> · 2027财年Q1</small></div>
+          <div class="g-v textual">1.15B 股</div>
+<div class="g-s">新闻稿 · 电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">fiscal 2027 results<small> · 2027财年</small></div>
+          <div class="g-v textual">2027 财年业绩将比 2026 财年更强劲</div>
+<div class="g-s">新闻稿</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">研发支出<small> · 2027财年</small></div>
+          <div class="g-v">增加超过 $1.00B</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">研发支出<small> · 2027财年Q1</small></div>
+          <div class="g-v textual">2027财年第一季度研发支出将增加，以支持新增的先进节点开发活动</div>
+<div class="g-s">电话会</div>        </div>
+      </div>
+      <h4>经营指标</h4>
+      <div class="gtiles">
+        <div class="card gtile">
+          <div class="g-k">Committed Shipments<small> · 2027财年</small></div>
+          <div class="g-v">More than 75%</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">Strategic Customer Agreements<small> · 至2030年</small></div>
+          <div class="g-v textual">26 agreements covering approximately 35% of total production bit volume through 2030</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">定价<small> · 2027日历年</small></div>
+          <div class="g-v textual">已大幅上调2027日历年度HBM定价，以缩小与常规DRAM之间的…</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">Industry supply growth constraints<small> · 未指明</small></div>
+          <div class="g-v textual">行业供应增长面临结构性约束，因技术过渡带来的回报递减，限制总位元…</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">Q1 Fiscal 2027 Bit Growth and Cost<small> · 2027财年Q1</small></div>
+          <div class="g-v textual">第一季度指引假设DRAM和NAND位元出货环比增长个位数，成本双…</div>
+<div class="g-s">电话会</div>        </div>
+      </div>
+      <h4>资本开支</h4>
+      <div class="gtiles">
+        <div class="card gtile">
+          <div class="g-k">资本开支<small> · 未指明</small></div>
+          <div class="g-v textual">正在增加技术、产品和制造方面的投资，以推动超级智能发展</div>
+<div class="g-s">新闻稿</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">资本开支<small> · 2028年末</small></div>
+          <div class="g-v textual">资本开支将集中于爱达荷州和新加坡的洁净室建设，以支持2028年底…</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">资本开支<small> · 2027年以后</small></div>
+          <div class="g-v textual">资本开支增长趋势将延续到2027年以后</div>
+<div class="g-s">电话会</div>        </div>
+      </div>
+      <h4>其他</h4>
+      <div class="gtiles">
+        <div class="card gtile">
+          <div class="g-k">Strategic Customer Agreements<small> · 未指明</small></div>
+          <div class="g-v textual">战略客户协议增强了其对 Micron 财务表现持久性的信心</div>
+<div class="g-s">新闻稿</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">Market conditions<small> · 至2028年</small></div>
+          <div class="g-v textual">市场状况将保持紧张，并支撑到2028年</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">1-delta DRAM ramp<small> · 明年下半年</small></div>
+          <div class="g-v textual">下一代1-delta技术正在推进，计划于明年下半年开始产能爬坡</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">NAND industry conditions<small> · 2027–2028日历年</small></div>
+          <div class="g-v textual">NAND整体供应状况将保持紧张，尽管行业在2027和2028日历…</div>
+<div class="g-s">电话会</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">New clean room online<small> · 2028日历年下半年</small></div>
+          <div class="g-v textual">新洁净室将在2028日历年度下半年投入使用</div>
+<div class="g-s">电话会</div>        </div>
       </div>
     </section>
     <section class="guide-part">
@@ -1496,6 +1585,122 @@ function drawRowCharts() {
   }
   box.addEventListener('toggle', drawInitial);
   drawInitial();
+})();
+</script>
+<script>
+(function () {
+  var spec = {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。", "quarters": [{"actual": 33.42, "basis": "Non-GAAP", "consensus": 32.46, "label": "FQ4 2026", "note": "超预期 $0.96", "note_cls": "beat", "yoy_pct": 1002.970297029703}, {"actual": null, "basis": "", "consensus": 34.33, "label": "FQ1 2027", "note": "指引中值 $38.15", "note_cls": "muted", "yoy_pct": null}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。", "quarters": [{"actual": 54.23, "basis": "营收", "consensus": null, "label": "FQ4 2026", "note": "同比 +379.3%", "note_cls": "beat", "yoy_pct": 379.26646045072914}, {"actual": null, "basis": "营收指引", "consensus": null, "label": "FQ1 2027", "note": "指引中值 $61.50B", "note_cls": "muted", "yoy_pct": null}], "sides": []}, "sides": []};
+  var canvas = document.getElementById('epsSurprise');
+  if (!canvas || typeof Chart === 'undefined' || !spec) return;
+  var css = getComputedStyle(document.documentElement);
+  var color = function (name) { return css.getPropertyValue(name).trim(); };
+  Chart.defaults.font.family = color('--font') || 'system-ui';
+  Chart.defaults.font.size = 12;
+  var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
+  var views = {
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: spec.unit || "美元", money: function (v) { var unit = spec.unit || "美元"; var mark = spec.mark || (unit === '人民币' ? '¥' : '$'); return mark + Number(v).toFixed(2); } }
+  };
+  if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
+    views.revenue = {
+      quarters: spec.revenue.quarters,
+      hint: spec.revenue.hint || '',
+      note: spec.revenue.note || '',
+      unit: "十亿美元",
+      money: function (v) { var mark = "十亿美元".indexOf('人民币') >= 0 ? '¥' : '$'; return mark + Number(v).toFixed(2) + 'B'; }
+    };
+  }
+  var chart = null;
+  function draw(name) {
+    var view = views[name] || views.eps;
+    var quarters = view.quarters;
+    if (chart) chart.destroy();
+    chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: quarters.map(function (q) { return q.label; }),
+        datasets: [
+          { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
+          { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
+          { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 18, bottom: 22 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var q = quarters[ctx.dataIndex] || {};
+                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+                if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+                var text = view.money(ctx.parsed.y);
+                if (ctx.dataset.label === '实际') return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' ' + text;
+                return ctx.dataset.label + ' ' + text;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: view.unit }, grid: { color: color('--grid') } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
+        }
+      },
+      plugins: [{
+        id: 'epsMarks',
+        afterDatasetsDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          drawn.data.datasets.forEach(function (ds, di) {
+            if (ds.type !== 'bar') return;
+            var meta = drawn.getDatasetMeta(di);
+            meta.data.forEach(function (bar, i) {
+              var val = ds.data[i];
+              if (val == null) return;
+              ctx.save();
+              ctx.fillStyle = color('--ink-2') || '#52514e';
+              ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(view.money(val), bar.x, bar.y - 2);
+              ctx.restore();
+            });
+          });
+        },
+        afterDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          var x = drawn.scales.x;
+          quarters.forEach(function (q, i) {
+            if (!q.note) return;
+            ctx.save();
+            ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
+            ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
+            ctx.restore();
+          });
+        }
+      }]
+    });
+    var hint = document.getElementById('expectHint');
+    if (hint) hint.textContent = view.hint;
+    var note = document.getElementById('expectNote');
+    if (note) note.textContent = view.note;
+  }
+  document.querySelectorAll('[data-expect]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-expect');
+      document.querySelectorAll('[data-expect]').forEach(function (other) {
+        other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+      });
+      draw(mode);
+    });
+  });
+  draw('eps');
 })();
 </script>
 </body>

@@ -103,10 +103,15 @@
 <section class="dim" id="expect">
   <div class="card expect-frame solo">
     <div class="expect-chart">
-      <h2>盈利预期 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
-      <div class="gap-rows">
-        <p class="muted">记分卡尚未生成。</p>
-      </div>
+      <h2>盈利预期
+        <span class="seg expect-toggle" role="group" aria-label="切换每股收益或营收">
+          <button type="button" data-expect="eps" aria-pressed="true">EPS</button>
+          <button type="button" data-expect="revenue" aria-pressed="false">营收</button>
+        </span>
+        <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比</small>
+      </h2>
+      <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
+      <p class="eps-note" id="expectNote">缺一致预期。浅蓝柱是已保存的实际，灰柱留空。</p>
     </div>
   </div>
 </section>
@@ -922,6 +927,122 @@ function drawRowCharts() {
   }
   box.addEventListener('toggle', drawInitial);
   drawInitial();
+})();
+</script>
+<script>
+(function () {
+  var spec = {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。", "quarters": [{"actual": null, "basis": "", "consensus": null, "label": "FQ4 2017", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 13.33, "basis": "", "consensus": null, "label": "FQ1 2018", "note": "同比 +72.4%", "note_cls": "beat", "yoy_pct": 72.4450194049159}, {"actual": 4.54, "basis": "", "consensus": null, "label": "FQ2 2018", "note": "同比 -9.4%", "note_cls": "miss", "yoy_pct": -9.381237524950095}, {"actual": 13.06, "basis": "", "consensus": null, "label": "FQ3 2018", "note": "同比 +36.5%", "note_cls": "beat", "yoy_pct": 36.46812957157785}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。", "quarters": [{"actual": 32.32, "basis": "营收", "consensus": null, "label": "FQ4 2017", "note": "同比 +24.0%", "note_cls": "beat", "yoy_pct": 24.013965623081646}, {"actual": 31.15, "basis": "营收", "consensus": null, "label": "FQ1 2018", "note": "同比 +25.8%", "note_cls": "beat", "yoy_pct": 25.842424242424244}, {"actual": 32.66, "basis": "营收", "consensus": null, "label": "FQ2 2018", "note": "同比 +25.6%", "note_cls": "beat", "yoy_pct": 25.555555555555554}, {"actual": 33.74, "basis": "营收", "consensus": null, "label": "FQ3 2018", "note": "同比 +21.5%", "note_cls": "beat", "yoy_pct": 21.489269768111768}, {"actual": 39.28, "basis": "营收", "consensus": null, "label": "FQ4 2018", "note": "同比 +21.5%", "note_cls": "beat", "yoy_pct": 21.510998360300714}], "sides": []}, "sides": []};
+  var canvas = document.getElementById('epsSurprise');
+  if (!canvas || typeof Chart === 'undefined' || !spec) return;
+  var css = getComputedStyle(document.documentElement);
+  var color = function (name) { return css.getPropertyValue(name).trim(); };
+  Chart.defaults.font.family = color('--font') || 'system-ui';
+  Chart.defaults.font.size = 12;
+  var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
+  var views = {
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: spec.unit || "美元", money: function (v) { var unit = spec.unit || "美元"; var mark = spec.mark || (unit === '人民币' ? '¥' : '$'); return mark + Number(v).toFixed(2); } }
+  };
+  if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
+    views.revenue = {
+      quarters: spec.revenue.quarters,
+      hint: spec.revenue.hint || '',
+      note: spec.revenue.note || '',
+      unit: "十亿美元",
+      money: function (v) { var mark = "十亿美元".indexOf('人民币') >= 0 ? '¥' : '$'; return mark + Number(v).toFixed(2) + 'B'; }
+    };
+  }
+  var chart = null;
+  function draw(name) {
+    var view = views[name] || views.eps;
+    var quarters = view.quarters;
+    if (chart) chart.destroy();
+    chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: quarters.map(function (q) { return q.label; }),
+        datasets: [
+          { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
+          { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
+          { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 18, bottom: 22 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var q = quarters[ctx.dataIndex] || {};
+                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+                if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+                var text = view.money(ctx.parsed.y);
+                if (ctx.dataset.label === '实际') return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' ' + text;
+                return ctx.dataset.label + ' ' + text;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: view.unit }, grid: { color: color('--grid') } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
+        }
+      },
+      plugins: [{
+        id: 'epsMarks',
+        afterDatasetsDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          drawn.data.datasets.forEach(function (ds, di) {
+            if (ds.type !== 'bar') return;
+            var meta = drawn.getDatasetMeta(di);
+            meta.data.forEach(function (bar, i) {
+              var val = ds.data[i];
+              if (val == null) return;
+              ctx.save();
+              ctx.fillStyle = color('--ink-2') || '#52514e';
+              ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(view.money(val), bar.x, bar.y - 2);
+              ctx.restore();
+            });
+          });
+        },
+        afterDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          var x = drawn.scales.x;
+          quarters.forEach(function (q, i) {
+            if (!q.note) return;
+            ctx.save();
+            ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
+            ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
+            ctx.restore();
+          });
+        }
+      }]
+    });
+    var hint = document.getElementById('expectHint');
+    if (hint) hint.textContent = view.hint;
+    var note = document.getElementById('expectNote');
+    if (note) note.textContent = view.note;
+  }
+  document.querySelectorAll('[data-expect]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-expect');
+      document.querySelectorAll('[data-expect]').forEach(function (other) {
+        other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+      });
+      draw(mode);
+    });
+  });
+  draw('eps');
 })();
 </script>
 </body>

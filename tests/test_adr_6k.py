@@ -542,7 +542,9 @@ def test_homepage_marks_tsm_as_adr(tmp_path, monkeypatch):
     page = (tmp_path / "stocks" / "TSM" / "index.html").read_text(encoding="utf-8")
     assert 'class="stage-badge s-adr"' in index
     assert ">TSM</a> <span" in index and ">ADR</span>" in index
-    # 有财季后个股页是业绩页；「不是 8-K」写在首页 ADR 徽章上。
+    # 首页 ADR 徽章，以及有财季后的业绩页页眉，都写明不是 8-K Item 2.02。
     assert "不是 8-K Item 2.02" in index
+    assert "不是 8-K Item 2.02" in page
+    assert 'class="stage-badge s-adr"' in page
     assert "USD" in page and "taiwan_ifrs" in page
     assert "SEC 6-K" in page or "6-K" in page
