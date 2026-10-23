@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "company_ir",
+    "eps_basis": "gaap",
+    "transcript_url": "https://s21.q4cdn.com/399680738/files/doc_financials/2024/q2/META-Q2-2024-Earnings-Call-Transcript.pdf",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -177,12 +183,656 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "总收入390.71亿美元，同比增22.1%，环比增7.2%。电话会称391亿美元、同比增22%、固定汇率增23%。广告是主体：Family of Apps收入387亿美元、同比增22%，其中广告收入383亿美元、同比增22%或固定汇率23%。展示量和平均单价都增10%。线上商务是广告同比增量最大的行业，其后是游戏、娱乐和媒体。Family of Apps其他收入3.89亿美元、增73%，主要来自WhatsApp商业平台。Reality Labs收入3.53亿美元、增28%，主要来自Quest头显，体量远小于广告。",
+        "drivers": [
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": true,
+            "description": "广告展示量和平均单价都同比增10%，对广告收入的拉动大体相当。单价由广告主需求增强和广告效果改善推动，这里把单价记为主因。",
+            "evidence_quote": "In Q2, the total number of ad impressions served across our services and the average price per ad both increased 10%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "展示量同比增10%，主要来自亚太和其他地区，是广告收入的同向拉动。",
+            "evidence_quote": "Impression growth was mainly driven by Asia-Pacific and Rest of World.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "变现较低的地区和版面带来的展示量增长，部分抵消了单价的上升。",
+            "evidence_quote": "This was partially offset by impression growth, particularly from lower-monetizing regions and surfaces.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "广告收入里，线上商务是同比增量最大的行业，其后是游戏、娱乐和媒体。",
+            "evidence_quote": "Within ad revenue, the online commerce vertical was the largest contributor to year-over-year growth, followed by gaming and entertainment and media.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "按广告主地区，亚太总收入增28%，仍是最快，但低于第一季的41%，因为在跨过去年中国广告主更强的需求。对同比仍是正贡献。",
+            "evidence_quote": "On an advertiser geography basis, total revenue growth continued to be strongest in Asia-Pacific at 28%, though growth was below the first quarter rate of 41% as we lapped a period of stronger demand from China-based advertisers.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "-",
+            "is_primary": false,
+            "description": "口头报表同比增22%、固定汇率增23%，外汇大约拖累1个百分点。指标表同比是22.1%，没有单列固定汇率。",
+            "evidence_quote": "Q2 total revenue was $39.1 billion, up 22% or 23% on a constant currency basis.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Family of Apps其他收入3.89亿美元、增73%，主要来自WhatsApp商业平台的企业消息，对总收入是小的正向项。",
+            "evidence_quote": "Family of Apps other revenue was $389 million, up 73%, driven primarily by business messaging revenue growth from our WhatsApp Business Platform.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Reality Labs收入3.53亿美元、增28%，主要来自Quest头显销售，金额相对广告很小。",
+            "evidence_quote": "Within our Reality Labs segment, Q2 revenue was $353 million, up 28% driven primarily by Quest headset sales.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Susan在问答中说，第二季各地区、各行业普遍较强，中小广告主尤其强，并预期这种情况大体延续到第三季。",
+            "evidence_quote": "And we saw basically in Q2 where revenue grew 22%, that there was broad-based strength across regions and verticals including particular strength among smaller advertisers, and we expect that generally to continue into Q3.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第二季总收入391亿美元、同比增22%、固定汇率增23%；指标表为390.71亿美元、同比22.1%、环比7.2%。摘要使用指标表。口头22%相对指标表22.1%是取整。固定汇率23%只出现在电话会，指标表没有单列。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "GAAP毛利率81.3%，同比降0.1个百分点，环比降0.5个百分点。电话会没有单列毛利率。营业成本增23%，主因基础设施成本和Reality Labs存货成本，快于口头收入增速22%和指标表收入增速22.1%，所以毛利率同比略降。环比降幅大于同比，电话会没有解释。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": true,
+            "description": "营业成本增23%，主因基础设施成本和Reality Labs存货成本。成本增速略高于收入增速，对应毛利率同比降0.1个百分点。",
+            "evidence_quote": "Cost of revenue increased 23%, driven primarily by higher infrastructure and Reality Labs inventory costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "环比毛利率降0.5个百分点，大于同比降幅。电话会没有分开解释环比。",
+            "evidence_quote": "",
+            "source": "",
+            "is_inference": true,
+            "reasoning": "指标表毛利率81.3%，同比约降0.1个百分点、环比约降0.5个百分点。电话会只说营业成本增23%、主因基础设施和Reality Labs存货，没有解释为何环比降幅更大。同比方向与成本增速略高于收入增速一致。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "GAAP营业利润率38.0%，同比升8.6个百分点，环比升0.1个百分点。指标表营业利润148.47亿美元，同比增58.1%、环比增7.4%。电话会称营业利润148亿美元、利润率38%，总费用242亿美元、同比只增7%。费用增速远慢于收入，是利润率同比扩张的主因。研发增13%，主因员工相关费用和基础设施，部分被重组费用下降抵消。营销费用降14%，主因重组和员工相关费用下降。管理费用降12%，主因法律相关费用下降。Family of Apps费用增4%，经营利润193亿美元、利润率50%。Reality Labs费用48亿美元、增21%，经营亏损45亿美元。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "总费用242亿美元、同比只增7%，远慢于收入同比22.1%，是营业利润率同比升8.6个百分点的主因。",
+            "evidence_quote": "Q2 total expenses were $24.2 billion, up 7% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "收入增长带来经营杠杆。口头总收入增22%，指标表增22.1%。",
+            "evidence_quote": "Q2 total revenue was $39.1 billion, up 22% or 23% on a constant currency basis.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营销费用降14%，主因重组费用和员工相关费用下降，减轻了费用压力。",
+            "evidence_quote": "Marketing & Sales decreased 14%, due mainly to lower restructuring and headcount-related costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "管理费用降12%，主因法律相关费用下降。",
+            "evidence_quote": "G&A decreased 12%, mostly due to lower legal-related expenses.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发增13%，主因员工相关费用和基础设施成本，只被较低的重组费用部分抵消，对利润率是对冲项。",
+            "evidence_quote": "R&D increased 13%, primarily driven by higher headcount-related expenses and infrastructure costs, which were partially offset by lower restructuring costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": false,
+            "description": "营业成本增23%，主因基础设施和Reality Labs存货，快于收入，限制了利润率的升幅。",
+            "evidence_quote": "Cost of revenue increased 23%, driven primarily by higher infrastructure and Reality Labs inventory costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "Reality Labs费用48亿美元、同比增21%，经营亏损45亿美元，拉低合并利润率。Family of Apps经营利润率是50%。",
+            "evidence_quote": "Reality Labs operating loss was $4.5 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称营业利润148亿美元、营业利润率38%；指标表营业利润148.47亿美元、同比58.1%、环比7.4%，营业利润率38.0%、同比升8.6个百分点、环比升0.1个百分点。摘要使用指标表。",
+          "电话会有一句“第一季结束时员工接近70800人、比第一季增2%”。结束第一季和比第一季增2%互相矛盾，不能当作已经核实的第二季人数。问答里分析师说人数同比大约降1%，Susan没有确认。"
+        ]
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "GAAP营业利润148.47亿美元，同比增58.1%，环比增7.4%。电话会称148亿美元、对应38%的营业利润率。利润增长主要来自收入增22.1%而总费用只增7%。Family of Apps经营利润193亿美元，Reality Labs经营亏损45亿美元，合并后落到指标表的148.47亿美元。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "总费用只增7%，慢于收入，营业利润因此增至指标表148.47亿美元、同比58.1%。电话会称148亿美元。",
+            "evidence_quote": "Q2 total expenses were $24.2 billion, up 7% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "Reality Labs经营亏损45亿美元，费用48亿美元、同比增21%，抵消了一部分应用家族的利润。",
+            "evidence_quote": "Reality Labs expenses were $4.8 billion, up 21% year-over-year driven mainly by higher headcount-related expenses and Reality Labs inventory costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Family of Apps经营利润193亿美元、利润率50%，是合并营业利润的来源。",
+            "evidence_quote": "Family of Apps operating income was $19.3 billion, representing a 50% operating margin.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第二季营业利润148亿美元；指标表148.47亿美元、同比58.1%、环比7.4%。摘要使用指标表。口头148亿美元是取整。"
+        ]
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "GAAP净利润134.65亿美元，同比增72.9%，环比增8.9%。电话会称135亿美元，每股收益5.16美元。本季税率11%。净利润增速高于营业利润增速58.1%，电话会没有解释税收和营业外项目的同比桥梁，不能把11%的税率写成已证实的同比原因。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "总费用只增7%，营业利润同比增58.1%，是净利润同比增72.9%的主因。电话会称净利润135亿美元。",
+            "evidence_quote": "Q2 total expenses were $24.2 billion, up 7% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "0",
+            "is_primary": false,
+            "description": "本季税率11%。全年指引是百分之十几的中段。电话会没有给去年同期税率，所以不把税率变化当成净利润增速高于营业利润增速的原因。",
+            "evidence_quote": "Our tax rate for the quarter was 11%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称净利润135亿美元；指标表134.65亿美元、同比72.9%、环比8.9%。摘要使用指标表。口头135亿美元是取整。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "GAAP稀释每股收益5.16美元，同比增73.2%，环比增9.6%。电话会同样称每股5.16美元，与指标表一致。增速与净利润同比72.9%接近，主因是利润增长。公司回购A类普通股63亿美元、派息13亿美元。季末现金及有价证券581亿美元、债务184亿美元。回购对每股收益同比的影响，电话会没有量化。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "稀释每股收益5.16美元，同比增73.2%，与净利润同比72.9%接近，主因是利润增长。",
+            "evidence_quote": "Net income was $13.5 billion or $5.16 per share.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "0",
+            "is_primary": false,
+            "description": "回购63亿美元会减少股数，但电话会没有给出摊薄股数的变化。每股收益同比与净利润同比只差约0.3个百分点，不能据此单独量化回购贡献。",
+            "evidence_quote": "We repurchased $6.3 billion of our Class A common stock and paid $1.3 billion in dividends to shareholders, ending the quarter with $58.1 billion in cash and marketable securities and $18.4 billion in debt.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "指标表资本开支81.73亿美元，同比增33.2%，环比增27.7%，口径是购建固定资产。电话会称资本开支85亿美元，且含融资租赁本金偿还，投向服务器、数据中心和网络。摘要使用指标表。Mark说训练Llama 4的算力很可能接近Llama 3的10倍，数据中心周期长，宁可提前建产能。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会称含融资租赁本金的资本开支为85亿美元，投向服务器、数据中心和网络。指标表购建固定资产81.73亿美元、同比增33.2%、环比增27.7%，增长来自这些基础设施。",
+            "evidence_quote": "Capital expenditures, including principal payments on finance leases, were $8.5 billion, driven by investments in servers, data centers and network infrastructure.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Mark说训练Llama 4所需算力很可能接近训练Llama 3的10倍，以后还会更大。建设周期长，他宁可在需要之前把产能建起来。",
+            "evidence_quote": "The amount of compute needed to train Llama 4 will likely be almost 10x more than what we used to train Llama 3 -- and future models will continue to grow beyond that.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称资本开支85亿美元，且含融资租赁本金偿还；指标表为购建固定资产81.73亿美元、同比33.2%、环比27.7%。摘要使用指标表。电话会没有单列融资租赁本金，不能把两个数字的差额全部写成某一项的精确金额。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "指标表经营现金流193.70亿美元，同比增11.9%，环比增0.6%。电话会没有单列经营现金流。增速低于净利润同比72.9%，电话会没有给出营运资本或其他现金项目的桥梁。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会未单列经营现金流。指标表为193.70亿美元、同比增11.9%、环比增0.6%，方向与利润增长一致，但慢于净利润。",
+            "evidence_quote": "",
+            "source": "",
+            "is_inference": true,
+            "reasoning": "指标表经营现金流193.70亿美元，同比约增11.9%、环比约增0.6%。净利润同比约增72.9%。电话会只报了含融资租赁口径的自由现金流109亿美元和资本开支85亿美元，没有单列经营现金流，也没有解释利润到现金的折损，因此不能指定营运资本或其他项目为主因。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会没有单列经营现金流。口述自由现金流109亿美元加上口述资本开支85亿美元约为194亿美元，与指标表193.70亿美元接近，但口述资本开支含融资租赁本金，不能把194亿美元当成指标表经营现金流。"
+        ]
+      },
+      {
+        "metric": "fcf",
+        "summary": "指标表自由现金流111.97亿美元，同比增0.2%，环比降12.8%。电话会称109亿美元。经营现金流同比增11.9%，资本开支同比增33.2%，开支加快把现金增长基本抵消，所以自由现金流同比几乎持平、环比下降。摘要使用指标表。公司同时回购63亿美元、派息13亿美元。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "指标表自由现金流同比仅增0.2%、环比降12.8%。经营现金流同比增11.9%，资本开支同比增33.2%，基础设施开支把现金增长基本抵消。电话会称资本开支85亿美元，投向服务器、数据中心和网络。",
+            "evidence_quote": "Capital expenditures, including principal payments on finance leases, were $8.5 billion, driven by investments in servers, data centers and network infrastructure.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "电话会称自由现金流109亿美元。指标表为111.97亿美元。口述金额更低，与含融资租赁的资本开支口径一致，摘要仍用指标表。",
+            "evidence_quote": "Free cash flow was $10.9 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称自由现金流109亿美元；指标表111.97亿美元、同比0.2%、环比降12.8%。摘要使用指标表。口述资本开支含融资租赁本金、为85亿美元，高于指标表购建口径81.73亿美元，自由现金流因此更低。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "总收入",
+        "period": "FY2024Q3",
+        "type": "numeric",
+        "low_raw": "$38.5 billion",
+        "high_raw": "$41 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2024年第三季度总收入为385亿至410亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect third quarter 2024 total revenue to be in the range of $38.5-41 billion.",
+        "low": 38500000000,
+        "mid": 39750000000,
+        "high": 41000000000
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "外汇对收入同比的逆风",
+        "period": "FY2024Q3",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "2%",
+        "plus_minus_raw": null,
+        "basis": "当前汇率",
+        "direction": "down",
+        "statement": "按当前汇率，第三季指引假设外汇对总收入同比增速是2%的逆风。",
+        "source": "prepared_remarks",
+        "source_quote": "Our guidance assumes foreign currency is a 2% headwind to year-over-year total revenue growth, based on current exchange rates.",
+        "low": null,
+        "mid": 2.0,
+        "high": null
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "全年总费用",
+        "period": "FY2024",
+        "type": "numeric",
+        "low_raw": "$96 billion",
+        "high_raw": "$99 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2024年全年总费用为960亿至990亿美元，与先前展望相同。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect full-year 2024 total expenses to be in the range of $96-99 billion, unchanged from our prior outlook.",
+        "low": 96000000000,
+        "mid": 97500000000,
+        "high": 99000000000
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Reality Labs经营亏损",
+        "period": "FY2024",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "up",
+        "statement": "公司继续预计2024年Reality Labs经营亏损同比明显增加，原因是持续的产品开发，以及为扩大生态继续投入。",
+        "source": "prepared_remarks",
+        "source_quote": "For Reality Labs, we continue to expect 2024 operating losses to increase meaningfully year-over-year due to our ongoing product development efforts and investments to further scale our ecosystem.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "基础设施成本对费用增长的作用",
+        "period": "FY2025",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "公司不打算在第四季电话会之前给出2025年的定量指引，但预计基础设施成本会是明年费用增长的重要驱动，因为扩大后的基础设施要确认折旧和运营成本。",
+        "source": "prepared_remarks",
+        "source_quote": "While we do not intend to provide any quantitative guidance for 2025 until the fourth quarter call, we expect infrastructure costs will be a significant driver of expense growth next year as we recognize depreciation and operating costs associated with our expanded infrastructure footprint.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "全年资本开支",
+        "period": "FY2024",
+        "type": "numeric",
+        "low_raw": "$37 billion",
+        "high_raw": "$40 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "公司预计2024年全年资本开支为370亿至400亿美元，此前区间是350亿至400亿美元，下沿上调。电话会本季实际数的资本开支含融资租赁本金，与指标表只计购建固定资产不同；这句全年展望没有再单独定义口径。",
+        "source": "prepared_remarks",
+        "source_quote": "We anticipate our full-year 2024 capital expenditures will be in the range of $37-40 billion, updated from our prior range of $35-40 billion.",
+        "low": 37000000000,
+        "mid": 38500000000,
+        "high": 40000000000
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "明年资本开支增速",
+        "period": "FY2025",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "公司仍在细化明年计划，目前预期2025年资本开支显著增长，用于人工智能研究和产品开发。",
+        "source": "prepared_remarks",
+        "source_quote": "While we continue to refine our plans for next year, we currently expect significant capex growth in 2025 as we invest to support our AI research and our product development efforts.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "全年税率",
+        "period": "FY2024",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "若税制没有变化，公司预计2024年全年税率在百分之十几的中段。本季实际税率是11%。",
+        "source": "prepared_remarks",
+        "source_quote": "Absent any changes to our tax landscape, we expect our full-year 2024 tax rate to be in the mid-teens.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "收入同比增速",
+        "period": "FY2024Q3",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比",
+        "direction": "down",
+        "statement": "Susan说第三季同比增速会放缓，因为要跨过去年中国广告主的强增长，以及一年前Reels展示量的强增长。",
+        "source": "qa",
+        "source_quote": "We do expect year-over-year growth to slow in Q3 as we are lapping strong growth from China-based advertisers as well as strong Reels impression growth from a year ago.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "第三季外汇逆风的变化",
+        "period": "FY2024Q3",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "当前汇率",
+        "direction": "down",
+        "statement": "按当前汇率，Susan预期第三季的外汇逆风会略大。准备发言里把第三季逆风具体说成对收入同比增速2%的拖累，本条只记问答里的方向。",
+        "source": "qa",
+        "source_quote": "And we also expect modestly larger FX headwinds in Q3 based on current rates.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "生成式人工智能产品的收入贡献",
+        "period": "FY2024",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "Susan说，不预期生成式人工智能产品在2024年成为有意义的收入驱动。",
+        "source": "qa",
+        "source_quote": "We don't expect our gen AI products to be a meaningful driver of revenue in '24.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "年末在职人数",
+        "period": "FY2024",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "Susan预期，随着今年补上此前的招聘缺口，2024年末在职、对外报告的人数会明显高于2023年末。她同时说还没开始做预算，因此不提供2025年人数增长预期。",
+        "source": "qa",
+        "source_quote": "And as we further close that hiring underrun over the course of this year, I do expect that we will end 2024 with in-seat reported headcount that is meaningfully higher than where we ended 2023.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "下半年广告展示量",
+        "period": "FY2024",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "Susan预期下半年展示量增长的近处来源仍是视频：Instagram上Reels继续带动增长，Facebook上总视频时长增长，同时短视频占比提高，从而带来更多展示机会。",
+        "source": "qa",
+        "source_quote": "Eric, I would just add to that in terms of nearer-term sources of impression growth, we really expect that video is going to remain a source of impression growth for us in the second half.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -192,6 +842,68 @@
       "t_plus_7": {},
       "gap_closure": null
     },
+    "industry_outlook": [
+      {
+        "title": "外部环境（监管与汇率）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Susan在展望末尾说，公司继续关注活跃的监管环境。欧盟和美国的法律与监管逆风都在加大，有可能对业务和财务结果产生显著影响。她没有给出罚款、整改成本或收入损失的数字，所以这是方向性风险，本季费用里已经点名下降的是法律相关费用，不能把未来的监管成本提前算进利润。汇率已经进了报表：口头总收入同比增22%、固定汇率增23%，报表增速比固定汇率慢约1个百分点，指标表同比是22.1%。她在问答里补充，按当前汇率，第三季外汇逆风会略大于本季，同比增速也会放缓。放缓同时还有业务基数的原因，即跨过去年中国广告主的强需求和Reels展示量的高增长。监管和汇率都没有否定本季广告需求与单价仍在增长，但会使下季报表增速慢于需求本身。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化（广告与社区）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "社区还在变大。Mark说每天至少使用一款公司应用的人已超过32亿。Susan说6月每天至少使用一个Family of Apps的人约32.7亿。美国是亮点：WhatsApp在美国的月活跃用户超过1亿，Facebook、Instagram和Threads在美国和全球都有同比增势。Threads月活跃用户即将到2亿。广告侧，展示量和平均单价都增10%。展示量主要来自亚太和其他地区；单价来自广告主需求增强和广告效果改善，又被变现较低的地区和版面的展示量增长部分抵消。按用户地区，广告收入同比在其他地区增33%、欧洲增26%、亚太增20%、北美增17%。按广告主地区，亚太仍最快、增28%，但低于第一季的41%，因为在跨过去年中国广告主更强的需求。行业上，线上商务是广告同比增量的最大来源，其后是游戏、娱乐和媒体。Susan说全球广告需求仍然健康，第二季中小广告主尤其强，但这种高基数意味着第三季同比会放缓。年轻用户方面，美国和加拿大的年轻成人使用量过去几个季度健康增长，小组发帖和Marketplace是抓手。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化（算力与硬件）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "算力是公司自己在加大的供给。Mark说训练Llama 4所需算力很可能接近训练Llama 3的10倍，以后的模型还会更大。数据中心建设周期长，他宁可在需要之前把产能建起来，以免到时不够。本季电话会口径的资本开支是85亿美元，投向服务器、数据中心和网络；指标表购建固定资产是81.73亿美元。Susan说，为生成式训练建的基础设施可以改作推理，加上通用计算和存储后也可以用于排序和推荐。数据中心分阶段建设，是为了需要时更快扩容，同时限制更远年份已经承诺的支出。问答里她拒绝把训练、推理和后续产品画成一条多年的资本开支曲线，只确认明年人工智能基础设施投入会显著增加，现在不给更长期的数字。硬件供给则是另一头：Ray-Ban Meta眼镜的需求仍超过生产能力，Mark希望很快能跟上；Quest 3的销售也超过公司自己的预期。眼镜是供给偏紧，算力是主动提前投入。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化（开源模型）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark把Llama 3.1看成行业拐点，认为开源人工智能会像Linux一样成为行业标准。405B模型相对领先的封闭模型有更好的成本表现，而且因为开源，适合微调并蒸馏成需要的规模。他的理由是模型是生态，不是可以自己孤立写完的软件。只有被全行业开发者广泛使用，工具、效率改进、芯片优化和其他集成才会围着它长出来。公司要的是领先技术，以免被竞争对手限制能做什么。因此公司不建公有云来卖模型。他点名亚马逊云在这次发布里做得尤其好，Databricks、英伟达、微软Azure和谷歌云也在支持，开发者可以在任何云上使用，而不是被锁进只提供某一家封闭模型的云。产品侧，Meta AI按年底成为使用最多的人工智能助手这个目标推进，已经可以在20多个国家、8种语言使用，印度已成为使用量最大的市场。竞争因此分成两条：广告和推荐上用模型把效果做高，基础模型上用开源换生态。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式（广告自动化与消息）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark描述的长期广告形态，是广告主只给出经营目标和预算，系统完成其余工作，包括生成创意，并按看到广告的人做个性化。现在仍是逐步走到那里。Susan说，今年一项研究显示，美国广告主采用Advantage+ Shopping后，广告支出回报率高22%。过去一个月，超过100万广告主至少使用了一种生成式广告功能，包括图像扩展、背景生成和文字生成；5月开始把完整图像生成放进Advantage+创意，使用该工具的广告主已经看到效果改善。广告负载上，公司在视频等低变现版面增加供给，也在有的场景不增加、甚至降低负载，靠选对广告和时间来提高转化。消息是另一条收入路径。Family of Apps其他收入3.89亿美元、增73%，主要来自WhatsApp商业平台。商业智能体仍在扩大内测，换上Llama 3之后回复质量有进步。Mark认为每个企业都会有客户可以互动的智能体，规模化之后会明显加快商业消息收入。Meta AI和AI Studio本身的变现则要等做到很大规模，时间以年计，节奏类似当年的Reels。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略（核心人工智能与元宇宙）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark把本季战略收成三块：人工智能怎样改进现有应用和广告，新的人工智能体验，以及人工智能怎样改变元宇宙。他在问答里说，2025年和2026年最能带来结果的是第一块，也就是推荐和广告这些已经有规模的产品，而不是新助手本身的变现。Llama 3已经能与最先进的模型竞争，Llama 4的目标是明年成为业界最先进的一代，Llama 5也按产品需要的能力来排。Susan把生成式人工智能的较长回报周期，对着四类机会来配投入：定制广告创意、商业消息、领先的人工智能助手，以及自然内容生成。核心人工智能则继续按可衡量的投资回报来加码，因为参与度和广告效果的改善已经变成收入。元宇宙仍是另一项长期投入。全息增强现实的时间表被人工智能改写，智能助手会比全息眼镜更早就绪。Ray-Ban Meta因为接上人工智能而早于预期走热，Quest 3被他称为当前市场上最好的头显，用途从游戏扩到看视频、浏览网页和虚拟桌面。9月25日的Connect会集中讲人工智能和元宇宙的更新。加大这些投入的同时，他和Susan都说公司会保持运营效率。核心业务的利润率升到38.0%，给了长期投入的空间。",
+            "items": []
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -217,18 +929,484 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "在面向用户和广告主的新生成式用法里，Meta AI、AI Studio、聊天机器人和扩散模型，哪一两项最可能在2025年、2026年真正带动业务？公司现在最聚焦哪里？",
+        "answer_summary": "Mark（CEO）：2025年和2026年最能带动结果的，是他开场讲的第一类，也就是人工智能怎样改造已经有规模的产品：改进推荐、帮人找到更好的内容，以及让广告更有效。这些产品已经在规模上，体验和经营结果都会改善。Meta AI、AI Studio会在近处提高参与度，也有其他经营上的好处，但它们本身的变现要很多年以后，节奏和当年的Reels一样：先做新产品，放到约10亿人以上，然后才集中规模化变现。他认为长期跟踪公司的人，提前几年就能从早期信号判断成不成。Meta AI的早期信号是，有望在今年底成为使用最多的人工智能助手。这还不是终点，还要把使用做深，再逐步变现。人工智能会影响到几乎每一个产品，既改进旧的，也使新的成为可能。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "So I think the things that will drive the most results in '25 and '26 are actually the first category of things that I talked about in my comments, which are the ways that AI is shaping the existing products.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "资本开支要同时覆盖下一代模型的新基础设施和算力。投资哲学是什么，有什么护栏能保证这些资本开支给投资者带来健康的投入资本回报？",
+        "answer_summary": "Susan（CFO）：她把人工智能投资分成核心人工智能和生成式人工智能两桶，两者带动收入的阶段不同，衡量回报的能力也不同。核心人工智能继续按投资回报来投。参与度和广告效果的改善已经转化成收入，回报仍然强，继续投是合理的。生成式人工智能早得多。她不预期这些产品在2024年成为有意义的收入驱动，但预期它们会逐步打开新的收入机会，从而在开源后续代际Llama的同时，为投入赚回扎实回报。四个重点是加强核心广告、做大商业消息、Meta AI，以及随时间提高核心参与度。基础设施建设考虑可替换：生成式训练的产能可以做生成式推理，加上通用计算和存储后也可以做排序和推荐。数据中心分阶段推进，需要时可以更快扩容，同时限制更远年份锁定的支出。因此尽管预期2025年资本开支显著增长，她认为已经有框架判断机会在哪里，并保有按最合适用途去部署的弹性。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出投资回报率的数字门槛，也没有资本开支上限。她说明了两桶投资的阶段差异和产能可替换，但没有把回报落成可以核对的比率。",
+        "tone": "cautious",
+        "answer_quote": "So while we do expect that we are going to grow CapEx significantly in 2025, we feel like we have a good framework in place in terms of thinking about where the opportunities are and making sure that we have the flexibility to deploy it as makes the most sense.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Mark Shmulik",
+        "firm": "Bernstein",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "从收入指引和展望看，整体数字广告市场现在怎么样？公司看到的需求强项，和公司自己把广告产品做得更有效的努力，各自起了什么作用？",
+        "answer_summary": "Susan（CFO）：全球广告需求仍然健康。针对、排序、投放这些基础能力也在持续改进，来自公司一直在做的投入。她预期这些都会在第三季继续有利于广告支出。同时，第三季同比增速会放缓，因为要跨过去年中国广告主的强增长，以及一年前Reels展示量的强增长。按当前汇率，第三季的外汇逆风也会略大。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "We do expect year-over-year growth to slow in Q3 as we are lapping strong growth from China-based advertisers as well as strong Reels impression growth from a year ago.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "消息和Threads这些更新、更快的部分，参与度增长和长期变现怎么搭配？最想靠什么把规模做起来，再拉回到变现？",
+        "answer_summary": "Mark（CEO）：WhatsApp在美国的进展是经营上的重要趋势，因为美国在公司收入里的权重大于用户权重。以前WhatsApp在很多国家领先，但不是在美国。现在美国用量起来，跨平台沟通和群组体验被更多人认可，以后把这块业务做大就会多一股东风。Threads的起步几乎是他能想到的最好的之一，也是最快到1亿人的应用，但从那里到10亿人仍要多年。这是公司的产品周期：先发布，放量，再把消费者体验做成很大的业务，中间是多年。公司做了20年，能长成10亿人应用的机会很少。Threads月活跃接近2亿，是好的里程碑，离成为业务里很大的一块还有大量工作。\nSusan（CFO）：近处的展示量增长，她预期下半年仍然来自视频。Instagram上Reels继续带动增长；Facebook上总视频时长增长，同时短视频占比提高，从而有更多展示机会。各应用的社区也会继续增长。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出WhatsApp或Threads的变现时间表和收入规模。Mark把从放量到变成大业务说成多年。Susan只补充了下半年展示量仍来自视频。",
+        "tone": "positive",
+        "answer_quote": "And it's a good reminder that even when you have that start, the path from there to 1 billion people using an app is still multiple years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Doug Anmuth",
+        "firm": "J.P. Morgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "基础设施和资本开支已经不只为Llama 3和Llama 4，而在往更后面的代际准备，且Llama 4的算力约为Llama 3的10倍。如此提前建设，会怎样影响多年的资本开支曲线？",
+        "answer_summary": "Susan（CFO）：更长周期的资本开支轨迹，公司没有给过展望。一部分原因是基础设施现在是非常动态的规划，生成式人工智能路线图在这段时间里的范围还在定。预期明年会显著增加人工智能基础设施投入，合适的时候再给进一步指引。建设时仍考虑弹性，使产能能按需要投到核心人工智能和生成式人工智能。核心人工智能的回报可以更快衡量，生成式人工智能则是对机会有信心。她没有按10倍算力或更后面的代际，去描述多年支出曲线的形状。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有描述多年资本开支曲线的形状，也没有给出Llama 4或更后面代际对应的支出金额。她只说明年显著增加人工智能基础设施投入，并在合适时再给指引。",
+        "tone": "cautious",
+        "answer_quote": "We haven't really shared an outlook sort of on the longer-term CapEx trajectory.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Doug Anmuth",
+        "firm": "J.P. Morgan",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "第三季展望虽然有更难的基数，但按分析师的测算，固定汇率下高端只比本季减速约1个百分点。还有什么更具体的因素在支撑这个强度？",
+        "answer_summary": "Susan（CFO）：平台上的全球广告需求仍然健康，广告效果也在持续改善，这是很多个季度的工作累积下来的，还会继续累积到平台上。第二季收入增22%，各地区、各行业普遍较强，中小广告主尤其强，她预期这种情况大体延续到第三季。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回应固定汇率下高端只减速约1个百分点的测算，也没有给出第三季同比增速。她说明的是需求健康、效果改善，以及中小广告主的强势会延续。",
+        "tone": "positive",
+        "answer_quote": "And we saw basically in Q2 where revenue grew 22%, that there was broad-based strength across regions and verticals including particular strength among smaller advertisers, and we expect that generally to continue into Q3.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "用户与参与",
+        "is_new_topic": true,
+        "question_summary": "美国年轻成人用户增长，尤其是Facebook和Instagram，这些人在应用里做什么？使用量增长有没有量化？",
+        "answer_summary": "Susan（CFO）：近几年Facebook团队的核心优先事项就是按年轻成人来做产品，这些努力已经转化成这个人群的参与度增长。美国和加拿大的年轻成人应用使用量，过去几个季度都是健康增长。小组和Marketplace在年轻成人里特别有牵引。美国和加拿大向小组发帖在增长，主要就是年轻成人带动的。他们也是Marketplace的活跃用户，产品改进和美国二手商品的强需求都有帮助。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出年轻用户使用量的同比或环比数字，也没有把Facebook和Instagram拆开量化。",
+        "tone": "positive",
+        "answer_quote": "We've seen healthy growth in young adult app usage in the U.S. and Canada for the past several quarters.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "商业与购物",
+        "is_new_topic": true,
+        "question_summary": "Marketplace很大，但变现偏低，甚至可能只是间接变现。以后打算怎样变现，以及怎样顺便提高Marketplace本身的质量？",
+        "answer_summary": "Susan（CFO）：Marketplace是年轻成人走强的原因之一，也是更广的商务策略里的一条。整体仍是把平台上的购物体验做好。Marketplace面向消费者。商务策略更广的部分，是让企业更容易投放产品广告，让买家更容易发现并购买相关商品。Shops广告收入同比以强劲速度增长，给广告主带来增量效果，和Advantage+ Shopping等产品搭配也有效。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有说明Marketplace会不会直接收费，或怎样提高它自身的变现和质量，转而讲整体购物体验和Shops广告。",
+        "tone": "positive",
+        "answer_quote": "Shops ads revenue is growing at a strong year-over-year pace.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "人数同比大约降1%，已经回到大幅裁员之前的水平附近。以后人数增长该怎么看，是温和还是显著？资本开支在显著增加，人数会不会跟着明显增加？",
+        "answer_summary": "Susan（CFO）：新的人数会继续有纪律地投到公司的核心优先事项，同时也在消化此前招聘没有完成的缺口。随着今年进一步补上这个缺口，她预期2024年末在职、对外报告的人数会明显高于2023年末。2025年的人数增长预期还没有，因为预算还没开始做。招聘仍会主要对准优先方向，人数流程会非常有纪律。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出2024年人数增幅，也明确说预算还没开始，因此不提供2025年人数预期。分析师说人数同比大约降1%，她没有确认。",
+        "tone": "cautious",
+        "answer_quote": "And as we further close that hiring underrun over the course of this year, I do expect that we will end 2024 with in-seat reported headcount that is meaningfully higher than where we ended 2023.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "用Llama 3.1做的人工智能助手已经很强，看起来接近一个几乎什么都能查的搜索引擎，但商业查询还除外。有没有计划对更广的网页开放，或接到第三方市场做商业搜索？",
+        "answer_summary": "Mark（CEO）：他对Llama 3.1的落地非常兴奋。从第一代，到去年还落后前沿一代的Llama 2，再到现在基本能竞争、在某些方面领先其他顶级封闭模型的Llama 3.1。Meta AI用的是Llama 3.1的一个版本，再加上其他服务，做成完整产品。使用趋势有了，但还要加很多东西。商业等功能可以一个垂直一个垂直地做，最后才是理想的人工智能助手。这是很长的路线图，不是接下来几个季度能做完的，而是未来几年把它做成被广泛使用的服务。Llama是产品的引擎并且开源，两边的进展他都看好。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有明确说会不会对全网开放，或接入第三方市场做商业搜索。他只说商业等垂直功能要在未来几年逐步补上。",
+        "tone": "positive",
+        "answer_quote": "So it's a long roadmap. I don't think that this stuff is going to get finished in the next couple of quarters or anything like that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "智能眼镜",
+        "is_new_topic": true,
+        "question_summary": "Ray-Ban这条线，怎样把和EssilorLuxottica的关系做深？最让人兴奋的合作领域是什么？",
+        "answer_summary": "Mark（CEO）：EssilorLuxottica是很好的伙伴。Ray-Ban Meta眼镜已经是第二代，表现好于他的预期。他们本来就预期这一代会比第一代有意义地增长，所以这是正向的意外。一部分原因是它刚好接上正在发生的人工智能，能提供很多新功能。这家公司产品线很多，他希望继续合作做新的几代眼镜，并把人工智能产品做深、做更好。相对此前的预期，它做得相当好；相对要成为真正领先的消费电子，仍处于早期，但信号都是好的。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有说明合作会加深到股权、独家或具体新品类。他只说希望一起做后续几代眼镜，并把人工智能功能做深。",
+        "tone": "positive",
+        "answer_quote": "They're doing well, better than I think we had expected, and we expected them to grow meaningfully from the first generation so that's been a very positive surprise.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Ron Josey",
+        "firm": "Citi",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "公司并不提供公有云。开源和Llama 3.1怎样变成可以给其他公司用的产品，例如客服、呼叫中心或其他行业应用？企业服务的产品愿景是什么？",
+        "answer_summary": "Mark（CEO）：Llama是基础模型，可以被做成各种产品。公司自己的Meta AI、AI Studio、商业智能体，以及Ray-Ban眼镜里的助手，都是用Llama做的，外部开发者也可以拿去做成更多东西。开源的价值，是确保有领先的基础设施来支撑消费者和商业体验。基础设施是生态，包括把模型蒸馏到想要的尺寸、更好的微调、更高效的推理、芯片公司的优化，以及还没想到的方法。如果只留在内部，它对公司自己做产品的价值就会小得多。因此不需要自建云、直接出售，这个策略就成立。这次发布里亚马逊云做得尤其好，Databricks、英伟达、微软Azure和谷歌云也在支持，希望开发者在任何地方都能用，而不是被锁进某一朵只提供封闭模型的云。企业侧最专注的，除了广告体验，就是商业智能体。他预期未来每家企业至少有一个、甚至多个智能体，从帮助购买到售后。劳动力成本低的国家里，人们通过消息与企业互动已经相当有效；在很多国家人工回答所有问题很贵，而这正是人工智能适合做的。使用平台的企业有数亿家，若能让它们把信息、目录、历史和内容快速放进智能体，再叠加商务团队的定制和生态对Llama的投入，这会很大。",
+        "new_numbers": [
+          {
+            "number": "数亿家",
+            "meaning": "使用公司平台、可被接入商业智能体的企业数量级"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有说公司会向其他企业出售呼叫中心或客服软件。他说明开源是为了生态，企业侧重点是平台上的商业智能体，而不是自建云。",
+        "tone": "positive",
+        "answer_quote": "So that's the business strategy around that. And that's why we don't feel like we need to necessarily build a cloud and sell it directly in order for it to be a really positive business strategy for us.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "如果有一天模型规模化停下，前面还有五年的产品工作。除了智能体和人工智能助手，这五年的路线图还在看哪些人工智能方向？",
+        "answer_summary": "Mark（CEO）：如果以后没有新的基础模型，行业仍会有大量产品创新，而且需要时间。但实际上会有新的基础模型，它们会解锁新能力。公司不是按技术不再进步来排产品，而是围着这些新模型来排。Llama 4、Llama 5以及更后面的代际，会按路线图最需要的能力来做：Meta AI要有足够广的用处；企业、创作者和个人能搭起任何想要的智能体；实时、多模态的眼镜会一直戴在身上，对正在做的事越来越有用；人们发现内容、与朋友互动、企业触达用户这些已有的大用途也会变得更好。技术可用和产品被充分做出来之间有时滞。他用这来说明，这块还会有很长时间的创新。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "问题问的是智能体和助手之外的五年产品方向。他主要仍落在Meta AI、各类智能体、多模态眼镜，以及现有的内容发现和广告，没有另列新品类。",
+        "tone": "positive",
+        "answer_quote": "To the contrary, we are planning what's going to be in Llama 4 and Llama 5 and beyond based on what capabilities we think are going to be most important for the roadmap that I just laid out, for having the breadth of utility that you're going to need in something like Meta AI, making it so that businesses and creators and individuals can stand up any kind of AI agents that they want, that you're going to have these kind of real-time, multimodal glasses with you all the time that will just be increasingly useful for all the things that you're doing.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "分析师提出一组训练和推理的芯片规模，并问即便下一代训练只用其中一部分，仍有大量产能可做推理和未来产品。公司怎样在训练、推理和后续事项之间规划整条资本开支路线？",
+        "answer_summary": "Susan（CFO）：公司显然正在建大量产能。Mark已经讲过前几代和下一代Llama的训练需求，这推动了他们所说的2025年资本开支显著增长。现在还不适合分享更长期的展望。每一个在建的数据中心，都会想它整个寿命里怎么用：先按后续几代Llama的训练容量来设计，再看投入使用几年后，能不能转到核心业务，以及生成式产品未来的推理需求。单个数据中心的用途可以从一开始的生成式训练，到生成式推理，再到核心广告和内容排序推荐，还要考虑不同用途用什么服务器。做任何一个项目，都是在很宽的用途范围上作映射。时间跨度长，是因为数据中心建设周期长；每个数据中心的寿命里又有多个决策点，包括何时订服务器、订哪种、用来做什么。这使公司可以按将来掌握的信息做决定。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有确认分析师提出的训练芯片规模、年底可用规模和下一代训练规模，也没有给出训练、推理和未来产品之间的资本开支拆分。",
+        "tone": "cautious",
+        "answer_quote": "So we are really mapping across a wide range of potential use cases when we undertake any given project.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "AI 产品与模型": 4,
+      "产能与资本开支": 3,
+      "需求与出货": 1,
+      "产品结构": 1,
+      "指引与展望": 1,
+      "用户与参与": 1,
+      "商业与购物": 1,
+      "费用与运营": 1,
+      "智能眼镜": 1
+    },
+    "new_topics": [
+      "商业与购物",
+      "智能眼镜",
+      "用户与参与",
+      "需求与出货"
+    ],
+    "dropped_topics": [
+      "客户与订单",
+      "竞争格局"
+    ],
+    "hot_topics": [
+      "产能与资本开支",
+      "需求与出货",
+      "用户与参与"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "资本开支要同时覆盖下一代模型的新基础设施和算力。投资哲学是什么，有什么护栏能保证这些资本开支给投资者带来健康的投入资本回报？",
+        "answer_summary": "Susan（CFO）：她把人工智能投资分成核心人工智能和生成式人工智能两桶，两者带动收入的阶段不同，衡量回报的能力也不同。核心人工智能继续按投资回报来投。参与度和广告效果的改善已经转化成收入，回报仍然强，继续投是合理的。生成式人工智能早得多。她不预期这些产品在2024年成为有意义的收入驱动，但预期它们会逐步打开新的收入机会，从而在开源后续代际Llama的同时，为投入赚回扎实回报。四个重点是加强核心广告、做大商业消息、Meta AI，以及随时间提高核心参与度。基础设施建设考虑可替换：生成式训练的产能可以做生成式推理，加上通用计算和存储后也可以做排序和推荐。数据中心分阶段推进，需要时可以更快扩容，同时限制更远年份锁定的支出。因此尽管预期2025年资本开支显著增长，她认为已经有框架判断机会在哪里，并保有按最合适用途去部署的弹性。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出投资回报率的数字门槛，也没有资本开支上限。她说明了两桶投资的阶段差异和产能可替换，但没有把回报落成可以核对的比率。",
+        "tone": "cautious",
+        "answer_quote": "So while we do expect that we are going to grow CapEx significantly in 2025, we feel like we have a good framework in place in terms of thinking about where the opportunities are and making sure that we have the flexibility to deploy it as makes the most sense.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "消息和Threads这些更新、更快的部分，参与度增长和长期变现怎么搭配？最想靠什么把规模做起来，再拉回到变现？",
+        "answer_summary": "Mark（CEO）：WhatsApp在美国的进展是经营上的重要趋势，因为美国在公司收入里的权重大于用户权重。以前WhatsApp在很多国家领先，但不是在美国。现在美国用量起来，跨平台沟通和群组体验被更多人认可，以后把这块业务做大就会多一股东风。Threads的起步几乎是他能想到的最好的之一，也是最快到1亿人的应用，但从那里到10亿人仍要多年。这是公司的产品周期：先发布，放量，再把消费者体验做成很大的业务，中间是多年。公司做了20年，能长成10亿人应用的机会很少。Threads月活跃接近2亿，是好的里程碑，离成为业务里很大的一块还有大量工作。\nSusan（CFO）：近处的展示量增长，她预期下半年仍然来自视频。Instagram上Reels继续带动增长；Facebook上总视频时长增长，同时短视频占比提高，从而有更多展示机会。各应用的社区也会继续增长。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出WhatsApp或Threads的变现时间表和收入规模。Mark把从放量到变成大业务说成多年。Susan只补充了下半年展示量仍来自视频。",
+        "tone": "positive",
+        "answer_quote": "And it's a good reminder that even when you have that start, the path from there to 1 billion people using an app is still multiple years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Doug Anmuth",
+        "firm": "J.P. Morgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "基础设施和资本开支已经不只为Llama 3和Llama 4，而在往更后面的代际准备，且Llama 4的算力约为Llama 3的10倍。如此提前建设，会怎样影响多年的资本开支曲线？",
+        "answer_summary": "Susan（CFO）：更长周期的资本开支轨迹，公司没有给过展望。一部分原因是基础设施现在是非常动态的规划，生成式人工智能路线图在这段时间里的范围还在定。预期明年会显著增加人工智能基础设施投入，合适的时候再给进一步指引。建设时仍考虑弹性，使产能能按需要投到核心人工智能和生成式人工智能。核心人工智能的回报可以更快衡量，生成式人工智能则是对机会有信心。她没有按10倍算力或更后面的代际，去描述多年支出曲线的形状。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有描述多年资本开支曲线的形状，也没有给出Llama 4或更后面代际对应的支出金额。她只说明年显著增加人工智能基础设施投入，并在合适时再给指引。",
+        "tone": "cautious",
+        "answer_quote": "We haven't really shared an outlook sort of on the longer-term CapEx trajectory.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Doug Anmuth",
+        "firm": "J.P. Morgan",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "第三季展望虽然有更难的基数，但按分析师的测算，固定汇率下高端只比本季减速约1个百分点。还有什么更具体的因素在支撑这个强度？",
+        "answer_summary": "Susan（CFO）：平台上的全球广告需求仍然健康，广告效果也在持续改善，这是很多个季度的工作累积下来的，还会继续累积到平台上。第二季收入增22%，各地区、各行业普遍较强，中小广告主尤其强，她预期这种情况大体延续到第三季。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回应固定汇率下高端只减速约1个百分点的测算，也没有给出第三季同比增速。她说明的是需求健康、效果改善，以及中小广告主的强势会延续。",
+        "tone": "positive",
+        "answer_quote": "And we saw basically in Q2 where revenue grew 22%, that there was broad-based strength across regions and verticals including particular strength among smaller advertisers, and we expect that generally to continue into Q3.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "用户与参与",
+        "is_new_topic": true,
+        "question_summary": "美国年轻成人用户增长，尤其是Facebook和Instagram，这些人在应用里做什么？使用量增长有没有量化？",
+        "answer_summary": "Susan（CFO）：近几年Facebook团队的核心优先事项就是按年轻成人来做产品，这些努力已经转化成这个人群的参与度增长。美国和加拿大的年轻成人应用使用量，过去几个季度都是健康增长。小组和Marketplace在年轻成人里特别有牵引。美国和加拿大向小组发帖在增长，主要就是年轻成人带动的。他们也是Marketplace的活跃用户，产品改进和美国二手商品的强需求都有帮助。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出年轻用户使用量的同比或环比数字，也没有把Facebook和Instagram拆开量化。",
+        "tone": "positive",
+        "answer_quote": "We've seen healthy growth in young adult app usage in the U.S. and Canada for the past several quarters.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "商业与购物",
+        "is_new_topic": true,
+        "question_summary": "Marketplace很大，但变现偏低，甚至可能只是间接变现。以后打算怎样变现，以及怎样顺便提高Marketplace本身的质量？",
+        "answer_summary": "Susan（CFO）：Marketplace是年轻成人走强的原因之一，也是更广的商务策略里的一条。整体仍是把平台上的购物体验做好。Marketplace面向消费者。商务策略更广的部分，是让企业更容易投放产品广告，让买家更容易发现并购买相关商品。Shops广告收入同比以强劲速度增长，给广告主带来增量效果，和Advantage+ Shopping等产品搭配也有效。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有说明Marketplace会不会直接收费，或怎样提高它自身的变现和质量，转而讲整体购物体验和Shops广告。",
+        "tone": "positive",
+        "answer_quote": "Shops ads revenue is growing at a strong year-over-year pace.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "人数同比大约降1%，已经回到大幅裁员之前的水平附近。以后人数增长该怎么看，是温和还是显著？资本开支在显著增加，人数会不会跟着明显增加？",
+        "answer_summary": "Susan（CFO）：新的人数会继续有纪律地投到公司的核心优先事项，同时也在消化此前招聘没有完成的缺口。随着今年进一步补上这个缺口，她预期2024年末在职、对外报告的人数会明显高于2023年末。2025年的人数增长预期还没有，因为预算还没开始做。招聘仍会主要对准优先方向，人数流程会非常有纪律。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出2024年人数增幅，也明确说预算还没开始，因此不提供2025年人数预期。分析师说人数同比大约降1%，她没有确认。",
+        "tone": "cautious",
+        "answer_quote": "And as we further close that hiring underrun over the course of this year, I do expect that we will end 2024 with in-seat reported headcount that is meaningfully higher than where we ended 2023.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "用Llama 3.1做的人工智能助手已经很强，看起来接近一个几乎什么都能查的搜索引擎，但商业查询还除外。有没有计划对更广的网页开放，或接到第三方市场做商业搜索？",
+        "answer_summary": "Mark（CEO）：他对Llama 3.1的落地非常兴奋。从第一代，到去年还落后前沿一代的Llama 2，再到现在基本能竞争、在某些方面领先其他顶级封闭模型的Llama 3.1。Meta AI用的是Llama 3.1的一个版本，再加上其他服务，做成完整产品。使用趋势有了，但还要加很多东西。商业等功能可以一个垂直一个垂直地做，最后才是理想的人工智能助手。这是很长的路线图，不是接下来几个季度能做完的，而是未来几年把它做成被广泛使用的服务。Llama是产品的引擎并且开源，两边的进展他都看好。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有明确说会不会对全网开放，或接入第三方市场做商业搜索。他只说商业等垂直功能要在未来几年逐步补上。",
+        "tone": "positive",
+        "answer_quote": "So it's a long roadmap. I don't think that this stuff is going to get finished in the next couple of quarters or anything like that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "智能眼镜",
+        "is_new_topic": true,
+        "question_summary": "Ray-Ban这条线，怎样把和EssilorLuxottica的关系做深？最让人兴奋的合作领域是什么？",
+        "answer_summary": "Mark（CEO）：EssilorLuxottica是很好的伙伴。Ray-Ban Meta眼镜已经是第二代，表现好于他的预期。他们本来就预期这一代会比第一代有意义地增长，所以这是正向的意外。一部分原因是它刚好接上正在发生的人工智能，能提供很多新功能。这家公司产品线很多，他希望继续合作做新的几代眼镜，并把人工智能产品做深、做更好。相对此前的预期，它做得相当好；相对要成为真正领先的消费电子，仍处于早期，但信号都是好的。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有说明合作会加深到股权、独家或具体新品类。他只说希望一起做后续几代眼镜，并把人工智能功能做深。",
+        "tone": "positive",
+        "answer_quote": "They're doing well, better than I think we had expected, and we expected them to grow meaningfully from the first generation so that's been a very positive surprise.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Ron Josey",
+        "firm": "Citi",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "公司并不提供公有云。开源和Llama 3.1怎样变成可以给其他公司用的产品，例如客服、呼叫中心或其他行业应用？企业服务的产品愿景是什么？",
+        "answer_summary": "Mark（CEO）：Llama是基础模型，可以被做成各种产品。公司自己的Meta AI、AI Studio、商业智能体，以及Ray-Ban眼镜里的助手，都是用Llama做的，外部开发者也可以拿去做成更多东西。开源的价值，是确保有领先的基础设施来支撑消费者和商业体验。基础设施是生态，包括把模型蒸馏到想要的尺寸、更好的微调、更高效的推理、芯片公司的优化，以及还没想到的方法。如果只留在内部，它对公司自己做产品的价值就会小得多。因此不需要自建云、直接出售，这个策略就成立。这次发布里亚马逊云做得尤其好，Databricks、英伟达、微软Azure和谷歌云也在支持，希望开发者在任何地方都能用，而不是被锁进某一朵只提供封闭模型的云。企业侧最专注的，除了广告体验，就是商业智能体。他预期未来每家企业至少有一个、甚至多个智能体，从帮助购买到售后。劳动力成本低的国家里，人们通过消息与企业互动已经相当有效；在很多国家人工回答所有问题很贵，而这正是人工智能适合做的。使用平台的企业有数亿家，若能让它们把信息、目录、历史和内容快速放进智能体，再叠加商务团队的定制和生态对Llama的投入，这会很大。",
+        "new_numbers": [
+          {
+            "number": "数亿家",
+            "meaning": "使用公司平台、可被接入商业智能体的企业数量级"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有说公司会向其他企业出售呼叫中心或客服软件。他说明开源是为了生态，企业侧重点是平台上的商业智能体，而不是自建云。",
+        "tone": "positive",
+        "answer_quote": "So that's the business strategy around that. And that's why we don't feel like we need to necessarily build a cloud and sell it directly in order for it to be a really positive business strategy for us.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "如果有一天模型规模化停下，前面还有五年的产品工作。除了智能体和人工智能助手，这五年的路线图还在看哪些人工智能方向？",
+        "answer_summary": "Mark（CEO）：如果以后没有新的基础模型，行业仍会有大量产品创新，而且需要时间。但实际上会有新的基础模型，它们会解锁新能力。公司不是按技术不再进步来排产品，而是围着这些新模型来排。Llama 4、Llama 5以及更后面的代际，会按路线图最需要的能力来做：Meta AI要有足够广的用处；企业、创作者和个人能搭起任何想要的智能体；实时、多模态的眼镜会一直戴在身上，对正在做的事越来越有用；人们发现内容、与朋友互动、企业触达用户这些已有的大用途也会变得更好。技术可用和产品被充分做出来之间有时滞。他用这来说明，这块还会有很长时间的创新。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "问题问的是智能体和助手之外的五年产品方向。他主要仍落在Meta AI、各类智能体、多模态眼镜，以及现有的内容发现和广告，没有另列新品类。",
+        "tone": "positive",
+        "answer_quote": "To the contrary, we are planning what's going to be in Llama 4 and Llama 5 and beyond based on what capabilities we think are going to be most important for the roadmap that I just laid out, for having the breadth of utility that you're going to need in something like Meta AI, making it so that businesses and creators and individuals can stand up any kind of AI agents that they want, that you're going to have these kind of real-time, multimodal glasses with you all the time that will just be increasingly useful for all the things that you're doing.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "分析师提出一组训练和推理的芯片规模，并问即便下一代训练只用其中一部分，仍有大量产能可做推理和未来产品。公司怎样在训练、推理和后续事项之间规划整条资本开支路线？",
+        "answer_summary": "Susan（CFO）：公司显然正在建大量产能。Mark已经讲过前几代和下一代Llama的训练需求，这推动了他们所说的2025年资本开支显著增长。现在还不适合分享更长期的展望。每一个在建的数据中心，都会想它整个寿命里怎么用：先按后续几代Llama的训练容量来设计，再看投入使用几年后，能不能转到核心业务，以及生成式产品未来的推理需求。单个数据中心的用途可以从一开始的生成式训练，到生成式推理，再到核心广告和内容排序推荐，还要考虑不同用途用什么服务器。做任何一个项目，都是在很宽的用途范围上作映射。时间跨度长，是因为数据中心建设周期长；每个数据中心的寿命里又有多个决策点，包括何时订服务器、订哪种、用来做什么。这使公司可以按将来掌握的信息做决定。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有确认分析师提出的训练芯片规模、年底可用规模和下一代训练规模，也没有给出训练、推理和未来产品之间的资本开支拆分。",
+        "tone": "cautious",
+        "answer_quote": "So we are really mapping across a wide range of potential use cases when we undertake any given project.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "Q2收入390.71亿美元增22.1%，营业利润率38.0%",
+    "key_findings": [
+      {
+        "finding": "第二季总收入390.71亿美元，同比增22.1%、环比增7.2%，广告展示量和平均单价都增10%。",
+        "text": "第二季总收入390.71亿美元，同比增22.1%、环比增7.2%，广告展示量和平均单价都增10%。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "GAAP营业利润率38.0%，同比升8.6个百分点、环比升0.1个百分点；营业利润148.47亿美元，同比增58.1%。",
+        "text": "GAAP营业利润率38.0%，同比升8.6个百分点、环比升0.1个百分点；营业利润148.47亿美元，同比增58.1%。",
+        "evidence": "operating_margin_gaap"
+      },
+      {
+        "finding": "指标表自由现金流111.97亿美元，同比仅增0.2%；电话会口述109亿美元。资本开支指标表81.73亿美元，口述含融资租赁本金为85亿美元。",
+        "text": "指标表自由现金流111.97亿美元，同比仅增0.2%；电话会口述109亿美元。资本开支指标表81.73亿美元，口述含融资租赁本金为85亿美元。",
+        "evidence": "fcf"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2024Q3总收入是否落在385亿至410亿美元",
+        "threshold": "385亿至410亿美元"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "下次电话会给出的2024年全年资本开支指引是否仍为370亿至400亿美元",
+        "threshold": "370亿至400亿美元"
+      },
+      {
+        "metric_key": "opex_gaap",
+        "condition": "下次电话会给出的2024年全年总费用指引是否仍为960亿至990亿美元",
+        "threshold": "960亿至990亿美元"
+      },
+      {
+        "metric_key": "fcf",
+        "condition": "FY2024Q3自由现金流同比增速是否仍不低于0",
+        "threshold": "同比增速大于或等于0"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "FY2024Q3 GAAP营业利润率同比是否仍上升",
+        "threshold": "同比变动大于0个百分点"
+      }
+    ]
   },
   "thesis_review": {}
 }
