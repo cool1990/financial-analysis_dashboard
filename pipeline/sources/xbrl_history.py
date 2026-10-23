@@ -129,6 +129,22 @@ CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment"]
 def quarterly_statements(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
     """合并各科目。键是季度结束日。"""
     revenue = quarterly_values(facts, REVENUE_TAGS, "USD")
+    # 银行常年没有单季 Revenues。BAC 的 Revenues = 净利息收入 + 非利息收入，分毫不差。
+    # 只有该季没有收入事实时才相加，避免和已有 Revenues 重复计算。
+    nii = quarterly_values(facts, ["InterestIncomeExpenseNet"], "USD")
+    noninterest = quarterly_values(facts, ["NoninterestIncome"], "USD")
+    for end in set(nii) & set(noninterest):
+        if end in revenue:
+            continue
+        left, right = nii[end], noninterest[end]
+        if left.get("value") is None or right.get("value") is None:
+            continue
+        revenue[end] = {
+            "value": left["value"] + right["value"],
+            "source_quote": f"{left['source_quote']} + {right['source_quote']}",
+            "tag": "InterestIncomeExpenseNet+NoninterestIncome",
+            "derived": True,
+        }
     cost = quarterly_values(facts, COST_OF_REVENUE_TAGS, "USD")
     oi = quarterly_values(facts, OI_TAGS, "USD")
     ni = quarterly_values(facts, NI_TAGS, "USD")

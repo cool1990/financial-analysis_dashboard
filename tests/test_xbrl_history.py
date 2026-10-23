@@ -53,6 +53,24 @@ def test_quarterly_prefers_single_quarter_and_does_not_residual_eps():
     assert series[date(2016, 6, 30)]["ocf"]["derived"] is True
 
 
+def test_bank_revenue_is_net_interest_plus_noninterest_when_revenues_missing():
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "InterestIncomeExpenseNet": {"units": {"USD": [_row("2026-04-01", "2026-06-30", 10)]}},
+                "NoninterestIncome": {"units": {"USD": [_row("2026-04-01", "2026-06-30", 7)]}},
+                "Revenues": {"units": {"USD": [_row("2026-01-01", "2026-03-31", 99)]}},
+            }
+        }
+    }
+    series = quarterly_statements(facts)
+    derived = series[date(2026, 6, 30)]["revenue"]
+    assert derived["value"] == 17
+    assert derived["derived"] is True
+    assert series[date(2026, 3, 31)]["revenue"]["value"] == 99
+    assert series[date(2026, 3, 31)]["revenue"]["derived"] is False
+
+
 def test_gross_margin_is_revenue_minus_cost_over_revenue():
     facts = {
         "facts": {
