@@ -603,7 +603,7 @@ if (page.epsChart) {
   var color = function (name) { return css.getPropertyValue(name).trim(); };
   Chart.defaults.font.family = color('--font') || 'system-ui';
   Chart.defaults.font.size = 12;
-  var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
+  var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', unknown: color('--st-watch') || '#9a6b12', muted: color('--muted') || '#898781' };
   var views = {
     eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: spec.unit || epsUnit, money: function (v) { var unit = spec.unit || epsUnit; var mark = spec.mark || (unit === '人民币' ? '¥' : '$'); return mark + Number(v).toFixed(2); } }
   };
