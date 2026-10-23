@@ -7,7 +7,9 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from pipeline.earnings_config import resolve_earnings_spec
-from pipeline.extract.currency_guard import apply_currency_guard
+from pipeline.extract.currency_guard import apply_currency_guard, currency_prompt_note
+from pipeline.extract.numbers import ParsedAmount
+from pipeline.validate import validate_extraction
 from pipeline.sources.earnings_6k import (
     classify_6k,
     exhibit_descriptions_from_html,
@@ -162,6 +164,127 @@ def test_currency_guard_drops_ntd_only_amounts():
     assert any("NT$" in warning for warning in warnings)
 
 
+_Q4_LEAD = (
+    "TSMC today announced consolidated revenue of NT$1,046.09 billion, net income of NT$505.74 billion, "
+    "and diluted earnings per share of NT$19.50 (US$3.14 per ADR unit) for the fourth quarter ended December 31, 2025. "
+    "And, based on the exchange rate assumption of 1 US dollar to 31.6 NT dollars, "
+    "gross profit margin is expected to be between 63% and 65%."
+)
+
+
+def test_currency_prompt_tells_model_to_prefer_adr_eps():
+    note = currency_prompt_note("USD")
+    assert "US$y.yy per ADR" in note
+    assert "不要用汇率" in note
+
+
+def test_currency_guard_prefers_official_adr_usd_over_ntd_eps():
+    extracted = {
+        "eps_gaap_diluted": {
+            "raw": "19.50",
+            "source_quote": "diluted earnings per share of NT$19.50",
+        }
+    }
+    warnings = apply_currency_guard(extracted, _Q4_LEAD, "USD")
+    node = extracted["eps_gaap_diluted"]
+    assert node["raw"] == "3.14"
+    assert "US$3.14 per ADR" in node["source_quote"]
+    assert "NT$19.50" in node["source_quote"]
+    assert ParsedAmount.from_dict(node, is_eps=True).value == 3.14
+    assert not any("已清空" in warning for warning in warnings)
+    assert any("US$3.14 per ADR" in warning and "不做汇率换算" in warning for warning in warnings)
+    # 31.6 的汇率假设不能拿来把 19.50 换成 0.62 或约 3.09
+    assert node["raw"] not in {"0.62", "3.09", "3.08"}
+
+
+def test_currency_guard_fills_eps_when_quote_was_truncated_to_ntd():
+    extracted = {
+        "eps_gaap_diluted": {
+            "raw": None,
+            "unit": None,
+            "source_quote": "diluted earnings per share of NT$19.50",
+        }
+    }
+    apply_currency_guard(extracted, _Q4_LEAD, "USD")
+    node = extracted["eps_gaap_diluted"]
+    assert node["raw"] == "3.14"
+    assert node["source_quote"].startswith("diluted earnings per share of NT$19.50 (US$3.14 per ADR")
+
+
+def test_currency_guard_does_not_fx_convert_without_adr_dollar():
+    extracted = {
+        "eps_gaap_diluted": {
+            "raw": "19.50",
+            "source_quote": "diluted earnings per share of NT$19.50",
+        }
+    }
+    text = (
+        "diluted earnings per share of NT$19.50. "
+        "exchange rate assumption of 1 US dollar to 31.6 NT dollars"
+    )
+    warnings = apply_currency_guard(extracted, text, "USD")
+    assert extracted["eps_gaap_diluted"]["raw"] is None
+    assert any("已清空" in warning for warning in warnings)
+    assert not any("3.14" in warning or "汇率换算" in warning for warning in warnings)
+
+
+def test_currency_guard_uses_diluted_sentence_not_a_later_adr_figure():
+    text = (
+        "diluted earnings per share of NT$19.50 (US$3.14 per ADR unit) for the fourth quarter. "
+        "Illustration only US$9.99 per ADR unit"
+    )
+    extracted = {"eps_gaap_diluted": {"raw": None, "source_quote": "NT$19.50"}}
+    apply_currency_guard(extracted, text, "USD")
+    assert extracted["eps_gaap_diluted"]["raw"] == "3.14"
+    assert "9.99" not in extracted["eps_gaap_diluted"]["source_quote"]
+
+
+def test_v2_compares_share_count_to_ntd_eps_when_value_is_adr_usd():
+    quote = "diluted earnings per share of NT$19.50 (US$3.14 per ADR unit) for the fourth quarter ended December 31, 2025"
+    extracted = {
+        "net_income_gaap": {"raw": "505744", "unit": "millions", "source_quote": "Net income 505,744"},
+        "diluted_shares": {"raw": "25931", "unit": "millions", "source_quote": "25,931 million weighted average outstanding shares"},
+        "eps_gaap_diluted": {"raw": "3.14", "source_quote": quote},
+    }
+    checked = validate_extraction(extracted, f"{quote} Net income 505,744 25,931 million")
+    assert not any(item.startswith("V2:") for item in checked["warnings"])
+
+
+def test_v2_still_flags_adr_usd_when_quote_has_no_ordinary_eps():
+    extracted = {
+        "net_income_gaap": {"raw": "505744", "unit": "millions", "source_quote": "Net income 505,744"},
+        "diluted_shares": {"raw": "25931", "unit": "millions", "source_quote": "25,931 million"},
+        "eps_gaap_diluted": {"raw": "3.14", "source_quote": "US$3.14 per ADR unit"},
+    }
+    checked = validate_extraction(extracted, "Net income 505,744 US$3.14 per ADR unit 25,931 million")
+    assert any(item.startswith("V2:") and "GAAP EPS=" in item for item in checked["warnings"])
+
+
+def test_tsm_press_releases_resolve_to_official_adr_eps():
+    from pipeline.extract.press_release import load_press_release
+
+    expected = {
+        "FY2024Q4": "2.24",
+        "FY2025Q1": "2.12",
+        "FY2025Q2": "2.47",
+        "FY2025Q3": "2.92",
+        "FY2025Q4": "3.14",
+        "FY2026Q1": "3.49",
+        "FY2026Q2": "4.31",
+        "FY2026Q3": "4.60",
+    }
+    from pipeline import ROOT
+
+    root = ROOT / "data" / "TSM" / "raw"
+    for period, usd in expected.items():
+        parsed = load_press_release(root / period / "press_release.html")
+        extracted = {"eps_gaap_diluted": {"raw": "19.50", "source_quote": "diluted earnings per share of NT$19.50"}}
+        apply_currency_guard(extracted, parsed["combined"], "USD")
+        node = extracted["eps_gaap_diluted"]
+        assert node["raw"] == usd, period
+        assert f"US${usd} per ADR" in node["source_quote"]
+
+
 def test_detect_new_filings_adr_uses_6k_not_8k(monkeypatch, tmp_path):
     from pipeline.commands import run_cmd
     from pipeline import state
@@ -266,6 +389,7 @@ def test_homepage_marks_tsm_as_adr(tmp_path, monkeypatch):
     page = (tmp_path / "stocks" / "TSM" / "index.html").read_text(encoding="utf-8")
     assert 'class="stage-badge s-adr"' in index
     assert ">TSM</a> <span" in index and ">ADR</span>" in index
-    assert "不是 8-K Item 2.02" in page
+    # 有财季后个股页是业绩页；「不是 8-K」写在首页 ADR 徽章上。
+    assert "不是 8-K Item 2.02" in index
     assert "USD" in page and "taiwan_ifrs" in page
     assert "SEC 6-K" in page or "6-K" in page

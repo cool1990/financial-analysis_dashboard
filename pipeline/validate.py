@@ -8,6 +8,7 @@ from typing import Any
 from rapidfuzz import fuzz
 
 from pipeline.config import load_settings
+from pipeline.extract.currency_guard import ordinary_share_eps
 from pipeline.extract.numbers import ParsedAmount, raw_in_text
 
 
@@ -44,13 +45,22 @@ def validate_extraction(
             needs_review = True
 
     # V2: net_income / shares ≈ eps
+    # ADR 美元 EPS 与台币净利润不是同一口径；引文里的 NT$ 普通股 EPS 才用来核对。
     ni = ParsedAmount.from_dict(extracted.get("net_income_gaap"))
     shares = ParsedAmount.from_dict(extracted.get("diluted_shares"))
-    eps = ParsedAmount.from_dict(extracted.get("eps_gaap_diluted"), is_eps=True)
-    if ni.value is not None and shares.value is not None and eps.value is not None and shares.value != 0:
+    eps_node = extracted.get("eps_gaap_diluted")
+    eps = ParsedAmount.from_dict(eps_node if isinstance(eps_node, dict) else None, is_eps=True)
+    ordinary = ordinary_share_eps(eps_node if isinstance(eps_node, dict) else None)
+    compare_eps = ordinary if ordinary is not None else eps.value
+    if ni.value is not None and shares.value is not None and compare_eps is not None and shares.value != 0:
         implied = ni.value / shares.value
-        if abs(implied - eps.value) > 0.02:
-            warnings.append(f"V2: NI/Shares={implied:.4f} 与 GAAP EPS={eps.value} 差 > 0.02")
+        if abs(implied - compare_eps) > 0.02:
+            if ordinary is not None:
+                warnings.append(
+                    f"V2: NI/Shares={implied:.4f} 与引文中的 NT$ 普通股 EPS={ordinary:.4f} 差 > 0.02"
+                )
+            else:
+                warnings.append(f"V2: NI/Shares={implied:.4f} 与 GAAP EPS={eps.value} 差 > 0.02")
 
     # V3
     tol = settings["validation"]["eps_provider_tolerance"]
