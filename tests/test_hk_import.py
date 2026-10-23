@@ -701,7 +701,8 @@ def test_tencent_expect_chart_converts_tv_hkd_with_live_hkdcny():
 
     from builder.build import _load_docs, _reported_expect_chart
 
-    doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q1.json").read_text(encoding="utf-8"))
+    # 未来季只画在最新一页。main 回补后最新页是 FY2026Q2，FQ3 2026 仍是第一季未公布预期。
+    doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q2.json").read_text(encoding="utf-8"))
     scan = json.loads((ROOT / "data" / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
     rate = json.loads((ROOT / "data" / "fx" / "HKDCNY.json").read_text(encoding="utf-8"))["rates"]["2026-10-23"]["rate"]
     chart = _reported_expect_chart(doc, _load_docs("0700.HK"))
@@ -732,7 +733,7 @@ def test_expect_chart_shows_pending_when_hkdcny_is_missing(monkeypatch):
     import builder.build as build
 
     monkeypatch.setattr(build, "_quote_fx", lambda *args, **kwargs: None)
-    doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q1.json").read_text(encoding="utf-8"))
+    doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q2.json").read_text(encoding="utf-8"))
     chart = build._reported_expect_chart(doc, build._load_docs("0700.HK"))
     eps = {row["label"]: row for row in chart["quarters"]}
     revenue = {row["label"]: row for row in chart["revenue"]["quarters"]}
