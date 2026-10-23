@@ -357,33 +357,19 @@ table.data .sub-line { display: block; font-size: 12px; color: var(--muted); whi
 .basis { font-size: 11px; color: var(--muted); margin-left: 4px; }
 
 /* ---- 财务解读：每个指标一行，点开看原因 ---- */
-.fin-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
-.fin-toggle { align-self: center; }
-details.ev > summary .fin-toggle button { font-size: 13px; }
-.split-card { padding-bottom: 12px; }
-.split-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-right: 12px; }
-.split-list { list-style: none; margin: 0; padding: 0 14px; display: grid; gap: 8px; }
-.split-child { padding-left: 12px; }
-.split-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: baseline; }
-.split-name { font-weight: 550; }
-.split-name small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
-.split-chg { grid-column: 1 / -1; font-size: 12px; color: var(--ink-2); }
-.split-extra, .split-note { margin: 2px 14px 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+.mix-note { margin: 8px 2px 0; line-height: 1.55; }
+.fin-readout { margin: 6px 0 0; font-size: 12px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.fin-drivers { margin-top: 12px; display: grid; gap: 10px; }
 .rows { padding: 2px 0; }
-.mrow-head, details.mrow > summary {
+.mrow-head, button.mrow {
   display: grid; grid-template-columns: 1.35fr .8fr .7fr .7fr .8fr 2.6fr; gap: 12px;
   padding: 9px 16px; align-items: start; font-variant-numeric: tabular-nums;
 }
 .mrow-head { font-size: 12px; color: var(--muted); padding-top: 10px; padding-bottom: 6px; }
-details.mrow { border-top: 1px solid var(--grid); }
-details.mrow > summary { cursor: pointer; list-style: none; }
-details.mrow > summary::-webkit-details-marker { display: none; }
-details.mrow > summary:hover { background: var(--surface-2); }
-details.mrow[open] > summary { background: var(--surface-2); }
+button.mrow { width: 100%; border: 0; border-top: 1px solid var(--grid); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+button.mrow:hover, button.mrow[aria-pressed="true"] { background: var(--surface-2); }
 .m-name { font-weight: 500; }
-.m-name::before { content: "▸"; color: var(--muted); display: inline-block; width: 14px; transition: transform .15s; }
 .nest { color: var(--muted); font-style: normal; font-weight: 400; margin-right: 6px; }
-details[open] > summary .m-name::before { transform: rotate(90deg); }
 .m-val { font-weight: 600; }
 .m-sum { color: var(--ink-2); line-height: 1.55; }
 .m-label { display: none; font-style: normal; color: var(--muted); font-size: 11.5px; margin-right: 4px; }
@@ -402,7 +388,7 @@ blockquote {
 .conflict { color: var(--st-alert); font-size: 12.5px; }
 @media (max-width: 760px) {
   .mrow-head { display: none; }
-  details.mrow > summary { grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+  button.mrow { grid-template-columns: 1fr 1fr; gap: 4px 12px; }
   .m-name, .m-sum { grid-column: 1 / -1; }
   .m-label { display: inline; }
   .m-body { padding-left: 16px; }
@@ -410,8 +396,14 @@ blockquote {
 
 /* ---- 图 ---- */
 .charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.charts.fin-charts[data-cols="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.charts.fin-charts[data-cols="1"] { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 1040px) { .charts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 700px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 700px) {
+  .charts,
+  .charts.fin-charts[data-cols="2"],
+  .charts.fin-charts[data-cols="1"] { grid-template-columns: minmax(0, 1fr); }
+}
 .chart { padding: 14px 14px 10px; min-width: 0; }
 .chart h3 { font-size: 14.5px; }
 .chart .c-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }

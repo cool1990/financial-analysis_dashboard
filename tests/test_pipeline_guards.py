@@ -304,15 +304,17 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert 'id="quality"' not in meta_html and 'id="thesis"' not in meta_html and 'class="card verdict"' not in meta_html
     assert "市场怎么判" not in meta_html and "阶段1" not in meta_html
     assert "财报分析" in meta_html and '<details class="ev" id="fin" open>' in meta_html
-    assert "财务数据" in meta_html and "业务拆分" in meta_html and 'class="fin-layout"' in meta_html
-    assert 'data-fin="statements"' in meta_html and 'data-fin="split"' in meta_html
-    assert 'data-fin-panel="split" hidden' in meta_html
+    assert "财报分析" in meta_html and 'data-fin="split"' not in meta_html
     assert "rev-horizons" not in meta_html and "revHorizons" not in meta_html
-    assert "按业务" in meta_html and "按地理" in meta_html
+    assert 'data-fin-metric="revenue"' in meta_html and "按业务" in meta_html and "按地区" in meta_html
+    assert "毛利构成" in meta_html and "费用构成" in meta_html
+    assert "营业费用" in meta_html and "$38.24B" in meta_html
+    assert "FY2016Q1" in meta_html and "$63.06B" in meta_html and "应用家族" in meta_html
+    assert "财务数据" not in meta_html and "业务拆分" not in meta_html
     assert "股份数量" in meta_html and "存货周转天数" in meta_html and "应收账款周转天数" in meta_html
     assert "预收账款周转天数" in meta_html and "未披露" in meta_html
     assert 'class="nest"' not in meta_html and "└" not in meta_html
-    assert "广告" in meta_html and "应用家族" in meta_html and "本季新闻稿没有按地区列示收入" in meta_html
+    assert "广告" in meta_html and "应用家族" in meta_html and "美国和加拿大" in meta_html
     assert "估值与技术" not in meta_html and 'class="card quote-card"' not in meta_html
     assert 'class="metric-strip"' in meta_html and 'id="forward-pe"' in meta_html
     assert 'data-expect="eps"' in meta_html and 'data-expect="revenue"' in meta_html
@@ -769,9 +771,13 @@ def test_fin_rows_pair_margins_with_absolute_profit():
     assert labels[labels.index("毛利率（GAAP）") + 1] == "毛利润（GAAP）"
     assert "毛利润（Non-GAAP）" not in labels
     op = labels.index("营业利润率（GAAP）")
+    assert labels.index("营业费用") < op
     assert labels[op + 1 : op + 4] == ["营业利润（GAAP）", "净利润率（GAAP）", "净利润（GAAP）"]
     assert labels.index("净利润率（GAAP）") > labels.index("营业利润率（Non-GAAP）")
     by = {row["label"]: row for row in _fin_rows(meta)}
+    assert by["营业费用"]["value"] == "$38.24B"
+    assert by["营业费用"]["yoy"]["text"] == "+77.9%"
+    assert by["营业费用"]["qoq"]["text"] == "+24.6%"
     assert by["毛利润（GAAP）"]["nested"] is False and by["毛利润（GAAP）"]["value"] == "$51.23B"
     assert by["毛利润（GAAP）"]["yoy"]["text"] == "+21.9%" and by["毛利润（GAAP）"]["qoq"]["text"] == "+3.6%"
     assert by["营业利润（GAAP）"]["value"] == "$12.99B"
