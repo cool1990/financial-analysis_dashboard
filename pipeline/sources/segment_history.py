@@ -146,7 +146,11 @@ def _quarter_anchor(fiscal_year: int, fiscal_quarter: int, fiscal_year_end_month
 
 
 def fiscal_quarter_key(end: str, fiscal_year_end_month: int) -> tuple[int, int] | None:
-    """结束日所属财季。离该季月末超过 20 天的不算，避免把任意区间当成财季。"""
+    """结束日所属财季。离该季月末超过 35 天的不算，避免把任意区间当成财季。
+
+    35 天盖住 52/53 周财年：季末经常落在名义月末前大约四周（例如 11 月财年的 1 月 29 日、8 月 2 日）。
+    相邻季月末大约相距 90 天，35 天的窗口不会叠到下一季。
+    """
     try:
         day = date.fromisoformat(str(end)[:10])
     except ValueError:
@@ -162,7 +166,7 @@ def fiscal_quarter_key(end: str, fiscal_year_end_month: int) -> tuple[int, int] 
     if best is None:
         return None
     month_end = _quarter_month_end(best[0], best[1], fiscal_year_end_month)
-    if abs((day - month_end).days) > 20:
+    if abs((day - month_end).days) > 35:
         return None
     return best
 

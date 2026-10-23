@@ -117,6 +117,17 @@ def _label_segment_rows(
     return labeled
 
 
+def _geo_matches_revenue(revenue: int | float | None, lines: list[dict[str, Any]]) -> bool:
+    """地区合计对不上营收时留空，不把残缺的轴成员当成完整拆分。"""
+    if revenue is None or not lines:
+        return False
+    total = sum(float(line.get("value") or 0) for line in lines)
+    base = abs(float(revenue))
+    if base == 0:
+        return total == 0
+    return abs(total - float(revenue)) / base <= 0.02
+
+
 def _series_node(series: dict[date, dict[str, Any]], end: date) -> tuple[int | float | None, str | None]:
     node = series.get(end)
     if not node or node.get("value") is None:
@@ -177,6 +188,11 @@ def _statement_quarters(
             opex_lines.append({"key": line_key, "name": line_name, "value": value})
         opex = _whole(sum(float(line["value"]) for line in opex_lines)) if len(opex_lines) == len(OPEX_SPECS) else None
         geo_row = (geo_best.get(period) or (None, None))[1]
+        geo_lines = None if geo_row is None else _clean_lines(geo_row.get("lines") or [], keep_tree=False)
+        geo_method = None if geo_row is None else geo_row.get("method") or ""
+        if geo_lines and not _geo_matches_revenue(rev_value, geo_lines):
+            geo_lines = []
+            geo_method = "mismatch"
         record = {
             "period": period,
             "end": end.isoformat(),
@@ -187,8 +203,8 @@ def _statement_quarters(
             "gross_profit": gross,
             "opex_lines": opex_lines,
             "opex": opex,
-            "geo": None if geo_row is None else _clean_lines(geo_row.get("lines") or [], keep_tree=False),
-            "geo_method": None if geo_row is None else geo_row.get("method") or "",
+            "geo": geo_lines,
+            "geo_method": geo_method,
         }
         prev = by_period.get(period)
         if prev is None or distance < prev[0]:
@@ -361,6 +377,17 @@ def refresh_history(
     latest = latest_accession(rows)
     segment_filings, geo_filings, warnings = collect_filings(sec, str(cfg["cik"]), rows)
     facts = sec.company_facts(str(cfg["cik"]))
+    from pipeline.sources.xbrl_history import merge_instance_gaap
+
+    instance_ends: set[date] = set()
+    for item in segment_filings:
+        instance_ends |= merge_instance_gaap(
+            facts,
+            item.get("gaap_rows") or [],
+            form=str(item.get("form") or ""),
+            filed=str(item.get("filed") or item.get("filing_date") or "")[:10],
+            accession=str(item.get("accession") or ""),
+        )
     stamp = generated_at or _now_stamp()
     documents = build_history_documents(
         ticker,
@@ -373,6 +400,9 @@ def refresh_history(
         start=start,
     )
     paths = _write_documents(ticker, documents)
+    from pipeline.commands.backfill_cmd import write_xbrl_history
+
+    periods = write_xbrl_history(ticker, start=start, facts=facts, instance_ends=instance_ends)
     segment = documents["segment_history"]
     return {
         "ticker": ticker.upper(),
@@ -384,6 +414,7 @@ def refresh_history(
         "statement_quarters": len(documents["statement_history"].get("quarters") or []),
         "warnings": warnings,
         "paths": paths,
+        "periods_written": periods.get("written") or [],
     }
 
 

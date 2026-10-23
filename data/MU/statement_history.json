@@ -1,19 +1,826 @@
 {
   "ticker": "MU",
-  "source": "金额来自 data/MU 各季 Stage1 JSON（不联网、不调模型）。营业收入取 financials.revenue；有毛利或毛利率时写入毛利。营业成本留给建站时从新闻稿或毛利率倒算，以便保留同比环比。缺季度文件或字段时留空。地区拆分未写入 period JSON，geo 留空。",
-  "currency": "USD",
-  "unit": "美元",
+  "cik": "0000723125",
+  "source": "营收、营业成本、研发、销售、管理费用来自 SEC companyfacts 的单季 us-gaap。毛利为营收减营业成本，申报没有单独的毛利科目，也没有把营业成本再拆开。地区收入来自 10-Q/10-K XBRL 的地区轴。第四季没有单季事实时用全年减前九个月；地区口径对不上时留空。",
+  "generated_at": "2026-10-23T14:21:23Z",
+  "latest_accession": "0000723125-26-000023",
   "quarters": [
+    {
+      "period": "FY2016Q2",
+      "end": "2016-03-03",
+      "revenue": 2934000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2355000000,
+      "cost_method": "xbrl",
+      "gross_profit": 579000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 403000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2016Q3",
+      "end": "2016-06-02",
+      "revenue": 2898000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2400000000,
+      "cost_method": "xbrl",
+      "gross_profit": 498000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 382000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2016Q4",
+      "end": "2016-09-01",
+      "revenue": 3217000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2638000000,
+      "cost_method": "residual",
+      "gross_profit": 579000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 411000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2017Q1",
+      "end": "2016-12-01",
+      "revenue": 3970000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2959000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1011000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 470000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2017Q2",
+      "end": "2017-03-02",
+      "revenue": 4648000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2944000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1704000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 473000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2017Q3",
+      "end": "2017-06-01",
+      "revenue": 5566000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2957000000,
+      "cost_method": "xbrl",
+      "gross_profit": 2609000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 434000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2017Q4",
+      "end": "2017-08-31",
+      "revenue": 6138000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3026000000,
+      "cost_method": "residual",
+      "gross_profit": 3112000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 447000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2018Q1",
+      "end": "2017-11-30",
+      "revenue": 6803000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3056000000,
+      "cost_method": "xbrl",
+      "gross_profit": 3747000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 448000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2018Q2",
+      "end": "2018-03-01",
+      "revenue": 7351000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3081000000,
+      "cost_method": "xbrl",
+      "gross_profit": 4270000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 523000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2018Q3",
+      "end": "2018-05-31",
+      "revenue": 7797000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3074000000,
+      "cost_method": "xbrl",
+      "gross_profit": 4723000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 603000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2018Q4",
+      "end": "2018-08-30",
+      "revenue": 8440000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3289000000,
+      "cost_method": "residual",
+      "gross_profit": 5151000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 567000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2019Q1",
+      "end": "2018-11-29",
+      "revenue": 7913000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3298000000,
+      "cost_method": "xbrl",
+      "gross_profit": 4615000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 611000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2019Q2",
+      "end": "2019-02-28",
+      "revenue": 5835000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2971000000,
+      "cost_method": "xbrl",
+      "gross_profit": 2864000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 601000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2019Q3",
+      "end": "2019-05-30",
+      "revenue": 4788000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 2960000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1828000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 606000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2019Q4",
+      "end": "2019-08-29",
+      "revenue": 4870000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3475000000,
+      "cost_method": "residual",
+      "gross_profit": 1395000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 623000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2020Q1",
+      "end": "2019-11-28",
+      "revenue": 5144000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3778000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1366000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 640000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2020Q2",
+      "end": "2020-02-27",
+      "revenue": 4797000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3442000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1355000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 681000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2020Q3",
+      "end": "2020-05-28",
+      "revenue": 5438000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3675000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1763000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 649000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2020Q4",
+      "end": "2020-09-03",
+      "revenue": 6056000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3988000000,
+      "cost_method": "residual",
+      "gross_profit": 2068000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 630000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2021Q1",
+      "end": "2020-12-03",
+      "revenue": 5773000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4037000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1736000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 647000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2021Q2",
+      "end": "2021-03-04",
+      "revenue": 6236000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4587000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1649000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 641000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2021Q3",
+      "end": "2021-06-03",
+      "revenue": 7422000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4296000000,
+      "cost_method": "xbrl",
+      "gross_profit": 3126000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 670000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2021Q4",
+      "end": "2021-09-02",
+      "revenue": 8274000000,
+      "revenue_method": "residual",
+      "cost_of_revenue": 4362000000,
+      "cost_method": "residual",
+      "gross_profit": 3912000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 705000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2022Q1",
+      "end": "2021-12-02",
+      "revenue": 7687000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4122000000,
+      "cost_method": "xbrl",
+      "gross_profit": 3565000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 712000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2022Q2",
+      "end": "2022-03-03",
+      "revenue": 7786000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4110000000,
+      "cost_method": "xbrl",
+      "gross_profit": 3676000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 792000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2022Q3",
+      "end": "2022-06-02",
+      "revenue": 8642000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4607000000,
+      "cost_method": "xbrl",
+      "gross_profit": 4035000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 773000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2022Q4",
+      "end": "2022-09-01",
+      "revenue": 6643000000,
+      "revenue_method": "residual",
+      "cost_of_revenue": 4021000000,
+      "cost_method": "residual",
+      "gross_profit": 2622000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 839000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2023Q1",
+      "end": "2022-12-01",
+      "revenue": 4085000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 3192000000,
+      "cost_method": "xbrl",
+      "gross_profit": 893000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 849000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2023Q2",
+      "end": "2023-03-02",
+      "revenue": 3693000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4899000000,
+      "cost_method": "xbrl",
+      "gross_profit": -1206000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 788000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2023Q3",
+      "end": "2023-06-01",
+      "revenue": 3752000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4420000000,
+      "cost_method": "xbrl",
+      "gross_profit": -668000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 758000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2023Q4",
+      "end": "2023-08-31",
+      "revenue": 4010000000,
+      "revenue_method": "residual",
+      "cost_of_revenue": 4445000000,
+      "cost_method": "residual",
+      "gross_profit": -435000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 719000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2024Q1",
+      "end": "2023-11-30",
+      "revenue": 4726000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4761000000,
+      "cost_method": "xbrl",
+      "gross_profit": -35000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 845000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2024Q2",
+      "end": "2024-02-29",
+      "revenue": 5824000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4745000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1079000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 832000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2024Q3",
+      "end": "2024-05-30",
+      "revenue": 6811000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 4979000000,
+      "cost_method": "xbrl",
+      "gross_profit": 1832000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 850000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2024Q4",
+      "end": "2024-08-29",
+      "revenue": 7750000000,
+      "revenue_method": "residual",
+      "cost_of_revenue": 5013000000,
+      "cost_method": "residual",
+      "gross_profit": 2737000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 903000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2025Q1",
+      "end": "2024-11-28",
+      "revenue": 8709000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 5361000000,
+      "cost_method": "xbrl",
+      "gross_profit": 3348000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 888000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2025Q2",
+      "end": "2025-02-27",
+      "revenue": 8053000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 5090000000,
+      "cost_method": "xbrl",
+      "gross_profit": 2963000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 898000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2025Q3",
+      "end": "2025-05-29",
+      "revenue": 9301000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 5793000000,
+      "cost_method": "xbrl",
+      "gross_profit": 3508000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 965000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2025Q4",
+      "end": "2025-08-28",
+      "revenue": 11315000000,
+      "revenue_method": "residual",
+      "cost_of_revenue": 6261000000,
+      "cost_method": "residual",
+      "gross_profit": 5054000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 1047000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2026Q1",
+      "end": "2025-11-27",
+      "revenue": 13643000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 5997000000,
+      "cost_method": "xbrl",
+      "gross_profit": 7646000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 1171000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2026Q2",
+      "end": "2026-02-26",
+      "revenue": 23860000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 6105000000,
+      "cost_method": "xbrl",
+      "gross_profit": 17755000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 1250000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
+    {
+      "period": "FY2026Q3",
+      "end": "2026-05-28",
+      "revenue": 41456000000,
+      "revenue_method": "xbrl",
+      "cost_of_revenue": 6400000000,
+      "cost_method": "xbrl",
+      "gross_profit": 35056000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 1316000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
+    },
     {
       "period": "FY2026Q4",
       "end": "2026-09-03",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 54229000000,
-      "revenue_method": "period",
-      "cost_of_revenue": null,
-      "cost_method": "missing",
-      "gross_profit": 47047000000
+      "revenue_method": "residual",
+      "cost_of_revenue": 7182000000,
+      "cost_method": "residual",
+      "gross_profit": 47047000000,
+      "opex_lines": [
+        {
+          "key": "rd",
+          "name": "研发",
+          "value": 1913000000
+        }
+      ],
+      "opex": null,
+      "geo": null,
+      "geo_method": null
     }
   ]
 }

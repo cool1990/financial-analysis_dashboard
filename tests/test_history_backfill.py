@@ -128,3 +128,36 @@ def test_adr_extend_does_not_replace_slide_revenue_or_invent_fx_net_income():
     hpc = next(row for row in segment["quarters"] if row["period"] == "FY2024Q1")
     assert hpc["lines"][0]["key"] == "hpc"
     assert next(row for row in segment["quarters"] if row["period"] == "FY2016Q1")["lines"] == []
+
+
+def test_instance_gaap_fills_a_quarter_missing_from_companyfacts():
+    from pipeline.sources.xbrl_history import merge_instance_gaap, parse_instance_gaap, quarterly_values, REVENUE_TAGS
+
+    xml = """<?xml version="1.0"?>
+    <xbrl xmlns:us-gaap="http://fasb.org/us-gaap/2024">
+      <context id="q">
+        <period><startDate>2026-04-01</startDate><endDate>2026-06-30</endDate></period>
+      </context>
+      <context id="seg">
+        <period><startDate>2026-04-01</startDate><endDate>2026-06-30</endDate></period>
+        <segment><explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:UnitedStatesMember</explicitMember></segment>
+      </context>
+      <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="q" unitRef="usd">4146000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+      <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="seg" unitRef="usd">100</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    </xbrl>
+    """.encode()
+    rows = parse_instance_gaap(xml)
+    assert rows == [{"tag": "RevenueFromContractWithCustomerExcludingAssessedTax", "start": "2026-04-01", "end": "2026-06-30", "val": 4_146_000_000.0, "unit": "USD"}]
+    facts = {"facts": {"us-gaap": {}}}
+    added = merge_instance_gaap(facts, rows, form="10-Q", filed="2026-07-30", accession="000")
+    assert date(2026, 6, 30) in added
+    parsed = quarterly_values(facts, REVENUE_TAGS, "USD")
+    assert parsed[date(2026, 6, 30)]["value"] == 4_146_000_000
+
+
+def test_geo_that_does_not_add_up_to_revenue_is_cleared():
+    from pipeline.commands.history_cmd import _geo_matches_revenue
+
+    assert _geo_matches_revenue(100, [{"value": 60}, {"value": 40}])
+    assert not _geo_matches_revenue(4_171_000_000, [{"value": 2_625_000_000}, {"value": 221_000_000}])
+    assert not _geo_matches_revenue(None, [{"value": 1}])

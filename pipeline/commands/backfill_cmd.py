@@ -33,15 +33,24 @@ def _block(node: dict[str, Any] | None, *, yoy: float | None, qoq: float | None,
     return block
 
 
-def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, Any]:
-    """用 companyfacts 回补单季 GAAP。已有季度 JSON 一律跳过，只补缺季。"""
+def write_xbrl_history(
+    ticker: str,
+    *,
+    start: str = "2016-01-01",
+    facts: dict[str, Any] | None = None,
+    instance_ends: set[date] | None = None,
+) -> dict[str, Any]:
+    """用 companyfacts 回补单季 GAAP。已有季度 JSON 一律跳过，只补缺季。
+
+    instance_ends 里的结束日来自 10-Q/10-K 实例，因为 companyfacts 还没有这季。
+    """
     cfg = load_ticker_config(ticker)
     if is_hk_listing(cfg):
         raise RuntimeError(f"{ticker} listing=hk，不用 SEC companyfacts 回补")
     if not cfg.get("cik"):
         raise RuntimeError("请先运行 init")
     start_d = date.fromisoformat(start)
-    facts = SecEdgarClient().company_facts(cfg["cik"])
+    facts = facts if facts is not None else SecEdgarClient().company_facts(cfg["cik"])
     series = quarterly_statements(facts)
     ends = sorted(end for end in series if end >= start_d)
     by_end = {end: series[end] for end in ends}
@@ -131,6 +140,8 @@ def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, A
             "毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。"
             "第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
         ]
+        if instance_ends and end in instance_ends:
+            warnings.append("companyfacts 还没有这一季，数字来自已下载的 10-Q/10-K XBRL 实例，不是估算。")
         doc["status"] = {"stage": "backfill_gaap", "needs_review": False, "warnings": warnings}
         doc["drivers"] = {"stage": 0, "metrics": [], "status": "历史回补不含变动原因"}
         save_period_json(ticker, period, doc)
