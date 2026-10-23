@@ -1005,8 +1005,12 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance():
     assert row["change"]["text"] == "—"
     assert row["revenue"]["label"] == "beat 2.0%" and row["eps"]["label"] == "beat 13.1%"
     assert row["guide"]["label"] == "—"
-    assert row["reported"]["text"] == "2026-10-21 16:03"
+    assert row["reported"]["text"] == "2026-10-21"
+    assert "16:03" in row["reported"]["title"]
     assert row["next_text"].startswith("2027-01-27")
+    assert row["quarter"]["analysts"] == "—" and row["quarter"]["eps"] == "—"
+    assert row["quarter"]["revisions"] == "—"
+    assert row["quarter"]["signal"] == "无数据/财报驱动"
 
     mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
     mu_row = _index_row("MU", load_ticker_config("MU"), "FY2026Q4", mu, today=date(2026, 10, 23))
@@ -1014,7 +1018,8 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance():
     assert mu_row["eps"]["label"] == "beat 3.0%"
     assert mu_row["guide"]["label"] == "beat 11.1%"
     assert mu_row["quote_price"] == "—" and mu_row["forward_pe"] == "—" and mu_row["rsi"] == "—"
-    assert mu_row["reported"]["text"] == "2026-09-30 16:02"
+    assert mu_row["reported"]["text"] == "2026-09-30"
+    assert mu_row["quarter"]["signal"] == "无数据/财报驱动"
 
     labeled = _index_row(
         "MU",
@@ -1060,7 +1065,11 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert 'aria-label="按类型筛选"' in html and ">全部</button>" in html
     assert "beat 2.0%" in html and "beat 13.1%" in html and "beat 11.1%" in html
     assert "$73–76B" not in html and "$697.52" in html and "21.8×" in html and ">47.4<" in html
-    assert "2026-10-21 16:03" in html and "2026-09-30 16:02" in html
+    assert ">2026-10-21</td>" in html and ">2026-09-30</td>" in html
+    assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    assert "下季度" not in html and "温和上修" not in html and "温和下修" not in html
+    assert "无数据" in html and "ALPHAVANTAGE_API_KEY" in html
+    assert '<b>SNDK</b>' not in html and 'class="pool-name"' in html
     body = html.split("<tbody>", 1)[1]
     assert body.index("SNDK") < body.index("MCD") < body.index(">META<")
     # 没有类型配置时，类型筛选只保留「全部」
