@@ -205,6 +205,23 @@
       <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
       {% endif %}
     </section>
+    {% if guidance.dimensions %}
+    <section class="guide-part">
+      <h3>五档指引</h3>
+      {% for dim in guidance.dimensions %}
+      <h4>{{ dim.label }}</h4>
+      <div class="gtiles">
+        {% for card in dim.cards %}
+        <div class="card gtile">
+          <div class="g-k">{{ card.label }}{% if card.sub %}<small> · {{ card.sub }}</small>{% endif %}</div>
+          <div class="g-v{% if card.textual %} textual{% endif %}">{{ card.value }}</div>
+          {% if card.source %}<div class="g-s">{{ card.source }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
     <section class="guide-part">
       <h3>行业展望</h3>
       {% if guidance.outlook %}
@@ -841,7 +858,7 @@ function drawRowCharts() {
   Chart.defaults.font.size = 12;
   var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
   var views = {
-    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: {{ eps_unit|default('美元')|tojson }}, money: function (v) { var mark = {{ eps_unit|default('美元')|tojson }} === '人民币' ? '¥' : '$'; return mark + Number(v).toFixed(2); } }
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: spec.unit || {{ eps_unit|default('美元')|tojson }}, money: function (v) { var unit = spec.unit || {{ eps_unit|default('美元')|tojson }}; var mark = spec.mark || (unit === '人民币' ? '¥' : '$'); return mark + Number(v).toFixed(2); } }
   };
   if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
     views.revenue = {

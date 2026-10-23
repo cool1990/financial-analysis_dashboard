@@ -271,3 +271,53 @@ def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
     shown = {item["label"]: item["value"] for item in header["items"]}
     assert shown["股价"] == "HK$400.00"
     assert shown["市值"] == "HK$3600.0B"
+
+
+def test_tencent_press_statement_matches_meta_charts():
+    import json
+
+    from builder.build import _REPORTING_CCY, _fin_rows, _fin_view, _forward_pe_view, _load_docs
+    from pipeline.config import load_ticker_config
+    from pipeline.sources.tencent_statement import parse_tencent_statement
+
+    text = PRESS.read_text(encoding="utf-8")
+    statement, segment = parse_tencent_statement(text)
+    saved_statement = json.loads((ROOT / "data" / "0700.HK" / "statement_history.json").read_text(encoding="utf-8"))
+    saved_segment = json.loads((ROOT / "data" / "0700.HK" / "segment_history.json").read_text(encoding="utf-8"))
+    assert saved_statement["quarters"] == statement["quarters"]
+    assert saved_segment["quarters"] == segment["quarters"]
+    by_period = {row["period"]: row for row in statement["quarters"]}
+    current = by_period["FY2026Q1"]
+    assert current["revenue"] == 196_458_000_000
+    assert current["gross_profit"] == 111_265_000_000
+    assert current["cost_of_revenue"] == 85_193_000_000
+    assert current["opex"] == 45_143_000_000
+    assert current["geo"] == []
+    assert by_period["FY2025Q2"]["revenue"] is None
+    lines = {row["period"]: row["lines"] for row in segment["quarters"]}
+    assert [line["name"] for line in lines["FY2026Q1"]] == ["增值服务", "营销服务", "金融科技及企业服务", "其他"]
+    assert abs(sum(line["share_pct"] for line in lines["FY2026Q1"]) - 100) < 0.2
+    assert lines["FY2025Q2"] == []
+
+    view = _fin_view("0700.HK", "FY2026Q1")
+    charts = view["by_key"]["revenue"]["charts"]
+    assert [chart["title"] for chart in charts] == ["营业收入", "按业务", "按地区"]
+    assert charts[0]["subtitle"] == "十亿人民币"
+    assert charts[0]["amount"][charts[0]["labels"].index("FY2026Q1")] == 196.46
+    business = {point["period"]: point for point in charts[1]["points"]}
+    assert business["FY2026Q1"]["gap"] is False
+    assert business["FY2025Q2"]["gap"] is True
+    assert all(point["gap"] for point in charts[2]["points"])
+    assert [chart["title"] for chart in view["by_key"]["gross_margin_gaap"]["charts"]] == ["毛利"]
+    assert [chart["title"] for chart in view["by_key"]["opex"]["charts"]] == ["营业费用", "费用构成"]
+    token = _REPORTING_CCY.set("CNY")
+    try:
+        rows = {row["label"]: row for row in _fin_rows(json.loads((ROOT / "data" / "0700.HK" / "FY2026Q1.json").read_text(encoding="utf-8")), _load_docs("0700.HK"))}
+    finally:
+        _REPORTING_CCY.reset(token)
+    assert rows["营业费用"]["value"] == "¥45.14B"
+    assert "销售及市场推广" in rows["营业费用"]["summary"]
+
+    bare = _forward_pe_view("0700.HK", {"meta": {"ticker": "0700.HK", "fiscal_period": "FY2026Q1"}}, "FY2026Q1", load_ticker_config("0700.HK"), _load_docs("0700.HK"), True)
+    assert bare is not None and bare["price"] == "未接入"
+    assert "待核对" in bare["note"]

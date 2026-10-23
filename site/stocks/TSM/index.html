@@ -93,26 +93,39 @@
 </nav>
 
 <section class="dim" id="expect">
-  <div class="card expect-frame solo">
+  <div class="card expect-frame">
     <div class="expect-chart">
-      <h2>盈利预期 <small>竖线 = 财报前一致预期，圆点 = 实际或指引中值，刻度 ±15%</small></h2>
-      <div class="gap-rows">
-        <div class="gap">
-          <span class="g-lab">本季营收<small>实际 $46.72B</small></span>
-          <div class="track none"><span>缺一致预期</span></div>
-          <span class="g-val c-na">—</span>
-        </div>
-        <div class="gap">
-          <span class="g-lab">本季 EPS<small>实际 $4.60</small></span>
-          <div class="track none"><span>缺一致预期</span></div>
-          <span class="g-val c-na">—</span>
-        </div>
-        <div class="gap">
-          <span class="g-lab">下季营收指引<small>指引中值 $53.30B</small></span>
-          <div class="track none"><span>缺一致预期</span></div>
-          <span class="g-val c-na">—</span>
-        </div>
-<div class="gap axis"><span></span><div><span>-15%</span><span>0</span><span>+15%</span></div><span></span></div>      </div>
+      <h2>盈利预期
+        <span class="seg expect-toggle" role="group" aria-label="切换每股收益或营收">
+          <button type="button" data-expect="eps" aria-pressed="true">EPS</button>
+          <button type="button" data-expect="revenue" aria-pressed="false">营收</button>
+        </span>
+        <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比</small>
+      </h2>
+      <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
+      <p class="eps-note" id="expectNote">缺一致预期。浅蓝柱是已保存的实际，灰柱留空。 柱上是新闻稿写明的 US$4.60 per ADR，不是把新台币按平均汇率换算。普通股为 NT$29.43。记分卡若因只有台币引用被清空，仍用这句已披露的美元。</p>
+    </div>
+    <div class="expect-pe" id="forward-pe">
+      <h2>Forward PE <small>本财年与下财年按剩余月份加权</small></h2>
+      <div class="table-wrap">
+        <table class="data fp">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>EPS</th>
+              <th>P/E</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>近 4 季（TTM）</td>
+              <td>$15.54</td>
+              <td>待核对</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="eps-note">股价未接入，P/E 显示待核对，不估算股价。NTM 用当前财年与下一财年共识按剩余 3 个月加权。不足 4 个季度且缺少两个财年共识时不显示，避免把两个季度加总当成一年。 FY26E、FY27E、FY28E 没有全年共识，也凑不满四个季度，所以不显示。</p>
     </div>
   </div>
 </section>
@@ -121,7 +134,7 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">22 项指标 · 点指标看图</span>
+    <span class="ev-meta">23 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
@@ -136,7 +149,7 @@
       <span class="m-sum">收入同比增长50.9%，主要受领先制程技术强劲需求推动，2纳米开始放量。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar>
         <div class="fin-grain" role="group" aria-label="时间粒度">
           <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
           <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
@@ -144,22 +157,22 @@
       </div>
       <div class="charts fin-charts" data-fin-charts data-cols="3">
         <div class="card chart">
-          <h3>水平值</h3>
-          <p class="c-sub">本季水平</p>
-          <div class="c-body"><canvas data-metric="revenue" data-series="level" aria-label="水平值"></canvas></div>
+          <h3>营业收入</h3>
+          <p class="c-sub">十亿美元</p>
+          <div class="c-body"><canvas data-fin-kind="amount_yoy" data-fin-index="0" aria-label="营业收入"></canvas></div>
         </div>
         <div class="card chart">
-          <h3>环比</h3>
-          <p class="c-sub">较上一季</p>
-          <div class="c-body"><canvas data-metric="revenue" data-series="qoq" aria-label="环比"></canvas></div>
-        </div>
+          <h3>按业务</h3>
+          <p class="c-sub">占比</p>
+          <div class="c-body"><canvas data-fin-kind="share" data-fin-index="1" aria-label="按业务"></canvas></div>
+<p class="fin-readout" data-fin-readout="1" hidden></p>        </div>
         <div class="card chart">
-          <h3>同比</h3>
-          <p class="c-sub">较去年同季</p>
-          <div class="c-body"><canvas data-metric="revenue" data-series="yoy" aria-label="同比"></canvas></div>
-        </div>
+          <h3>按地区</h3>
+          <p class="c-sub">占比</p>
+          <div class="c-body"><canvas data-fin-kind="share" data-fin-index="2" aria-label="按地区"></canvas></div>
+<p class="fin-readout" data-fin-readout="2" hidden></p>        </div>
       </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
+      <p class="small muted mix-note" data-fin-note>美元营收取自财报幻灯片「Net Revenue (US$ billions)」当季列；该季白字为空时，用后一份幻灯片的上季或去年同季列，不取指引列。台币营业费用和净利润除以同一列的 Average Exchange Rate--USD/NTD 换成美元。毛利 = 美元营收 × 毛利率，营业利润 = 美元营收 × 营业利润率，营业成本 = 美元营收 − 毛利。1 ADR = 5 股普通股。普通股 EPS 为新台币。ADR 美元只取新闻稿写明的 US$ per ADR，不按当季平均汇率把新台币换算成美元。平台占比只取「nQyy Revenue by Platform」文字且合计约 100% 的季度，金额 = 占比 × 当季美元营收；全年页，以及只有图、文字里没有百分比的季度，不补数。地区收入在已保存文字里没有占比，geo 留空。不使用图像识别，不把新台币当成美元。 已保存的披露文字里没有地区收入，地区柱留空。 FY2023Q4、FY2024Q1、FY2024Q2、FY2024Q3、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q2、FY2026Q3 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。</p>
       <div class="fin-drivers">
         <div class="drv">
           <div class="drv-meta">
@@ -346,6 +359,25 @@
 <blockquote>Advanced technologies, defined as 7-nanometer and more advanced technologies, accounted for 79% of total wafer revenue.</blockquote>        </div>
       </div>
     </div>
+    <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
+      <span class="m-name">营业费用</span>
+      <span class="m-val num">$3.64B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+24.1%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+16.2%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">不含营业成本。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-opex" data-fin-panel="opex" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+    </div>
     <button type="button" class="mrow" data-fin-metric="operating_margin_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_nongaap">
       <span class="m-name">营业利润率（Non-GAAP）</span>
       <span class="m-val num">—</span>
@@ -438,7 +470,7 @@
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
       <span class="m-val num">$4.60</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+57.5%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
       <span class="m-sum">稀释 EPS 为 4.60 美元/ADR。新闻稿称稀释 EPS 同比增长 68.7%，主要受净利大幅增长驱动。</span>
@@ -694,6 +726,31 @@
       </div>
     </section>
     <section class="guide-part">
+      <h3>五档指引</h3>
+      <h4>业绩指标</h4>
+      <div class="gtiles">
+        <div class="card gtile">
+          <div class="g-k">营收<small> · 2026财年Q4</small></div>
+          <div class="g-v">$52.30B – $54.30B</div>
+<div class="g-s">新闻稿</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">毛利率<small> · 2026财年Q4</small></div>
+          <div class="g-v">65% – 67%</div>
+<div class="g-s">新闻稿</div>        </div>
+        <div class="card gtile">
+          <div class="g-k">营业利润率<small> · 2026财年Q4</small></div>
+          <div class="g-v">56.5% – 58.5%</div>
+<div class="g-s">新闻稿</div>        </div>
+      </div>
+      <h4>其他</h4>
+      <div class="gtiles">
+        <div class="card gtile">
+          <div class="g-k">Business outlook<small> · 2026财年Q4</small></div>
+          <div class="g-v textual">第四季度业务将受领先制程技术持续强劲需求支撑，包括2纳米技术的快…</div>
+<div class="g-s">新闻稿</div>        </div>
+      </div>
+    </section>
+    <section class="guide-part">
       <h3>行业展望</h3>
       <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
     </section>
@@ -888,7 +945,7 @@ function drawRowCharts() {
 </script>
 <script>
 (function () {
-  var view = {"by_key": {"cost_of_revenue": {"charts": [{"amount": [11.02, 10.52, 12.45, 13.41, 12.72, 12.13, 12.98, 15.7], "amount_text": ["$11.02B", "$10.52B", "$12.45B", "$13.41B", "$12.72B", "$12.13B", "$12.98B", "$15.70B"], "annual": {"amount": [49.09], "amount_text": ["$49.09B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, null, null, 15.4, 15.4, 4.3, 17.1]}], "note": "营业成本由营业收入减去毛利得到。没有把营业成本再拆开。"}}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "grain": false, "note": ""};
+  var view = {"by_key": {"cost_of_revenue": {"charts": [{"amount": [9.22, 8.85, null, 9.92, 11.02, 10.52, 12.45, 13.41, 12.72, 12.13, 12.98, 15.7], "amount_text": ["$9.22B", "$8.85B", null, "$9.92B", "$11.02B", "$10.52B", "$12.45B", "$13.41B", "$12.72B", "$12.13B", "$12.98B", "$15.70B"], "annual": {"amount": [49.09], "amount_text": ["$49.09B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, null, null, 19.5, 18.9, null, 35.2, 15.4, 15.4, 4.3, 17.1]}], "note": "营业成本由营业收入减去毛利得到。没有把营业成本再拆开。"}, "gross_margin_gaap": {"charts": [{"amount": [10.4, 10.02, null, 13.58, 15.86, 15.01, 17.62, 19.69, 21.01, 23.77, 27.22, 31.02], "amount_text": ["$10.40B", "$10.02B", null, "$13.58B", "$15.86B", "$15.01B", "$17.62B", "$19.69B", "$21.01B", "$23.77B", "$27.22B", "$31.02B"], "annual": {"amount": [73.34], "amount_text": ["$73.34B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "毛利", "yoy": [null, null, null, null, 52.5, 49.8, null, 45.0, 32.5, 58.3, 54.4, 57.5]}], "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。"}, "gross_margin_nongaap": {"charts": [{"amount": [10.4, 10.02, null, 13.58, 15.86, 15.01, 17.62, 19.69, 21.01, 23.77, 27.22, 31.02], "amount_text": ["$10.40B", "$10.02B", null, "$13.58B", "$15.86B", "$15.01B", "$17.62B", "$19.69B", "$21.01B", "$23.77B", "$27.22B", "$31.02B"], "annual": {"amount": [73.34], "amount_text": ["$73.34B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "毛利", "yoy": [null, null, null, null, 52.5, 49.8, null, 45.0, 32.5, 58.3, 54.4, 57.5]}], "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。"}, "opex": {"charts": [{"amount": [2.25, 2.08, null, 2.45, 2.67, 2.59, 2.72, 2.93, 2.84, 2.98, 3.13, 3.64], "amount_text": ["$2.25B", "$2.08B", null, "$2.45B", "$2.67B", "$2.59B", "$2.72B", "$2.93B", "$2.84B", "$2.98B", "$3.13B", "$3.64B"], "annual": {"amount": [11.09], "amount_text": ["$11.09B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业费用", "yoy": [null, null, null, null, 19.0, 24.5, null, 19.9, 6.4, 14.9, 15.1, 24.1]}], "note": "营业费用是已披露的合计，没有再拆成研发、销售和管理。不含营业成本。"}, "revenue": {"charts": [{"amount": [19.62, 18.87, null, 23.5, 26.88, 25.53, 30.07, 33.1, 33.73, 35.9, 40.2, 46.72], "amount_text": ["$19.62B", "$18.87B", null, "$23.50B", "$26.88B", "$25.53B", "$30.07B", "$33.10B", "$33.73B", "$35.90B", "$40.20B", "$46.72B"], "annual": {"amount": [122.43], "amount_text": ["$122.43B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业收入", "yoy": [null, null, null, null, 37.0, 35.3, null, 40.9, 25.5, 40.6, 33.7, 41.1]}, {"annual": null, "focus": "FY2026Q3", "kind": "share", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "$14.25B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 53.0, "stack": true, "value": 14246400000.0}, {"amount": "$9.41B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 35.0, "stack": true, "value": 9408000000.0}, {"amount": "$1.34B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1344000000.0}, {"amount": "$1.08B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1075200000.0}, {"amount": "$268.80M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 268800000.0}, {"amount": "$537.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 537600000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "$15.06B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 59.0, "stack": true, "value": 15062700000.0}, {"amount": "$7.15B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 28.0, "stack": true, "value": 7148400000.0}, {"amount": "$1.28B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$1.28B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$255.30M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 255300000.0}, {"amount": "$510.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 510600000.0}], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "$21.90B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 61.0, "stack": true, "value": 21899000000.0}, {"amount": "$9.33B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 26.0, "stack": true, "value": 9334000000.0}, {"amount": "$2.15B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 6.0, "stack": true, "value": 2154000000.0}, {"amount": "$1.44B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1436000000.0}, {"amount": "$359.00M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 359000000.0}, {"amount": "$718.00M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 718000000.0}], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2026Q3", "kind": "share", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按地区"}], "note": "美元营收取自财报幻灯片「Net Revenue (US$ billions)」当季列；该季白字为空时，用后一份幻灯片的上季或去年同季列，不取指引列。台币营业费用和净利润除以同一列的 Average Exchange Rate--USD/NTD 换成美元。毛利 = 美元营收 × 毛利率，营业利润 = 美元营收 × 营业利润率，营业成本 = 美元营收 − 毛利。1 ADR = 5 股普通股。普通股 EPS 为新台币。ADR 美元只取新闻稿写明的 US$ per ADR，不按当季平均汇率把新台币换算成美元。平台占比只取「nQyy Revenue by Platform」文字且合计约 100% 的季度，金额 = 占比 × 当季美元营收；全年页，以及只有图、文字里没有百分比的季度，不补数。地区收入在已保存文字里没有占比，geo 留空。不使用图像识别，不把新台币当成美元。 已保存的披露文字里没有地区收入，地区柱留空。 FY2023Q4、FY2024Q1、FY2024Q2、FY2024Q3、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q2、FY2026Q3 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"}}, "charts": [{"amount": [19.62, 18.87, null, 23.5, 26.88, 25.53, 30.07, 33.1, 33.73, 35.9, 40.2, 46.72], "amount_text": ["$19.62B", "$18.87B", null, "$23.50B", "$26.88B", "$25.53B", "$30.07B", "$33.10B", "$33.73B", "$35.90B", "$40.20B", "$46.72B"], "annual": {"amount": [122.43], "amount_text": ["$122.43B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业收入", "yoy": [null, null, null, null, 37.0, 35.3, null, 40.9, 25.5, 40.6, 33.7, 41.1]}, {"annual": null, "focus": "FY2026Q3", "kind": "share", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "$14.25B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 53.0, "stack": true, "value": 14246400000.0}, {"amount": "$9.41B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 35.0, "stack": true, "value": 9408000000.0}, {"amount": "$1.34B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1344000000.0}, {"amount": "$1.08B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1075200000.0}, {"amount": "$268.80M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 268800000.0}, {"amount": "$537.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 537600000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "$15.06B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 59.0, "stack": true, "value": 15062700000.0}, {"amount": "$7.15B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 28.0, "stack": true, "value": 7148400000.0}, {"amount": "$1.28B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$1.28B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$255.30M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 255300000.0}, {"amount": "$510.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 510600000.0}], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "$21.90B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 61.0, "stack": true, "value": 21899000000.0}, {"amount": "$9.33B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 26.0, "stack": true, "value": 9334000000.0}, {"amount": "$2.15B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 6.0, "stack": true, "value": 2154000000.0}, {"amount": "$1.44B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1436000000.0}, {"amount": "$359.00M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 359000000.0}, {"amount": "$718.00M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 718000000.0}], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2026Q3", "kind": "share", "labels": ["FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按地区"}], "default": "revenue", "grain": true, "note": "美元营收取自财报幻灯片「Net Revenue (US$ billions)」当季列；该季白字为空时，用后一份幻灯片的上季或去年同季列，不取指引列。台币营业费用和净利润除以同一列的 Average Exchange Rate--USD/NTD 换成美元。毛利 = 美元营收 × 毛利率，营业利润 = 美元营收 × 营业利润率，营业成本 = 美元营收 − 毛利。1 ADR = 5 股普通股。普通股 EPS 为新台币。ADR 美元只取新闻稿写明的 US$ per ADR，不按当季平均汇率把新台币换算成美元。平台占比只取「nQyy Revenue by Platform」文字且合计约 100% 的季度，金额 = 占比 × 当季美元营收；全年页，以及只有图、文字里没有百分比的季度，不补数。地区收入在已保存文字里没有占比，geo 留空。不使用图像识别，不把新台币当成美元。 已保存的披露文字里没有地区收入，地区柱留空。 FY2023Q4、FY2024Q1、FY2024Q2、FY2024Q3、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q2、FY2026Q3 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"};
   var history = [{"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 2.24, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": null, "eps_yoy": null, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.59, "gross_margin_gaap": 0.59, "gross_margin_gaap_qoq": null, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": null, "gross_margin_yoy": null, "gross_profit_gaap": 15859200000.0, "gross_profit_gaap_qoq": null, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.152, "net_income_gaap_yoy": 0.57, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 13171200000.0, "operating_income_gaap_qoq": null, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.49, "operating_margin_gaap": 0.49, "operating_margin_gaap_qoq": null, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": null, "operating_margin_yoy": null, "period": "FY2024Q4", "revenue": 26880000000.0, "revenue_qoq": null, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 2.12, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": -0.05357142857142862, "eps_yoy": null, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.588, "gross_margin_gaap": 0.588, "gross_margin_gaap_qoq": -0.002, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": -0.002, "gross_margin_yoy": null, "gross_profit_gaap": 15011640000.0, "gross_profit_gaap_qoq": -0.05344279661016949, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": -0.035, "net_income_gaap_yoy": 0.603, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 12382050000.0, "operating_income_gaap_qoq": -0.059914814139941694, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.485, "operating_margin_gaap": 0.485, "operating_margin_gaap_qoq": -0.005, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": -0.005, "operating_margin_yoy": null, "period": "FY2025Q1", "revenue": 25530000000.0, "revenue_qoq": -0.05022321428571429, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 2.47, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 0.16509433962264156, "eps_yoy": null, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.586, "gross_margin_gaap": 0.586, "gross_margin_gaap_qoq": -0.002, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": -0.002, "gross_margin_yoy": null, "gross_profit_gaap": 17621020000.0, "gross_profit_gaap_qoq": 0.17382377941384153, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.102, "net_income_gaap_yoy": 0.607, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 14914720000.0, "operating_income_gaap_qoq": 0.2045436741088915, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.496, "operating_margin_gaap": 0.496, "operating_margin_gaap_qoq": 0.011, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.011, "operating_margin_yoy": null, "period": "FY2025Q2", "revenue": 30070000000.0, "revenue_qoq": 0.17783000391696044, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 2.92, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 0.18218623481781365, "eps_yoy": null, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.595, "gross_margin_gaap": 0.595, "gross_margin_gaap_qoq": 0.009, "gross_margin_gaap_yoy": null, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.009, "gross_margin_yoy": null, "gross_profit_gaap": 19694500000.0, "gross_profit_gaap_qoq": 0.11767082722793573, "gross_profit_gaap_yoy": null, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.136, "net_income_gaap_yoy": 0.391, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 16748600000.0, "operating_income_gaap_qoq": 0.12295772230387161, "operating_income_gaap_yoy": null, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.506, "operating_margin_gaap": 0.506, "operating_margin_gaap_qoq": 0.01, "operating_margin_gaap_yoy": null, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.01, "operating_margin_yoy": null, "period": "FY2025Q3", "revenue": 33100000000.0, "revenue_qoq": 0.10076488194213502, "revenue_yoy": null, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 3.14, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 0.07534246575342472, "eps_yoy": 0.4017857142857142, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.623, "gross_margin_gaap": 0.623, "gross_margin_gaap_qoq": 0.028, "gross_margin_gaap_yoy": 0.033, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.028, "gross_margin_yoy": 0.033, "gross_profit_gaap": 21013789999.999996, "gross_profit_gaap_qoq": 0.06698773769326442, "gross_profit_gaap_yoy": 0.3250220692090393, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.118, "net_income_gaap_yoy": 0.35, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 18214200000.0, "operating_income_gaap_qoq": 0.08750582138208567, "operating_income_gaap_yoy": 0.3828808309037901, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.54, "operating_margin_gaap": 0.54, "operating_margin_gaap_qoq": 0.034, "operating_margin_gaap_yoy": 0.05, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.034, "operating_margin_yoy": 0.05, "period": "FY2025Q4", "revenue": 33729999999.999996, "revenue_qoq": 0.019033232628398677, "revenue_yoy": 0.25483630952380937, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 3.49, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 0.11146496815286627, "eps_yoy": 0.6462264150943396, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.662, "gross_margin_gaap": 0.662, "gross_margin_gaap_qoq": 0.039, "gross_margin_gaap_yoy": 0.074, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.039, "gross_margin_yoy": 0.074, "gross_profit_gaap": 23765800000.0, "gross_profit_gaap_qoq": 0.1309620967945337, "gross_profit_gaap_yoy": 0.583158135953167, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.132, "net_income_gaap_yoy": 0.583, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 20857900000.0, "operating_income_gaap_qoq": 0.14514499676076906, "operating_income_gaap_yoy": 0.6845271986464276, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.581, "operating_margin_gaap": 0.581, "operating_margin_gaap_qoq": 0.041, "operating_margin_gaap_yoy": 0.096, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.041, "operating_margin_yoy": 0.096, "period": "FY2026Q1", "revenue": 35900000000.0, "revenue_qoq": 0.06433442039727258, "revenue_yoy": 0.4061887974931453, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 4.31, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 0.2349570200573064, "eps_yoy": 0.7449392712550604, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.677, "gross_margin_gaap": 0.677, "gross_margin_gaap_qoq": 0.015, "gross_margin_gaap_yoy": 0.091, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": 0.015, "gross_margin_yoy": 0.091, "gross_profit_gaap": 27215400000.0, "gross_profit_gaap_qoq": 0.145149753006421, "gross_profit_gaap_yoy": 0.544484939010341, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.234, "net_income_gaap_yoy": 0.774, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 24240600000.0, "operating_income_gaap_qoq": 0.1621783592787385, "operating_income_gaap_yoy": 0.625280260038405, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.603, "operating_margin_gaap": 0.603, "operating_margin_gaap_qoq": 0.022, "operating_margin_gaap_yoy": 0.107, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": 0.022, "operating_margin_yoy": 0.107, "period": "FY2026Q2", "revenue": 40200000000.0, "revenue_qoq": 0.11977715877437325, "revenue_yoy": 0.3368806119055537, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}, {"capex": null, "capex_qoq": null, "capex_yoy": null, "deferred_days": null, "deferred_days_qoq": null, "deferred_days_yoy": null, "derived": false, "dio_days": null, "dio_days_qoq": null, "dio_days_yoy": null, "dso_days": null, "dso_days_qoq": null, "dso_days_yoy": null, "eps": 4.6, "eps_nongaap": null, "eps_nongaap_qoq": null, "eps_nongaap_yoy": null, "eps_qoq": 0.06728538283062646, "eps_yoy": 0.5753424657534246, "fcf": null, "fcf_qoq": null, "fcf_yoy": null, "gross_margin": 0.664, "gross_margin_gaap": 0.664, "gross_margin_gaap_qoq": -0.013, "gross_margin_gaap_yoy": 0.069, "gross_margin_nongaap": null, "gross_margin_nongaap_qoq": null, "gross_margin_nongaap_yoy": null, "gross_margin_qoq": -0.013, "gross_margin_yoy": 0.069, "gross_profit_gaap": 31022080000.0, "gross_profit_gaap_qoq": 0.13987227819543346, "gross_profit_gaap_yoy": 0.5751646398740765, "gross_profit_nongaap": null, "gross_profit_nongaap_qoq": null, "gross_profit_nongaap_yoy": null, "net_income_gaap": null, "net_income_gaap_qoq": 0.08, "net_income_gaap_yoy": 0.687, "net_income_nongaap": null, "net_income_nongaap_qoq": null, "net_income_nongaap_yoy": null, "net_margin_gaap": null, "net_margin_gaap_qoq": null, "net_margin_gaap_yoy": null, "net_margin_nongaap": null, "net_margin_nongaap_qoq": null, "net_margin_nongaap_yoy": null, "ocf": null, "ocf_qoq": null, "ocf_yoy": null, "operating_income_gaap": 27424640000.0, "operating_income_gaap_qoq": 0.13135153420294876, "operating_income_gaap_yoy": 0.6374288000191061, "operating_income_nongaap": null, "operating_income_nongaap_qoq": null, "operating_income_nongaap_yoy": null, "operating_margin": 0.587, "operating_margin_gaap": 0.587, "operating_margin_gaap_qoq": -0.016, "operating_margin_gaap_yoy": 0.081, "operating_margin_nongaap": null, "operating_margin_nongaap_qoq": null, "operating_margin_nongaap_yoy": null, "operating_margin_qoq": -0.016, "operating_margin_yoy": 0.081, "period": "FY2026Q3", "revenue": 46720000000.0, "revenue_qoq": 0.16218905472636816, "revenue_yoy": 0.4114803625377644, "share_count": null, "share_count_qoq": null, "share_count_yoy": null}];
   var live = [];
   var active = view.charts || [];
@@ -1236,6 +1293,122 @@ function drawRowCharts() {
   }
   box.addEventListener('toggle', drawInitial);
   drawInitial();
+})();
+</script>
+<script>
+(function () {
+  var spec = {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。 柱上是新闻稿写明的 US$4.60 per ADR，不是把新台币按平均汇率换算。普通股为 NT$29.43。记分卡若因只有台币引用被清空，仍用这句已披露的美元。", "quarters": [{"actual": 3.14, "basis": "GAAP", "consensus": null, "label": "FQ4 2025", "note": "同比 +40.2%", "note_cls": "beat", "yoy_pct": 40.178571428571416}, {"actual": 3.49, "basis": "GAAP", "consensus": null, "label": "FQ1 2026", "note": "同比 +64.6%", "note_cls": "beat", "yoy_pct": 64.62264150943395}, {"actual": 4.31, "basis": "GAAP", "consensus": null, "label": "FQ2 2026", "note": "同比 +74.5%", "note_cls": "beat", "yoy_pct": 74.49392712550605}, {"actual": 4.6, "basis": "GAAP", "consensus": null, "label": "FQ3 2026", "note": "同比 +57.5%", "note_cls": "beat", "yoy_pct": 57.53424657534245}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。", "quarters": [{"actual": 33.73, "basis": "营收", "consensus": null, "label": "FQ4 2025", "note": "同比 +25.5%", "note_cls": "beat", "yoy_pct": 25.48363095238093}, {"actual": 35.9, "basis": "营收", "consensus": null, "label": "FQ1 2026", "note": "同比 +40.6%", "note_cls": "beat", "yoy_pct": 40.61887974931453}, {"actual": 40.2, "basis": "营收", "consensus": null, "label": "FQ2 2026", "note": "同比 +33.7%", "note_cls": "beat", "yoy_pct": 33.68806119055536}, {"actual": 46.72, "basis": "营收", "consensus": null, "label": "FQ3 2026", "note": "同比 +41.1%", "note_cls": "beat", "yoy_pct": 41.14803625377643}, {"actual": null, "basis": "营收指引", "consensus": null, "label": "FQ4 2026", "note": "指引中值 $53.30B", "note_cls": "muted", "yoy_pct": null}], "sides": []}, "sides": []};
+  var canvas = document.getElementById('epsSurprise');
+  if (!canvas || typeof Chart === 'undefined' || !spec) return;
+  var css = getComputedStyle(document.documentElement);
+  var color = function (name) { return css.getPropertyValue(name).trim(); };
+  Chart.defaults.font.family = color('--font') || 'system-ui';
+  Chart.defaults.font.size = 12;
+  var noteColor = { beat: color('--st-ok') || '#0a7f0a', miss: color('--st-alert') || '#d03b3b', muted: color('--muted') || '#898781' };
+  var views = {
+    eps: { quarters: spec.quarters || [], hint: spec.hint || '', note: spec.note || '', unit: spec.unit || "美元", money: function (v) { var unit = spec.unit || "美元"; var mark = spec.mark || (unit === '人民币' ? '¥' : '$'); return mark + Number(v).toFixed(2); } }
+  };
+  if (spec.revenue && spec.revenue.quarters && spec.revenue.quarters.length) {
+    views.revenue = {
+      quarters: spec.revenue.quarters,
+      hint: spec.revenue.hint || '',
+      note: spec.revenue.note || '',
+      unit: "十亿美元",
+      money: function (v) { var mark = "十亿美元".indexOf('人民币') >= 0 ? '¥' : '$'; return mark + Number(v).toFixed(2) + 'B'; }
+    };
+  }
+  var chart = null;
+  function draw(name) {
+    var view = views[name] || views.eps;
+    var quarters = view.quarters;
+    if (chart) chart.destroy();
+    chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: quarters.map(function (q) { return q.label; }),
+        datasets: [
+          { type: 'bar', label: '一致预期', data: quarters.map(function (q) { return q.consensus; }), backgroundColor: '#4b5160', yAxisID: 'y', order: 2, maxBarThickness: 28 },
+          { type: 'bar', label: '实际', data: quarters.map(function (q) { return q.actual; }), backgroundColor: '#8ecae6', yAxisID: 'y', order: 1, maxBarThickness: 28 },
+          { type: 'line', label: '同比', data: quarters.map(function (q) { return q.yoy_pct; }), borderColor: '#f0a04b', backgroundColor: '#f0a04b', yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, order: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 18, bottom: 22 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var q = quarters[ctx.dataIndex] || {};
+                if (ctx.dataset.label === '同比') return q.yoy_pct == null ? '同比 —' : '同比 ' + (q.yoy_pct > 0 ? '+' : '') + q.yoy_pct.toFixed(1) + '%';
+                if (ctx.parsed.y == null) return ctx.dataset.label + ' —';
+                var text = view.money(ctx.parsed.y);
+                if (ctx.dataset.label === '实际') return '实际' + (q.basis ? '（' + q.basis + '）' : '') + ' ' + text;
+                return ctx.dataset.label + ' ' + text;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, color: color('--ink-2') } },
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: view.unit }, grid: { color: color('--grid') } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v.toFixed(0) + '%'; } }, title: { display: true, text: '同比' } }
+        }
+      },
+      plugins: [{
+        id: 'epsMarks',
+        afterDatasetsDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          drawn.data.datasets.forEach(function (ds, di) {
+            if (ds.type !== 'bar') return;
+            var meta = drawn.getDatasetMeta(di);
+            meta.data.forEach(function (bar, i) {
+              var val = ds.data[i];
+              if (val == null) return;
+              ctx.save();
+              ctx.fillStyle = color('--ink-2') || '#52514e';
+              ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(view.money(val), bar.x, bar.y - 2);
+              ctx.restore();
+            });
+          });
+        },
+        afterDraw: function (drawn) {
+          var ctx = drawn.ctx;
+          var x = drawn.scales.x;
+          quarters.forEach(function (q, i) {
+            if (!q.note) return;
+            ctx.save();
+            ctx.fillStyle = noteColor[q.note_cls] || noteColor.muted;
+            ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(q.note, x.getPixelForTick(i), x.bottom + 4);
+            ctx.restore();
+          });
+        }
+      }]
+    });
+    var hint = document.getElementById('expectHint');
+    if (hint) hint.textContent = view.hint;
+    var note = document.getElementById('expectNote');
+    if (note) note.textContent = view.note;
+  }
+  document.querySelectorAll('[data-expect]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-expect');
+      document.querySelectorAll('[data-expect]').forEach(function (other) {
+        other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+      });
+      draw(mode);
+    });
+  });
+  draw('eps');
 })();
 </script>
 </body>

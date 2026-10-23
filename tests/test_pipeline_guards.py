@@ -435,7 +435,7 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert '<details class="ev" id="fin" open>' in html and 'data-series="level"' in html
     assert "财报分析" in html and "指引展望" in html and "问答交流" in html and "数据来源" in html
     assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
-    assert 'id="epsSurprise"' not in html
+    assert 'id="epsSurprise"' in html and 'data-expect="eps"' in html and 'data-expect="revenue"' in html
     assert "再点同一行就收起" in html and "function collapseFin()" in html
     assert 'data-fin-grain="quarter"' in html and 'data-fin-grain="year"' in html
     assert "没有完整财年" in html and 'data-fin-bound' in html
@@ -692,6 +692,11 @@ def test_guidance_view_tiles_and_outlook_categories():
     view = _guidance_view(meta)
     meta_dims = {d["key"]: d for d in view["dimensions"]}
     assert [k for k in ("results", "operating", "capex", "returns", "other") if k in meta_dims] == [
+        "results", "operating", "capex", "returns", "other",
+    ]
+    from builder.build import _guide_section
+
+    assert [d["key"] for d in _guide_section(meta)["dimensions"]] == [
         "results", "operating", "capex", "returns", "other",
     ]
     cards = [c for d in view["dimensions"] for c in d["cards"]]
