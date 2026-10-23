@@ -66,7 +66,10 @@ def _hours_since(release_at: str | None, now: datetime) -> float | None:
 
 
 def poll_once(now: datetime | None = None) -> dict[str, Any]:
-    """财报窗口内检测新 8-K；等待文字稿的季度在时限内重试 Stage2。无事可做则立即返回。"""
+    """财报窗口内检测新业绩申报；等待文字稿的季度在时限内重试 Stage2。无事可做则立即返回。
+
+    domestic 找 8-K Item 2.02，adr 找 6-K 新闻稿。不在窗口时几秒内退出。
+    """
     now = (now or datetime.now(tz=ET)).astimezone(ET)
     polling = load_settings().get("polling") or {}
     transcript_max_hours = float(polling.get("transcript_max_hours", 36))
@@ -111,7 +114,8 @@ def poll_once(now: datetime | None = None) -> dict[str, Any]:
         any_work = True
         try:
             if not detect_new_filings(ticker, now=now.astimezone(timezone.utc)):
-                results["actions"].append({"ticker": ticker, "action": "poll", "ok": True, "detail": "no new 8-K"})
+                form = "6-K" if (cfg.get("listing") or "domestic") == "adr" else "8-K"
+                results["actions"].append({"ticker": ticker, "action": "poll", "ok": True, "detail": f"no new {form}"})
                 continue
             doc = run_stage1(ticker)
             results["actions"].append(

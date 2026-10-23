@@ -3508,6 +3508,8 @@ def _index_row(
         "timing": timing,
         "quarter": _quarter_view(t, cfg, doc, today),
         "href": f"stocks/{t}/index.html",
+        "listing": str(cfg.get("listing") or "domestic"),
+        "reporting_currency": str(cfg.get("reporting_currency") or ""),
     }
 
 
@@ -4720,7 +4722,14 @@ def build_site(ticker: str | None = None) -> list[Path]:
     # 导航和首页都按 持仓 → 等待仓 → 观察仓 排
     order = {"hold": 0, "wait": 1, "watch": 2}
     tickers.sort(key=lambda x: (order.get((load_position(x) or {}).get("stage", "watch"), 3), x))
-    nav = [{"ticker": t, "href": f"stocks/{t}/index.html"} for t in tickers]
+    nav = [
+        {
+            "ticker": t,
+            "href": f"stocks/{t}/index.html",
+            "listing": str((load_ticker_config(t).get("listing") or "domestic")),
+        }
+        for t in tickers
+    ]
     index_rows: list[dict[str, Any]] = []
     pages: list[Path] = []
     today = datetime.now(BJ).date()
@@ -4739,6 +4748,9 @@ def build_site(ticker: str | None = None) -> list[Path]:
             html = env.get_template("placeholder.html").render(
                 ticker=t, company=cfg.get("name"), nav=nav, active=t, root="../../",
                 thesis=_position_view(t, {}, today),
+                listing=str(cfg.get("listing") or "domestic"),
+                reporting_currency=str(cfg.get("reporting_currency") or ""),
+                accounting_basis=str(cfg.get("accounting_basis") or ""),
             )
             (stock_dir / "index.html").write_text(html, encoding="utf-8")
             pages.append(stock_dir / "index.html")
@@ -4764,6 +4776,9 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 active=t,
                 ticker=t,
                 company=cfg.get("name"),
+                listing=str(cfg.get("listing") or "domestic"),
+                reporting_currency=str(cfg.get("reporting_currency") or ""),
+                accounting_basis=str(cfg.get("accounting_basis") or ""),
                 doc=doc,
                 periods=periods,
                 current_period=period,

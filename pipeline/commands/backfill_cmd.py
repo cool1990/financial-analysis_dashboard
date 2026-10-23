@@ -8,6 +8,7 @@ from typing import Any
 from pipeline import ROOT
 from pipeline.compute.periods import build_period_info
 from pipeline.config import data_dir, load_ticker_config, openrouter_api_key
+from pipeline.earnings_config import resolve_earnings_spec
 from pipeline.extract.numbers import ParsedAmount
 from pipeline.extract.press_release import load_press_release
 from pipeline.llm import LLMClient, LLMError, get_run_tracker, reset_run_tracker
@@ -146,6 +147,86 @@ def _match_end(ends: list[date], year: int, month: int) -> date | None:
     return cands[-1]
 
 
+def _backfill_adr_press_releases(
+    ticker: str,
+    cfg: dict[str, Any],
+    *,
+    from_period: str | None,
+    limit: int,
+    dry_run: bool,
+    model: str | None,
+) -> dict[str, Any]:
+    """用业绩 6-K 的 Press release 走现有 Stage1。不写 us-gaap companyfacts。"""
+    import os
+
+    from pipeline.commands.run_cmd import _run_stage1_filing
+
+    if model:
+        os.environ["PIPELINE_LLM_MODEL"] = model
+
+    if not cfg.get("cik"):
+        raise RuntimeError("请先运行 init")
+    client = SecEdgarClient()
+    hits = client.scan_earnings_filings(cfg["cik"], cfg, limit=limit).hits
+    spec = resolve_earnings_spec(cfg)
+    written: list[str] = []
+    skipped: list[str] = []
+    errors: list[dict[str, str]] = []
+    filings: list[dict[str, Any]] = []
+    llm_calls = 0
+    est_prompt_tokens = 0
+    for filing in hits:
+        acc = filing["accessionNumber"]
+        filings.append(
+            {
+                "accessionNumber": acc,
+                "acceptanceDateTime": filing.get("acceptanceDateTime"),
+                "primaryDocument": filing.get("primaryDocument"),
+                "press_release_file": filing.get("press_release_file"),
+                "press_description": filing.get("press_description"),
+            }
+        )
+        raw = data_dir(ticker) / "raw" / "_backfill" / acc.replace("-", "") / "press_release.html"
+        try:
+            if not dry_run or not raw.exists():
+                client.download_press_release(
+                    cfg["cik"],
+                    acc,
+                    raw,
+                    press_release_file=filing.get("press_release_file") or None,
+                )
+            parsed = load_press_release(raw)
+            text_len = len(parsed.get("combined") or "")
+            est_prompt_tokens += text_len // 4 + 800
+            llm_calls += 1
+            if dry_run:
+                continue
+            doc = _run_stage1_filing(ticker, cfg, client, filing, None)
+            period = doc["meta"]["fiscal_period"]
+            if from_period and period < from_period:
+                skipped.append(period)
+                continue
+            if period not in written:
+                written.append(period)
+        except Exception as exc:
+            errors.append({"accessionNumber": acc, "error": str(exc)})
+    return {
+        "listing": "adr",
+        "source": "sec_6k_press_release",
+        "reporting_currency": spec.reporting_currency,
+        "accounting_basis": spec.accounting_basis,
+        "xbrl_used": False,
+        "written": written,
+        "skipped": skipped,
+        "errors": errors,
+        "filings": filings,
+        "dry_run": dry_run,
+        "llm_calls": llm_calls,
+        "est_prompt_tokens": est_prompt_tokens,
+        "note": "ADR 历史只走 SEC 6-K 新闻稿。未使用 us-gaap companyfacts，也未使用 TWSE。",
+    }
+
+
 def backfill(
     ticker: str,
     from_period: str | None = None,
@@ -156,14 +237,31 @@ def backfill(
     xbrl_only: bool = False,
     start: str = "2016-01-01",
 ) -> dict[str, Any]:
-    """历史回补：GAAP 优先 XBRL；Non-GAAP/KPI 走新闻稿抽取。
+    """历史回补。
 
+    国内：GAAP 优先 us-gaap XBRL，Non-GAAP/KPI 再走 8-K 新闻稿。
+    ADR：只走 6-K 新闻稿。不用 us-gaap companyfacts 当主历史，也不接 TWSE。
     dry_run=True 时不调用 LLM，只统计将发生的调用与粗略 token/花费。
-    xbrl_only=True 时只写 companyfacts 单季 GAAP，不调用模型。
+    xbrl_only=True 时只写 companyfacts 单季 GAAP，不调用模型（ADR 会拒绝）。
     """
+    cfg = load_ticker_config(ticker)
+    spec = resolve_earnings_spec(cfg)
+    if spec.listing == "adr":
+        if xbrl_only:
+            raise RuntimeError(
+                "ADR 不以 us-gaap XBRL / companyfacts 作为主历史。"
+                f"请用 6-K 新闻稿回补：python -m pipeline backfill --ticker {ticker.upper()} --limit {limit}"
+            )
+        return _backfill_adr_press_releases(
+            ticker,
+            cfg,
+            from_period=from_period,
+            limit=limit,
+            dry_run=dry_run,
+            model=model,
+        )
     if xbrl_only:
         return write_xbrl_history(ticker, start=start)
-    cfg = load_ticker_config(ticker)
     if not cfg.get("cik"):
         raise RuntimeError("请先运行 init")
     client = SecEdgarClient()

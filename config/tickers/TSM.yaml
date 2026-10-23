@@ -1,0 +1,43 @@
+# NYSE ADR（SEC FPI）。业绩发现走 6-K 新闻稿，不是 8-K Item 2.02。
+# 不以 TWSE / us-gaap XBRL 为主路径。第二只 ADR 复制这份 sec 字段即可。
+ticker: TSM
+name: Taiwan Semiconductor Manufacturing (ADR)
+cik: "0001046179"
+listing: adr
+fiscal_year_end_month: 12
+release_timing: amc
+reporting_currency: USD
+accounting_basis: taiwan_ifrs
+eps_basis: gaap
+capex_definition: gross
+benchmark: SOXX
+
+sec:
+  earnings_forms: ["6-K"]
+  earnings_items: []
+  earnings_6k:
+    require_exhibit_desc_any:
+      - "(?i)press\\s*release"
+      - "(?i)earnings"
+    reject_exhibit_desc_any:
+      - "(?i)consolidated\\s+financial\\s+statements"
+      - "(?i)monthly\\s+revenue"
+      - "(?i)dividend"
+    reject_primary_doc_any:
+      - "(?i)monthend"
+      - "(?i)revenue20"
+      - "(?i)dividend"
+      - "(?i)board"
+      - "(?i)agm"
+      - "(?i)fsx"
+    prefer_exhibit_desc: "(?i)press\\s*release"
+
+transcript_sources:
+  - motley_fool
+  - ir_page
+  - manual
+webcast_audio_url: null
+management_aliases: []
+ir_transcript_url: null
+ir_transcript_match: (?i)transcript|prepared.?remarks
+ir_prepared_remarks_url: null

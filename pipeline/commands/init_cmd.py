@@ -5,6 +5,7 @@ from typing import Any
 
 from pipeline.compute.periods import build_period_info
 from pipeline.config import load_ticker_config, save_ticker_config
+from pipeline.earnings_config import resolve_earnings_spec
 from pipeline.extract.press_release import detect_nongaap_eps_regex, load_press_release
 from pipeline.sources.sec_edgar import (
     SecEdgarClient,
@@ -21,19 +22,42 @@ def init_ticker(ticker: str, *, force: bool = False) -> dict[str, Any]:
     if not cfg.get("cik") or force:
         cfg["cik"] = client.lookup_cik(ticker)
 
-    # latest 8-K press release for Non-GAAP detection
-    filings = client.find_earnings_8k(cfg["cik"])
+    spec = resolve_earnings_spec(cfg)
+    # 最新业绩新闻稿，用来看有没有 Non-GAAP EPS。ADR 走 6-K，不用 8-K Item 2.02。
+    filings = client.find_earnings_filings(cfg["cik"], cfg, limit=1)
     has_nongaap = False
     if filings:
         latest = filings[0]
         raw_path = data_dir(ticker) / "raw" / "_init" / "press_release.html"
         try:
-            client.download_press_release(cfg["cik"], latest["accessionNumber"], raw_path)
+            client.download_press_release(
+                cfg["cik"],
+                latest["accessionNumber"],
+                raw_path,
+                press_release_file=latest.get("press_release_file") or None,
+            )
             parsed = load_press_release(raw_path)
             has_nongaap = bool(parsed.get("has_nongaap_eps_regex"))
         except Exception as e:
             cfg.setdefault("eps_basis_evidence", [])
             cfg["eps_basis_evidence"] = [{"warning": f"init press release failed: {e}"}]
+
+    if spec.listing == "adr":
+        # FPI 的 companyfacts 不是 us-gaap 主历史，不能拿来改 eps_basis。
+        basis = cfg.get("eps_basis_override") or cfg.get("eps_basis") or "gaap"
+        cfg["eps_basis"] = basis
+        cfg["eps_basis_evidence"] = {
+            "has_nongaap_eps": has_nongaap,
+            "gaap_match_ratio": None,
+            "paired_quarters": 0,
+            "pairs": [],
+            "notes": [
+                "ADR 业绩来自 6-K 新闻稿，不用 us-gaap companyfacts 决定 EPS 口径。",
+                f"has_nongaap_eps_regex={has_nongaap}",
+            ],
+        }
+        save_ticker_config(ticker, cfg)
+        return cfg
 
     # pair provider reported vs XBRL GAAP EPS
     yf = YFinanceSource(ticker)

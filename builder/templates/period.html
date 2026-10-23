@@ -12,9 +12,9 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{{ ticker }} · {{ company }} · {{ current_period }}</h1>
+    <h1>{{ ticker }} · {{ company }} · {{ current_period }}{% if listing == "adr" %} <span class="stage-badge s-adr" title="NYSE/Nasdaq ADR，SEC 6-K">ADR</span>{% endif %}</h1>
     <div class="sub">
-      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }}
+      {% if doc.meta.period_start %}{{ doc.meta.period_start }} 至 {{ doc.meta.period_end }} · {% endif %}发布 {{ release }} · 业绩口径 {{ doc.meta.eps_basis|source }}{% if listing == "adr" %} · ADR · SEC {{ doc.meta.sec_form or "6-K" }}{% if reporting_currency %} · {{ reporting_currency }}{% endif %}{% if accounting_basis %} · {{ accounting_basis }}{% endif %}{% endif %}
     </div>
   </div>
   {% if quotes %}
