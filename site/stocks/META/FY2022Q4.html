@@ -106,7 +106,7 @@
     <span class="ev-meta">11 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
-  <p class="layer-sub">点一行指标，图出现在这一行下面。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
+  <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
 <p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
@@ -685,6 +685,18 @@ function drawRowCharts() {
   function visibleGrid() {
     return document.querySelector('[data-fin-panel]:not([hidden]) [data-fin-charts]');
   }
+  function collapseFin() {
+    clearCharts();
+    active = [];
+    document.querySelectorAll('[data-fin-panel]').forEach(function (panel) {
+      panel.hidden = true;
+      var charts = panel.querySelector('[data-fin-charts]');
+      if (charts) charts.innerHTML = '';
+    });
+    document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', 'false');
+    });
+  }
   function show(key) {
     var spec = (view.by_key || {})[key];
     active = spec ? spec.charts : [
@@ -718,7 +730,10 @@ function drawRowCharts() {
     if (grid) requestAnimationFrame(function () { drawRoot(grid); });
   }
   document.querySelectorAll('[data-fin-metric]').forEach(function (btn) {
-    btn.addEventListener('click', function () { show(btn.getAttribute('data-fin-metric')); });
+    btn.addEventListener('click', function () {
+      if (btn.getAttribute('aria-pressed') === 'true') collapseFin();
+      else show(btn.getAttribute('data-fin-metric'));
+    });
   });
   var box = document.getElementById('fin');
   function drawInitial() {
