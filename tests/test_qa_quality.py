@@ -243,16 +243,27 @@ def test_qa_model_falls_back_to_summary_model(monkeypatch):
 
     monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-key-for-unit")
     monkeypatch.delenv("PIPELINE_LLM_MODEL", raising=False)
+    raw = (ROOT / "config" / "settings.yaml").read_text(encoding="utf-8")
+    assert "claude-sonnet" not in raw
+    assert "anthropic/" not in raw
     settings = load_settings()["llm"]
     assert settings["model"] == "deepseek/deepseek-v4-pro-0813"
-    assert settings["qa_model"] == "anthropic/claude-sonnet-5.5"
+    assert settings["qa_model"] == "deepseek/deepseek-v4-pro-0813"
+    assert "qa_reasoning_effort" not in settings
+    assert "qa_max_tokens" not in settings
     client = qa_mod._qa_client()
     summary = LLMClient()
-    assert client.model == "anthropic/claude-sonnet-5.5"
+    assert client.model == "deepseek/deepseek-v4-pro-0813"
     assert summary.model == "deepseek/deepseek-v4-pro-0813"
-    assert client.max_tokens == 8192
-    assert client.reasoning_effort == "low"
-    assert client.model != summary.model
+    assert client.model == summary.model
+    assert client.max_tokens == summary.max_tokens == 4096
+    assert client.reasoning_effort == summary.reasoning_effort == "off"
+    assert client.request_timeout_sec == summary.request_timeout_sec
+
+    monkeypatch.setenv("PIPELINE_LLM_MODEL", "anthropic/claude-sonnet-5.5")
+    pinned = qa_mod._qa_client()
+    assert pinned.model == "deepseek/deepseek-v4-pro-0813"
+    monkeypatch.delenv("PIPELINE_LLM_MODEL")
 
     monkeypatch.setattr(qa_mod, "load_settings", lambda: {"llm": {}})
     fallback = qa_mod._qa_client()
@@ -272,3 +283,5 @@ def test_review_prompt_checks_omitted_answers_and_mistranslation():
     assert "six weeks" in text
     assert "Enterprise" in text
     assert "不能丢" in text or "丢掉" in text
+    assert "忠实原文" in text and "逻辑清晰" in text and "通俗易懂" in text
+    assert "数字" in text and "时间" in text

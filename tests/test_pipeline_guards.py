@@ -187,6 +187,7 @@ def test_structure_qa_prompt_asks_for_a_full_answer():
     assert "six weeks" in text
     # 投资者能读的复述，不要硬译 compute-intensive。
     assert "不要把英文术语硬译" in text
+    assert "忠实原文" in text and "逻辑清晰" in text and "通俗易懂" in text
     assert "服务计算密集" in text
     assert "算力消耗大" in text
     assert "商业化是否和降本同步" in text
