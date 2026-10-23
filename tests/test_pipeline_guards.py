@@ -858,7 +858,9 @@ def test_judgment_layer_rules():
     assert by["本季营收"]["has"] is False  # 缺一致预期不能当成符合预期
     assert by["下季 EPS 指引"]["gap"]["text"] == "+11.1%" and by["下季 EPS 指引"]["pos"] == pytest.approx(87.1, abs=0.1)
     market = _market_view(doc)
-    assert market["stance"]["text"] == "市场认可" and market["revision"]["label"] == "T+7"
+    # Stage3 已停用：次日反应与 T+N 分析师修正不再展示
+    assert market["stance"] is None and market["revision"] is None
+    assert market["price"]["text"] == "—"
     from pipeline.config import load_ticker_config
 
     qc = _quality_checks(doc, load_ticker_config("MU"))
@@ -1223,12 +1225,15 @@ def test_gap_row_clips_outside_scale():
     assert row["pos"] == 100 and row["clipped"] is True
 
 
-def test_market_view_flags_disagreement():
+def test_market_view_discontinued():
     from builder.build import _market_view
 
     doc = {"price_reaction": {"next_day_pct": -0.04},
            "guidance": {"analyst_revisions": {"t_minus_1": {"eps": 2.0}, "t_plus_1": {"eps": 2.2, "eps_chg": 0.1}}}}
-    assert _market_view(doc)["stance"]["text"] == "市场分歧"
+    view = _market_view(doc)
+    assert view["stance"] is None
+    assert view["revision"] is None
+    assert view["price"]["text"] == "—"
 
 
 def test_benchmark_reaction_excess(monkeypatch):

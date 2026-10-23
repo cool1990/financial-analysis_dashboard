@@ -141,7 +141,6 @@ def _guidance_conflict_warning(press: dict[str, Any], call: dict[str, Any]) -> s
     label = press.get("metric_label") or call.get("metric_label") or press.get("metric_key") or "指标"
     period = press.get("period") or call.get("period") or "—"
     return f"电话会与新闻稿数值指引不一致：{label}（{period}）新闻稿中值 {a} vs 电话会 {b}"
-from pipeline.compute.revisions import compute_analyst_revisions
 
 
 def merge_guidance_items(
@@ -902,100 +901,13 @@ def _benchmark_reaction(cfg: dict[str, Any], release: str, timing: str, own: dic
 
 
 def run_stage3(ticker: str, fiscal_period: str) -> dict[str, Any]:
-    """股价反应 + 分析师修正（按发布前后快照对齐）。"""
-    from datetime import timedelta
+    """已停用：次日股价反应与 T+1/3/7 分析师修正不再计算。
 
-    from pipeline.sources.yfinance_src import YFinanceSource
-
+    保留入口，避免 manual `--stage 3` / 旧脚本失败。不写盘、不推进阶段。
+    """
     doc = load_period_json(ticker, fiscal_period)
     if not doc:
         raise RuntimeError("缺少季度数据")
-    release = doc["meta"].get("release_at_utc") or ""
-    if not release:
-        raise RuntimeError("缺少 release_at_utc，无法对齐分析师修正")
-    release_dt = datetime.fromisoformat(release.replace("Z", "+00:00"))
-
-    yf = YFinanceSource(ticker)
-    cfg = load_ticker_config(ticker)
-    timing = cfg.get("release_timing") or "amc"
-    try:
-        doc["price_reaction"] = yf.next_day_reaction(release, release_timing=timing)
-        doc["price_reaction"].update(_benchmark_reaction(cfg, release, timing, doc["price_reaction"]))
-    except Exception as e:
-        doc["price_reaction"] = {
-            "next_day_pct": None,
-            "close_before": None,
-            "close_after": None,
-            "note": f"股价反应计算失败: {e}",
-        }
-        warn = f"股价反应失败: {e}"
-        if warn not in doc["status"]["warnings"]:
-            doc["status"]["warnings"].append(warn)
-
-    points: dict[str, dict[str, Any]] = {
-        "t_minus_1": {},
-        "t_plus_1": {},
-        "t_plus_3": {},
-        "t_plus_7": {},
-    }
-    notes: list[str] = []
-
-    # 财报前：本季一致预期用 0q；发布后 Yahoo 会把 0q 滚到下季，
-    # 因此 T+N 用发布后快照的 0q 追踪「下季」预期变化（对应发布前的 +1q）。
-    pre = load_pre_earnings_snapshot(ticker, release)
-    if pre:
-        points["t_minus_1"] = _point_from_snap(pre, row="0q")
-        points["t_minus_1"]["next_q"] = _point_from_snap(pre, row="+1q")
-    else:
-        notes.append("缺少财报前快照，T-1 一致预期为空")
-
-    snaps = _iter_snapshots(ticker)
-    for key, days in [("t_plus_1", 1), ("t_plus_3", 3), ("t_plus_7", 7)]:
-        data = _first_snap_on_or_after(snaps, release_dt + timedelta(days=days))
-        if data:
-            # 发布后 0q ≈ 发布前 +1q（下季）
-            points[key] = _point_from_snap(data, row="0q")
-        else:
-            notes.append(f"缺少发布后 T+{days} 快照")
-
-    nq_eps = next(
-        (c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "next_q_eps_guidance"),
-        None,
-    )
-    nq_rev = next(
-        (c.get("actual") for c in doc.get("scorecard", []) if c.get("metric") == "next_q_revenue_guidance"),
-        None,
-    )
-    # gap_closure 更适合看「下季」预期是否向指引靠拢：用发布前 +1q 作为 T-1
-    gap_points = dict(points)
-    if pre:
-        gap_points["t_minus_1"] = _point_from_snap(pre, row="+1q")
-    revisions = compute_analyst_revisions(
-        gap_points,
-        guidance_mid_eps=float(nq_eps) if nq_eps is not None else None,
-        guidance_mid_rev=float(nq_rev) if nq_rev is not None else None,
-    )
-    # 页面同时保留「本季」发布前 0q，避免只显示下季造成误解
-    if points.get("t_minus_1"):
-        revisions["t_minus_1_current_quarter"] = {
-            "eps": points["t_minus_1"].get("eps"),
-            "revenue": points["t_minus_1"].get("revenue"),
-            "date": points["t_minus_1"].get("date"),
-            "note": "财报前对本季（当时 0q）的一致预期",
-        }
-    revisions["status_notes"] = notes
-    revisions["methodology"] = (
-        "T-1 本季=发布前 0q；下季轨迹用发布前 +1q 与发布后 0q 对齐。"
-        "T+1/3/7 需对应日期之后的 snapshot 才会填入。"
-    )
-    doc.setdefault("guidance", {})["analyst_revisions"] = revisions
-    # 仍在等文字稿（stage1_done）时不推进阶段，否则 poll 会认为 Stage2 已完成而不再尝试
-    if doc["status"].get("stage") in {"stage2_done", "stage3_done"}:
-        doc["status"]["stage"] = "stage3_done"
-        save_period_json(ticker, fiscal_period, doc)
-        mark_stage(ticker, fiscal_period, "stage3_done")
-    else:
-        save_period_json(ticker, fiscal_period, doc)
     return doc
 
 
@@ -1030,27 +942,13 @@ def refresh_comparatives(ticker: str | None = None) -> dict[str, Any]:
 
 
 def refresh_recent_stage3(now: datetime | None = None) -> dict[str, Any]:
-    """daily 调用：发布后 N 天内的季度重算 Stage3，让 T+1/T+3/T+7 随快照自动补齐。不调用 LLM。"""
-    from pipeline.config import data_dir, list_tickers
-
-    now = now or datetime.now(timezone.utc)
-    days = float((load_settings().get("polling") or {}).get("stage3_refresh_days", 10))
-    out: list[dict[str, Any]] = []
-    for ticker in list_tickers():
-        for path in sorted(data_dir(ticker).glob("FY*.json")):
-            doc = json.loads(path.read_text(encoding="utf-8"))
-            stage = (doc.get("status") or {}).get("stage")
-            if stage not in {"stage1_done", "stage2_done", "stage3_done"}:
-                continue
-            release = _accepted_dt((doc.get("meta") or {}).get("release_at_utc") or "")
-            if release is None or not (timedelta(0) <= now - release <= timedelta(days=days)):
-                continue
-            try:
-                run_stage3(ticker, path.stem)
-                out.append({"ticker": ticker, "period": path.stem, "ok": True})
-            except Exception as e:
-                out.append({"ticker": ticker, "period": path.stem, "ok": False, "error": str(e)})
-    return {"refreshed": out}
+    """已停用：空操作。旧 daily / CI 若仍调用 stage3-recent，直接成功退出。"""
+    del now  # 签名保留，兼容旧调用
+    return {
+        "refreshed": [],
+        "discontinued": True,
+        "note": "Stage3（次日股价反应与 T+1/3/7 分析师修正）已停用，不再计算",
+    }
 
 
 def run_pipeline(
