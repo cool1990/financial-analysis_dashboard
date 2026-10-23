@@ -38,6 +38,15 @@ python -m pipeline build
 # 打开 site/index.html
 ```
 
+季度页的历史序列在 `site/stocks/{代码}/history.json`，同一只股票只存一份。页面用 `fetch` 读取，不再写进每个财季 HTML。
+
+直接双击打开（`file://`）时，浏览器会拦截 `fetch`。页面会改读同目录的 `history.js`（内容和 `history.json` 相同，用脚本加载，`file://` 可以读到）。两份都失败时，金额图和占比图仍用页面里的数据；依赖历史序列的水平值 / 环比 / 同比会空着，并在财报分析下面提示。稳定打开方式：
+
+```bash
+cd site && python3 -m http.server
+# 打开 http://127.0.0.1:8000/
+```
+
 ## 命令
 
 | 命令 | 作用 |

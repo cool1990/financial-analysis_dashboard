@@ -441,9 +441,14 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "财报分析" in html and "指引展望" in html and "问答交流" in html and "数据来源" in html
     assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
     assert 'id="epsSurprise"' in html and 'data-expect="eps"' in html and 'data-expect="revenue"' in html
-    assert "再点同一行就收起" in html and "function collapseFin()" in html
+    assert "再点同一行就收起" in html
+    assert "function collapseFin()" not in html
     assert 'data-fin-grain="quarter"' in html and 'data-fin-grain="year"' in html
-    assert "没有完整财年" in html and 'data-fin-bound' in html
+    assert "var history =" not in html
+    assert "static/charts.js" in html
+    charts_js = (out / "static" / "charts.js").read_text(encoding="utf-8")
+    assert "function collapseFin()" in charts_js
+    assert "没有完整财年" in charts_js and "data-fin-bound" in charts_js
     assert "财务数据" not in html and "业务拆分" not in html
     assert "估值与技术" not in html and 'class="card quote-card"' not in html
     assert "超预期 $0.86" not in html and "$697.52" not in html
@@ -1482,4 +1487,88 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert body.index(">AAA<") < body.index(">FIX<")
     kind_bar = html.split('aria-label="按类型筛选"', 1)[1].split("</div>", 1)[0]
     assert kind_bar.count("<button") == 1
+
+
+def test_fin_series_computed_once_and_focus_follows_period(monkeypatch):
+    """金额和占比序列按股票算一次。换财季只改占比图的 focus。"""
+    import builder.build as build
+
+    build._MEMO.clear()
+    calls = {"n": 0}
+    original = build._amount_yoy_chart
+
+    def wrapped(*args, **kwargs):
+        calls["n"] += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(build, "_amount_yoy_chart", wrapped)
+    later = build._fin_view("META", "FY2026Q3")
+    first = calls["n"]
+    earlier = build._fin_view("META", "FY2024Q1")
+    assert first > 0 and calls["n"] == first
+    assert later["by_key"]["revenue"]["charts"][0] is earlier["by_key"]["revenue"]["charts"][0]
+    share_later = later["by_key"]["revenue"]["charts"][1]
+    share_earlier = earlier["by_key"]["revenue"]["charts"][1]
+    assert share_later["focus"] == "FY2026Q3"
+    assert share_earlier["focus"] == "FY2024Q1"
+    assert share_later["points"] is share_earlier["points"]
+    assert share_later["annual"] is share_earlier["annual"]
+
+
+def test_latest_snapshot_reads_newest_readable_file_once(tmp_path, monkeypatch):
+    """快照按文件名从新到旧找第一份能解析的，同一轮不再扫全目录。"""
+    import builder.build as build
+
+    folder = tmp_path / "ZZ" / "snapshots"
+    folder.mkdir(parents=True)
+    (folder / "2020-01-01.json").write_text(
+        json.dumps({"snapshot_at": "2020-01-01T00:00:00+00:00", "marker": "old"}),
+        encoding="utf-8",
+    )
+    (folder / "2024-05-01.json").write_text(
+        json.dumps({"snapshot_at": "2024-05-01T00:00:00+00:00", "marker": "day"}),
+        encoding="utf-8",
+    )
+    (folder / "2024-05-01T153000.json").write_text(
+        json.dumps({"snapshot_at": "2024-05-01T15:30:00+00:00", "marker": "later"}),
+        encoding="utf-8",
+    )
+    (folder / "2024-06-01.json").write_text("{", encoding="utf-8")
+    reads: list[str] = []
+    original = Path.read_text
+
+    def wrapped(self, *args, **kwargs):
+        if self.parent == folder:
+            reads.append(self.name)
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", wrapped)
+    monkeypatch.setattr(build, "data_dir", lambda ticker: tmp_path / str(ticker).upper())
+    build._MEMO.clear()
+    snap = build._latest_snapshot("ZZ")
+    assert snap["marker"] == "later"
+    assert reads == ["2024-06-01.json", "2024-05-01T153000.json"]
+    assert build._latest_snapshot("ZZ")["marker"] == "later"
+    assert reads == ["2024-06-01.json", "2024-05-01T153000.json"]
+
+
+def test_history_json_is_shared_and_not_inlined(tmp_path):
+    """全历史写到股票目录一份。季度页和 index 都去 fetch，不再内嵌两遍。"""
+    from builder.build import _history, _load_docs, build_site
+
+    out = tmp_path / "site"
+    build_site("META", out_dir=out)
+    history_path = out / "stocks" / "META" / "history.json"
+    script_path = out / "stocks" / "META" / "history.js"
+    payload = json.loads(history_path.read_text(encoding="utf-8"))
+    assert payload == _history(_load_docs("META"))
+    script = script_path.read_text(encoding="utf-8")
+    assert script.startswith("window.STOCK_HISTORY=")
+    assert json.loads(script.split("=", 1)[1].rstrip().rstrip(";")) == payload
+    for name in ("FY2026Q3.html", "index.html"):
+        html = (out / "stocks" / "META" / name).read_text(encoding="utf-8")
+        assert "var history =" not in html
+        assert html.count("history.json") == 1
+        assert "static/charts.js" in html
+        assert "function collapseFin()" not in html
 
