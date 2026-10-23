@@ -92,6 +92,9 @@ def test_quote_columns_scale_change_to_fraction():
             "change": 1.25,  # TV 百分比点数
             "RSI": 55.1,
             "eps_estimate_ntm": 4.0,
+            "market_cap_basic": 1_000.0,
+            "total_shares_outstanding": 2_205_130_000,
+            "float_shares_outstanding": 2_200_380_149.98,
             "currency": "USD",
         }
     )
@@ -100,7 +103,12 @@ def test_quote_columns_scale_change_to_fraction():
     assert abs(cols["day_change_pct"] - 0.0125) < 1e-12
     assert cols["change_pct"] == cols["day_change_pct"]
     assert cols["eps_estimate_ntm"] == 4.0
+    assert cols["market_cap_basic"] == 1_000.0
+    assert cols["total_shares_outstanding"] == 2_205_130_000
+    assert cols["float_shares_outstanding"] == 2_200_380_149.98
     assert cols["currency"] == "USD"
+    assert "total_shares_outstanding" in tv.SCAN_COLUMNS
+    assert "float_shares_outstanding" in tv.SCAN_COLUMNS
 
 
 def _row(**fields):
@@ -137,6 +145,8 @@ def test_refresh_writes_quote_shape_and_merges(tmp_path, monkeypatch):
                             currency="HKD",
                             fundamental_currency_code="CNY",
                             eps_estimate_ntm=20.0,
+                            total_shares_outstanding=9_008_371_772,
+                            float_shares_outstanding=6_151_096_413.357039,
                             earnings_fq_h=[
                                 {"Actual": None, "Estimate": 8.0, "FiscalPeriod": "2026-Q2", "IsReported": False, "Type": 10},
                                 {"Actual": None, "Estimate": 8.5, "FiscalPeriod": "2026-Q3", "IsReported": False, "Type": 10},
@@ -173,6 +183,8 @@ def test_refresh_writes_quote_shape_and_merges(tmp_path, monkeypatch):
                         dividends_yield=0.3,
                         dividends_yield_current=0.3,
                         market_cap_basic=1e12,
+                        total_shares_outstanding=2_205_130_000,
+                        float_shares_outstanding=2_200_380_149.98,
                         earnings_fq_h=[
                             {"Actual": 3.8, "Estimate": 6.5, "FiscalPeriod": "2026-Q3", "IsReported": True, "Type": 22},
                             {"Actual": None, "Estimate": 8.3, "FiscalPeriod": "2026-Q4", "IsReported": False, "Type": 10},
@@ -217,6 +229,12 @@ def test_refresh_writes_quote_shape_and_merges(tmp_path, monkeypatch):
     assert meta["quote"]["columns"]["RSI"] == 47.3
     assert meta["quote"]["columns"]["eps_estimate_ntm"] == 32.0
     assert meta["quote"]["columns"]["price_earnings_forward"] == meta["quote"]["columns"]["price_earnings_fwd"] == 21.5
+    assert meta["quote"]["columns"]["market_cap_basic"] == 1e12
+    assert meta["quote"]["columns"]["total_shares_outstanding"] == 2_205_130_000
+    assert meta["quote"]["columns"]["float_shares_outstanding"] == 2_200_380_149.98
+    assert "total_shares_outstanding" not in meta["scalars"]
+    assert "float_shares_outstanding" not in meta["scalars"]
+    assert "total_shares_outstanding" in meta["body"]["columns"]
     assert "dividend_yield_ttm" in meta["quote"]["columns"]  # 旧列合并保留
     assert meta["quote"]["endpoint"].endswith("/america/scan")
     assert meta["fetched_at"] == "2026-10-23T12:00:00Z"
@@ -231,6 +249,9 @@ def test_refresh_writes_quote_shape_and_merges(tmp_path, monkeypatch):
     hk = json.loads((tmp_path / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
     assert hk["quote"]["ticker"] == "HKEX:700"
     assert hk["quote"]["columns"]["close"] == 600.0
+    assert hk["quote"]["columns"]["total_shares_outstanding"] == 9_008_371_772
+    assert hk["quote"]["columns"]["float_shares_outstanding"] == 6_151_096_413.357039
+    assert "total_shares_outstanding" not in hk["scalars"]
     assert abs(hk["quote"]["columns"]["day_change_pct"] - (-0.005)) < 1e-12
     assert hk["quote"]["endpoint"].endswith("/hongkong/scan")
     assert [q["tv_label"] for q in hk["future_quarters"]] == ["2026-Q2", "2026-Q3", "2026-Q4", "2027-Q1"]
