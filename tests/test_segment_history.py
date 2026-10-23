@@ -206,6 +206,11 @@ def test_fill_q4_december_fiscal_year_still_subtracts_the_first_three_quarters()
     assert [line["value"] for line in q4["lines"]] == [40, 4]
     assert fiscal_quarter_key("2024-12-31", 12) == (2024, 4)
     assert fiscal_quarter_key("2025-05-31", 5) == (2025, 4)
+    # 11 月财年的 52/53 周季末，离名义月末大约四周，仍然是该季。
+    assert fiscal_quarter_key("2017-01-29", 11) == (2017, 1)
+    assert fiscal_quarter_key("2025-11-02", 11) == (2025, 4)
+    assert fiscal_quarter_key("2026-08-02", 11) == (2026, 3)
+    assert fiscal_quarter_key("2017-04-05", 11) is None
 
 
 def test_drop_incomplete_residuals_keeps_xbrl_and_complete_residuals():

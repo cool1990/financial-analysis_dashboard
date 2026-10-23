@@ -201,3 +201,122 @@ def quarterly_statements(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
             "fcf": None if fcf is None else {"value": fcf, "source_quote": fcf_quote, "derived": True},
         }
     return out
+
+
+_INSTANCE_UNITS = {
+    "usd": "USD",
+    "usdpershare": "USD/shares",
+    "pershare": "USD/shares",
+    "shares": "shares",
+}
+_DURATION_TAGS = set(
+    REVENUE_TAGS
+    + COST_OF_REVENUE_TAGS
+    + OI_TAGS
+    + NI_TAGS
+    + EPS_TAGS
+    + OCF_TAGS
+    + CAPEX_TAGS
+    + ["WeightedAverageNumberOfDilutedSharesOutstanding"]
+)
+_INSTANT_TAGS = {"AccountsReceivableNetCurrent"}
+
+
+def _local_name(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
+
+
+def parse_instance_gaap(xml_bytes: bytes) -> list[dict[str, Any]]:
+    """10-Q/10-K 实例里没有维度的标准 us-gaap 数字。companyfacts 滞后时用它补季。"""
+    import xml.etree.ElementTree as ET
+
+    try:
+        root = ET.fromstring(xml_bytes)
+    except ET.ParseError:
+        return []
+    contexts: dict[str, dict[str, Any]] = {}
+    for el in root.iter():
+        if _local_name(el.tag) != "context":
+            continue
+        cid = el.get("id")
+        if not cid:
+            continue
+        start = end = instant = None
+        members = False
+        for child in el.iter():
+            name = _local_name(child.tag)
+            if name == "explicitMember":
+                members = True
+            elif name == "startDate" and child.text:
+                start = child.text[:10]
+            elif name == "endDate" and child.text:
+                end = child.text[:10]
+            elif name == "instant" and child.text:
+                instant = child.text[:10]
+        contexts[cid] = {"start": start, "end": end, "instant": instant, "members": members}
+    found: list[dict[str, Any]] = []
+    for el in root.iter():
+        tag = _local_name(el.tag)
+        if tag not in _DURATION_TAGS and tag not in _INSTANT_TAGS:
+            continue
+        ctx = contexts.get(el.get("contextRef") or "")
+        if ctx is None or ctx["members"]:
+            continue
+        unit = _INSTANCE_UNITS.get(str(el.get("unitRef") or "").lower())
+        if unit is None or el.text is None:
+            continue
+        try:
+            val = float(el.text.replace(",", ""))
+        except ValueError:
+            continue
+        if tag in _INSTANT_TAGS:
+            if not ctx["instant"]:
+                continue
+            found.append({"tag": tag, "start": "", "end": ctx["instant"], "val": val, "unit": unit})
+            continue
+        if not ctx["start"] or not ctx["end"]:
+            continue
+        found.append({"tag": tag, "start": ctx["start"], "end": ctx["end"], "val": val, "unit": unit})
+    return found
+
+
+def merge_instance_gaap(
+    facts: dict[str, Any],
+    rows: list[dict[str, Any]],
+    *,
+    form: str,
+    filed: str,
+    accession: str,
+) -> set[date]:
+    """把实例里的新事实补进 companyfacts 结构。已有同一起止和数值的不重复。"""
+    gaap = facts.setdefault("facts", {}).setdefault("us-gaap", {})
+    added: set[date] = set()
+    for row in rows:
+        tag = str(row["tag"])
+        unit = str(row["unit"])
+        end = _as_date(str(row.get("end") or ""))
+        if end is None:
+            continue
+        node = gaap.setdefault(tag, {"units": {}})
+        bucket = node.setdefault("units", {}).setdefault(unit, [])
+        start = str(row.get("start") or "")[:10]
+        val = row["val"]
+        if any(
+            str(item.get("start") or "")[:10] == start
+            and str(item.get("end") or "")[:10] == end.isoformat()
+            and item.get("val") == val
+            for item in bucket
+        ):
+            continue
+        bucket.append(
+            {
+                "start": start,
+                "end": end.isoformat(),
+                "val": val,
+                "form": form,
+                "filed": filed,
+                "accn": accession,
+            }
+        )
+        added.add(end)
+    return added

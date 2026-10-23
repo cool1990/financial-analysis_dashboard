@@ -661,7 +661,8 @@ def test_guide_section_splits_performance_and_industry():
     mu_view = _guide_section(mu, _load_docs("MU"))
     mu_rows = {row["label"]: row for row in mu_view["rows"]}
     assert mu_rows["营收"]["value"] == "$61.50B" and mu_rows["营收"]["qoq"]["text"] == "+13.4%"
-    assert mu_rows["营收"]["yoy"]["text"] == "" and mu_rows["营收"]["vs"]["text"] == ""
+    # 下季指引的同比对照 FY2026Q1 实际营收 136.43 亿美元。
+    assert mu_rows["营收"]["yoy"]["text"] == "+350.8%" and mu_rows["营收"]["vs"]["text"] == ""
     assert mu_rows["毛利率（Non-GAAP）"]["value"] == "86.25%" and mu_rows["毛利率（Non-GAAP）"]["qoq"]["text"] == "-0.8pp"
     assert mu_rows["调整后摊薄 EPS"]["value"] == "$38.15"
     assert mu_rows["调整后摊薄 EPS"]["qoq"]["text"] == "+14.2%"
@@ -1359,7 +1360,10 @@ def test_cost_charts_keep_total_and_skip_empty_mix():
     mu_cost = mu["by_key"]["cost_of_revenue"]["charts"]
     assert [chart["kind"] for chart in mu_cost] == ["amount_yoy"]
     assert mu_cost[0]["labels"][-1] == "FY2026Q4" and mu_cost[0]["amount"][-1] == 7.18
-    assert not (mu_cost[0].get("annual") or {}).get("labels")
+    # FY2016 只有 Q2 起，不满一年，不进年度柱。
+    assert mu_cost[0]["annual"]["labels"][0] == "FY2017"
+    assert mu_cost[0]["annual"]["labels"][-1] == "FY2026"
+    assert "FY2016" not in mu_cost[0]["annual"]["labels"]
 
 
 def test_annual_charts_sum_full_years_and_skip_partial():

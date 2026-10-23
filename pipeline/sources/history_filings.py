@@ -184,6 +184,7 @@ def collect_filings(
         filename = instance_name(names)
         segment_facts: list[dict[str, Any]] = []
         geo_facts: list[dict[str, Any]] = []
+        gaap_rows: list[dict[str, Any]] = []
         if filename:
             raw = _download(client, cik, row["accession"], filename)
             try:
@@ -193,9 +194,20 @@ def collect_filings(
                 warnings.append(f"{row['accession']} 的 XBRL 没有解析: {exc}")
                 segment_facts = []
                 geo_facts = []
+            from pipeline.sources.xbrl_history import parse_instance_gaap
+
+            gaap_rows = parse_instance_gaap(raw)
         elif row["form"].startswith("10-Q") or row["form"].startswith("10-K"):
             warnings.append(f"{row['accession']} 没有 XBRL 实例")
-        parsed.append({**row, "segment_facts": segment_facts, "geo_facts": geo_facts, "composition": None})
+        parsed.append(
+            {
+                **row,
+                "segment_facts": segment_facts,
+                "geo_facts": geo_facts,
+                "gaap_rows": gaap_rows,
+                "composition": None,
+            }
+        )
 
     covered: set[str] = set()
     for item in parsed:
@@ -220,6 +232,7 @@ def collect_filings(
                 "accession": item["accession"],
                 "report": item.get("report") or "",
                 "facts": item[facts_key],
+                "gaap_rows": item.get("gaap_rows") or [],
             }
             if with_composition and item.get("composition"):
                 entry["composition"] = item["composition"]

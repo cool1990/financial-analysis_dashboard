@@ -126,6 +126,7 @@ def test_fin_view_keeps_meta_copy_and_gives_tsm_three_revenue_charts():
 
     mu = _fin_view("MU", "FY2026Q4")
     assert "revenue" in mu["by_key"]
+    assert mu["by_key"]["revenue"]["charts"][0]["labels"][-1] == "FY2026Q4"
     assert mu["by_key"]["revenue"]["charts"][0]["amount"][-1] == 54.23
 
 
