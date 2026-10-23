@@ -1138,6 +1138,152 @@ def test_expect_chart_leaves_missing_scan_fields_empty(monkeypatch):
     assert {row["label"]: row["consensus"] for row in gapped["quarters"]}["FQ1 2027"] == 7.5
 
 
+def test_q4_eps_yoy_uses_same_scale_scan_actual_and_leaves_unaligned_blank(monkeypatch):
+    """季报没有 Q4 EPS（累计 EPS 不相减）时，扫描和已保存实际重合才补同比。
+
+    重叠季对得上、但该季数量级离谱的扫描实际不补。去年同季仍然没有实际时，前瞻季同比留空。
+    """
+    from builder.build import _eps_chart
+
+    tv = {
+        "fetched_at": "2026-10-23T12:00:00Z",
+        "quote": {"fetched_at": "2026-10-23T12:00:00Z"},
+        "future_quarters": [
+            {"tv_label": "2026-Q2", "eps_est": 2.2, "rev_est": 20_000_000_000.0},
+            {"tv_label": "2026-Q3", "eps_est": 2.4, "rev_est": 21_000_000_000.0},
+            {"tv_label": "2026-Q4", "eps_est": 2.5, "rev_est": 22_000_000_000.0},
+            {"tv_label": "2027-Q1", "eps_est": 2.1, "rev_est": 19_000_000_000.0},
+        ],
+        "rows_used": {
+            "earnings_fq_h_chart": [
+                {"FiscalPeriod": "2024-Q4", "Actual": 1.50, "Estimate": 1.4, "IsReported": True},
+                {"FiscalPeriod": "2025-Q1", "Actual": 1.2, "Estimate": 1.1, "IsReported": True},
+                {"FiscalPeriod": "2025-Q2", "Actual": 80.0, "Estimate": 1.1, "IsReported": True},
+                {"FiscalPeriod": "2025-Q3", "Actual": 1.4, "Estimate": 1.3, "IsReported": True},
+                {"FiscalPeriod": "2025-Q4", "Actual": 1.80, "Estimate": 1.7, "IsReported": True},
+                {"FiscalPeriod": "2026-Q1", "Actual": 1.6, "Estimate": 1.5, "IsReported": True},
+            ],
+            "revenues_fq_h": [],
+        },
+    }
+
+    def quarter(period: str, eps: float | None, revenue: float) -> dict:
+        fin = {"revenue": {"value": revenue, "yoy_pct": None}, "eps_gaap": {"value": eps}}
+        score = []
+        if eps is not None:
+            score.append({"metric": "eps", "actual": eps, "basis": "gaap", "benchmark": {"source": "none"}})
+        return {"meta": {"ticker": "ZZZ", "fiscal_period": period}, "financials": fin, "scorecard": score}
+
+    docs = {
+        "FY2025Q1": quarter("FY2025Q1", 1.2, 10_000_000_000),
+        "FY2025Q2": quarter("FY2025Q2", None, 11_000_000_000),
+        "FY2025Q3": quarter("FY2025Q3", 1.4, 12_000_000_000),
+        "FY2025Q4": quarter("FY2025Q4", None, 13_000_000_000),
+        "FY2026Q1": quarter("FY2026Q1", 1.6, 14_000_000_000),
+    }
+    monkeypatch.setattr("builder.build._tradingview", lambda ticker: tv)
+    chart = _eps_chart(docs["FY2026Q1"], docs)
+    assert chart is not None
+    by = {row["label"]: row for row in chart["quarters"]}
+    assert by["FQ4 2025"]["actual"] == 1.80
+    assert by["FQ4 2025"]["basis"] == "扫描已公布"
+    assert by["FQ4 2025"]["yoy_pct"] == pytest.approx((1.80 / 1.50 - 1) * 100)
+    assert by["FQ4 2026"]["actual"] is None
+    assert by["FQ4 2026"]["yoy_pct"] == pytest.approx((2.5 / 1.80 - 1) * 100)
+    assert by["FQ2 2025"]["actual"] is None
+    assert by["FQ2 2026"]["actual"] is None
+    assert by["FQ2 2026"]["consensus"] == 2.2
+    assert by["FQ2 2026"]["yoy_pct"] is None
+
+
+def test_scan_fill_does_not_divide_across_a_split(monkeypatch):
+    """扫描补上的实际如果和去年季报差出一个数量级，只补柱，不算同比。"""
+    from builder.build import _eps_chart
+
+    tv = {
+        "fetched_at": "2026-10-23T12:00:00Z",
+        "quote": {"fetched_at": "2026-10-23T12:00:00Z"},
+        "future_quarters": [],
+        "rows_used": {
+            "earnings_fq_h_chart": [
+                {"FiscalPeriod": "2025-Q1", "Actual": 1.2, "IsReported": True},
+                {"FiscalPeriod": "2025-Q3", "Actual": 1.4, "IsReported": True},
+                {"FiscalPeriod": "2025-Q4", "Actual": 1.80, "IsReported": True},
+                {"FiscalPeriod": "2026-Q1", "Actual": 1.6, "IsReported": True},
+            ],
+            "revenues_fq_h": [],
+        },
+    }
+
+    def quarter(period: str, eps: float | None) -> dict:
+        fin = {"revenue": {"value": 10_000_000_000, "yoy_pct": None}, "eps_gaap": {"value": eps}}
+        score = [{"metric": "eps", "actual": eps, "basis": "gaap", "benchmark": {"source": "none"}}] if eps is not None else []
+        return {"meta": {"ticker": "ZZZ", "fiscal_period": period}, "financials": fin, "scorecard": score}
+
+    docs = {
+        "FY2024Q4": quarter("FY2024Q4", 20.0),
+        "FY2025Q1": quarter("FY2025Q1", 1.2),
+        "FY2025Q3": quarter("FY2025Q3", 1.4),
+        "FY2025Q4": quarter("FY2025Q4", None),
+        "FY2026Q1": quarter("FY2026Q1", 1.6),
+    }
+    monkeypatch.setattr("builder.build._tradingview", lambda ticker: tv)
+    chart = _eps_chart(docs["FY2026Q1"], docs)
+    by = {row["label"]: row for row in chart["quarters"]}
+    assert by["FQ4 2025"]["actual"] == 1.80
+    assert by["FQ4 2025"]["basis"] == "扫描已公布"
+    assert by["FQ4 2025"]["yoy_pct"] is None
+
+
+def test_forward_yoy_stays_empty_when_last_year_is_unreported():
+    """去年同季还没有实际（也没有同一口径的扫描实际）时，不拿预期除预期。"""
+    from builder.build import _eps_chart, _load_docs
+
+    docs = _load_docs("0700.HK")
+    latest = max(key for key in docs if key.startswith("FY"))
+    chart = _eps_chart(docs[latest], docs)
+    assert chart is not None and chart["revenue"]
+    by_eps = {row["label"]: row for row in chart["quarters"]}
+    by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
+    assert by_eps["FQ2 2027"]["consensus"] is not None and by_eps["FQ2 2027"]["yoy_pct"] is None
+    assert by_rev["FQ2 2027"]["consensus"] is not None and by_rev["FQ2 2027"]["yoy_pct"] is None
+
+
+def test_amzn_q4_eps_yoy_uses_scan_actual():
+    """AMZN 季报 Q4 没有 EPS，扫描里的已公布实际和相邻季同一数量级，同比要接上。"""
+    from builder.build import _eps_chart, _load_docs
+
+    docs = _load_docs("AMZN")
+    latest = max(key for key in docs if key.startswith("FY"))
+    chart = _eps_chart(docs[latest], docs)
+    by = {row["label"]: row for row in chart["quarters"]}
+    assert by["FQ4 2025"]["actual"] == pytest.approx(1.95)
+    assert by["FQ4 2025"]["basis"] == "扫描已公布"
+    assert by["FQ4 2025"]["yoy_pct"] == pytest.approx((1.95 / 1.86 - 1) * 100)
+    assert by["FQ4 2026"]["actual"] is None
+    assert by["FQ4 2026"]["yoy_pct"] == pytest.approx((2.459832 / 1.95 - 1) * 100)
+
+
+def test_mismatched_scan_eps_does_not_fill_quarter_gap():
+    """扫描和季报差出 ±3% 时，不把扫描实际接到季报 EPS 上，前瞻季同比留空。"""
+    from builder.build import _eps_chart, _load_docs
+
+    for ticker, hole, forward in (("MCD", "FQ4 2025", "FQ4 2026"), ("MSFT", "FQ4 2026", "FQ4 2027")):
+        docs = _load_docs(ticker)
+        latest = max(key for key in docs if key.startswith("FY"))
+        chart = _eps_chart(docs[latest], docs)
+        by = {row["label"]: row for row in chart["quarters"]}
+        assert by[hole]["actual"] is None
+        assert by[hole]["basis"] != "扫描已公布"
+        assert by[forward]["actual"] is None and by[forward]["yoy_pct"] is None
+
+
+def test_yoy_gap_tooltip_says_missing_prior_year():
+    script = (ROOT / "builder" / "static" / "charts.js").read_text(encoding="utf-8")
+    assert script.count("同比 缺去年同期") >= 2
+    assert "同比 —" not in script
+
+
 def test_fin_rows_pair_margins_with_absolute_profit():
     """营业成本在毛利率上面；营业利润额仍跟在营业利润率下面，再跟净利润。"""
     from builder.build import _fin_rows

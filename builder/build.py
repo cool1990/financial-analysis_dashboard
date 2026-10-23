@@ -4193,6 +4193,80 @@ def _eps_basis_label(doc: dict[str, Any]) -> str:
     return ""
 
 
+def _tv_reported_actuals(tv: dict[str, Any] | None, metric: str) -> dict[str, float]:
+    """扫描里已经公布的实际。只作同比基数或补季报里没写上的 EPS，不覆盖已有实际。"""
+    used = (tv or {}).get("rows_used") if isinstance((tv or {}).get("rows_used"), dict) else {}
+    if metric == "eps":
+        groups = [used.get("earnings_fq_h_chart") or [], used.get("earnings_fq_h") or []]
+    else:
+        groups = [used.get("revenues_fq_h") or []]
+    found: dict[str, float] = {}
+    for rows in groups:
+        if not isinstance(rows, list):
+            continue
+        for item in rows:
+            if not isinstance(item, dict) or not item.get("IsReported"):
+                continue
+            period = _period_from_tv(item.get("FiscalPeriod"))
+            actual = _finite(item.get("Actual"))
+            if period and actual is not None and period not in found:
+                found[period] = actual
+    return found
+
+
+def _same_scale(candidate: float | None, anchors: list[float]) -> bool:
+    """和相邻实际差出五倍以上就当拆股或另一套单位，不拿来补这个点。"""
+    if candidate is None or candidate == 0:
+        return False
+    for anchor in anchors:
+        if anchor in (None, 0):
+            continue
+        ratio = abs(float(candidate)) / abs(float(anchor))
+        if 0.2 <= ratio <= 5:
+            return True
+    return False
+
+
+def _nearby_actuals(period: str, actuals: dict[str, float], *, limit: int = 4) -> list[float]:
+    """先看紧邻季度。紧邻没有已保存实际，再往外看。"""
+    prev = nxt = period
+    for _ in range(limit):
+        prev = prior_fiscal_period(prev)
+        nxt = next_fiscal_period(nxt)
+        found = [actuals[key] for key in (prev, nxt) if actuals.get(key) not in (None, 0)]
+        if found:
+            return found
+    return []
+
+
+def _scan_matches_actuals(scan: dict[str, float], actuals: dict[str, float]) -> bool:
+    """最近 8 个重叠季都要落在 ±3% 以内（至少 3 季），才把扫描实际当成同一套 EPS。
+
+    超出这个范围就整段不用：港股另一套口径、Non-GAAP 对 GAAP，或只有个别季度碰巧重合。
+    """
+    common = [
+        period
+        for period in sorted(actuals)
+        if actuals.get(period) not in (None, 0) and scan.get(period) not in (None, 0)
+    ]
+    recent = common[-8:]
+    if len(recent) < 3:
+        return False
+    return all(0.97 <= abs(scan[period]) / abs(actuals[period]) <= 1.03 for period in recent)
+
+
+def _scaled_scan_actual(period: str, scan: dict[str, float], actuals: dict[str, float]) -> float | None:
+    """季报没有这季实际时，只用和已保存实际同一套口径的扫描已公布数。"""
+    if period in actuals or not _scan_matches_actuals(scan, actuals):
+        return None
+    candidate = scan.get(period)
+    if candidate is None:
+        return None
+    if not _same_scale(candidate, _nearby_actuals(period, actuals)):
+        return None
+    return candidate
+
+
 def _stored_eps_yoy(doc: dict[str, Any]) -> float | None:
     basis = str((_scorecard_row(doc, "eps") or {}).get("basis") or "")
     fin = doc.get("financials") or {}
@@ -4443,9 +4517,21 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
         page_actual = metric_actual(doc, metric)
         if page_actual is not None:
             actuals.setdefault(period, page_actual)
+        # 营收实际以季报为准。EPS 季报常缺 Q4（不做累计相减），扫描里同一数量级的已公布实际可以补。
+        scan_actuals = _tv_reported_actuals(_tradingview(ticker) if ticker else None, metric) if metric == "eps" else {}
+        filled_scan: set[str] = set()
+        for key in periods:
+            if key in forward_by or key in actuals:
+                continue
+            scanned = _scaled_scan_actual(key, scan_actuals, actuals)
+            if scanned is None:
+                continue
+            actuals[key] = scanned
+            filled_scan.add(key)
         for key in periods:
             item = docs.get(key) or (doc if key == period else {})
             actual = actuals.get(key)
+            from_scan = key in filled_scan
             if key in forward_by:
                 field = "eps" if metric == "eps" else "revenue"
                 consensus = _aligned_consensus(actual, forward_by[key].get(field))
@@ -4455,18 +4541,23 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
                     guide_metric = "next_q_eps_guidance" if metric == "eps" else "next_q_revenue_guidance"
                     consensus = _aligned_consensus(guide, _scorecard_consensus(doc, guide_metric))
             yoy = None
-            if metric == "eps":
-                yoy = _stored_eps_yoy(item)
-            else:
-                yoy = _finite(((item.get("financials") or {}).get("revenue") or {}).get("yoy_pct"))
-            if yoy is None and actual is not None:
-                base = actuals.get(yoy_fiscal_period(key))
-                if base:
-                    yoy = actual / abs(base) - 1
-            elif yoy is None and consensus is not None and key in forward_by:
-                base = actuals.get(yoy_fiscal_period(key))
-                if base:
-                    yoy = consensus / abs(base) - 1
+            if not from_scan:
+                if metric == "eps":
+                    yoy = _stored_eps_yoy(item)
+                else:
+                    yoy = _finite(((item.get("financials") or {}).get("revenue") or {}).get("yoy_pct"))
+            if yoy is None:
+                current = actual if actual is not None else (consensus if key in forward_by else None)
+                prior_key = yoy_fiscal_period(key)
+                base_saved = actuals.get(prior_key) not in (None, 0)
+                base = actuals[prior_key] if base_saved else _scaled_scan_actual(prior_key, scan_actuals, actuals)
+                # 两边都是季报时，高增长也照算。只要有一边来自扫描，数量级对不上（拆股前后）就不除。
+                if (
+                    current is not None
+                    and base
+                    and ((not from_scan and base_saved) or _same_scale(current, [base]))
+                ):
+                    yoy = current / abs(base) - 1
             guidance_only = actual is None and key == nxt and guide is not None and consensus is None
             forward_point = key in forward_by and actual is None
             if actual is not None and consensus is not None:
@@ -4501,7 +4592,13 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
                     "yoy_pct": None if yoy is None else yoy * 100,
                     "note": note,
                     "note_cls": note_cls,
-                    "basis": _eps_basis_label(item) if metric == "eps" and actual is not None else ("营收" if metric == "revenue" and actual is not None else ("营收指引" if guidance_only and metric == "revenue" else "")),
+                    "basis": (
+                        "扫描已公布"
+                        if from_scan
+                        else _eps_basis_label(item)
+                        if metric == "eps" and actual is not None
+                        else ("营收" if metric == "revenue" and actual is not None else ("营收指引" if guidance_only and metric == "revenue" else ""))
+                    ),
                 }
             )
         return quarters
@@ -4602,13 +4699,29 @@ def _overlay_tv_forward_eps(
     quarters = kept
     by_label = {quarter["label"]: quarter for quarter in quarters}
 
-    def base_for(period: str) -> float | None:
+    def base_for(period: str) -> tuple[float | None, bool]:
+        """去年同季实际，以及它是不是扫描补上的。"""
         prior = yoy_fiscal_period(period)
         prev = by_label.get(_fq_label(prior))
         if prev and prev.get("actual") is not None:
-            return float(prev["actual"])
+            return float(prev["actual"]), False
         item = docs.get(prior) or {}
-        return _comparable_quarter_eps(item) if item else None
+        ours = _comparable_quarter_eps(item) if item else None
+        if ours is not None:
+            return ours, False
+        saved = {
+            key: value
+            for key, value in (
+                (_label_to_period(quarter.get("label")), quarter.get("actual"))
+                for quarter in quarters
+            )
+            if key and value is not None
+        }
+        for key, value in docs.items():
+            eps = _comparable_quarter_eps(value)
+            if eps is not None:
+                saved.setdefault(key, eps)
+        return _scaled_scan_actual(prior, _tv_reported_actuals(_tradingview(ticker), "eps"), saved), True
 
     for row in forward:
         label = _fq_label(row["period"])
@@ -4631,8 +4744,8 @@ def _overlay_tv_forward_eps(
             by_label[label] = target
         else:
             target["consensus"] = shown
-        base = base_for(row["period"])
-        if eps is not None and base:
+        base, base_from_scan = base_for(row["period"])
+        if eps is not None and base and (not base_from_scan or _same_scale(eps, [base])):
             yoy = eps / abs(base) - 1
             target["yoy_pct"] = yoy * 100
             change = _change(yoy)
@@ -5746,14 +5859,12 @@ def _revenue_expect(
         if actual is None and estimate is None and period not in forward_rev:
             continue
         yoy = yoys.get(period)
-        if yoy is None and estimate is not None:
+        if yoy is None:
+            # 已公布季只用实际；前瞻季才用预期除以去年同季实际。没有实际就留空。
+            numerator = actual if actual is not None else (estimate if period in forward_rev else None)
             base = actuals.get(yoy_fiscal_period(period))
-            if base:
-                yoy = estimate / abs(base) - 1
-        elif yoy is None and actual is not None:
-            base = actuals.get(yoy_fiscal_period(period))
-            if base:
-                yoy = actual / abs(base) - 1
+            if numerator is not None and base:
+                yoy = numerator / abs(base) - 1
         quarters.append(revenue_row(
             quarter.get("label") or _fq_label(period),
             actual,
@@ -5770,14 +5881,11 @@ def _revenue_expect(
         estimate = row.get("revenue")
         actual = actuals.get(period_key)
         yoy = yoys.get(period_key)
-        if yoy is None and estimate is not None:
+        if yoy is None:
+            numerator = actual if actual is not None else estimate
             base = actuals.get(yoy_fiscal_period(period_key))
-            if base:
-                yoy = estimate / abs(base) - 1
-        elif yoy is None and actual is not None:
-            base = actuals.get(yoy_fiscal_period(period_key))
-            if base:
-                yoy = actual / abs(base) - 1
+            if numerator is not None and base:
+                yoy = numerator / abs(base) - 1
         quarters.append(revenue_row(
             _fq_label(period_key),
             actual,
