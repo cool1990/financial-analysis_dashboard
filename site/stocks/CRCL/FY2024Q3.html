@@ -103,7 +103,7 @@
       <span class="m-sum"><span class="muted">变动原因待生成</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar>
         <div class="fin-grain" role="group" aria-label="时间粒度">
           <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
           <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
@@ -111,22 +111,22 @@
       </div>
       <div class="charts fin-charts" data-fin-charts data-cols="3">
         <div class="card chart">
-          <h3>水平值</h3>
-          <p class="c-sub">本季水平</p>
-          <div class="c-body"><canvas data-metric="revenue" data-series="level" aria-label="水平值"></canvas></div>
+          <h3>营业收入</h3>
+          <p class="c-sub">十亿美元</p>
+          <div class="c-body"><canvas data-fin-kind="amount_yoy" data-fin-index="0" aria-label="营业收入"></canvas></div>
         </div>
         <div class="card chart">
-          <h3>环比</h3>
-          <p class="c-sub">较上一季</p>
-          <div class="c-body"><canvas data-metric="revenue" data-series="qoq" aria-label="环比"></canvas></div>
-        </div>
+          <h3>按业务</h3>
+          <p class="c-sub">占比</p>
+          <div class="c-body"><canvas data-fin-kind="share" data-fin-index="1" aria-label="按业务"></canvas></div>
+<p class="fin-readout" data-fin-readout="1" hidden></p>        </div>
         <div class="card chart">
-          <h3>同比</h3>
-          <p class="c-sub">较去年同季</p>
-          <div class="c-body"><canvas data-metric="revenue" data-series="yoy" aria-label="同比"></canvas></div>
-        </div>
+          <h3>按地区</h3>
+          <p class="c-sub">占比</p>
+          <div class="c-body"><canvas data-fin-kind="share" data-fin-index="2" aria-label="按地区"></canvas></div>
+<p class="fin-readout" data-fin-readout="2" hidden></p>        </div>
       </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
+      <p class="small muted mix-note" data-fin-note>金额来自 data/CRCL 各季 Stage1 JSON（不联网、不调模型）。营业收入取 financials.revenue；有毛利或毛利率时写入毛利。营业成本留给建站时从新闻稿或毛利率倒算，以便保留同比环比。缺季度文件或字段时留空。地区拆分未写入 period JSON，geo 留空。 已保存的披露文字里没有地区收入，地区柱留空。 FY2024Q1、FY2024Q2、FY2024Q3、FY2024Q4、FY2025Q1、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q1、FY2026Q2 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。</p>
       <div class="fin-drivers">
 <p class="muted">历史回补不含变动原因</p>      </div>
     </div>
@@ -371,7 +371,7 @@ window.PAGE_CHARTS = {
   "historyScript": "history.js",
   "moneyUnit": "十亿美元",
   "epsUnit": "美元",
-  "finView": {"by_key": {}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "grain": false, "note": ""},
+  "finView": {"by_key": {"revenue": {"charts": [{"amount": [null, 0.43, 0.45, 0.44, 0.58, 0.66, 0.74, 0.77, 0.69, 0.7], "amount_text": [null, "$430.03M", "$445.76M", "$435.37M", "$578.57M", "$658.08M", "$739.76M", "$770.23M", "$694.13M", "$701.32M"], "annual": {"amount": [2.75], "amount_text": ["$2.75B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿美元", "title": "营业收入", "yoy": [null, null, null, null, null, 53.0, 66.0, 76.9, 20.0, 6.6]}, {"annual": null, "focus": "FY2024Q3", "kind": "share", "labels": ["FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2024Q3", "kind": "share", "labels": ["FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按地区"}], "note": "金额来自 data/CRCL 各季 Stage1 JSON（不联网、不调模型）。营业收入取 financials.revenue；有毛利或毛利率时写入毛利。营业成本留给建站时从新闻稿或毛利率倒算，以便保留同比环比。缺季度文件或字段时留空。地区拆分未写入 period JSON，geo 留空。 已保存的披露文字里没有地区收入，地区柱留空。 FY2024Q1、FY2024Q2、FY2024Q3、FY2024Q4、FY2025Q1、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q1、FY2026Q2 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"}}, "charts": [{"amount": [null, 0.43, 0.45, 0.44, 0.58, 0.66, 0.74, 0.77, 0.69, 0.7], "amount_text": [null, "$430.03M", "$445.76M", "$435.37M", "$578.57M", "$658.08M", "$739.76M", "$770.23M", "$694.13M", "$701.32M"], "annual": {"amount": [2.75], "amount_text": ["$2.75B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿美元", "title": "营业收入", "yoy": [null, null, null, null, null, 53.0, 66.0, 76.9, 20.0, 6.6]}, {"annual": null, "focus": "FY2024Q3", "kind": "share", "labels": ["FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2024Q3", "kind": "share", "labels": ["FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按地区"}], "default": "revenue", "grain": true, "note": "金额来自 data/CRCL 各季 Stage1 JSON（不联网、不调模型）。营业收入取 financials.revenue；有毛利或毛利率时写入毛利。营业成本留给建站时从新闻稿或毛利率倒算，以便保留同比环比。缺季度文件或字段时留空。地区拆分未写入 period JSON，geo 留空。 已保存的披露文字里没有地区收入，地区柱留空。 FY2024Q1、FY2024Q2、FY2024Q3、FY2024Q4、FY2025Q1、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q1、FY2026Q2 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"},
   "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。", "quarters": [{"actual": null, "basis": "", "consensus": null, "label": "FQ1 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.0, "basis": "", "consensus": null, "label": "FQ2 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.0, "basis": "", "consensus": null, "label": "FQ3 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。", "quarters": [{"actual": null, "basis": "", "consensus": null, "label": "FQ1 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.43, "basis": "营收", "consensus": null, "label": "FQ2 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.45, "basis": "营收", "consensus": null, "label": "FQ3 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.44, "basis": "营收", "consensus": null, "label": "FQ4 2024", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}], "sides": []}, "sides": []}
 };
 </script>

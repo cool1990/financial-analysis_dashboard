@@ -67,6 +67,7 @@ def main(argv: list[str] | None = None) -> int:
     p_hist.add_argument("--ticker", default=None, help="一只股票。与 --if-new 合用时只检查这一只")
     p_hist.add_argument("--if-new", action="store_true", help="仅在出现新的 10-Q/10-K，或历史文件还不齐时刷新")
     p_hist.add_argument("--start", default="2016-01-01", help="季度结束日的起点")
+    p_hist.add_argument("--from-periods", action="store_true", help="用已有 FY*.json 写 statement/segment 历史（不联网）")
 
     p_build = sub.add_parser("build", help="生成静态页面到 site/")
     p_build.add_argument("--ticker", default=None)
@@ -193,14 +194,20 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(doc.get("status"), ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "history":
-            from pipeline.commands.history_cmd import refresh_history, refresh_history_if_new
+            from pipeline.commands.history_cmd import (
+                refresh_history,
+                refresh_history_from_periods,
+                refresh_history_if_new,
+            )
 
-            if args.if_new:
+            if args.from_periods:
+                out = refresh_history_from_periods(args.ticker)
+            elif args.if_new:
                 out = refresh_history_if_new(args.ticker, start=args.start)
             elif args.ticker:
                 out = refresh_history(args.ticker, start=args.start)
             else:
-                print("需要 --ticker，或加上 --if-new", file=sys.stderr)
+                print("需要 --ticker，或加上 --if-new / --from-periods", file=sys.stderr)
                 return 2
             print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0
