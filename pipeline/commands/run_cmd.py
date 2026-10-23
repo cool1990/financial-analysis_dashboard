@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -10,7 +10,13 @@ from zoneinfo import ZoneInfo
 from pipeline.commands.snapshot_cmd import load_pre_earnings_snapshot
 from pipeline.compute.comparatives import apply_press_comparatives
 from pipeline.compute.metrics import build_metric_block, ratio, ytd_to_quarterly
-from pipeline.compute.periods import build_period_info, prior_fiscal_period, yoy_fiscal_period
+from pipeline.compute.periods import (
+    build_period_info,
+    latest_closed_quarter,
+    make_fiscal_period,
+    prior_fiscal_period,
+    yoy_fiscal_period,
+)
 from pipeline.compute.scorecard import build_scorecard
 from pipeline.config import load_guidance_keys, load_settings, load_ticker_config
 from pipeline.earnings_config import earnings_filter_fingerprint, resolve_earnings_spec
@@ -42,6 +48,54 @@ from pipeline.analyze.drivers import analyze_drivers, strip_driver_warnings
 from pipeline.analyze.qa import structure_qa
 from pipeline.analyze.summary import summarize_period
 from pipeline.notify import format_scorecard_text, maybe_notify
+
+
+def select_eps_actual(
+    basis: str,
+    gaap: float | None,
+    nongaap: float | None,
+) -> tuple[float | None, list[str]]:
+    """记分卡用的 EPS。0.00 是有效数字，不能用 or 当成缺失。"""
+    warnings: list[str] = []
+    if basis == "gaap":
+        return gaap, warnings
+    if basis == "non_gaap":
+        if nongaap is not None:
+            return nongaap, warnings
+        warnings.append("本季未披露 Non-GAAP EPS，改用 GAAP")
+        return gaap, warnings
+    warnings.append("eps_basis=unknown，记分卡待核对")
+    if nongaap is not None:
+        return nongaap, warnings
+    return gaap, warnings
+
+
+def resolve_stage1_period_end(
+    extracted_end: str | None,
+    release_at: str,
+    fiscal_year_end_month: int,
+) -> tuple[str, bool, str | None]:
+    """(季末 YYYY-MM-DD, 是否推断, 推断出的 FY 标签)。
+
+    新闻稿写了 period_end_date 时沿用它，标签仍交给 build_period_info。
+    没写时用发布日之前最近的财季结束日，不用发布日本身。推不出来就抛 ValueError。
+    """
+    text = str(extracted_end or "").strip()
+    if text:
+        return text[:10], False, None
+    raw = str(release_at or "").strip()
+    release: date | None
+    try:
+        release = date.fromisoformat(raw[:10]) if len(raw) >= 10 else None
+    except ValueError:
+        release = None
+    if release is None:
+        raise ValueError("缺少 period_end_date，且发布日无法解析")
+    found = latest_closed_quarter(release, fiscal_year_end_month)
+    if found is None:
+        raise ValueError("缺少 period_end_date，且找不到发布日之前的财季结束日")
+    end, fiscal_year, fiscal_quarter = found
+    return end.isoformat(), True, make_fiscal_period(fiscal_year, fiscal_quarter)
 
 
 def _guidance_merge_key(item: dict[str, Any]) -> tuple:
@@ -262,13 +316,19 @@ def _run_stage1_filing(
     if spec.listing == "adr":
         warnings.extend(apply_currency_guard(extracted, parsed.get("combined") or "", spec.reporting_currency))
 
-    # determine period
-    period_end = extracted.get("period_end_date")
-    if not period_end:
-        # fallback: use acceptance date quarter approximation — better require LLM
-        period_end = release_at[:10]
+    # determine period。没有季末时不用发布日充数，否则季末落在下一季时会标错。
+    try:
+        period_end, inferred_end, inferred_period = resolve_stage1_period_end(
+            extracted.get("period_end_date"),
+            release_at,
+            int(cfg["fiscal_year_end_month"]),
+        )
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
+    if inferred_end:
+        warnings.append(f"新闻稿没有 period_end_date，改用发布日之前的财季结束日 {period_end}，需要核对")
     info = build_period_info(period_end, cfg["fiscal_year_end_month"])
-    period = fiscal_period or info.fiscal_period
+    period = fiscal_period or inferred_period or info.fiscal_period
 
     # move raw files
     final_raw = __import__("pipeline.config", fromlist=["data_dir"]).data_dir(ticker) / "raw" / period
@@ -295,16 +355,8 @@ def _run_stage1_filing(
     capex_n = ParsedAmount.from_dict(extracted.get("capex_net"))
 
     basis = cfg.get("eps_basis_override") or cfg.get("eps_basis") or "unknown"
-    if basis == "gaap":
-        eps_actual = eps_gaap.value
-    elif basis == "non_gaap":
-        eps_actual = eps_ng.value
-        if eps_actual is None:
-            eps_actual = eps_gaap.value
-            warnings.append("本季未披露 Non-GAAP EPS，改用 GAAP")
-    else:
-        eps_actual = eps_ng.value or eps_gaap.value
-        warnings.append("eps_basis=unknown，记分卡待核对")
+    eps_actual, eps_warnings = select_eps_actual(basis, eps_gaap.value, eps_ng.value)
+    warnings.extend(eps_warnings)
 
     # estimates from pre-earnings snapshot
     snap = load_pre_earnings_snapshot(ticker, release_at if "T" in release_at else release_at + "T00:00:00Z")
@@ -454,7 +506,7 @@ def _run_stage1_filing(
         doc["meta"]["accounting_basis"] = spec.accounting_basis
     doc["status"] = {
         "stage": "stage1_done",
-        "needs_review": v["needs_review"] or basis == "unknown",
+        "needs_review": v["needs_review"] or basis == "unknown" or inferred_end,
         "warnings": warnings,
     }
     doc["scorecard"] = scorecard

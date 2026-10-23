@@ -1,5 +1,6 @@
 # NYSE ADR（SEC FPI）。业绩发现走 6-K 新闻稿，不是 8-K Item 2.02。
 # 不以 TWSE / us-gaap XBRL 为主路径。第二只 ADR 复制这份 sec 字段即可。
+# eps_basis 保持 yaml 里的 gaap：ADR 初始化不拿 companyfacts 配对去改口径。
 ticker: TSM
 name: Taiwan Semiconductor Manufacturing (ADR)
 cik: "0001046179"
@@ -11,6 +12,17 @@ accounting_basis: taiwan_ifrs
 eps_basis: gaap
 capex_definition: gross
 benchmark: SOXX
+kpis:
+  - key: advanced_node_revenue
+    name: 先进制程营收
+    unit: USD
+    source: press_release
+    hint: 3nm and 5nm revenue, or revenue from advanced technologies
+  - key: hpc_revenue
+    name: 高性能计算营收
+    unit: USD
+    source: press_release
+    hint: High performance computing platform revenue
 
 sec:
   earnings_forms: ["6-K"]

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from html import unescape
 from pathlib import Path
 from typing import Any
@@ -3430,38 +3430,43 @@ def _pool_as_of(tickers: list[str]) -> str:
     return latest.astimezone(BJ).strftime("%Y-%m-%d %H:%M")
 
 
-def _quarter_view(ticker: str, cfg: dict[str, Any], doc: dict[str, Any] | None, today: date) -> dict[str, Any]:
-    """当前季 EPS 与修正评价。没有 Alpha Vantage 缓存和 key 时，数字留「—」。"""
+def _quarter_view(
+    ticker: str,
+    cfg: dict[str, Any],
+    doc: dict[str, Any] | None,
+    today: date,
+    period: str | None = None,
+) -> dict[str, Any]:
+    """当前季 EPS 与修正评价。季度只认已披露财季的下一季，再对齐 Alpha Vantage。"""
     from pipeline.commands.poll_cmd import known_earnings_dates
     from pipeline.compute.revision_signal import (
-        current_quarter_target,
+        choose_current_estimate,
         earnings_drive_tag,
         format_current_quarter,
-        pick_current_quarter_estimate,
     )
-    from pipeline.sources.av_estimates import load_earnings_estimates
+    from pipeline.sources.av_estimates import load_earnings_record
 
     fye = int(cfg.get("fiscal_year_end_month") or 12)
-    yahoo = None
-    when = _next_earnings(ticker)
-    if when:
-        try:
-            yahoo = date.fromisoformat(when[:10])
-        except ValueError:
-            yahoo = None
-    target = current_quarter_target(
-        _tradingview(ticker),
+    record = load_earnings_record(ticker)
+    reported = period if period and re.fullmatch(r"FY\d{4}Q[1-4]", period) else None
+    row = choose_current_estimate(
+        record.get("estimates"),
+        reported_period=reported,
         fiscal_year_end_month=fye,
-        yahoo_0q_date=yahoo,
+        today=today,
     )
-    row = pick_current_quarter_estimate(load_earnings_estimates(ticker), target)
     dates = list(known_earnings_dates(ticker))
     release = _parse_dt(((doc or {}).get("meta") or {}).get("release_at_utc"))
     if release is not None:
         day = release.astimezone(ET).date()
         if day not in dates:
             dates.append(day)
-    return format_current_quarter(row, earnings_drive_tag(dates, today))
+    return format_current_quarter(
+        row,
+        earnings_drive_tag(dates, today),
+        fetched_at=record.get("fetched_at"),
+        now=datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc),
+    )
 
 
 def _index_row(
@@ -3506,7 +3511,7 @@ def _index_row(
         "next_earnings": when,
         "next_text": _next_text(when, timing),
         "timing": timing,
-        "quarter": _quarter_view(t, cfg, doc, today),
+        "quarter": _quarter_view(t, cfg, doc, today, period),
         "href": f"stocks/{t}/index.html",
         "listing": str(cfg.get("listing") or "domestic"),
         "reporting_currency": str(cfg.get("reporting_currency") or ""),
@@ -4709,9 +4714,9 @@ def _load_docs(ticker: str) -> dict[str, dict[str, Any]]:
     return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("FY*.json"))}
 
 
-def build_site(ticker: str | None = None) -> list[Path]:
+def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[Path]:
     env = _env()
-    out_dir = site_dir()
+    out_dir = Path(out_dir) if out_dir else site_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
     _copy_static(out_dir)
 
@@ -4806,7 +4811,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
     if index_rows and not any(row["quarter"]["has_numbers"] for row in index_rows):
         av_note = (
             "当前季 EPS、覆盖人数和 30 日上修/下修来自 Alpha Vantage EARNINGS_ESTIMATES，"
-            "季度对齐第一个未公布财季（Yahoo 0q）。没有 ALPHAVANTAGE_API_KEY，"
+            "季度取最近已披露财季的下一季。没有 ALPHAVANTAGE_API_KEY，"
             "也没有 data/{代码}/consensus/av_estimates.json 时，这些格子是「—」，评价为无数据。"
         )
     index_html = env.get_template("index.html").render(

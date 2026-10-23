@@ -1,0 +1,51 @@
+name: ci
+
+# 不使用 secrets。pytest 失败或建站失败都会让这个 job 失败。
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: pytest
+        run: python -m pytest -q
+
+      - name: Smoke build
+        run: |
+          set -euo pipefail
+          out="$(mktemp -d)"
+          python -m pipeline build --out "$out"
+          test -s "$out/index.html"
+          test -s "$out/static/vendor/chart.umd.min.js"
+
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: actionlint
+        run: |
+          set -euo pipefail
+          version=1.7.7
+          curl -sSfL -o actionlint.tar.gz "https://github.com/rhysd/actionlint/releases/download/v${version}/actionlint_${version}_linux_amd64.tar.gz"
+          tar -xzf actionlint.tar.gz actionlint
+          ./actionlint -color

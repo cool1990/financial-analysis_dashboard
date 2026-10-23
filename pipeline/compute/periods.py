@@ -47,61 +47,6 @@ def calendar_quarter_from_midpoint(period_start: date | str, period_end: date | 
     return calendar_quarter_of(mid_d)
 
 
-def fiscal_quarter_for_end(period_end: date | str, fiscal_year_end_month: int) -> tuple[int, int]:
-    """根据财季结束日与财年结束月份，计算 (fiscal_year, fiscal_quarter)。
-
-    财年 FY{N} 结束于日历年 N 的 fiscal_year_end_month。
-    """
-    end = _to_date(period_end)
-    # 财年标签：结束月之后到下一年结束月之前属于下一财年
-    if end.month > fiscal_year_end_month or (
-        end.month == fiscal_year_end_month and end.day >= 15
-    ):
-        # 接近或刚过财年末：Q4 结束日通常在结束月或稍后几天
-        fiscal_year = end.year if end.month >= fiscal_year_end_month else end.year
-    else:
-        fiscal_year = end.year if end.month > fiscal_year_end_month else end.year
-
-    # 更稳健：以“结束月中心”划分四个季度
-    # Q1 ends ~ FYE-9m, Q2 ~ FYE-6m, Q3 ~ FYE-3m, Q4 ~ FYE
-    centers = []
-    for q in range(1, 5):
-        # Q4 center month = fiscal_year_end_month of fiscal_year
-        months_before_fye = (4 - q) * 3
-        year = fiscal_year_guess(end, fiscal_year_end_month)
-        center_month_idx = fiscal_year_end_month - months_before_fye
-        center_year = year
-        while center_month_idx <= 0:
-            center_month_idx += 12
-            center_year -= 1
-        centers.append((q, center_year, center_month_idx))
-
-    year = fiscal_year_guess(end, fiscal_year_end_month)
-    best_q = 4
-    best_dist = 10**9
-    for q, cy, cm in [
-        (1, year if fiscal_year_end_month - 9 > 0 else year - 1, ((fiscal_year_end_month - 9 - 1) % 12) + 1),
-        (2, year if fiscal_year_end_month - 6 > 0 else year - 1, ((fiscal_year_end_month - 6 - 1) % 12) + 1),
-        (3, year if fiscal_year_end_month - 3 > 0 else year - 1, ((fiscal_year_end_month - 3 - 1) % 12) + 1),
-        (4, year, fiscal_year_end_month),
-    ]:
-        # approximate end day = 28 of center month
-        approx = date(cy if q < 4 else year, cm, 28)
-        # fix year for q1-q3 relative to FYE year
-        if q < 4:
-            m = fiscal_year_end_month - (4 - q) * 3
-            y = year
-            while m <= 0:
-                m += 12
-                y -= 1
-            approx = date(y, m, min(28, _days_in_month(y, m)))
-        dist = abs((end - approx).days)
-        if dist < best_dist:
-            best_dist = dist
-            best_q = q
-    return year, best_q
-
-
 def _days_in_month(year: int, month: int) -> int:
     if month == 12:
         nxt = date(year + 1, 1, 1)
@@ -110,27 +55,44 @@ def _days_in_month(year: int, month: int) -> int:
     return (nxt - timedelta(days=1)).day
 
 
-def fiscal_year_guess(period_end: date, fiscal_year_end_month: int) -> int:
-    """财年 FY{N} 的 Q4 结束于日历年 N 的结束月附近。
+def _quarter_anchor(fiscal_year: int, fiscal_quarter: int, fiscal_year_end_month: int) -> date:
+    """财季锚点：该季结束月的 28 日。Q4 落在财年结束月。"""
+    month = fiscal_year_end_month - (4 - fiscal_quarter) * 3
+    year = fiscal_year
+    while month <= 0:
+        month += 12
+        year -= 1
+    while month > 12:
+        month -= 12
+        year += 1
+    return date(year, month, min(28, _days_in_month(year, month)))
 
-    若结束日在结束月之后的月份，仍属同一财年（52/53 周浮动）。
-    若结束日远早于结束月，则可能是下一财年的早期季度——由季度匹配决定年份。
+
+def fiscal_quarter_for_end(period_end: date | str, fiscal_year_end_month: int) -> tuple[int, int]:
+    """根据财季结束日与财年结束月份，计算 (fiscal_year, fiscal_quarter)。
+
+    财年 FY{N} 的 Q4 落在日历年 N 的 fiscal_year_end_month。
+    Q1 往往在上一日历年（1 月结束的财年，Q1 在上年 4 月）。
+    取距离最近的财季锚点，避免把财年结束后的下一季并进上一年 Q4。
+    52/53 周结束日相对月末锚点通常只差几天。
     """
-    end = period_end
-    # 默认：结束月及之后到 12 月 → 当年为财年；1 月到结束月之前 → 看是否更接近上一年 FYE
-    if end.month > fiscal_year_end_month:
-        # e.g. MU FY ends Aug; Sept 1 still FY of that calendar year
-        if end.month == fiscal_year_end_month + 1 and end.day <= 15:
-            return end.year
-        return end.year
-    if end.month == fiscal_year_end_month:
-        return end.year
-    # before FYE month: could be Q1-Q3 of FY ending this year, or Q4 of prior year spilled?
-    # Prefer FY ending this calendar year if within ~10 months before FYE
-    months_to_fye = (fiscal_year_end_month - end.month) % 12
-    if months_to_fye <= 9:
-        return end.year
-    return end.year + 1
+    end = _to_date(period_end)
+    best_year = end.year
+    best_quarter = 4
+    best_dist = 10**9
+    for year in range(end.year - 1, end.year + 2):
+        for quarter in range(1, 5):
+            dist = abs((end - _quarter_anchor(year, quarter, fiscal_year_end_month)).days)
+            if dist < best_dist:
+                best_dist = dist
+                best_year = year
+                best_quarter = quarter
+    return best_year, best_quarter
+
+
+def fiscal_year_guess(period_end: date, fiscal_year_end_month: int) -> int:
+    """结束日所属财年。与 fiscal_quarter_for_end 使用同一套最近锚点。"""
+    return fiscal_quarter_for_end(period_end, fiscal_year_end_month)[0]
 
 
 def make_fiscal_period(fiscal_year: int, fiscal_quarter: int) -> FiscalPeriod:
@@ -163,6 +125,43 @@ def build_period_info(
         fiscal_year=fy,
         fiscal_quarter=fq,
     )
+
+
+def fiscal_quarter_end(fiscal_year: int, fiscal_quarter: int, fiscal_year_end_month: int) -> date:
+    """财季结束月的最后一天。Q4 落在财年结束月。"""
+    month = fiscal_year_end_month - (4 - fiscal_quarter) * 3
+    year = fiscal_year
+    while month <= 0:
+        month += 12
+        year -= 1
+    while month > 12:
+        month -= 12
+        year += 1
+    if month == 12:
+        return date(year, 12, 31)
+    return date(year, month + 1, 1) - timedelta(days=1)
+
+
+def next_fiscal_period(fiscal_period: FiscalPeriod) -> FiscalPeriod:
+    fy, fq = parse_fiscal_period(fiscal_period)
+    if fq == 4:
+        return make_fiscal_period(fy + 1, 1)
+    return make_fiscal_period(fy, fq + 1)
+
+
+def latest_closed_quarter(day: date, fiscal_year_end_month: int) -> tuple[date, int, int] | None:
+    """不晚于 day 的最近一个财季：(结束日, 财年, 财季)。
+
+    结束日按财年结束月推算（该月最后一天）。52/53 周财年的实际结束日可能偏几天，
+    这里只用来在新闻稿没写 period_end 时定季，不把发布日本身当成季末。
+    """
+    best: tuple[date, int, int] | None = None
+    for year in range(day.year - 1, day.year + 2):
+        for quarter in range(1, 5):
+            end = fiscal_quarter_end(year, quarter, fiscal_year_end_month)
+            if end <= day and (best is None or end > best[0]):
+                best = (end, year, quarter)
+    return best
 
 
 def prior_fiscal_period(fiscal_period: FiscalPeriod) -> FiscalPeriod:
