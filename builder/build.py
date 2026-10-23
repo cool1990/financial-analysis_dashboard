@@ -1876,10 +1876,10 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
     if quarters:
         by_key["revenue"] = {
             "note": statement.get("source") or "",
-            "charts": [_amount_yoy_chart(quarters, "revenue", "营收", "金额（十亿美元）与同比")],
+            "charts": [_amount_yoy_chart(quarters, "revenue", "营收", "十亿美元")],
         }
         if any(row.get("gross_profit") is not None for row in quarters):
-            gross_charts = [_amount_yoy_chart(quarters, "gross_profit", "毛利", "金额（十亿美元）与同比")]
+            gross_charts = [_amount_yoy_chart(quarters, "gross_profit", "毛利", "十亿美元")]
             if any(row.get("cogs_lines") or row.get("cost_of_revenue") for row in quarters):
                 # 成本项用申报里的名字；毛利是营收减这些成本后的剩余。
                 prepared = []
@@ -1892,7 +1892,7 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
                     _share_chart(
                         _line_points(prepared, "cogs_lines", denominator="revenue"),
                         "毛利构成",
-                        "点一根柱看占营收的比例和金额",
+                        "占比",
                         period,
                     )
                 )
@@ -1903,11 +1903,11 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
             by_key["opex"] = {
                 "note": "营业费用按申报列出的费用项加总，不含营业成本。占比以这些费用项合计为分母。",
                 "charts": [
-                    _amount_yoy_chart(quarters, "opex", "营业费用", "金额（十亿美元）与同比"),
+                    _amount_yoy_chart(quarters, "opex", "营业费用", "十亿美元"),
                     _share_chart(
                         _line_points(quarters, "opex_lines", denominator="lines"),
                         "费用构成",
-                        "点一根柱看占营业费用的比例和金额",
+                        "占比",
                         period,
                     ),
                 ],
@@ -1917,7 +1917,7 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
                 _share_chart(
                     _line_points(quarters, "geo", denominator="lines"),
                     "按地区",
-                    "点一根柱看该季地区占比和金额",
+                    "占比",
                     period,
                 )
             )
@@ -1932,11 +1932,11 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
         note = f"{note} 业务柱只计广告、其他和 Reality Labs；应用家族是母项，不重复计入。"
         by_key["revenue"]["note"] = note.strip()
         charts = by_key["revenue"]["charts"]
-        charts.insert(1, _share_chart(business, "按业务", "点一根柱看该季分部占比和金额", period))
+        charts.insert(1, _share_chart(business, "按业务", "占比", period))
     elif business:
         by_key["revenue"] = {
             "note": mix.get("note") or "",
-            "charts": [_share_chart(business, "按业务", "点一根柱看该季分部占比和金额", period)],
+            "charts": [_share_chart(business, "按业务", "占比", period)],
         }
     return {"by_key": by_key}
 

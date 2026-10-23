@@ -132,7 +132,7 @@
     <p class="placeholder">财务数据尚未生成。</p>
     {% endfor %}
   </div>
-  <div class="charts fin-charts" id="finCharts">
+  <div class="charts fin-charts" id="finCharts" data-cols="{{ fin_view.charts|length }}">
     {% for chart in fin_view.charts %}
     <div class="card chart">
       <h3>{{ chart.title }}</h3>
@@ -543,11 +543,11 @@ function drawRowCharts() {
       options: {
         responsive: true, maintainAspectRatio: false, animation: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } } },
+        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } } },
         scales: {
           x: { grid: { display: false }, ticks: yearTicks(labels) },
-          y: { beginAtZero: true, title: { display: true, text: '十亿美元' } },
-          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + '%'; } }, title: { display: true, text: '同比' } }
+          y: { beginAtZero: true },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + '%'; } } }
         },
         onClick: function (_evt, elements) {
           if (!elements.length) return;
@@ -592,7 +592,7 @@ function drawRowCharts() {
         responsive: true, maintainAspectRatio: false, animation: false,
         interaction: { mode: 'nearest', intersect: true },
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } },
           tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(1) + '%'); } } }
         },
         scales: {
@@ -686,6 +686,7 @@ function drawRowCharts() {
       { title: '同比', kind: 'generic', subtitle: '较去年同季', metric: key, series: 'yoy' }
     ];
     var grid = document.getElementById('finCharts');
+    grid.setAttribute('data-cols', String(active.length));
     grid.innerHTML = active.map(cardHtml).join('');
     var note = document.getElementById('finNote');
     if (note) {

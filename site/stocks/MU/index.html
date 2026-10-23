@@ -315,7 +315,7 @@
       <span class="m-sum">期末合同负债 $12.89B，相当于本季营收 21.9 天。合同负债同比 91 倍，快于营收同比 +379.3%，周转天数变长。</span>
     </button>
   </div>
-  <div class="charts fin-charts" id="finCharts">
+  <div class="charts fin-charts" id="finCharts" data-cols="3">
     <div class="card chart">
       <h3>水平值</h3>
       <p class="c-sub">本季水平</p>
@@ -1013,11 +1013,11 @@ function drawRowCharts() {
       options: {
         responsive: true, maintainAspectRatio: false, animation: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } } },
+        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } } },
         scales: {
           x: { grid: { display: false }, ticks: yearTicks(labels) },
-          y: { beginAtZero: true, title: { display: true, text: '十亿美元' } },
-          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + '%'; } }, title: { display: true, text: '同比' } }
+          y: { beginAtZero: true },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + '%'; } } }
         },
         onClick: function (_evt, elements) {
           if (!elements.length) return;
@@ -1062,7 +1062,7 @@ function drawRowCharts() {
         responsive: true, maintainAspectRatio: false, animation: false,
         interaction: { mode: 'nearest', intersect: true },
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 8 } },
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } },
           tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(1) + '%'); } } }
         },
         scales: {
@@ -1156,6 +1156,7 @@ function drawRowCharts() {
       { title: '同比', kind: 'generic', subtitle: '较去年同季', metric: key, series: 'yoy' }
     ];
     var grid = document.getElementById('finCharts');
+    grid.setAttribute('data-cols', String(active.length));
     grid.innerHTML = active.map(cardHtml).join('');
     var note = document.getElementById('finNote');
     if (note) {
