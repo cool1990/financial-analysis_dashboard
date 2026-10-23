@@ -108,7 +108,8 @@ def test_fin_view_keeps_meta_copy_and_gives_tsm_three_revenue_charts():
     assert "减去毛利" in tsm["by_key"]["cost_of_revenue"]["note"]
 
     mu = _fin_view("MU", "FY2026Q4")
-    assert "revenue" not in mu["by_key"]
+    assert "revenue" in mu["by_key"]
+    assert mu["by_key"]["revenue"]["charts"][0]["amount"][-1] == 54.23
 
 
 def test_expect_chart_uses_meta_controls_without_fake_consensus():
