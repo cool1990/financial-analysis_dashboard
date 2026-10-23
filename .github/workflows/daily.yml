@@ -32,6 +32,7 @@ jobs:
       - name: Snapshot + Stage3 refresh + build
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
         run: |
           set -euo pipefail
           mkdir -p logs
@@ -39,6 +40,9 @@ jobs:
           python -m pipeline init-missing 2>&1 | tee logs/daily_init.log
           python -m pipeline snapshot 2>&1 | tee logs/daily_snapshot.log
           python -m pipeline stage3-recent 2>&1 | tee logs/daily_stage3.log
+          # 当前季预期只在 Actions 里拉。Secret 名是 ALPHAVANTAGE_KEY。
+          # 失败不挡住建站：没写到缓存时首页这些格子保持「—」。
+          python -m pipeline av-estimates 2>&1 | tee logs/daily_av.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
           python -m pipeline build 2>&1 | tee logs/daily_build.log
 
       - name: Commit data/site

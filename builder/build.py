@@ -14,7 +14,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pipeline import ROOT
 from pipeline.compute.periods import prior_fiscal_period, yoy_fiscal_period
 from pipeline.compute.derived import derived_metrics, evaluate, merge_checks
-from pipeline.config import data_dir, list_tickers, load_position, load_settings, load_ticker_config, site_dir
+from pipeline.config import _plain, data_dir, list_tickers, load_position, load_settings, load_ticker_config, site_dir
 
 ET = ZoneInfo("America/New_York")
 BJ = ZoneInfo("Asia/Shanghai")
@@ -2636,40 +2636,283 @@ def _score_lines(
     ]
 
 
-def _index_row(t: str, cfg: dict[str, Any], period: str | None, doc: dict[str, Any] | None) -> dict[str, Any]:
+STATUS_SHORT = {"hold": "持仓", "wait": "等待", "watch": "观察"}
+# 类型筛选的习惯顺序。配置里还有别的类型时排在这些后面，按出现顺序。
+_KIND_ORDER = ("AI硬件", "软件", "平台", "消费")
+
+
+def _parse_dt(raw: str | None) -> datetime | None:
+    if not raw:
+        return None
+    text = str(raw).strip()
+    try:
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ET)
+    return dt
+
+
+def _plain_cfg(value: Any) -> str:
+    return _plain(value)
+
+
+def _surprise_cell(row: dict[str, Any] | None) -> dict[str, str]:
+    """营收 / EPS / 下季 EPS 指引的 beat/miss。数字来自 scorecard，和财报页同一套比较。
+
+    没有实际值时留空，不把营收区间拿来充当下季指引。
+    """
+    row = row or {}
+    if row.get("actual") is None:
+        return {"verdict": "", "label": "—", "cls": "muted"}
+    verdict = row.get("verdict") or ""
+    diff = _num((row.get("benchmark") or {}).get("diff_pct"))
+    surprise = _surprise_text(verdict, diff)
+    if surprise:
+        return {"verdict": verdict, "label": surprise, "cls": verdict}
+    if verdict == "inline":
+        return {"verdict": "inline", "label": "符合预期", "cls": "inline"}
+    if verdict == "unknown":
+        return {"verdict": "unknown", "label": "待核对", "cls": "unknown"}
+    if verdict:
+        return {"verdict": verdict, "label": _verdict_label(verdict), "cls": ""}
+    return {"verdict": "", "label": "—", "cls": "muted"}
+
+
+def _saved_quote(ticker: str) -> dict[str, Any]:
+    """已保存的 TradingView 行情列。没有文件或没有 close 就当没有行情。"""
+    path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
+    if not path.exists():
+        return {}
+    try:
+        snap = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    quote = snap.get("quote") or {}
+    cols = quote.get("columns") or {}
+    return {
+        "columns": cols,
+        "fetched_at": quote.get("fetched_at") or snap.get("fetched_at") or "",
+    }
+
+
+def _quote_view(cols: dict[str, Any] | None) -> dict[str, Any]:
+    """股价、较昨日涨跌、RSI、Forward PE。缺列就留空，不临时拉行情。
+
+    Forward PE 与个股页相同：close ÷ eps_estimate_ntm。
+    涨跌只认已经存好的小数比例 day_change_pct / change_pct（0.012 = +1.2%）。
+    现有快照没有上一交易日收盘，所以这一列通常是「—」。
+    """
+    cols = cols or {}
+    close = _finite(cols.get("close"))
+    ntm = _finite(cols.get("eps_estimate_ntm"))
+    rsi = _finite(cols.get("RSI"))
+    price = f"${close:,.2f}" if close is not None else "—"
+    pe = f"{close / ntm:.1f}×" if close is not None and ntm not in (None, 0) else "—"
+    rsi_text = f"{rsi:.1f}" if rsi is not None else "—"
+    pct = _finite(cols.get("day_change_pct"))
+    if pct is None:
+        pct = _finite(cols.get("change_pct"))
+    if pct is None:
+        change = {"text": "—", "cls": "na"}
+    else:
+        shown = _change(pct)
+        change = {"text": shown["text"], "cls": shown["cls"]}
+    return {"price": price, "pe": pe, "rsi": rsi_text, "change": change}
+
+
+def _pool_labels(cfg: dict[str, Any], pos: dict[str, Any] | None) -> dict[str, str]:
+    """分组、类型、目标估值。股票配置优先，仓位档案兜底。两处都没有就空。"""
+    pos = pos or {}
+    group = _plain_cfg(cfg.get("分组") or cfg.get("group") or pos.get("group"))
+    kind = _plain_cfg(cfg.get("类型") or cfg.get("type") or cfg.get("category") or pos.get("kind"))
+    if "目标估值" in cfg:
+        target = _plain_cfg(cfg.get("目标估值"))
+    elif cfg.get("target_valuation") is not None:
+        target = _plain_cfg(cfg.get("target_valuation"))
+    else:
+        target = ""
+    if not target:
+        target = pos.get("target_value") or ""
+    # 只写了一种分类时，筛选和分组列用同一个名字
+    if not kind and group:
+        kind = group
+    if not group and kind:
+        group = kind
+    return {"group": group, "kind": kind, "target": target}
+
+
+def _trigger_view(pos: dict[str, Any] | None, doc: dict[str, Any] | None) -> dict[str, str]:
+    """买卖条件是否触发。没有条件，或这季还没评估，都显示「—」，不把未评估写成否。"""
+    triggers = (pos or {}).get("triggers") or []
+    if not triggers:
+        return {"text": "—", "cls": "na"}
+    review = (doc or {}).get("thesis_review") or {}
+    rows = [r for r in (review.get("triggers") or []) if isinstance(r, dict)]
+    if not rows:
+        return {"text": "—", "cls": "na"}
+    by = {r.get("name"): r.get("state") for r in rows}
+    states = [by.get(t.get("name")) for t in triggers]
+    if any(s == "triggered" for s in states):
+        return {"text": "是", "cls": "yes"}
+    if all(s == "not_triggered" for s in states):
+        return {"text": "否", "cls": "no"}
+    return {"text": "—", "cls": "na"}
+
+
+def _release_view(doc: dict[str, Any] | None, ticker: str, today: date) -> dict[str, str]:
+    """最近一次财报的日期（美东）。优先用新闻稿发布时间，否则用快照里已过去的财报时点。悬停仍可看时刻。"""
+    raw = ((doc or {}).get("meta") or {}).get("release_at_utc")
+    dt = _parse_dt(raw)
+    title = _fmt_release(raw) if dt else ""
+    if dt is None:
+        dt = _past_earnings_dt(ticker, today)
+        title = dt.astimezone(ET).strftime("%Y-%m-%d %H:%M 美东") if dt else ""
+    if dt is None:
+        return {"text": "—", "title": ""}
+    return {"text": dt.astimezone(ET).strftime("%Y-%m-%d"), "title": title}
+
+
+def _past_earnings_dt(ticker: str, today: date) -> datetime | None:
+    folder = data_dir(ticker) / "snapshots"
+    paths = sorted(folder.glob("*.json")) if folder.exists() else []
+    if not paths:
+        return None
+    try:
+        snap = json.loads(paths[-1].read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    best: datetime | None = None
+    for raw in (snap.get("earnings_dates") or {}).get("index") or []:
+        dt = _parse_dt(str(raw))
+        if dt is None or dt.astimezone(ET).date() > today:
+            continue
+        if best is None or dt > best:
+            best = dt
+    return best
+
+
+def _next_text(when: str, timing: str) -> str:
+    if when:
+        return f"{when} {timing}"
+    return "下次财报日待定"
+
+
+def _kind_filters(rows: list[dict[str, Any]]) -> list[str]:
+    found: list[str] = []
+    for row in rows:
+        kind = row.get("kind") or ""
+        if kind and kind not in found:
+            found.append(kind)
+
+    def sort_key(kind: str) -> tuple[int, int]:
+        pref = _KIND_ORDER.index(kind) if kind in _KIND_ORDER else len(_KIND_ORDER)
+        return pref, found.index(kind)
+
+    return sorted(found, key=sort_key)
+
+
+def _pool_as_of(tickers: list[str]) -> str:
+    """首页副标题的数据时间：各股最新快照和行情抓取时间里最晚的一个，写成北京时间。"""
+    latest: datetime | None = None
+    for ticker in tickers:
+        folder = data_dir(ticker) / "snapshots"
+        paths = sorted(folder.glob("*.json")) if folder.exists() else []
+        if paths:
+            try:
+                snap = json.loads(paths[-1].read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                snap = {}
+            dt = _parse_dt(snap.get("snapshot_at"))
+            if dt and (latest is None or dt > latest):
+                latest = dt
+        quote = _saved_quote(ticker)
+        dt = _parse_dt(quote.get("fetched_at"))
+        if dt and (latest is None or dt > latest):
+            latest = dt
+    if latest is None:
+        return ""
+    return latest.astimezone(BJ).strftime("%Y-%m-%d %H:%M")
+
+
+def _quarter_view(ticker: str, cfg: dict[str, Any], doc: dict[str, Any] | None, today: date) -> dict[str, Any]:
+    """当前季 EPS 与修正评价。没有 Alpha Vantage 缓存和 key 时，数字留「—」。"""
+    from pipeline.commands.poll_cmd import known_earnings_dates
+    from pipeline.compute.revision_signal import (
+        current_quarter_target,
+        earnings_drive_tag,
+        format_current_quarter,
+        pick_current_quarter_estimate,
+    )
+    from pipeline.sources.av_estimates import load_earnings_estimates
+
+    fye = int(cfg.get("fiscal_year_end_month") or 12)
+    yahoo = None
+    when = _next_earnings(ticker)
+    if when:
+        try:
+            yahoo = date.fromisoformat(when[:10])
+        except ValueError:
+            yahoo = None
+    target = current_quarter_target(
+        _tradingview(ticker),
+        fiscal_year_end_month=fye,
+        yahoo_0q_date=yahoo,
+    )
+    row = pick_current_quarter_estimate(load_earnings_estimates(ticker), target)
+    dates = list(known_earnings_dates(ticker))
+    release = _parse_dt(((doc or {}).get("meta") or {}).get("release_at_utc"))
+    if release is not None:
+        day = release.astimezone(ET).date()
+        if day not in dates:
+            dates.append(day)
+    return format_current_quarter(row, earnings_drive_tag(dates, today))
+
+
+def _index_row(
+    t: str,
+    cfg: dict[str, Any],
+    period: str | None,
+    doc: dict[str, Any] | None,
+    today: date | None = None,
+) -> dict[str, Any]:
     doc = doc or {}
+    today = today or datetime.now(ET).date()
     sc = {c["metric"]: c for c in doc.get("scorecard") or []}
-
-    def chip(metric: str) -> dict[str, str]:
-        row = sc.get(metric) or {}
-        verdict = row.get("verdict") or ""
-        surprise = _surprise_text(verdict, _num((row.get("benchmark") or {}).get("diff_pct")))
-        if surprise:
-            return {"verdict": verdict, "label": surprise}
-        return {"verdict": verdict, "label": _verdict_label(verdict) if verdict else "—"}
-
-    eps = chip("eps")
-
-    guide = chip("next_q_eps_guidance")
-    if (sc.get("next_q_eps_guidance") or {}).get("actual") is None:
-        company = _company_revenue_guide(doc)
-        if company:
-            guide = {"verdict": "", "label": company}
-
     pos = load_position(t)
+    labels = _pool_labels(cfg, pos)
+    quote = _quote_view(_saved_quote(t).get("columns"))
+    status_key = (pos or {}).get("stage") or ""
+    timing = "盘后" if (cfg.get("release_timing") or "amc") == "amc" else "盘前"
+    when = _next_earnings(t)
     return {
         "ticker": t,
-        "name": cfg.get("name"),
-        "pos_stage": (pos or {}).get("stage") or "watch",
+        "name": cfg.get("name") or "",
+        "pos_stage": status_key,
+        "status_key": status_key,
+        "status_label": STATUS_SHORT.get(status_key, "—"),
+        "group": labels["group"] or "—",
+        "kind": labels["kind"],
         "period": period or "—",
-        "revenue": chip("revenue"),
-        "eps": eps,
-        "guide": guide,
+        "revenue": _surprise_cell(sc.get("revenue")),
+        "eps": _surprise_cell(sc.get("eps")),
+        # 下季指引只看 EPS 对一致预期，不用营收区间
+        "guide": _surprise_cell(sc.get("next_q_eps_guidance")),
+        "quote_price": quote["price"],
+        "change": quote["change"],
+        "rsi": quote["rsi"],
+        "forward_pe": quote["pe"],
+        "target": labels["target"] or "—",
+        "triggered": _trigger_view(pos, doc),
+        "reported": _release_view(doc, t, today),
         "price": _price_view(doc) if doc else {"text": "—", "cls": "na", "detail": ""},
         "stage": _stage_label((doc.get("status") or {}).get("stage") if doc else "scheduled"),
         "headline": (doc.get("summary") or {}).get("headline") or "",
-        "next_earnings": _next_earnings(t),
-        "timing": "盘后" if (cfg.get("release_timing") or "amc") == "amc" else "盘前",
+        "next_earnings": when,
+        "next_text": _next_text(when, timing),
+        "timing": timing,
+        "quarter": _quarter_view(t, cfg, doc, today),
         "href": f"stocks/{t}/index.html",
     }
 
@@ -3893,7 +4136,7 @@ def build_site(ticker: str | None = None) -> list[Path]:
         docs = _load_docs(t)
         periods = sorted(docs, reverse=True)
         latest = periods[0] if periods else None
-        index_rows.append(_index_row(t, cfg, latest, docs.get(latest) if latest else None))
+        index_rows.append(_index_row(t, cfg, latest, docs.get(latest) if latest else None, today))
         if only is not None and t != only:
             continue
         stock_dir = out_dir / "stocks" / t
@@ -3950,12 +4193,21 @@ def build_site(ticker: str | None = None) -> list[Path]:
                 (stock_dir / "index.html").write_text(html, encoding="utf-8")
                 pages.append(stock_dir / "index.html")
 
-    groups = [
-        {"label": label, "rows": [r for r in index_rows if r["pos_stage"] == key]}
-        for key, label in (("hold", "持仓"), ("wait", "等待仓"), ("watch", "观察仓"))
-    ]
+    av_note = ""
+    if index_rows and not any(row["quarter"]["has_numbers"] for row in index_rows):
+        av_note = (
+            "当前季 EPS、覆盖人数和 30 日上修/下修来自 Alpha Vantage EARNINGS_ESTIMATES，"
+            "季度对齐第一个未公布财季（Yahoo 0q）。没有 ALPHAVANTAGE_API_KEY，"
+            "也没有 data/{代码}/consensus/av_estimates.json 时，这些格子是「—」，评价为无数据。"
+        )
     index_html = env.get_template("index.html").render(
-        groups=[g for g in groups if g["rows"]], nav=nav, active=None, root=""
+        rows=index_rows,
+        kinds=_kind_filters(index_rows),
+        as_of=_pool_as_of(tickers),
+        av_note=av_note,
+        nav=nav,
+        active=None,
+        root="",
     )
     index_path = out_dir / "index.html"
     index_path.write_text(index_html, encoding="utf-8")

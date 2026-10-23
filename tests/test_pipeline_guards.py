@@ -362,9 +362,21 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert "未调用模型，变动原因未生成" not in meta_html
     assert "量价齐升" in meta_html
     index_html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "观察池" in index_html and "指标对比" in index_html
     assert "beat 2.0%" in index_html and "beat 13.1%" in index_html
+    assert "beat 11.1%" in index_html
+    assert "$73–76B" not in index_html
     assert "超预期 · Non-GAAP" not in index_html and "次日涨跌" not in index_html
-    assert "阶段1 · 新闻稿" not in index_html and "下次财报日待定" in index_html
+    assert "阶段1 · 新闻稿" not in index_html
+    assert "红色公告" not in index_html and "未来30天财报" not in index_html and "未来 30 天财报" not in index_html
+    assert "EPS预期上调" not in index_html and "待验证跟踪项" not in index_html
+    assert "公告与新闻" not in index_html and "财报日历" not in index_html and "最新发布" not in index_html
+    assert "Forward PE 默认升序" not in index_html
+    assert 'data-filter="status"' in index_html and 'data-filter="kind"' in index_html
+    for col in ("名称", "分组", "状态", "股价", "涨跌", "RSI", "Forward PE", "目标估值", "是否触发", "最近财报", "营收", "EPS", "下季指引", "下次财报"):
+        assert col in index_html
+    body = index_html.split("<tbody>", 1)[1]
+    assert body.index("SNDK") < body.index("MCD") < body.index("META")
     assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
 
@@ -668,7 +680,7 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     lines = [c["text"] for c in _score_lines("META", doc, {"price": {"text": "—", "cls": "na"}}, {"release_timing": "amc"})]
     assert any("每股 EPS beat 13.1%" == c for c in lines)
     assert all("不及预期" not in c and "Non-GAAP" not in c and "次日" not in c for c in lines)
-    assert any(c == "下次财报日待定" for c in lines)
+    assert any(c == "下次财报 2027-01-27 盘后" for c in lines)
 
     gap = next(g for g in _gap_rows(doc) if g["label"].startswith("本季 EPS"))
     assert gap["label"] == "本季 EPS（Non-GAAP）"
@@ -685,7 +697,8 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     assert index["eps"]["verdict"] == "beat"
     assert index["eps"]["label"] == "beat 13.1%"
     assert index["revenue"]["label"] == "beat 2.0%"
-    assert index["guide"]["label"] == "$73–76B"
+    # 首页下季指引只看 EPS，META 没有管理层 EPS 指引，不用营收区间 $73–76B 填上
+    assert index["guide"]["label"] == "—"
 
     from builder.build import _quality_checks
 
@@ -976,4 +989,93 @@ def test_review_position_filters_and_checks_quotes(monkeypatch):
     assert out["answers"][0]["quote_unverified"] is False and out["answers"][1]["quote_unverified"] is True
     assert out["triggers"] == [] and out["stage"] == "watch"
     assert "观察仓" in captured["user"] and len(captured["user"]) < 60000
+
+
+def test_watchlist_row_uses_saved_fields_and_eps_guidance():
+    """首页列只读已有配置和 scorecard。缺目标估值、涨跌、分组时留空，不拿营收指引充数。"""
+    from builder.build import _index_row, _next_text, _quote_view, _trigger_view
+    from pipeline.config import load_position, load_ticker_config
+
+    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
+    row = _index_row("META", load_ticker_config("META"), "FY2026Q3", meta, today=date(2026, 10, 23))
+    assert row["status_label"] == "观察" and row["status_key"] == "watch"
+    assert row["group"] == "—" and row["kind"] == ""
+    assert row["target"] == "—" and row["triggered"]["text"] == "—"
+    assert row["quote_price"] == "$697.52" and row["rsi"] == "47.4" and row["forward_pe"] == "21.8×"
+    assert row["change"]["text"] == "—"
+    assert row["revenue"]["label"] == "beat 2.0%" and row["eps"]["label"] == "beat 13.1%"
+    assert row["guide"]["label"] == "—"
+    assert row["reported"]["text"] == "2026-10-21"
+    assert "16:03" in row["reported"]["title"]
+    assert row["next_text"].startswith("2027-01-27")
+    assert row["quarter"]["analysts"] == "—" and row["quarter"]["eps"] == "—"
+    assert row["quarter"]["revisions"] == "—"
+    assert row["quarter"]["signal"] == "无数据/财报驱动"
+
+    mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
+    mu_row = _index_row("MU", load_ticker_config("MU"), "FY2026Q4", mu, today=date(2026, 10, 23))
+    assert mu_row["revenue"]["label"] == "待核对"
+    assert mu_row["eps"]["label"] == "beat 3.0%"
+    assert mu_row["guide"]["label"] == "beat 11.1%"
+    assert mu_row["quote_price"] == "—" and mu_row["forward_pe"] == "—" and mu_row["rsi"] == "—"
+    assert mu_row["reported"]["text"] == "2026-09-30"
+    assert mu_row["quarter"]["signal"] == "无数据/财报驱动"
+
+    labeled = _index_row(
+        "MU",
+        {**load_ticker_config("MU"), "分组": "存储", "类型": "AI硬件", "目标估值": "12×"},
+        "FY2026Q4",
+        mu,
+        today=date(2026, 10, 23),
+    )
+    assert labeled["group"] == "存储" and labeled["kind"] == "AI硬件" and labeled["target"] == "12×"
+
+    sndk = load_position("SNDK")
+    assert _trigger_view(sndk, {})["text"] == "—"
+    reviewed = {
+        "thesis_review": {
+            "stage": "hold",
+            "triggers": [
+                {"name": "加仓", "state": "not_triggered"},
+                {"name": "卖出", "state": "not_triggered"},
+            ],
+        }
+    }
+    assert _trigger_view(sndk, reviewed)["text"] == "否"
+    reviewed["thesis_review"]["triggers"][1]["state"] = "triggered"
+    assert _trigger_view(sndk, reviewed)["text"] == "是"
+    assert _trigger_view(load_position("MU"), reviewed)["text"] == "—"
+
+    quote = _quote_view({"close": 100, "eps_estimate_ntm": 5, "RSI": 47.35, "day_change_pct": 0.012})
+    assert quote["price"] == "$100.00" and quote["pe"] == "20.0×" and quote["rsi"] == "47.4"
+    assert quote["change"]["text"] == "+1.2%"
+    assert _next_text("", "盘后") == "下次财报日待定"
+
+
+def test_watchlist_homepage_html(tmp_path, monkeypatch):
+    import builder.build as b
+
+    monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
+    b.build_site()
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert "<h1>观察池</h1>" in html
+    assert "指标对比" in html and "Forward PE 默认升序" not in html
+    assert "红色公告" not in html and "公告与新闻" not in html and "财报日历" not in html and "最新发布" not in html
+    assert 'data-filter="status"' in html and ">持仓</button>" in html and ">等待</button>" in html
+    assert 'aria-label="按类型筛选"' in html and ">全部</button>" in html
+    assert "beat 2.0%" in html and "beat 13.1%" in html and "beat 11.1%" in html
+    assert "$73–76B" not in html and "$697.52" in html and "21.8×" in html and ">47.4<" in html
+    assert ">2026-10-21</td>" in html and ">2026-09-30</td>" in html
+    assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    head = html.split("</thead>", 1)[0]
+    assert head.index(">是否触发</th>") < head.index(">评价</th>") < head.index(">最近财报</th>")
+    assert 'class="mid name"' in head and 'class="mid">评价</th>' in head and 'class="mid">下次财报</th>' in head
+    assert "下季度" not in html and "温和上修" not in html and "温和下修" not in html
+    assert "无数据" in html and "ALPHAVANTAGE_API_KEY" in html
+    assert '<b>SNDK</b>' not in html and 'class="pool-name"' in html
+    body = html.split("<tbody>", 1)[1]
+    assert body.index("SNDK") < body.index("MCD") < body.index(">META<")
+    # 没有类型配置时，类型筛选只保留「全部」
+    kind_bar = html.split('aria-label="按类型筛选"', 1)[1].split("</div>", 1)[0]
+    assert kind_bar.count("<button") == 1
 

@@ -61,7 +61,11 @@ jobs:
 
       - name: Build site
         if: steps.poll.outputs.did_work == 'true'
-        run: python -m pipeline build 2>&1 | tee -a logs/poll.log
+        env:
+          ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
+        run: |
+          python -m pipeline av-estimates 2>&1 | tee -a logs/poll.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
+          python -m pipeline build 2>&1 | tee -a logs/poll.log
 
       - name: Commit
         id: commit

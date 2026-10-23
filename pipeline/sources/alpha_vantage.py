@@ -20,15 +20,11 @@ def alphavantage_api_key() -> str | None:
     return None
 
 
-def fetch_earnings_estimates(
+def _call_earnings_estimates(
     symbol: str,
-    *,
-    get: Callable[..., Any] | None = None,
-) -> dict[str, Any]:
-    """返回本轮调用状态，不把预期数字写进财报 JSON。
-
-    get(url, params) 可注入，测试不联网。
-    """
+    get: Callable[..., Any] | None,
+) -> tuple[dict[str, Any], Any]:
+    """发出 EARNINGS_ESTIMATES。返回 (状态, 原文)。状态里不放预期数字，也不回写 apikey。"""
     key = alphavantage_api_key()
     result: dict[str, Any] = {
         "function": "EARNINGS_ESTIMATES",
@@ -38,7 +34,7 @@ def fetch_earnings_estimates(
         "reason": "没有 API key",
     }
     if not key:
-        return result
+        return result, None
 
     def _default_get(url: str, params: dict[str, str]) -> Any:
         with httpx.Client(timeout=20.0) as client:
@@ -58,9 +54,9 @@ def fetch_earnings_estimates(
             "called": True,
             "status": "error",
             "reason": str(exc).replace(key, "***")[:240],
-        }
+        }, None
     if not isinstance(data, dict):
-        return {**result, "called": True, "status": "error", "reason": "返回不是 JSON 对象"}
+        return {**result, "called": True, "status": "error", "reason": "返回不是 JSON 对象"}, None
     note = data.get("Note") or data.get("Information") or data.get("Error Message")
     if note:
         return {
@@ -68,5 +64,31 @@ def fetch_earnings_estimates(
             "called": True,
             "status": "error",
             "reason": str(note).replace(key, "***")[:240],
-        }
-    return {**result, "called": True, "status": "ok", "reason": ""}
+        }, None
+    return {**result, "called": True, "status": "ok", "reason": ""}, data
+
+
+def fetch_earnings_estimates(
+    symbol: str,
+    *,
+    get: Callable[..., Any] | None = None,
+) -> dict[str, Any]:
+    """返回本轮调用状态，不把预期数字写进财报 JSON。
+
+    get(url, params) 可注入，测试不联网。
+    """
+    status, _data = _call_earnings_estimates(symbol, get)
+    return status
+
+
+def fetch_earnings_estimates_payload(
+    symbol: str,
+    *,
+    get: Callable[..., Any] | None = None,
+) -> dict[str, Any]:
+    """状态加上 estimates 数组。给观察池缓存用，不写进单季财报 JSON。"""
+    status, data = _call_earnings_estimates(symbol, get)
+    estimates: list[dict[str, Any]] = []
+    if isinstance(data, dict) and isinstance(data.get("estimates"), list):
+        estimates = [row for row in data["estimates"] if isinstance(row, dict)]
+    return {**status, "estimates": estimates}

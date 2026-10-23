@@ -51,6 +51,21 @@ STAGES = {
 }
 
 
+def _plain(value: Any) -> str:
+    """配置里的展示字段。空值、占位「请填写」不当作已经填好的数。"""
+    if value is None or isinstance(value, (dict, list, bool)):
+        return ""
+    if isinstance(value, float) and value.is_integer():
+        text = str(int(value))
+    elif isinstance(value, float):
+        text = f"{value:g}"
+    else:
+        text = str(value).strip()
+    if not text or "请填写" in text or text in {"—", "-", "null", "None"}:
+        return ""
+    return text
+
+
 def load_position(ticker: str) -> dict[str, Any] | None:
     """config/theses/{TICKER}.yaml：仓位档案（阶段、论点、买卖条件、想搞清楚的问题）。
 
@@ -76,6 +91,9 @@ def load_position(ticker: str) -> dict[str, Any] | None:
         "theses": theses,
         "triggers": triggers,
         "questions": questions,
+        "group": _plain(raw.get("分组") or raw.get("group")),
+        "kind": _plain(raw.get("类型") or raw.get("type") or raw.get("category")),
+        "target_value": _plain(raw.get("目标估值") if "目标估值" in raw else raw.get("target_valuation")),
         # 文件里还有「草稿」「【请填写】」字样时，页面提示尚未定稿
         "draft": "草稿" in text.split("\n", 1)[0] or "【请填写】" in text,
     }
