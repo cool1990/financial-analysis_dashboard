@@ -45,6 +45,8 @@ jobs:
           # 当前季预期只在 Actions 里拉。Secret 名是 ALPHAVANTAGE_KEY。
           # 失败不挡住建站：没写到缓存时首页这些格子保持「—」。
           python -m pipeline av-estimates 2>&1 | tee logs/daily_av.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
+          # 股价 / 涨跌 / RSI / NTM EPS：Hermes 同款匿名 scanner。失败不挡住建站。
+          python -m pipeline tv-scan 2>&1 | tee logs/daily_tv.log || echo "::warning::TradingView scanner 没有写入行情"
           python -m pipeline build 2>&1 | tee logs/daily_build.log
 
       - name: Commit data/site

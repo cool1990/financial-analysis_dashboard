@@ -25,6 +25,7 @@ from pipeline.compute.derived import derived_metrics, evaluate, merge_checks
 from pipeline.config import _plain, data_dir, list_tickers, load_position, load_settings, load_ticker_config, site_dir
 
 ET = ZoneInfo("America/New_York")
+PT = ZoneInfo("America/Los_Angeles")
 BJ = ZoneInfo("Asia/Shanghai")
 _REPORTING_CCY: contextvars.ContextVar[str] = contextvars.ContextVar("reporting_ccy", default="USD")
 
@@ -3914,6 +3915,44 @@ def _kind_filters(rows: list[dict[str, Any]]) -> list[str]:
     return sorted(found, key=sort_key)
 
 
+
+def _pool_source_note(tickers: list[str], index_rows: list[dict[str, Any]]) -> str:
+    """首页脚注：分别标 TradingView / Alpha Vantage 截止时间。没有 fetched_at 不编造。"""
+    from pipeline.sources.av_estimates import load_earnings_record
+
+    tv_stamps: list[str] = []
+    av_stamps: list[str] = []
+    for ticker in tickers:
+        tv = _tradingview(ticker) or {}
+        stamp = str(((tv.get("quote") or {}).get("fetched_at") or tv.get("fetched_at") or ""))
+        if stamp:
+            tv_stamps.append(stamp)
+        av_stamp = str(load_earnings_record(ticker, fetch=False).get("fetched_at") or "")
+        if av_stamp:
+            av_stamps.append(av_stamp)
+    parts: list[str] = []
+    if tv_stamps:
+        latest_tv = max(tv_stamps)
+        parts.append(
+            _source_cutoff("股价 / 涨跌 / RSI / 四季 EPS·营收一致预期：TradingView scanner", latest_tv)
+        )
+    else:
+        parts.append("股价 / 涨跌 / RSI / 四季一致预期：TradingView scanner（尚未写入 tradingview_scan.json）")
+    if av_stamps:
+        latest_av = max(av_stamps)
+        parts.append(
+            _source_cutoff("当前季 EPS / 覆盖 / 上修下修 / 全年 EPS：Alpha Vantage EARNINGS_ESTIMATES", latest_av)
+        )
+    elif index_rows and not any(row["quarter"]["has_numbers"] for row in index_rows):
+        parts.append(
+            "当前季 EPS、覆盖人数和 30 日上修/下修来自 Alpha Vantage；"
+            "没有 ALPHAVANTAGE_KEY 且没有 av_estimates.json 时这些格子是「—」。"
+        )
+    else:
+        parts.append("全年 EPS：Alpha Vantage EARNINGS_ESTIMATES（fiscal year）")
+    return "；".join(parts) + "。"
+
+
 def _pool_as_of(tickers: list[str]) -> str:
     """首页副标题的数据时间：各股最新快照和行情抓取时间里最晚的一个，写成北京时间。"""
     latest: datetime | None = None
@@ -4364,10 +4403,19 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
 
     def chart_note(quarters: list[dict[str, Any]], kind: str) -> str:
         if any(row.get("consensus") is not None for row in quarters):
-            return "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。"
-        if kind == "revenue":
-            return "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。"
-        return "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。"
+            base = "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。"
+        elif kind == "revenue":
+            base = "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。"
+        else:
+            base = "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。"
+        tv_doc = _tradingview(ticker) if ticker else None
+        tv_fetched = ""
+        if isinstance(tv_doc, dict):
+            tv_fetched = str(((tv_doc.get("quote") or {}).get("fetched_at") or tv_doc.get("fetched_at") or ""))
+        cut = _source_cutoff("TradingView scanner", tv_fetched) if tv_fetched else ""
+        if cut and any(row.get("consensus") is not None for row in quarters):
+            return f"{base} {cut}。"
+        return base
 
     eps_note = chart_note(eps_quarters, "eps")
     payload: dict[str, Any] = {
@@ -5093,8 +5141,33 @@ def _sum_fiscal_year(cells: dict[tuple[int, int], dict[str, Any]], year: int) ->
     return sum(parts)
 
 
+def _annual_from_av(ticker: str) -> dict[str, Any]:
+    """Alpha Vantage EARNINGS_ESTIMATES 的 fiscal year 行 → {years, fetched_at}。
+
+    全年 EPS 只用 AV，不用 TradingView next_fy 拼。date 取财年结束日的年份。
+    """
+    from pipeline.sources.av_estimates import load_earnings_record
+
+    record = load_earnings_record(ticker, fetch=False)
+    years: dict[int, float] = {}
+    for row in record.get("estimates") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("horizon") or "").strip().lower() != "fiscal year":
+            continue
+        day = _as_date(str(row.get("date") or ""))
+        value = _finite(row.get("eps_estimate_average"))
+        if day is None or value is None:
+            continue
+        years[day.year] = value
+    return {"years": years, "prior": {}, "fetched_at": str(record.get("fetched_at") or ""), "source": "alpha_vantage"}
+
+
 def _annual_consensus(ticker: str, fy_end_month: int) -> dict[str, Any]:
-    """最新快照里的全年共识。0y / +1y 按快照当天的财年对上，yearAgo 记到上一财年。"""
+    """全年 EPS 共识：优先 Alpha Vantage fiscal year；没有再退回最新 yfinance 快照 0y/+1y。"""
+    av = _annual_from_av(ticker)
+    if av.get("years"):
+        return av
     snap = _latest_snapshot(ticker) or {}
     years: dict[int, float] = {}
     prior: dict[int, float] = {}
@@ -5104,7 +5177,7 @@ def _annual_consensus(ticker: str, fy_end_month: int) -> dict[str, Any]:
     data = est.get("data") or []
     as_of = _as_date(str(snap.get("snapshot_at") or ""))
     if "avg" not in columns or as_of is None:
-        return {"years": years, "prior": prior}
+        return {"years": years, "prior": prior, "fetched_at": "", "source": ""}
     avg_at = columns.index("avg")
     ago_at = columns.index("yearAgoEps") if "yearAgoEps" in columns else None
     base = _current_fiscal_year(as_of, fy_end_month)
@@ -5121,7 +5194,12 @@ def _annual_consensus(ticker: str, fy_end_month: int) -> dict[str, Any]:
             ago = _finite(row[ago_at])
             if ago is not None:
                 prior[base - 1] = ago
-    return {"years": years, "prior": prior}
+    return {
+        "years": years,
+        "prior": prior,
+        "fetched_at": str(snap.get("snapshot_at") or ""),
+        "source": "yfinance_snapshot",
+    }
 
 
 def _choose_fy_eps(
@@ -5259,6 +5337,18 @@ def _forward_pe_view(
             note += " 股价是港币、EPS 是人民币。缺少当日 HKDCNY 时，P/E 显示待核对。"
     if price is None:
         note = "股价未接入，P/E 显示待核对，不估算股价。" + note
+    source_bits: list[str] = []
+    tv_doc = _tradingview(ticker) or {}
+    tv_fetched = ((tv_doc.get("quote") or {}).get("fetched_at") or tv_doc.get("fetched_at") or "")
+    if tv_fetched:
+        source_bits.append(_source_cutoff("TradingView scanner（季度 EPS / 股价）", tv_fetched))
+    av_fetched = str(annual.get("fetched_at") or "")
+    if annual.get("source") == "alpha_vantage" and av_fetched:
+        source_bits.append(_source_cutoff("Alpha Vantage（全年 EPS）", av_fetched))
+    elif annual.get("source") == "yfinance_snapshot" and av_fetched:
+        source_bits.append(_source_cutoff("Yahoo 快照（全年 EPS 后备）", av_fetched))
+    if source_bits:
+        note += " " + "；".join(source_bits) + "。"
     return {
         "price": _fmt_px(price, quote_ccy) if price is not None else "未接入",
         "rows": rows,
@@ -5408,14 +5498,20 @@ def _revenue_expect(
     if not quarters:
         return None
     horizons = _revenue_horizons(ticker, doc, docs, actuals, consensus) if ticker else []
+    tv_doc = _tradingview(ticker) if ticker else None
+    tv_fetched = ""
+    if isinstance(tv_doc, dict):
+        tv_fetched = str(((tv_doc.get("quote") or {}).get("fetched_at") or tv_doc.get("fetched_at") or ""))
+    rev_note = (
+        "浅蓝柱是公司营收，灰柱是已保存的一致预期（TradingView scanner 未公布季）。"
+        "更早的季度没有灰柱。橙线是同比。"
+    )
+    if tv_fetched:
+        rev_note += " " + _source_cutoff("TradingView scanner", tv_fetched) + "。"
     return {
         "quarters": quarters,
         "horizons": horizons,
-        "note": (
-            "浅蓝柱是公司营收，灰柱是已保存的一致预期。TradingView 的季度营收预期只有本季和下一季；"
-            "快照另有再下一季，以及全年 0y / +1y。没有 +2y，所以没有更远的财年。"
-            "更早的季度没有灰柱。橙线是同比。"
-        ),
+        "note": rev_note,
         "hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比",
         "sides": eps_sides,
     }
@@ -5531,10 +5627,16 @@ def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: boo
     tv = _tradingview(ticker) or {}
     market_quote = tv.get("quote") or {}
     market = bool(market_quote.get("columns"))
-    as_of = _session_date(market_quote.get("fetched_at")) if market else ""
+    tv_fetched = market_quote.get("fetched_at") or tv.get("fetched_at") or ""
+    as_of = _session_date(tv_fetched) if market else ""
     if not as_of:
         as_of = _session_date(((doc.get("meta") or {}).get("release_at_utc")))
-    return {"items": items, "line": _quote_line(items, as_of), "market": market}
+    line = _quote_line(items, as_of)
+    # 行情盒子额外标 TradingView scanner 截止时间（PT），有 fetched_at 才写
+    tv_cut = _source_cutoff("TradingView scanner", tv_fetched) if market and tv_fetched else ""
+    if tv_cut:
+        line = f"{line} · {tv_cut}" if line else tv_cut
+    return {"items": items, "line": line, "market": market, "tv_cutoff": tv_cut}
 
 
 _QUOTE_SOURCE_ORDER = ("TradingView", "Alpha Vantage", "新闻稿", "电话会")
@@ -5556,6 +5658,29 @@ def _market_day(raw: str | None, quote_ccy: str) -> str:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(BJ).strftime("%Y-%m-%d")
 
+
+
+def _cutoff_pt(raw: str | None) -> str:
+    """把 ISO fetched_at 写成 Ray 时区 PT：YYYY-MM-DD HH:mm PT。没有时间戳就空串，不编造。"""
+    if not raw:
+        return ""
+    text = str(raw).strip()
+    try:
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return ""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    local = dt.astimezone(PT)
+    return local.strftime("%Y-%m-%d %H:%M PT")
+
+
+def _source_cutoff(label: str, raw: str | None) -> str:
+    """例如：TradingView scanner · 截止 2026-10-23 05:25 PT"""
+    stamp = _cutoff_pt(raw)
+    if not stamp:
+        return label
+    return f"{label} · 截止 {stamp}"
 
 def _session_date(raw: str | None) -> str:
     """行情时点写成美东交易日。开盘前取到的是上一交易日收盘。"""
@@ -5768,13 +5893,7 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
                 pages.append(stock_dir / "index.html")
 
     _REPORTING_CCY.set("USD")
-    av_note = ""
-    if index_rows and not any(row["quarter"]["has_numbers"] for row in index_rows):
-        av_note = (
-            "当前季 EPS、覆盖人数和 30 日上修/下修来自 Alpha Vantage EARNINGS_ESTIMATES，"
-            "季度取最近已披露财季的下一季。没有 ALPHAVANTAGE_API_KEY，"
-            "也没有 data/{代码}/consensus/av_estimates.json 时，这些格子是「—」，评价为无数据。"
-        )
+    av_note = _pool_source_note(tickers, index_rows)
     index_html = env.get_template("index.html").render(
         rows=index_rows,
         kinds=_kind_filters(index_rows),

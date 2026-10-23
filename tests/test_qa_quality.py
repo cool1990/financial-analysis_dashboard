@@ -279,6 +279,7 @@ def test_workflows_pass_alphavantage_key():
     assert "python -m pipeline av-estimates" in manual
     assert "python -m pipeline av-estimates" in poll
     assert "python -m pipeline av-estimates" in daily
+    assert "python -m pipeline tv-scan" in daily
 
 
 def test_hk_local_import_transcript_splits_into_analyst_exchanges():
