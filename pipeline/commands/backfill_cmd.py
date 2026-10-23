@@ -19,9 +19,6 @@ from pipeline.sources.xbrl_history import quarterly_statements
 from pipeline.state import empty_period_doc, load_period_json, save_period_json
 
 
-_PROTECTED_STAGES = {"stage1_done", "stage2_done", "stage3_done", "transcript_found"}
-
-
 def _block(node: dict[str, Any] | None, *, yoy: float | None, qoq: float | None, is_ratio: bool = False) -> dict[str, Any] | None:
     if not node or node.get("value") is None:
         return None
@@ -37,7 +34,7 @@ def _block(node: dict[str, Any] | None, *, yoy: float | None, qoq: float | None,
 
 
 def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, Any]:
-    """用 companyfacts 回补单季 GAAP。不覆盖已经跑过新闻稿阶段的季度。"""
+    """用 companyfacts 回补单季 GAAP。已有季度 JSON 一律跳过，只补缺季。"""
     cfg = load_ticker_config(ticker)
     if is_hk_listing(cfg):
         raise RuntimeError(f"{ticker} listing=hk，不用 SEC companyfacts 回补")
@@ -65,8 +62,7 @@ def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, A
         info = build_period_info(end, fye)
         period = info.fiscal_period
         existing = load_period_json(ticker, period)
-        stage = ((existing or {}).get("status") or {}).get("stage")
-        if existing and stage in _PROTECTED_STAGES:
+        if existing:
             skipped.append(period)
             continue
         row = by_end[end]
@@ -237,6 +233,7 @@ def backfill(
     dry_run: bool = False,
     model: str | None = None,
     xbrl_only: bool = False,
+    press_only: bool = False,
     start: str = "2016-01-01",
 ) -> dict[str, Any]:
     """历史回补。
@@ -250,6 +247,12 @@ def backfill(
     if is_hk_listing(cfg):
         raise RuntimeError(f"{ticker} listing=hk，不用 SEC 回补")
     spec = resolve_earnings_spec(cfg)
+    if press_only:
+        if spec.listing != "adr":
+            raise RuntimeError(f"{ticker} 不是 ADR。美股用 --xbrl-only，港股用业绩公告导入。")
+        from pipeline.commands.adr_backfill import write_adr_press_history
+
+        return write_adr_press_history(ticker, start=start)
     if spec.listing == "adr":
         if xbrl_only:
             raise RuntimeError(

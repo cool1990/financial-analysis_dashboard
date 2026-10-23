@@ -1,19 +1,117 @@
 {
   "ticker": "0700.HK",
-  "source": "人民币金额来自 data/0700.HK 各季 Stage1 JSON。营业收入、毛利取 financials 原数；收入成本 = 收入 − 毛利。营业费用是销售及市场推广与一般及行政（kpis）合计，不含其他收益/亏损，不含营业成本。业务柱取自 kpis：增值服务、营销服务（含早期网络广告）、金融科技及企业服务；「其他」为收入减去已披露分项的非负残差。2017–2018 未单列金融科技时残差即当年「其他」桶。没有季度文件或字段缺失时留空。地区收入未披露，geo 留空，不补数。",
+  "source": "人民币金额来自已保存的季度 JSON，不覆盖这些文件。收入、毛利取季度 JSON。营业成本仅在两者都有时用收入减毛利。营业费用只在销售及市场推广、一般及行政都有时相加。业务分部只取季度 JSON 里已经抽出的增值服务、营销服务、金融科技及企业服务；没有单独披露的「其他」不倒挤。业绩稿简明综合收益表能读出的季度改用表内原数，包括表里的其他。没有季度文件、也没有表内数字的季度留空。地区收入未披露。不把港币或美元写进人民币字段。",
   "currency": "CNY",
   "unit": "人民币",
   "quarters": [
     {
+      "period": "FY2016Q1",
+      "end": "2016-03-31",
+      "revenue": 31995000000,
+      "revenue_method": "period",
+      "cost_of_revenue": 13406000000,
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 18589000000,
+      "opex": 6400000000,
+      "opex_method": "period_components",
+      "opex_lines": [
+        {
+          "key": "selling",
+          "name": "销售及市场推广",
+          "value": 2032000000
+        },
+        {
+          "key": "ga",
+          "name": "一般及行政",
+          "value": 4368000000
+        }
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
+    },
+    {
+      "period": "FY2016Q2",
+      "end": "2016-06-30",
+      "revenue": 35691000000,
+      "revenue_method": "period",
+      "cost_of_revenue": 15235000000,
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 20456000000,
+      "opex": 7664000000,
+      "opex_method": "period_components",
+      "opex_lines": [
+        {
+          "key": "selling",
+          "name": "销售及市场推广",
+          "value": 2365000000
+        },
+        {
+          "key": "ga",
+          "name": "一般及行政",
+          "value": 5299000000
+        }
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
+    },
+    {
+      "period": "FY2016Q3",
+      "end": "2016-09-30",
+      "revenue": 40388000000,
+      "revenue_method": "period",
+      "cost_of_revenue": 18560000000,
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 21828000000,
+      "opex": 9160000000,
+      "opex_method": "period_components",
+      "opex_lines": [
+        {
+          "key": "selling",
+          "name": "销售及市场推广",
+          "value": 3277000000
+        },
+        {
+          "key": "ga",
+          "name": "一般及行政",
+          "value": 5883000000
+        }
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
+    },
+    {
+      "period": "FY2016Q4",
+      "end": "2016-12-31",
+      "revenue": 43864000000,
+      "revenue_method": "period",
+      "cost_of_revenue": 20238000000,
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 23626000000,
+      "opex": 11371000000,
+      "opex_method": "period_components",
+      "opex_lines": [
+        {
+          "key": "selling",
+          "name": "销售及市场推广",
+          "value": 4462000000
+        },
+        {
+          "key": "ga",
+          "name": "一般及行政",
+          "value": 6909000000
+        }
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
+    },
+    {
       "period": "FY2017Q1",
       "end": "2017-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 49552000000,
       "revenue_method": "period",
-      "gross_profit": 25443000000,
       "cost_of_revenue": 24109000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 25443000000,
       "opex": 10170000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -27,18 +125,18 @@
           "name": "一般及行政",
           "value": 7012000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2017Q2",
       "end": "2017-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 56606000000,
       "revenue_method": "period",
-      "gross_profit": 28306000000,
       "cost_of_revenue": 28300000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 28306000000,
       "opex": 11830000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -52,18 +150,18 @@
           "name": "一般及行政",
           "value": 8170000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2017Q3",
       "end": "2017-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 65210000000,
       "revenue_method": "period",
-      "gross_profit": 31681000000,
       "cost_of_revenue": 33529000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 31681000000,
       "opex": 13870000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -77,18 +175,18 @@
           "name": "一般及行政",
           "value": 9058000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2017Q4",
       "end": "2017-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 66392000000,
       "revenue_method": "period",
-      "gross_profit": 31495000000,
       "cost_of_revenue": 34897000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 31495000000,
       "opex": 14833000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -102,18 +200,18 @@
           "name": "一般及行政",
           "value": 8811000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2018Q1",
       "end": "2018-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 73528000000,
       "revenue_method": "period",
-      "gross_profit": 37042000000,
       "cost_of_revenue": 36486000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 37042000000,
       "opex": 15000000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -127,18 +225,18 @@
           "name": "一般及行政",
           "value": 9430000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2018Q2",
       "end": "2018-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 73675000000,
       "revenue_method": "period",
-      "gross_profit": 34446000000,
       "cost_of_revenue": 39229000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 34446000000,
       "opex": 16217000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -152,18 +250,18 @@
           "name": "一般及行政",
           "value": 9857000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2018Q3",
       "end": "2018-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 80595000000,
       "revenue_method": "period",
-      "gross_profit": 35480000000,
       "cost_of_revenue": 45115000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 35480000000,
       "opex": 17463000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -177,18 +275,18 @@
           "name": "一般及行政",
           "value": 10890000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2018Q4",
       "end": "2018-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 84896000000,
       "revenue_method": "period",
-      "gross_profit": 35152000000,
       "cost_of_revenue": 49744000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 35152000000,
       "opex": 17075000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -202,18 +300,18 @@
           "name": "一般及行政",
           "value": 11345000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2019Q1",
       "end": "2019-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 85465000000,
       "revenue_method": "period",
-      "gross_profit": 39820000000,
       "cost_of_revenue": 45645000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 39820000000,
       "opex": 15575000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -227,18 +325,18 @@
           "name": "一般及行政",
           "value": 11331000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2019Q2",
       "end": "2019-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 88821000000,
       "revenue_method": "period",
-      "gross_profit": 39126000000,
       "cost_of_revenue": 49695000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 39126000000,
       "opex": 17295000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -252,18 +350,18 @@
           "name": "一般及行政",
           "value": 12577000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2019Q3",
       "end": "2019-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 97236000000,
       "revenue_method": "period",
-      "gross_profit": 42479000000,
       "cost_of_revenue": 54757000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 42479000000,
       "opex": 19258000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -277,18 +375,18 @@
           "name": "一般及行政",
           "value": 13536000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2019Q4",
       "end": "2019-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 105767000000,
       "revenue_method": "period",
-      "gross_profit": 46108000000,
       "cost_of_revenue": 59659000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 46108000000,
       "opex": 22714000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -302,18 +400,18 @@
           "name": "一般及行政",
           "value": 16002000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2020Q1",
       "end": "2020-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 108065000000,
       "revenue_method": "period",
-      "gross_profit": 52794000000,
       "cost_of_revenue": 55271000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 52794000000,
       "opex": 21207000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -327,18 +425,18 @@
           "name": "一般及行政",
           "value": 14158000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2020Q2",
       "end": "2020-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 114883000000,
       "revenue_method": "period",
-      "gross_profit": 53210000000,
       "cost_of_revenue": 61673000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 53210000000,
       "opex": 24255000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -352,18 +450,18 @@
           "name": "一般及行政",
           "value": 16499000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2020Q3",
       "end": "2020-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 125447000000,
       "revenue_method": "period",
-      "gross_profit": 56647000000,
       "cost_of_revenue": 68800000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 56647000000,
       "opex": 26109000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -377,18 +475,18 @@
           "name": "一般及行政",
           "value": 17189000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2020Q4",
       "end": "2020-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 133669000000,
       "revenue_method": "period",
-      "gross_profit": 58881000000,
       "cost_of_revenue": 74788000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 58881000000,
       "opex": 29812000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -402,18 +500,18 @@
           "name": "一般及行政",
           "value": 19779000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2021Q1",
       "end": "2021-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 135303000000,
       "revenue_method": "period",
-      "gross_profit": 62635000000,
       "cost_of_revenue": 72668000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 62635000000,
       "opex": 27497000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -427,18 +525,18 @@
           "name": "一般及行政",
           "value": 18967000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2021Q2",
       "end": "2021-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 138259000000,
       "revenue_method": "period",
-      "gross_profit": 62745000000,
       "cost_of_revenue": 75514000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 62745000000,
       "opex": 32651000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -452,18 +550,18 @@
           "name": "一般及行政",
           "value": 22638000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2021Q3",
       "end": "2021-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 142368000000,
       "revenue_method": "period",
-      "gross_profit": 62747000000,
       "cost_of_revenue": 79621000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 62747000000,
       "opex": 34297000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -477,18 +575,18 @@
           "name": "一般及行政",
           "value": 23862000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2021Q4",
       "end": "2021-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 144188000000,
       "revenue_method": "period",
-      "gross_profit": 57817000000,
       "cost_of_revenue": 86371000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 57817000000,
       "opex": 35996000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -502,18 +600,18 @@
           "name": "一般及行政",
           "value": 24380000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2022Q1",
       "end": "2022-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 135471000000,
       "revenue_method": "period",
-      "gross_profit": 57074000000,
       "cost_of_revenue": 78397000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 57074000000,
       "opex": 34727000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -527,18 +625,18 @@
           "name": "一般及行政",
           "value": 26669000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2022Q2",
       "end": "2022-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 134034000000,
       "revenue_method": "period",
-      "gross_profit": 57867000000,
       "cost_of_revenue": 76167000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 57867000000,
       "opex": 34165000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -552,18 +650,18 @@
           "name": "一般及行政",
           "value": 26233000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2022Q3",
       "end": "2022-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 140093000000,
       "revenue_method": "period",
-      "gross_profit": 61983000000,
       "cost_of_revenue": 78110000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 61983000000,
       "opex": 33604000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -577,18 +675,18 @@
           "name": "一般及行政",
           "value": 26480000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2022Q4",
       "end": "2022-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 144954000000,
       "revenue_method": "period",
-      "gross_profit": 61822000000,
       "cost_of_revenue": 83132000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 61822000000,
       "opex": 33429000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -602,18 +700,18 @@
           "name": "一般及行政",
           "value": 27314000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2023Q1",
       "end": "2023-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 149986000000,
       "revenue_method": "period",
-      "gross_profit": 68182000000,
       "cost_of_revenue": 81804000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 68182000000,
       "opex": 31660000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -627,18 +725,18 @@
           "name": "一般及行政",
           "value": 24642000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2023Q2",
       "end": "2023-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 149208000000,
       "revenue_method": "period",
-      "gross_profit": 70840000000,
       "cost_of_revenue": 78368000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 70840000000,
       "opex": 33729000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -652,18 +750,18 @@
           "name": "一般及行政",
           "value": 25419000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2023Q3",
       "end": "2023-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 154625000000,
       "revenue_method": "period",
-      "gross_profit": 76523000000,
       "cost_of_revenue": 78102000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 76523000000,
       "opex": 34201000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -677,18 +775,18 @@
           "name": "一般及行政",
           "value": 26289000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2023Q4",
       "end": "2023-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 155196000000,
       "revenue_method": "period",
-      "gross_profit": 77564000000,
       "cost_of_revenue": 77632000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 77564000000,
       "opex": 38146000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -702,20 +800,20 @@
           "name": "一般及行政",
           "value": 27175000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2024Q1",
       "end": "2024-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 159501000000,
-      "revenue_method": "period",
-      "gross_profit": 83870000000,
+      "revenue_method": "press",
       "cost_of_revenue": 75631000000,
-      "cost_method": "period",
+      "cost_method": "press",
+      "gross_profit": 83870000000,
       "opex": 32345000000,
-      "opex_method": "period_components",
+      "opex_method": "press_components",
       "opex_lines": [
         {
           "key": "selling",
@@ -727,18 +825,18 @@
           "name": "一般及行政",
           "value": 24809000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2024Q2",
       "end": "2024-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 161117000000,
       "revenue_method": "period",
-      "gross_profit": 85895000000,
       "cost_of_revenue": 75222000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 85895000000,
       "opex": 36647000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -752,20 +850,20 @@
           "name": "一般及行政",
           "value": 27491000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2024Q3",
       "end": "2024-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 167193000000,
-      "revenue_method": "period",
-      "gross_profit": 88828000000,
+      "revenue_method": "press",
       "cost_of_revenue": 78365000000,
-      "cost_method": "period",
+      "cost_method": "press",
+      "gross_profit": 88828000000,
       "opex": 38469000000,
-      "opex_method": "period_components",
+      "opex_method": "press_components",
       "opex_lines": [
         {
           "key": "selling",
@@ -777,18 +875,18 @@
           "name": "一般及行政",
           "value": 29058000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2024Q4",
       "end": "2024-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 172446000000,
       "revenue_method": "period",
-      "gross_profit": 90653000000,
       "cost_of_revenue": 81793000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 90653000000,
       "opex": 41688000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -802,20 +900,20 @@
           "name": "一般及行政",
           "value": 31403000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2025Q1",
       "end": "2025-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 180022000000,
-      "revenue_method": "period",
-      "gross_profit": 100493000000,
+      "revenue_method": "press",
       "cost_of_revenue": 79529000000,
-      "cost_method": "period",
+      "cost_method": "press",
+      "gross_profit": 100493000000,
       "opex": 41530000000,
-      "opex_method": "period_components",
+      "opex_method": "press_components",
       "opex_lines": [
         {
           "key": "selling",
@@ -827,18 +925,18 @@
           "name": "一般及行政",
           "value": 33664000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2025Q2",
       "end": "2025-06-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 184504000000,
       "revenue_method": "period",
-      "gross_profit": 105013000000,
       "cost_of_revenue": 79491000000,
-      "cost_method": "period",
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 105013000000,
       "opex": 41331000000,
       "opex_method": "period_components",
       "opex_lines": [
@@ -852,20 +950,20 @@
           "name": "一般及行政",
           "value": 31921000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2025Q3",
       "end": "2025-09-30",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 192869000000,
-      "revenue_method": "period",
-      "gross_profit": 108798000000,
+      "revenue_method": "press",
       "cost_of_revenue": 84071000000,
-      "cost_method": "period",
+      "cost_method": "press",
+      "gross_profit": 108798000000,
       "opex": 45727000000,
-      "opex_method": "period_components",
+      "opex_method": "press_components",
       "opex_lines": [
         {
           "key": "selling",
@@ -877,20 +975,20 @@
           "name": "一般及行政",
           "value": 34259000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2025Q4",
       "end": "2025-12-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 194371000000,
-      "revenue_method": "period",
-      "gross_profit": 108289000000,
+      "revenue_method": "press",
       "cost_of_revenue": 86082000000,
-      "cost_method": "period",
+      "cost_method": "press",
+      "gross_profit": 108289000000,
       "opex": 49266000000,
-      "opex_method": "period_components",
+      "opex_method": "press_components",
       "opex_lines": [
         {
           "key": "selling",
@@ -902,20 +1000,20 @@
           "name": "一般及行政",
           "value": 36283000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     },
     {
       "period": "FY2026Q1",
       "end": "2026-03-31",
-      "geo": [],
-      "geo_method": "undisclosed",
       "revenue": 196458000000,
-      "revenue_method": "period",
-      "gross_profit": 111265000000,
+      "revenue_method": "press",
       "cost_of_revenue": 85193000000,
-      "cost_method": "period",
+      "cost_method": "press",
+      "gross_profit": 111265000000,
       "opex": 45143000000,
-      "opex_method": "period_components",
+      "opex_method": "press_components",
       "opex_lines": [
         {
           "key": "selling",
@@ -927,7 +1025,34 @@
           "name": "一般及行政",
           "value": 33800000000
         }
-      ]
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
+    },
+    {
+      "period": "FY2026Q2",
+      "end": "2026-06-30",
+      "revenue": 204785000000,
+      "revenue_method": "period",
+      "cost_of_revenue": 86352000000,
+      "cost_method": "revenue_minus_gross_profit",
+      "gross_profit": 118433000000,
+      "opex": 50677000000,
+      "opex_method": "period_components",
+      "opex_lines": [
+        {
+          "key": "selling",
+          "name": "销售及市场推广",
+          "value": 11869000000
+        },
+        {
+          "key": "ga",
+          "name": "一般及行政",
+          "value": 38808000000
+        }
+      ],
+      "geo": [],
+      "geo_method": "undisclosed"
     }
   ]
 }

@@ -55,8 +55,9 @@ def main(argv: list[str] | None = None) -> int:
     p_bf.add_argument("--from", dest="from_period", default=None)
     p_bf.add_argument("--limit", type=int, default=8)
     p_bf.add_argument("--dry-run", action="store_true", help="只统计 LLM 调用与预估花费")
-    p_bf.add_argument("--xbrl-only", action="store_true", help="只写 SEC companyfacts 单季 GAAP，不调用模型")
-    p_bf.add_argument("--start", default="2016-01-01", help="xbrl-only 的起始季度结束日")
+    p_bf.add_argument("--xbrl-only", action="store_true", help="只写 SEC companyfacts 单季 GAAP，不调用模型，不覆盖已有季度")
+    p_bf.add_argument("--press-only", action="store_true", help="ADR：只解析 6-K 新闻稿里的官方美元和 US$ per ADR，不调用模型，不覆盖已有季度")
+    p_bf.add_argument("--start", default="2016-01-01", help="xbrl-only / press-only 的起始日期")
     p_bf.add_argument("--model", default=None)
 
     p_val = sub.add_parser("validate", help="校验已有季度 JSON")
@@ -66,8 +67,12 @@ def main(argv: list[str] | None = None) -> int:
     p_hist = sub.add_parser("history", help="生成分部、报表和 XBRL 活动历史")
     p_hist.add_argument("--ticker", default=None, help="一只股票。与 --if-new 合用时只检查这一只")
     p_hist.add_argument("--if-new", action="store_true", help="仅在出现新的 10-Q/10-K，或历史文件还不齐时刷新")
+    p_hist.add_argument(
+        "--from-periods",
+        action="store_true",
+        help="不改季度 JSON。指定美股时用 SEC 重建分部、报表、股本和应收；港股和 ADR 从已有季度汇总，缺的留空。不指定 ticker 时离线处理，并保留已有的 META/TSM 历史",
+    )
     p_hist.add_argument("--start", default="2016-01-01", help="季度结束日的起点")
-    p_hist.add_argument("--from-periods", action="store_true", help="用已有 FY*.json 写 statement/segment 历史（不联网）")
 
     p_build = sub.add_parser("build", help="生成静态页面到 site/")
     p_build.add_argument("--ticker", default=None)
@@ -170,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
             write_github_step_summary(doc["status"].get("warnings"))
             return 0
         if args.cmd == "backfill":
-            if not args.dry_run and not args.xbrl_only:
+            if not args.dry_run and not args.xbrl_only and not args.press_only:
                 require_openrouter_key(context="backfill")
             out = backfill(
                 args.ticker,
@@ -179,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
                 dry_run=args.dry_run,
                 model=args.model,
                 xbrl_only=args.xbrl_only,
+                press_only=args.press_only,
                 start=args.start,
             )
             print(json.dumps(out, ensure_ascii=False, indent=2))
@@ -200,8 +206,11 @@ def main(argv: list[str] | None = None) -> int:
                 refresh_history_if_new,
             )
 
+            if args.if_new and args.from_periods:
+                print("不要同时使用 --if-new 和 --from-periods", file=sys.stderr)
+                return 2
             if args.from_periods:
-                out = refresh_history_from_periods(args.ticker)
+                out = refresh_history_from_periods(args.ticker, start=args.start)
             elif args.if_new:
                 out = refresh_history_if_new(args.ticker, start=args.start)
             elif args.ticker:

@@ -30,10 +30,23 @@ def test_tsmc_slide_history_keeps_text_platform_and_adr_mapping():
     statement, segment = build_tsmc_histories(raw, cik="0001046179")
     saved_statement = json.loads((ROOT / "data" / "TSM" / "statement_history.json").read_text(encoding="utf-8"))
     saved_segment = json.loads((ROOT / "data" / "TSM" / "segment_history.json").read_text(encoding="utf-8"))
-    assert saved_statement["quarters"] == statement["quarters"]
-    assert saved_segment["quarters"] == segment["quarters"]
+    saved_by = {row["period"]: row for row in saved_statement["quarters"]}
+    for row in statement["quarters"]:
+        if row.get("revenue") is not None:
+            assert saved_by[row["period"]]["revenue"] == row["revenue"]
+            assert saved_by[row["period"]]["revenue_method"] == "slide"
     assert saved_statement["skipped_slides"] == ["FY2025Q2"]
     assert "FY2026Q3" in saved_statement["parsed_slides"]
+    assert saved_by["FY2016Q1"]["revenue"] == 6_140_000_000
+    assert saved_by["FY2016Q1"]["revenue_method"] == "press_release"
+    assert saved_by["FY2016Q1"]["eps_adr_usd"] == pytest.approx(0.38)
+    assert saved_by["FY2016Q1"].get("net_income") is None
+    assert "fx_usd_ntd" not in saved_by["FY2016Q1"]
+    assert saved_by["FY2024Q2"]["revenue"] == 20_820_000_000
+    assert saved_by["FY2024Q2"]["revenue_method"] == "press_release"
+    hpc_saved = {row["period"]: row["lines"] for row in saved_segment["quarters"]}
+    assert hpc_saved["FY2016Q1"] == []
+    assert {line["key"] for line in hpc_saved["FY2024Q4"]} == {"hpc", "smartphone", "iot", "auto", "dce", "other"}
 
     by_period = {row["period"]: row for row in statement["quarters"]}
     q3 = by_period["FY2026Q3"]
@@ -45,7 +58,9 @@ def test_tsmc_slide_history_keeps_text_platform_and_adr_mapping():
     assert by_period["FY2025Q4"]["eps_adr_usd"] == pytest.approx(3.14)
     assert by_period["FY2025Q4"]["eps_adr_method"] == "press_release"
     assert by_period["FY2024Q1"].get("eps_ordinary_ntd") is not None
-    assert "eps_adr_usd" not in by_period["FY2024Q1"]
+    # 已保存的新闻稿写明 US$1.38 per ADR，幻灯片历史可以挂上，但不按汇率换算。
+    assert by_period["FY2024Q1"]["eps_adr_usd"] == pytest.approx(1.38)
+    assert by_period["FY2024Q1"]["eps_adr_method"] == "press_release"
     assert "不按当季平均汇率把新台币换算成美元" in statement["source"]
     assert statement["adr"]["eps_method"] == "press_release_us_per_adr"
     assert "US$ per ADR" in statement["source"]
@@ -90,8 +105,10 @@ def test_fin_view_keeps_meta_copy_and_gives_tsm_three_revenue_charts():
     assert [chart["title"] for chart in charts] == ["营业收入", "按业务", "按地区"]
     assert charts[0]["amount"][-1] == 46.72
     assert "FY2025" in charts[0]["annual"]["labels"]
-    assert "FY2024" not in charts[0]["annual"]["labels"]
+    assert "FY2016" in charts[0]["annual"]["labels"]
+    assert "FY2024" in charts[0]["annual"]["labels"]
     assert "FY2026" not in charts[0]["annual"]["labels"]
+    assert charts[0]["annual"]["amount"][charts[0]["annual"]["labels"].index("FY2024")] == 90.07
     assert charts[0]["annual"]["amount"][charts[0]["annual"]["labels"].index("FY2025")] == 122.43
     business = {point["period"]: point for point in charts[1]["points"]}
     assert business["FY2026Q3"]["gap"] is True

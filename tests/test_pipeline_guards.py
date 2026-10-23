@@ -1215,8 +1215,20 @@ def test_forward_yoy_stays_empty_when_last_year_is_unreported():
     assert chart is not None and chart["revenue"]
     by_eps = {row["label"]: row for row in chart["quarters"]}
     by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
-    assert by_eps["FQ2 2027"]["consensus"] is not None and by_eps["FQ2 2027"]["yoy_pct"] is None
-    assert by_rev["FQ2 2027"]["consensus"] is not None and by_rev["FQ2 2027"]["yoy_pct"] is None
+    # FY2026Q2 已披露，FQ2 2027 用这一季实际做分母，不拿预期除预期。
+    assert latest == "FY2026Q2"
+    assert by_eps["FQ2 2026"]["actual"] is not None
+    assert by_eps["FQ2 2027"]["consensus"] is not None and by_eps["FQ2 2027"]["actual"] is None
+    assert by_eps["FQ2 2027"]["yoy_pct"] is not None
+    assert by_rev["FQ2 2026"]["actual"] is not None
+    assert by_rev["FQ2 2027"]["consensus"] is not None and by_rev["FQ2 2027"]["yoy_pct"] is not None
+
+    without = {key: value for key, value in docs.items() if key != "FY2026Q2"}
+    prior = _eps_chart(without["FY2026Q1"], without)
+    prior_eps = {row["label"]: row for row in prior["quarters"]}
+    prior_rev = {row["label"]: row for row in prior["revenue"]["quarters"]}
+    assert prior_eps["FQ2 2027"]["consensus"] is not None and prior_eps["FQ2 2027"]["yoy_pct"] is None
+    assert prior_rev["FQ2 2027"]["consensus"] is not None and prior_rev["FQ2 2027"]["yoy_pct"] is None
 
 
 def test_amzn_q4_eps_yoy_uses_scan_actual():

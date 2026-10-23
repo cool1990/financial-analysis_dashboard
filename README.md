@@ -55,9 +55,9 @@ cd site && python3 -m http.server
 | `python -m pipeline snapshot` | 全部股票预期快照 |
 | `python -m pipeline poll` | 财报窗口检测 / 文字稿 |
 | `python -m pipeline run --ticker MU --period FY2026Q4 --stage 1` | 重跑阶段 |
-| `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补。ADR 只走 6-K 新闻稿，拒绝 `--xbrl-only` |
+| `python -m pipeline backfill --ticker MU --from FY2021Q4` | 历史回补。已有季度 JSON 不覆盖。ADR 可用 `--press-only` 只解析 6-K 里的官方美元和 US$ per ADR，拒绝 `--xbrl-only` |
 | `python -m pipeline replay-filings --ticker TSM` | 回放 6-K 过滤器（不调用 LLM） |
-| `python -m pipeline history --ticker META` | 生成分部、报表和 XBRL 活动历史。`listing: hk` / `adr` 跳过。`--if-new` 只在新的 10-Q/10-K 时刷新；全池扫描不会给还没有这三份文件的股票做首次抓取 |
+| `python -m pipeline history --ticker META` | 生成分部、报表和 XBRL 活动历史。`listing: hk` / `adr` 跳过。`--if-new` 只在新的 10-Q/10-K 时刷新；全池扫描不会给还没有这三份文件的股票做首次抓取。`--from-periods` 不改季度 JSON：指定美股时用 SEC 重建这三份文件，港股和 ADR 只汇总已有季度里写明的数字。不指定 ticker 时离线处理，并保留已有的 META/TSM 历史 |
 | `python -m pipeline build` | 生成 `site/` |
 | `python -m pipeline stage3-recent` | **已停用**：保留命令为空操作，避免旧 workflow 失败 |
 | `python -m pipeline thesis --ticker MU` | 按仓位档案评估本季（1 次小调用；档案和数据都没变时跳过） |

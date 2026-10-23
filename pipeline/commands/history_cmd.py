@@ -442,68 +442,128 @@ def refresh_history_if_new(
         results.append(refreshed)
     return {"results": results}
 
-# 已有 SEC/幻灯片/新闻稿历史的标的，不要用 period JSON 覆盖。
+# 全池模式不覆盖已有 SEC / 幻灯片历史。指定 ticker 时仍按下面的规则重写。
 _PERIOD_HISTORY_PRESERVE = {"META", "TSM"}
 
 
-def refresh_history_from_periods(ticker: str | None = None) -> dict[str, Any]:
-    """用 data/{TICKER}/FY*.json 写 statement_history（及有 KPI 时的 segment_history）。
+def _write_json(ticker: str, name: str, payload: dict[str, Any]) -> str:
+    folder = data_dir(ticker)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / name
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return str(path)
 
-    不联网、不调 LLM。META / TSM 保留现有 SEC/幻灯片历史。0700.HK 走腾讯专用组装。
-    ticker 缺省则扫股票池里还没有 statement_history，或 0700 需要回补的标的。
+
+def refresh_history_from_periods(
+    ticker: str | None = None,
+    *,
+    start: str = "2016-01-01",
+    client: SecEdgarClient | None = None,
+) -> dict[str, Any]:
+    """不修改季度 JSON，不调 LLM。
+
+    指定美股时用 SEC companyfacts / 10-Q / 10-K 重建分部、报表、稀释股本和应收账款。
+    港股、ADR 不访问 SEC，只汇总已有季度和新闻稿里已经写明的数字，缺的留空。
+    不指定 ticker 时离线处理：META / TSM 和已有 statement_history 的标的保留；
+    还没有这份文件的美股用 FY*.json 组装。
     """
-    from pipeline.sources.period_history import write_period_histories
-    from pipeline.sources.tencent_statement import write_tencent_histories
+    from pipeline.sources.period_history import (
+        build_hk_histories_from_periods,
+        extend_adr_history_from_periods,
+        load_period_docs,
+        load_tsmc_slide_histories,
+        write_period_histories,
+    )
 
     names = [ticker] if ticker else list_tickers()
+    sec = client
     results: list[dict[str, Any]] = []
     for name in names:
+        cfg = load_ticker_config(name)
         upper = name.upper()
+        listing = str(cfg.get("listing") or "").strip().lower()
         folder = data_dir(upper)
         statement_path = folder / "statement_history.json"
         if ticker is None and upper in _PERIOD_HISTORY_PRESERVE and statement_path.exists():
             results.append({"ticker": upper, "skipped": True, "reason": "保留现有 SEC/幻灯片历史"})
             continue
-        if ticker is None and upper not in {"0700.HK"} and statement_path.exists():
-            # 全池模式：已有 statement_history 的跳过（META/TSM 已在上面；其它若已有也不覆盖）
-            results.append({"ticker": upper, "skipped": True, "reason": "已有 statement_history.json"})
-            continue
-        if not any(folder.glob("FY*.json")):
-            results.append({"ticker": upper, "skipped": True, "reason": "没有 FY*.json"})
-            continue
-        cfg = load_ticker_config(upper)
-        if upper == "0700.HK":
-            written = write_tencent_histories(folder)
-            statement = json.loads(written[0].read_text(encoding="utf-8"))
-            segment = json.loads(written[1].read_text(encoding="utf-8"))
+        if listing == "hk":
+            statement, segment = build_hk_histories_from_periods(name)
+            paths = [
+                _write_json(name, "statement_history.json", statement),
+                _write_json(name, "segment_history.json", segment),
+            ]
             results.append(
                 {
                     "ticker": upper,
                     "skipped": False,
-                    "source": "tencent_periods",
-                    "statement_quarters": len(statement.get("quarters") or []),
-                    "segment_filled": sum(1 for q in (segment.get("quarters") or []) if q.get("lines")),
-                    "paths": [str(p) for p in written],
+                    "source": "periods",
+                    "quarters": len(statement.get("quarters") or []),
+                    "paths": paths,
                 }
             )
             continue
-        currency = str(cfg.get("reporting_currency") or "USD")
-        unit = "人民币" if currency == "CNY" else "美元"
-        statement_file, segment_file = write_period_histories(
-            folder, ticker=upper, currency=currency, unit=unit, write_segment=True
-        )
-        statement = json.loads(statement_file.read_text(encoding="utf-8"))
-        segment = json.loads(segment_file.read_text(encoding="utf-8")) if segment_file else {"quarters": []}
-        results.append(
-            {
-                "ticker": upper,
-                "skipped": False,
-                "source": "period_json",
-                "statement_quarters": len(statement.get("quarters") or []),
-                "revenue_filled": sum(1 for q in (statement.get("quarters") or []) if q.get("revenue") is not None),
-                "segment_filled": sum(1 for q in (segment.get("quarters") or []) if q.get("lines")),
-                "paths": [str(statement_file)] + ([str(segment_file)] if segment_file else []),
-            }
-        )
+        if listing == "adr":
+            docs = load_period_docs(name)
+            loaded = load_tsmc_slide_histories(name) if upper == "TSM" else None
+            if loaded is None:
+                statement, segment = {"ticker": upper, "quarters": [], "source": ""}, {
+                    "ticker": upper,
+                    "quarters": [],
+                    "years": [],
+                    "source": "",
+                }
+            else:
+                statement, segment = loaded
+            statement, segment = extend_adr_history_from_periods(statement, segment, docs)
+            paths = [
+                _write_json(name, "statement_history.json", statement),
+                _write_json(name, "segment_history.json", segment),
+            ]
+            results.append(
+                {
+                    "ticker": upper,
+                    "skipped": False,
+                    "source": "periods",
+                    "quarters": len(statement.get("quarters") or []),
+                    "paths": paths,
+                    "sec": False,
+                }
+            )
+            continue
+        if ticker is None and statement_path.exists():
+            results.append({"ticker": upper, "skipped": True, "reason": "已有 statement_history.json"})
+            continue
+        if ticker is None:
+            if not any(folder.glob("FY*.json")):
+                results.append({"ticker": upper, "skipped": True, "reason": "没有 FY*.json"})
+                continue
+            currency = str(cfg.get("reporting_currency") or "USD")
+            unit = "人民币" if currency == "CNY" else "美元"
+            statement_file, segment_file = write_period_histories(
+                folder, ticker=upper, currency=currency, unit=unit, write_segment=True
+            )
+            statement = json.loads(statement_file.read_text(encoding="utf-8"))
+            segment = json.loads(segment_file.read_text(encoding="utf-8")) if segment_file else {"quarters": []}
+            results.append(
+                {
+                    "ticker": upper,
+                    "skipped": False,
+                    "source": "period_json",
+                    "statement_quarters": len(statement.get("quarters") or []),
+                    "revenue_filled": sum(1 for q in (statement.get("quarters") or []) if q.get("revenue") is not None),
+                    "segment_filled": sum(1 for q in (segment.get("quarters") or []) if q.get("lines")),
+                    "paths": [str(statement_file)] + ([str(segment_file)] if segment_file else []),
+                }
+            )
+            continue
+        reason = skip_reason(cfg)
+        if reason:
+            results.append({"ticker": upper, "skipped": True, "reason": reason})
+            continue
+        if sec is None:
+            sec = SecEdgarClient()
+        refreshed = refresh_history(name, start=start, client=sec)
+        refreshed["source"] = "sec"
+        results.append(refreshed)
     return {"results": results}
-
