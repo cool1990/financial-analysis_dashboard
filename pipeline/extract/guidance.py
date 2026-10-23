@@ -69,15 +69,39 @@ _FY_ONLY = re.compile(
 _YEAR_ONLY = re.compile(r"^\s*(20\d{2})\s*$")
 
 
+_CN_QUARTER = {"一": 1, "二": 2, "三": 3, "四": 4, "1": 1, "2": 2, "3": 3, "4": 4}
+# 2026年第一季度 / 2026年第1季度 / 2026年Q1。季度末、季末仍归到该季。
+_CN_QUARTER_PERIOD = re.compile(
+    r"(?P<y>20\d{2})\s*年\s*(?:第\s*)?(?:Q\s*)?(?P<q>[一二三四1-4])\s*季",
+)
+_CN_YEAR_PERIOD = re.compile(r"(?P<y>20\d{2})\s*年\s*(?:全年|财年)")
+
+
+def _normalize_cn_period(text: str) -> str | None:
+    """港股电话会常写「2026年第一季度」，不归一就对不上上一季、去年同季的实际数。"""
+    match = _CN_QUARTER_PERIOD.search(text)
+    if match:
+        quarter = _CN_QUARTER.get(match.group("q"))
+        if quarter:
+            return f"FY{match.group('y')}Q{quarter}"
+    match = _CN_YEAR_PERIOD.search(text)
+    if match:
+        return f"FY{match.group('y')}"
+    return None
+
+
 def normalize_period(period: str | None) -> str:
     """把指引期间的各种写法归一成 FY2027Q1 / FY2027，用作合并键；无法识别时返回小写原文。
 
     新闻稿常写 "FQ1-27"，电话会写 "Q1 Fiscal 2027" 或 "first quarter fiscal 2027"，
-    不归一会被当成两条指引重复展示。
+    港股电话会写「2026年第一季度」。不归一会被当成两条指引，也无法对齐历史实际数。
     """
     text = (period or "").strip()
     if not text:
         return ""
+    cn = _normalize_cn_period(text)
+    if cn:
+        return cn
     for pat in _PERIOD_PATTERNS:
         m = pat.search(text)
         if not m:

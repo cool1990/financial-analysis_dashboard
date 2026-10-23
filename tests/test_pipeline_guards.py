@@ -226,6 +226,11 @@ def test_guidance_merge_normalizes_period_and_keeps_directional():
     assert normalize_period("2027") == normalize_period("fiscal 2027") == "FY2027"
     assert normalize_period("beyond 2027") != "FY2027"
     assert normalize_period("calendar 2027") != "FY2027"
+    assert normalize_period("2026年第一季度") == normalize_period("2026年第1季度") == "FY2026Q1"
+    assert normalize_period("2026年第一季度末") == "FY2026Q1"
+    assert normalize_period("2026年第二季度") == "FY2026Q2"
+    assert normalize_period("2026年全年") == "FY2026"
+    assert not normalize_period("上线首月").startswith("FY")
     press = [{"metric_key": "revenue", "period": "FQ1-27", "mid": 61.5e9, "source": "press_release"},
              {"metric_key": "opex_gaap", "period": "FQ1-27", "mid": 2.31e9, "source": "press_release"}]
     call = [{"metric_key": "revenue", "period": "Q1 Fiscal 2027", "mid": 61.5e9, "source": "prepared_remarks"},
@@ -603,6 +608,118 @@ def test_guide_section_splits_performance_and_industry():
     assert "净利润率" not in mu_rows and "营业利润率" not in mu_rows and "资本开支" not in mu_rows
     assert "供给变化" in {block["title"] for block in mu_view["outlook"]}
     assert "industry_outlook" not in (mu.get("guidance") or {})
+
+
+def test_hk_guidance_table_fills_implied_changes_from_prior_actuals():
+    """0700 的中文期间和「亿元」要能对上历史实际数。没有共识时较共识留空。"""
+    from builder.build import _REPORTING_CCY, _guide_section, _load_docs
+
+    doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q1.json").read_text(encoding="utf-8"))
+    token = _REPORTING_CCY.set("CNY")
+    try:
+        rows = {row["label"]: row for row in _guide_section(doc, _load_docs("0700.HK"))["rows"]}
+    finally:
+        _REPORTING_CCY.reset(token)
+
+    revenue = rows["营收"]
+    assert revenue["period"] == "2026财年Q1"
+    assert revenue["value"] == "¥196.00B"
+    assert revenue["qoq"] == {"text": "+0.8%", "cls": "up"}
+    assert revenue["yoy"] == {"text": "+8.9%", "cls": "up"}
+    assert revenue["vs"]["text"] == ""
+
+    margin = rows["毛利率（Non-GAAP）"]
+    assert margin["value"] == "57.00%"
+    assert margin["qoq"]["text"] == "+1.3pp" and margin["yoy"]["text"] == "+1.2pp"
+    assert margin["vs"]["text"] == ""
+
+    operating = rows["营业利润率"]
+    assert operating["value"] == "38.50%"
+    assert operating["qoq"]["text"] == "+2.7pp"
+    assert operating["yoy"] == {"text": "0.0pp", "cls": "flat"}
+    assert operating["vs"]["text"] == ""
+
+    eps = rows["调整后摊薄 EPS"]
+    assert eps["value"] == "¥7.36"
+    assert eps["qoq"]["text"] == "+5.7%" and eps["yoy"]["text"] == "+11.9%"
+    assert eps["vs"]["text"] == ""
+
+    capex = rows["资本开支"]
+    assert capex["value"] == "¥31.20B"
+    assert capex["qoq"]["text"] == "+58.9%" and capex["yoy"]["text"] == "+13.6%"
+    assert capex["vs"]["text"] == ""
+
+
+def test_implied_change_uses_consensus_when_present_and_stays_blank_without_it():
+    from builder.build import _guide_section
+
+    def row_for(doc, docs):
+        rows = _guide_section(doc, docs)["rows"]
+        assert len(rows) == 1
+        return rows[0]
+
+    current = {
+        "meta": {"fiscal_period": "FY2026Q1"},
+        "financials": {"revenue": {"value": 196_000_000_000}},
+        "scorecard": [{"metric": "revenue", "benchmark": {"value": 190_000_000_000, "diff_pct": 0.99}}],
+        "guidance": {"items": [{
+            "metric_key": "revenue",
+            "period": "2026年第一季度",
+            "type": "numeric",
+            "low": 1960,
+            "mid": 1960,
+            "high": 1960,
+            "point_raw": "1,960亿元",
+        }]},
+    }
+    history = {
+        "FY2025Q4": {"financials": {"revenue": {"value": 194_371_000_000}}},
+        "FY2025Q1": {"financials": {"revenue": {"value": 180_022_000_000}}},
+    }
+    filled = row_for(current, history)
+    assert filled["qoq"]["text"] == "+0.8%" and filled["yoy"]["text"] == "+8.9%"
+    # 本季共识用指引中值和基准现算，不用 scorecard 里实际数对共识的旧 diff_pct
+    assert filled["vs"]["text"] == "+3.2%" and filled["vs"]["cls"] == "up"
+
+    unscaled = {
+        "meta": {"fiscal_period": "FY2026Q1"},
+        "financials": {"revenue": {"value": 196_000_000_000}},
+        "scorecard": [],
+        "guidance": {"items": [{
+            "metric_key": "revenue",
+            "period": "2026年第一季度",
+            "type": "numeric",
+            "mid": 1960,
+            "low": 1960,
+            "high": 1960,
+            "point_raw": "1960",
+        }]},
+    }
+    blank = row_for(unscaled, history)
+    assert blank["qoq"]["text"] == "" and blank["yoy"]["text"] == "" and blank["vs"]["text"] == ""
+
+    forward = {
+        "meta": {"fiscal_period": "FY2026Q1"},
+        "financials": {"revenue": {"value": 196_000_000_000}},
+        "scorecard": [{
+            "metric": "next_q_revenue_guidance",
+            "benchmark": {"value": 200_000_000_000, "diff_pct": 0.005},
+        }],
+        "guidance": {"items": [{
+            "metric_key": "revenue",
+            "period": "2026年第二季度",
+            "type": "numeric",
+            "mid": 2100,
+            "low": 2100,
+            "high": 2100,
+            "point_raw": "2,100亿元",
+        }]},
+    }
+    nxt = row_for(forward, {})
+    assert nxt["period"] == "下季"
+    assert nxt["qoq"]["text"] == "+7.1%"
+    assert nxt["yoy"]["text"] == ""
+    assert nxt["vs"]["text"] == "+0.5%"
 
 
 def test_capex_guidance_row_skipped_when_not_numeric():
