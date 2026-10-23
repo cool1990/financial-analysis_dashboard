@@ -363,6 +363,13 @@ def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
     monkeypatch.setattr(build, "_quarter_eps_cells", lambda *args, **kwargs: {})
     monkeypatch.setattr(build, "_choose_fy_eps", lambda *args, **kwargs: None)
     monkeypatch.setattr(build, "_diluted_shares", lambda *args, **kwargs: 9_000_000_000)
+    # 这一支把扫描 EPS 标成人民币，才走「港币股价 / 人民币 EPS」的汇率路径。
+    saved_cols = dict(build._tv_columns("0700.HK"))
+    monkeypatch.setattr(
+        build,
+        "_tradingview",
+        lambda *args, **kwargs: {"quote": {"columns": {**saved_cols, "fundamental_currency_code": "CNY"}}},
+    )
     cfg = {"listing": "hk", "reporting_currency": "CNY", "fiscal_year_end_month": 12}
     view = build._forward_pe_view("0700.HK", {"meta": {}}, "FY2026Q1", cfg, {}, True)
     assert view["price"] == "HK$400.00"
@@ -421,6 +428,57 @@ def test_forward_pe_uses_latest_hkdcny_when_quote_day_has_no_close(tmp_path, mon
     assert "2026-10-23" in view["note"]
     assert "2026-10-24" in view["note"]
     assert "待核对" not in view["rows"][0]["pe"]
+
+
+def test_forward_pe_keeps_tradingview_eps_in_hkd(monkeypatch):
+    """扫描 EPS 与股价同为港币时，整表用港币相除，不换汇，也不采纳报表人民币实际。"""
+    import builder.build as build
+
+    tv = {
+        "quote": {
+            "columns": {"close": 400, "fundamental_currency_code": "HKD", "currency": "HKD"},
+            "fetched_at": "2026-10-23T12:00:00Z",
+        },
+        "rows_used": {
+            "earnings_fq_h_chart": [
+                {"FiscalPeriod": "2025-Q3", "Actual": 8, "Estimate": 7, "IsReported": True},
+                {"FiscalPeriod": "2025-Q4", "Actual": 8, "Estimate": 7, "IsReported": True},
+                {"FiscalPeriod": "2026-Q1", "Actual": 8, "Estimate": 7, "IsReported": True},
+                {"FiscalPeriod": "2026-Q2", "Actual": 8, "Estimate": 7, "IsReported": True},
+                {"FiscalPeriod": "2026-Q3", "Actual": None, "Estimate": 10, "IsReported": False},
+                {"FiscalPeriod": "2026-Q4", "Actual": None, "Estimate": 10, "IsReported": False},
+                {"FiscalPeriod": "2027-Q1", "Actual": None, "Estimate": 12, "IsReported": False},
+                {"FiscalPeriod": "2027-Q2", "Actual": None, "Estimate": 12, "IsReported": False},
+                {"FiscalPeriod": "2027-Q3", "Actual": None, "Estimate": 12, "IsReported": False},
+                {"FiscalPeriod": "2027-Q4", "Actual": None, "Estimate": 12, "IsReported": False},
+            ]
+        },
+    }
+    monkeypatch.setattr(build, "_tradingview", lambda *args, **kwargs: tv)
+    monkeypatch.setattr(
+        build,
+        "_price_quote",
+        lambda *args, **kwargs: {"price": 400.0, "as_of": "2026-10-23", "origin": "tradingview", "currency": "HKD"},
+    )
+
+    def boom(*args, **kwargs):
+        raise AssertionError("港币 EPS 不应再查 HKDCNY")
+
+    monkeypatch.setattr("pipeline.sources.fx.rate_for_pe", boom)
+    cfg = {"listing": "hk", "reporting_currency": "CNY", "fiscal_year_end_month": 12}
+    docs = {"FY2026Q1": {"eps_gaap_diluted": {"value": 6.3}}}
+    view = build._forward_pe_view("0700.HK", {"meta": {}}, "FY2026Q1", cfg, docs, True)
+    by_label = {row["label"]: row for row in view["rows"]}
+    assert by_label["近 4 季（TTM）"]["eps"] == "HK$32.00"
+    assert by_label["近 4 季（TTM）"]["pe"] == "12.5×"
+    assert by_label["近 4 季（TTM）"]["fx"] == ""
+    assert by_label["FY26E"]["eps"] == "HK$36.00"
+    assert by_label["FY26E"]["pe"] == "11.1×"
+    assert by_label["未来 12 个月（NTM）"]["eps"] == "HK$45.00"
+    assert "¥" not in "".join(row["eps"] for row in view["rows"])
+    assert "HKDCNY" not in view["note"]
+    assert "港币" in view["note"]
+    assert "人民币" in view["note"]
 
 
 def test_tencent_press_statement_matches_meta_charts():
@@ -510,17 +568,26 @@ def test_tencent_press_statement_matches_meta_charts():
     cols = json.loads((ROOT / "data" / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))["quote"]["columns"]
     assert bare is not None and bare["price"] == f"HK${cols['close']:.2f}"
     assert bare["rows"]
-    assert all(row["eps"].startswith("¥") for row in bare["rows"])
+    assert all(row["eps"].startswith("HK$") for row in bare["rows"])
+    assert all(row["fx"] == "" for row in bare["rows"])
     assert all(row["pe"].endswith("×") and "待核对" not in row["pe"] for row in bare["rows"])
-    assert "HKDCNY" in bare["note"]
+    assert "HKDCNY" not in bare["note"]
+    assert "港币" in bare["note"]
+    assert "人民币" in bare["note"]
     assert "待核对" not in bare["note"]
     by_label = {row["label"]: row for row in bare["rows"]}
-    # 近四季只用报表人民币实际，不把港币估计加进去。
-    assert by_label["近 4 季（TTM）"]["eps"] == "¥25.36"
-    # 未换算时 FY26E 把 Q1 人民币实际和后三季港币估计加在一起，是 ¥30.95。
-    fy26 = float(by_label["FY26E"]["eps"].removeprefix("¥"))
+    reported = [
+        row["Actual"]
+        for row in json.loads((ROOT / "data" / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))["rows_used"]["earnings_fq_h_chart"]
+        if row.get("IsReported") and row.get("Actual") is not None
+    ]
+    ttm = sum(reported[-4:])
+    assert by_label["近 4 季（TTM）"]["eps"] == f"HK${ttm:.2f}"
+    assert by_label["近 4 季（TTM）"]["eps"] != "¥25.36"
+    assert by_label["近 4 季（TTM）"]["pe"] == f"{cols['close'] / ttm:.1f}×"
+    fy26 = float(by_label["FY26E"]["eps"].removeprefix("HK$"))
     assert by_label["FY26E"]["eps"] != "¥30.95"
-    assert 26 < fy26 < 29
+    assert 32 < fy26 < 35
 
 
 def test_pool_groups_cover_the_four_industries():

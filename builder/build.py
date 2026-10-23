@@ -5272,6 +5272,53 @@ def _choose_fy_eps(
     return (annual.get("prior") or {}).get(year)
 
 
+def _tv_fundamental_currency(tv: dict[str, Any] | None) -> str:
+    cols = ((tv or {}).get("quote") or {}).get("columns") or {}
+    return str(cols.get("fundamental_currency_code") or "").strip().upper()
+
+
+def _forward_pe_tv_currency(cfg: dict[str, Any], tv: dict[str, Any] | None) -> str | None:
+    """TradingView 的 EPS 与股价同币、且不是报表币种时，Forward PE 整表用这一币种。"""
+    fund = _tv_fundamental_currency(tv)
+    if fund and fund == price_currency(cfg) and fund != eps_currency(cfg):
+        return fund
+    return None
+
+
+def _tv_eps_cells(tv: dict[str, Any] | None) -> dict[tuple[int, int], dict[str, Any]]:
+    """扫描里的 EPS，保持原币种。已公布用 Actual，未公布只留 Estimate。"""
+    cells: dict[tuple[int, int], dict[str, Any]] = {}
+    rows = ((tv or {}).get("rows_used") or {}).get("earnings_fq_h_chart") or []
+    if not rows:
+        rows = ((tv or {}).get("rows_used") or {}).get("earnings_fq_h") or []
+    for quarter in rows:
+        if not isinstance(quarter, dict):
+            continue
+        parsed = _parse_year_quarter(quarter.get("FiscalPeriod"))
+        if not parsed:
+            continue
+        actual = _finite(quarter.get("Actual"))
+        estimate = _finite(quarter.get("Estimate"))
+        reported = bool(quarter.get("IsReported")) and actual is not None
+        cells[parsed] = {
+            "reported": reported,
+            "actual": actual if reported else None,
+            "consensus": estimate,
+        }
+    return cells
+
+
+def _ttm_from_tv_cells(cells: dict[tuple[int, int], dict[str, Any]]) -> float | None:
+    reported = [
+        float(cells[key]["actual"])
+        for key in sorted(cells)
+        if cells[key].get("reported") and cells[key].get("actual") is not None
+    ]
+    if len(reported) >= 4:
+        return sum(reported[-4:])
+    return None
+
+
 def _ttm_eps(
     doc: dict[str, Any],
     docs: dict[str, dict[str, Any]] | None,
@@ -5316,18 +5363,27 @@ def _forward_pe_view(
     as_of = _as_date(quote.get("as_of")) or datetime.now(BJ).date()
     if docs is None:
         docs = _load_docs(ticker)
-    annual = _annual_consensus(ticker, fy_end)
     quote_ccy = price_currency(cfg)
-    eps_ccy = eps_currency(cfg)
+    reporting_ccy = eps_currency(cfg)
     tv = _tradingview(ticker)
+    pe_ccy = _forward_pe_tv_currency(cfg, tv)
     fx = None
-    if quote_ccy != eps_ccy:
-        from pipeline.sources.fx import rate_for_pe
+    if pe_ccy:
+        # 扫描 EPS 与股价同币。整表用这个币种，不把港币 EPS 标成人民币，也不乘 HKDCNY。
+        eps_ccy = pe_ccy
+        annual = {"years": {}, "prior": {}, "fetched_at": "", "source": ""}
+        fx_ctx = {"identity": True, "spot": 1.0, "by_period": {}}
+        cells = _tv_eps_cells(tv)
+    else:
+        annual = _annual_consensus(ticker, fy_end)
+        eps_ccy = reporting_ccy
+        if quote_ccy != eps_ccy:
+            from pipeline.sources.fx import rate_for_pe
 
-        attached = quote.get("fx") if isinstance(quote.get("fx"), dict) else None
-        fx = rate_for_pe(str(quote.get("as_of") or ""), attached=attached, fetch=True)
-    fx_ctx, scale_tv = _tv_scaler(ticker, tv, fx=fx)
-    cells = _quarter_eps_cells(doc, docs, tv, scale=scale_tv)
+            attached = quote.get("fx") if isinstance(quote.get("fx"), dict) else None
+            fx = rate_for_pe(str(quote.get("as_of") or ""), attached=attached, fetch=True)
+        fx_ctx, scale_tv = _tv_scaler(ticker, tv, fx=fx)
+        cells = _quarter_eps_cells(doc, docs, tv, scale=scale_tv)
     match = re.fullmatch(r"FY(\d{4})Q[1-4]", period or "")
     anchor = int(match.group(1)) if match else _current_fiscal_year(as_of, fy_end)
     fy_values: dict[int, float] = {}
@@ -5346,7 +5402,7 @@ def _forward_pe_view(
     if current in fy_values and (current + 1) in fy_values and 0 < months <= 12:
         weight = months / 12
         ntm = weight * fy_values[current] + (1 - weight) * fy_values[current + 1]
-    ttm = _ttm_eps(doc, docs, annual, period)
+    ttm = _ttm_from_tv_cells(cells) if pe_ccy else _ttm_eps(doc, docs, annual, period)
 
     def row(label: str, kind: str, eps: float) -> dict[str, Any]:
         if price is None:
@@ -5387,7 +5443,11 @@ def _forward_pe_view(
     )
     if missing:
         note += " " + "、".join(missing) + " 没有全年共识，也凑不满四个季度，所以不显示。"
-    if price is not None and quote_ccy != eps_ccy:
+    if pe_ccy:
+        shown = {"HKD": "港币", "USD": "美元", "CNY": "人民币"}.get(pe_ccy, pe_ccy)
+        filing = {"HKD": "港币", "USD": "美元", "CNY": "人民币"}.get(reporting_ccy, reporting_ccy)
+        note += f" EPS 与股价都是{shown}，取自 TradingView，同一币种直接相除。财报分析和 Stage1 的实际数仍是{filing}。"
+    elif price is not None and quote_ccy != eps_ccy:
         if fx:
             source = f"，{fx['source']}" if fx.get("source") else ""
             rate_txt = f"{fx['pair']} {float(fx['rate']):.4f}（{fx['date']}{source}）"
@@ -5401,7 +5461,7 @@ def _forward_pe_view(
                 note += f" 股价按 {rate_txt}换成人民币后，再除以人民币 EPS。"
         else:
             note += " 股价是港币、EPS 是人民币。没有可用的 HKDCNY 时，P/E 显示待核对。"
-    if not fx_ctx.get("identity"):
+    if not pe_ccy and not fx_ctx.get("identity"):
         if fx_ctx.get("spot") is not None or fx_ctx.get("by_period"):
             spot_word = "最近可用的 HKDCNY" if fx and fx.get("matched") == "recent" else "行情日 HKDCNY"
             note += (
