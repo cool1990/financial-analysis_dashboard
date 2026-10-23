@@ -5322,10 +5322,10 @@ def _forward_pe_view(
     tv = _tradingview(ticker)
     fx = None
     if quote_ccy != eps_ccy:
-        from pipeline.sources.fx import rate_on
+        from pipeline.sources.fx import rate_for_pe
 
         attached = quote.get("fx") if isinstance(quote.get("fx"), dict) else None
-        fx = rate_on(str(quote.get("as_of") or ""), attached=attached)
+        fx = rate_for_pe(str(quote.get("as_of") or ""), attached=attached, fetch=True)
     fx_ctx, scale_tv = _tv_scaler(ticker, tv, fx=fx)
     cells = _quarter_eps_cells(doc, docs, tv, scale=scale_tv)
     match = re.fullmatch(r"FY(\d{4})Q[1-4]", period or "")
@@ -5390,14 +5390,26 @@ def _forward_pe_view(
     if price is not None and quote_ccy != eps_ccy:
         if fx:
             source = f"，{fx['source']}" if fx.get("source") else ""
-            note += f" 股价按 {fx['pair']} {float(fx['rate']):.4f}（{fx['date']}{source}）换成人民币后，再除以人民币 EPS。"
+            rate_txt = f"{fx['pair']} {float(fx['rate']):.4f}（{fx['date']}{source}）"
+            if fx.get("matched") == "recent":
+                quote_day = fx.get("as_of") or quote.get("as_of") or ""
+                note += (
+                    f" 行情日 {quote_day} 没有 HKDCNY 收盘，改用最近可用的 {rate_txt}"
+                    "把港币股价换成人民币，再除以人民币 EPS。"
+                )
+            else:
+                note += f" 股价按 {rate_txt}换成人民币后，再除以人民币 EPS。"
         else:
-            note += " 股价是港币、EPS 是人民币。缺少当日 HKDCNY 时，P/E 显示待核对。"
+            note += " 股价是港币、EPS 是人民币。没有可用的 HKDCNY 时，P/E 显示待核对。"
     if not fx_ctx.get("identity"):
         if fx_ctx.get("spot") is not None or fx_ctx.get("by_period"):
-            note += " TradingView 季度一致预期原为港币。已披露季按该季营收隐含汇率换回人民币，未披露季按行情日 HKDCNY，再与报表人民币实际相加。"
+            spot_word = "最近可用的 HKDCNY" if fx and fx.get("matched") == "recent" else "行情日 HKDCNY"
+            note += (
+                " TradingView 季度一致预期原为港币。已披露季按该季营收隐含汇率换回人民币，"
+                f"未披露季按{spot_word}，再与报表人民币实际相加。"
+            )
         else:
-            note += " TradingView 季度一致预期是港币。缺少当日 HKDCNY，也没有能对齐的营收实际，这些预期不并进人民币 EPS。"
+            note += " TradingView 季度一致预期是港币。没有可用的 HKDCNY，也没有能对齐的营收实际，这些预期不并进人民币 EPS。"
     if price is None:
         note = "股价未接入，P/E 显示待核对，不估算股价。" + note
     source_bits: list[str] = []

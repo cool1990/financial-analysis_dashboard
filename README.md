@@ -111,7 +111,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 
 ### 腾讯 0700.HK
 
-财报数字保持人民币（¥）。股价和市值按港股报价用港币（HK$）。Forward PE、TTM、NTM 先用当天 HKDCNY（Yahoo `HKDCNY=X`，1 港币折合的人民币）把股价换成人民币，再除以人民币 EPS，并在 P/E 旁标出汇率和日期。没有当天汇率时显示「待核对」。
+财报数字保持人民币（¥）。股价和市值按港股报价用港币（HK$）。财报页 Forward PE、TTM、NTM 先用当天 HKDCNY（Yahoo `HKDCNY=X`，1 港币折合的人民币）；当天没有收盘时，用截至行情日最近一笔把股价换成人民币，再除以人民币 EPS，并在 P/E 旁标出汇率和日期。没有任何可用汇率时才显示「待核对」。
 
 ```bash
 python -m pipeline fx-refresh --date 2026-10-23

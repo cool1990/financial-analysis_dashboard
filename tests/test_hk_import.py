@@ -254,6 +254,83 @@ def test_hkdcny_only_uses_the_same_calendar_day(tmp_path, monkeypatch):
     assert rate_on("2026-10-22", attached={"pair": "HKDCNY", "rate": 0.88, "date": "2026-10-22"})["rate"] == pytest.approx(0.88)
 
 
+def test_rate_for_pe_uses_same_day_then_latest_on_or_before(tmp_path, monkeypatch):
+    from pipeline.sources import fx as fxmod
+
+    monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "HKDCNY.json")
+    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.88, "date": "2026-10-22", "source": "yfinance:HKDCNY=X"})
+    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.5, "date": "2026-10-25", "source": "yfinance:HKDCNY=X"})
+
+    recent = fxmod.rate_for_pe("2026-10-24", fetch=False)
+    assert recent["date"] == "2026-10-22"
+    assert recent["rate"] == pytest.approx(0.88)
+    assert recent["matched"] == "recent"
+    assert recent["as_of"] == "2026-10-24"
+
+    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.91, "date": "2026-10-24", "source": "yfinance:HKDCNY=X"})
+    same = fxmod.rate_for_pe("2026-10-24", fetch=False)
+    assert same["date"] == "2026-10-24"
+    assert same["rate"] == pytest.approx(0.91)
+    assert same["matched"] == "same_day"
+
+    prior = fxmod.rate_for_pe(
+        "2026-10-21",
+        attached={"pair": "HKDCNY", "rate": 0.7, "date": "2026-10-20", "source": "manual"},
+        fetch=False,
+    )
+    assert prior["date"] == "2026-10-20"
+    assert prior["rate"] == pytest.approx(0.7)
+    assert prior["matched"] == "recent"
+    assert fxmod.rate_for_pe("2026-10-19", fetch=False) is None
+
+
+def test_rate_for_pe_fetches_recent_and_ignores_later_closes(tmp_path, monkeypatch):
+    from pipeline.sources import fx as fxmod
+
+    monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "HKDCNY.json")
+    calls = {"n": 0}
+
+    class Fake:
+        def __init__(self, ticker):
+            calls["ticker"] = ticker
+
+        def daily_closes(self, start, end):
+            calls["n"] += 1
+            calls["window"] = (start, end)
+            return [("2026-10-20", 0.1), ("2026-10-22", 0.87), ("2026-10-25", 0.2)]
+
+    monkeypatch.setattr("pipeline.sources.yfinance_src.YFinanceSource", Fake)
+    got = fxmod.rate_for_pe("2026-10-24", fetch=True)
+    assert calls["ticker"] == "HKDCNY=X"
+    assert calls["window"] == ("2026-10-10", "2026-10-25")
+    assert calls["n"] == 1
+    assert got["date"] == "2026-10-22"
+    assert got["rate"] == pytest.approx(0.87)
+    assert got["matched"] == "recent"
+    assert fxmod.rate_on("2026-10-25") is None
+    assert fxmod.rate_on("2026-10-22")["rate"] == pytest.approx(0.87)
+    again = fxmod.rate_for_pe("2026-10-24", fetch=True)
+    assert again["date"] == "2026-10-22"
+    assert calls["n"] == 1
+
+    monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "empty.json")
+
+    class Down:
+        def __init__(self, ticker):
+            pass
+
+        def daily_closes(self, start, end):
+            raise RuntimeError("yahoo down")
+
+    monkeypatch.setattr("pipeline.sources.yfinance_src.YFinanceSource", Down)
+    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.88, "date": "2026-10-22", "source": "yfinance:HKDCNY=X"})
+    kept = fxmod.rate_for_pe("2026-10-24", fetch=True)
+    assert kept["date"] == "2026-10-22"
+    assert kept["rate"] == pytest.approx(0.88)
+    assert kept["matched"] == "recent"
+    assert fxmod.rate_for_pe("2026-10-19", fetch=False) is None
+
+
 def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
     import builder.build as build
 
@@ -302,11 +379,39 @@ def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
         "_price_quote",
         lambda *args, **kwargs: {"price": 400.0, "as_of": "2026-10-23", "origin": "tradingview", "currency": "HKD"},
     )
-    # 仓库里可能已有当天 HKDCNY。这一支要测「行情没带汇率、当天也查不到」仍待核对。
-    monkeypatch.setattr("pipeline.sources.fx.rate_on", lambda *args, **kwargs: None)
+    # 行情没带汇率，而且当天和更早都没有 HKDCNY，P/E 才待核对。
+    monkeypatch.setattr("pipeline.sources.fx.rate_for_pe", lambda *args, **kwargs: None)
     missing = build._forward_pe_view("0700.HK", {"meta": {}}, "FY2026Q1", cfg, {}, True)
     assert missing["rows"][0]["pe"] == "待核对"
     assert missing["rows"][0]["fx"] == ""
+    assert "没有可用的 HKDCNY 时，P/E 显示待核对" in missing["note"]
+
+
+def test_forward_pe_uses_latest_hkdcny_when_quote_day_has_no_close(tmp_path, monkeypatch):
+    import builder.build as build
+    from pipeline.sources import fx as fxmod
+
+    monkeypatch.setattr(fxmod, "fx_path", lambda: tmp_path / "HKDCNY.json")
+    fxmod.store_rate({"pair": "HKDCNY", "rate": 0.85, "date": "2026-10-23", "source": "yfinance:HKDCNY=X"})
+    monkeypatch.setattr(fxmod, "fetch_recent_hkd_cny", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        build,
+        "_price_quote",
+        lambda *args, **kwargs: {"price": 400.0, "as_of": "2026-10-24", "origin": "tradingview", "currency": "HKD"},
+    )
+    monkeypatch.setattr(build, "_ttm_eps", lambda *args, **kwargs: 10.0)
+    monkeypatch.setattr(build, "_annual_consensus", lambda *args, **kwargs: {})
+    monkeypatch.setattr(build, "_quarter_eps_cells", lambda *args, **kwargs: {})
+    monkeypatch.setattr(build, "_choose_fy_eps", lambda *args, **kwargs: None)
+    monkeypatch.setattr(build, "_tradingview", lambda *args, **kwargs: {})
+    cfg = {"listing": "hk", "reporting_currency": "CNY", "fiscal_year_end_month": 12}
+    view = build._forward_pe_view("0700.HK", {"meta": {}}, "FY2026Q1", cfg, {}, True)
+    assert view["rows"][0]["pe"] == "34.0×"
+    assert view["rows"][0]["fx"] == "HKDCNY 0.8500（2026-10-23）"
+    assert "最近可用" in view["note"]
+    assert "2026-10-23" in view["note"]
+    assert "2026-10-24" in view["note"]
+    assert "待核对" not in view["rows"][0]["pe"]
 
     header = build._header_quotes("0700.HK", {"meta": {}}, "FY2026Q1", True)
     shown = {item["label"]: item for item in header["items"]}
