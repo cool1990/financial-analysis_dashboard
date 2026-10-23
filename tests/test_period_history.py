@@ -77,5 +77,6 @@ def test_amzn_repo_history_starts_at_fy2016q1():
     statement = json.loads((root / "data" / "AMZN" / "statement_history.json").read_text(encoding="utf-8"))
     assert statement["quarters"][0]["period"] == "FY2016Q1"
     assert statement["quarters"][-1]["period"] == "FY2026Q2"
-    assert all(q.get("geo") == [] for q in statement["quarters"])
+    # SEC 重建没有地区事实时 geo 为空，不补地区。
+    assert all(not q.get("geo") for q in statement["quarters"])
     assert sum(1 for q in statement["quarters"] if q.get("revenue") is not None) >= 40

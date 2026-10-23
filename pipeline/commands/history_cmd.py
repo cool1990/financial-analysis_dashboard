@@ -11,7 +11,7 @@ from pipeline.config import data_dir, list_tickers, load_ticker_config
 from pipeline.sources.history_filings import collect_filings, latest_accession, list_periodic_filings
 from pipeline.sources.sec_edgar import SecEdgarClient
 from pipeline.sources.segment_history import assemble_geography, assemble_periods, fiscal_quarter_key
-from pipeline.sources.xbrl_history import COST_OF_REVENUE_TAGS, REVENUE_TAGS, quarterly_values
+from pipeline.sources.xbrl_history import COST_OF_REVENUE_TAGS, quarterly_statements, quarterly_values
 
 SKIP_LISTINGS = {"hk", "adr"}
 HISTORY_FILES = ("segment_history.json", "statement_history.json", "xbrl_activity.json")
@@ -132,7 +132,9 @@ def _series_node(series: dict[date, dict[str, Any]], end: date) -> tuple[int | f
     node = series.get(end)
     if not node or node.get("value") is None:
         return None, None
-    return _whole(node["value"]), "residual" if node.get("derived") else "xbrl"
+    # 只有累计相减才标 residual。银行净利息加非利息收入仍是 XBRL，不是倒挤。
+    residual = bool(node.get("derived")) and "累计相减" in str(node.get("source_quote") or "")
+    return _whole(node["value"]), "residual" if residual else "xbrl"
 
 
 def _statement_quarters(
@@ -141,7 +143,9 @@ def _statement_quarters(
     fiscal_year_end_month: int,
     start: str,
 ) -> list[dict[str, Any]]:
-    revenue = quarterly_values(facts, REVENUE_TAGS, "USD")
+    # quarterly_statements 在没有 Revenues 时，用净利息收入加非利息收入。高盛走这条。
+    packed = quarterly_statements(facts)
+    revenue = {end: node["revenue"] for end, node in packed.items() if node.get("revenue")}
     cost = quarterly_values(facts, COST_OF_REVENUE_TAGS, "USD")
     opex_series = [(key, name, quarterly_values(facts, tags, "USD")) for key, name, tags in OPEX_SPECS]
     geo_best: dict[str, tuple[int, dict[str, Any]]] = {}
