@@ -9,21 +9,27 @@
     "release_at_utc": "2025-03-19T00:00:00Z",
     "accession": "manual:70f529984a87",
     "press_release_url": "file:data/0700.HK/raw/FY2024Q4/press_release.pdf",
-    "transcript_source": "local_import",
+    "transcript_source": "roic",
     "eps_basis": "gaap",
     "listing": "hk",
     "reporting_currency": "CNY",
     "sec_form": null,
     "extract_method": "hk_results",
-    "extract_mode": "disclosed"
+    "extract_mode": "disclosed",
+    "transcript_url": "https://www.roic.ai/quote/0700.HK/transcripts/2024-year/4-quarter",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
-      "自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf",
-      "listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期",
-      "电话会已导入（local_import）。其中的美元口径未写入财务字段；Stage2 解读需另跑 run --stage 2。"
+      "自由现金流只记在指标里；公告未单列经营现金流，不回填自由现金流科目。",
+      "港股按收益表规则抽取，未调用模型，也未接一致预期。",
+      "电话会已导入。其中的美元口径未写入财务字段。"
     ]
   },
   "scorecard": [
@@ -437,12 +443,648 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "港股手工导入未调用变动原因模型"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "收入1724.46亿元，同比增11.1%，环比增3.1%。John称1724亿元、同比11%，Pony称1720亿元、同比11%，摘要用指标表。James称增值服务占46%（社交网络17%、国内游戏20%、国际游戏9%），营销服务占20%，金融科技及企业服务占33%。电话会称国内游戏同比增23%、国际游戏增15%（固定汇率16%）、营销服务增17%至350亿元（指标表广告收入350.04亿元）、增值服务790亿元级且同比14%（指标表790.22亿元，表内无同比）、金融科技及企业服务560亿元级且同比3%（指标表561.25亿元）。社交网络收入同比增6%。合并增速回到双位数，主要靠游戏和营销，金融科技及企业服务明显更慢。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "国内游戏同比增23%，低基数上由王者荣耀、和平精英、无畏契约以及地下城与勇士手游、三角洲行动拉动。",
+            "evidence_quote": "Domestic Games revenue grew 23% year-on-year against a low base quarter, driven by evergreen games, Honor of Kings, Peacekeeper Elite, VALORANT and also contributions from recently released games, DnF Mobile and Delta Force.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "国际游戏同比增15%，固定汇率增16%，来自荒野乱斗、PUBG MOBILE和流放之路2抢先体验。",
+            "evidence_quote": "International Games revenue increased 15% year-on-year, or 16% in constant currency terms on robust performances from Brawl Stars and PUBG MOBILE and the early access release of Path of Exile 2.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营销服务同比增17%，James归因于用户参与度上升和广告平台持续的AI升级。",
+            "evidence_quote": "For Marketing Services, revenue grew 17% to RMB35 billion in the fourth quarter, benefiting from higher user engagement and the ongoing AI upgrade of our advertising platform.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "社交网络收入同比增6%，来自应用内游戏道具、音乐订阅和小游戏平台服务费。",
+            "evidence_quote": "Social Networks revenue was up 6% driven by increased revenue from app based game item sales, music subscriptions and Mini Games platform service fees.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "-",
+            "is_primary": false,
+            "description": "商业支付交易笔数还在增加，但ASP价格压力继续，金额口径大致持平，金融科技及企业服务分部因此只增3%，拉低合并增速。",
+            "evidence_quote": "In terms of commercial payments, what our observation is that the volume of transactions actually sort of increase further, but then the pricing pressure on the ASP actually continued.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "Pony称四季度总收入1720亿元、同比11%。John称1724亿元、同比11%。指标表为1724.46亿元、同比11.1%、环比3.1%。摘要用指标表。",
+          "James称增值服务收入790亿元、同比14%，营销服务350亿元、同比17%，金融科技及企业服务560亿元、同比3%。指标表分别为790.22亿元、350.04亿元、561.25亿元，且这三项没有同比字段。摘要金额用指标表，14%、17%、3%只作为电话会口述。"
+        ]
+      },
+      {
+        "metric": "gross_profit_gaap",
+        "summary": "毛利906.53亿元，同比增16.9%，环比增2.1%，快于收入。John称907亿元、同比17%，Pony称910亿元、同比17%。摘要用指标表的906.53亿元和16.9%。James把同比加快归因于国内游戏、视频号广告、微信搜索广告这些高毛利收入增加，以及云服务的成本效率。电话会没有解释毛利环比只增2.1%、慢于同比的原因。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "高毛利收入占比上升，具体是国内游戏、视频号广告和微信搜索广告。",
+            "evidence_quote": "Our gross profit grew 17% year-on-year on increased contributions from high margin revenue streams such as Domestic Games, Video Accounts advertising and Weixin Search advertising, alongside cost efficiency from cloud services.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": false,
+            "description": "云服务成本效率改善，企业服务毛利率同比上升。",
+            "evidence_quote": "Business Services gross margin rose year-on-year due to improved efficiency.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "Pony称毛利910亿元、同比17%。John称907亿元、同比17%。指标表毛利906.53亿元、同比16.9%、环比2.1%。摘要用指标表，不把口述的17%写成指标表同比。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率52.57%，同比升2.59个百分点，环比降0.56个百分点。John称整体毛利率53%、同比升3个百分点，摘要用指标表。他按分部说明：增值服务毛利率56%、同比升2个百分点，因为高毛利国内游戏占比提高、音乐订阅毛利率改善、低毛利直播占比下降；营销服务毛利率58%、同比升1个百分点，来自高毛利的视频号和微信搜索；金融科技及企业服务毛利率47%、同比升3个百分点，来自高毛利收入占比和云的成本效率。James在问答里补充，基础业务综合毛利率大约50%，贡献大部分增量的新收入流毛利率在70%到80%。环比下降0.56个百分点，电话会没有解释。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "增值服务毛利率升至56%，主因是高毛利国内游戏占比提高，音乐订阅毛利率改善，低毛利直播占比下降。",
+            "evidence_quote": "Value-added services gross margin was 56%, up 2 percentage points year-on-year due to a higher mix of high margin domestic games revenue, margin improvement in music subscription revenue and a lower mix of low margin live streaming revenue.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营销服务毛利率升至58%，来自高毛利的视频号和微信搜索收入增长。",
+            "evidence_quote": "Marketing Services gross margin was 58%, up 1 percentage point year-on-year due to growth in high margin Video Accounts and Weixin Search revenues.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": false,
+            "description": "金融科技及企业服务毛利率升至47%，高毛利收入占比提高，同时云服务成本效率改善。",
+            "evidence_quote": "FinTech and Business Services gross margin was 47%, up 3 percentage points Y-on-Y due to a higher mix of high margin revenues alongside improved cost efficiency in our cloud services.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "增量收入大多来自毛利率70%到80%的新收入流，基础业务综合毛利率大约50%，把综合毛利率往上带。",
+            "evidence_quote": "while our sort of base business has a blended gross margin of around 50%, there's a number of new revenue streams that contribute the majority of our revenue growth, which are coming in at gross margins of 70%, 80%.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称四季度整体毛利率53%、同比升3个百分点。指标表为52.57%，同比升2.59个百分点、环比降0.56个百分点。摘要用指标表。"
+        ]
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "经营利润率29.85%，同比升3.18个百分点，环比降2.05个百分点。电话会没有直接报这个百分比。经营盈利514.78亿元，同比增24.3%，环比降3.5%；John称515亿元、同比24%。利润率同比上升，是因为毛利率扩张和销售费用率从7%降到6%，超过了管理费用上升的拖累。管理费用314.03亿元，John称314亿元、同比增16%，其中研发198亿元、同比增21%，主因是人员成本和AI相关的GPU折旧。环比利润率下降电话会没有解释；指标表销售费用从上季94.11亿元升至102.85亿元，管理费用从上季290.58亿元升至314.03亿元，而毛利率环比只降0.56个百分点。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "毛利快于收入，高毛利的国内游戏、视频号广告和微信搜索广告贡献上升，经营利润率跟着扩张。Pony也说经营利润快于收入，是因为转向高质量收入。",
+            "evidence_quote": "Our gross profit grew 17% year-on-year on increased contributions from high margin revenue streams such as Domestic Games, Video Accounts advertising and Weixin Search advertising, alongside cost efficiency from cloud services.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "销售费用占收入降至6%，上年同期为7%，费用率下降扩大了经营利润率。",
+            "evidence_quote": "Selling and marketing expenses represented 6% of revenues down from 7% in the same quarter last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "管理费用同比增16%，主因研发同比增21%至198亿元，来自人员成本和AI相关GPU折旧，部分抵消毛利率改善。",
+            "evidence_quote": "Total G&A expenses were RMB31.4 billion, up 16% Y-on-Y substantially driven by increased R&D expenses which grew 21% year-on-year to RMB19.8 billion mainly due to higher staff costs and GPU service depreciation related to our AI initiatives.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "经营利润率环比降幅大于毛利率，与销售费用、管理费用的环比上升方向一致。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表毛利率环比降0.56个百分点，经营利润率环比降2.05个百分点。销售费用由上季94.11亿元升至102.85亿元，管理费用由上季290.58亿元升至314.03亿元。John只解释了销售费用同比下降和管理费用同比上升，没有解释环比。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称经营盈利515亿元、同比24%。指标表经营盈利514.78亿元、同比24.3%、环比降3.5%，经营利润率29.85%、同比升3.18个百分点、环比降2.05个百分点。电话会未报国际财务报告准则经营利润率百分比。摘要用指标表。",
+          "Pony原句是增长和经营利润都快于收入。growth一词含糊，不把它改写成毛利，毛利金额以指标表和John的口径为准。"
+        ]
+      },
+      {
+        "metric": "operating_margin_nongaap",
+        "summary": "非国际财务报告准则经营利润率34.49%，同比升2.83个百分点，环比降2.16个百分点。John称34%、同比升3个百分点，并说大体与毛利率扩张一致，摘要用指标表。非国际财务报告准则经营盈利594.75亿元，同比增21.0%，环比降2.9%。John称595亿元、同比21%，Pony称590亿元、同比21%。同比升幅仍来自毛利率和销售费用率，研发和GPU折旧是抵消项。环比下降电话会没有单独解释。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "非国际财务报告准则经营利润率同比上升，John称大体与毛利率扩张一致。",
+            "evidence_quote": "For the fourth quarter 2024, non-IFRS operating margin was 34%, up 3 percentage points year-on-year, largely in line with gross margin expansion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "销售费用率从7%降到6%，支持经营利润率。",
+            "evidence_quote": "Selling and marketing expenses represented 6% of revenues down from 7% in the same quarter last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发同比增21%，人员成本和GPU折旧上升，限制利润率升幅。",
+            "evidence_quote": "Total G&A expenses were RMB31.4 billion, up 16% Y-on-Y substantially driven by increased R&D expenses which grew 21% year-on-year to RMB19.8 billion mainly due to higher staff costs and GPU service depreciation related to our AI initiatives.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称非国际财务报告准则经营利润率34%、同比升3个百分点，经营盈利595亿元、同比21%。Pony称非国际财务报告准则经营盈利590亿元、同比21%。指标表经营利润率34.49%、同比升2.83个百分点、环比降2.16个百分点，经营盈利594.75亿元、同比21.0%、环比降2.9%。摘要用指标表。"
+        ]
+      },
+      {
+        "metric": "eps_nongaap",
+        "summary": "非国际财务报告准则摊薄每股盈利5.909元。指标表没有同比。John称5.91元、同比增33%，快于非国际财务报告准则净利润增速，原因是回购减少了股数。他称权益持有人应占净利润553亿元、同比增30%；Pony称550亿元、同比增30%。33%和30%都是口述，不写成指标表同比。2024年计算摊薄每股盈利的加权平均股数同比降2%。国际财务报告准则摊薄每股盈利指标表为5.485元，电话会没有报这个数，也没有同比。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "非国际财务报告准则净利润同比增30%，是每股盈利上升的主体。经营利润到净利润的增速差，John主要归因于联营及合营收益同比增72%。",
+            "evidence_quote": "Net profit attributable to equity holders was RMB55.3 billion, up 30% year-on-year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "回购使股数下降，每股盈利增速因此高于净利润增速。2024年加权平均股数同比降2%。",
+            "evidence_quote": "On non-IFRS basis, diluted EPS was RMB5.91, up 33% year-on-year, outpacing non-IFRS net profit growth due to reduced share count from our share buybacks.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称非国际财务报告准则摊薄每股盈利5.91元、同比33%。指标表为5.909元，没有同比。摘要金额用5.909元，33%只作为口述。",
+          "Pony称非国际财务报告准则权益持有人应占净利润550亿元、同比30%。John称553亿元、同比30%。指标表没有这个非国际财务报告准则净利润科目。",
+          "Martin在问答里称去年回购目标1000亿港元、超额约150亿港元。Pony和John都称2024年实际回购1120亿港元。1000亿加150亿对不上1120亿，摘要采用两位都说过的实际回购1120亿港元，不采用150亿的超额说法。"
+        ]
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "期内盈利514.67亿元，同比增84.8%，环比降4.7%，上年同期278.50亿元。电话会没有直接报这个国际财务报告准则期内盈利。经营盈利同比增24.3%至514.78亿元，是最清楚的经营来源，但解释不了84.8%的全部增幅。联营口述互相不一致：John先说联营及合营收益9.3亿元、上年同期2.4亿元，随后又说国际财务报告准则口径分占收益7.7亿元，非国际财务报告准则口径也升72%至7.7亿元。这些十亿元级别的变动对不上期内盈利较上年增加的幅度，摘要不把84.8%全部归因于联营。财务成本25亿元、同比降29%，他归因于本季汇兑收益、而上年同期是汇兑损失。所得税118亿元、同比增22%。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营盈利同比增24%，是期内盈利里电话会讲清楚的主要经营来源。",
+            "evidence_quote": "Operating profit was RMB51.5 billion, up 24% year-on-year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "联营及合营收益高于上年同期，John先给出9.3亿元对2.4亿元。后文口径不一致，见conflicts，不把这一句当成唯一数字。",
+            "evidence_quote": "Share profit of associates and JV was RMB9.3 billion compared to RMB2.4 billion in the same quarter last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "+",
+            "is_primary": false,
+            "description": "财务成本同比降29%，因为本季是汇兑收益，上年同期是汇兑损失。",
+            "evidence_quote": "Finance costs were RMB2.5 billion, down 29% year-on-year due to the exchange -- foreign exchange gain this quarter compared to losses in the same period last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "所得税同比增22%至118亿元，随经营盈利增长，抵消一部分利润。",
+            "evidence_quote": "Income tax expense increased by 22% year-on-year to RMB11.8 billion, primarily driven by operating profit growth.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John先说联营及合营收益9.3亿元、上年同期2.4亿元，接着说国际财务报告准则口径分占收益7.7亿元，并称较上年同期多出人民币45亿元，这句看不出这45亿元是增加额还是上年同期金额。他又说非国际财务报告准则联营及合营收益同比增72%至7.7亿元。三处数字不能并成一个事实，摘要不选用其中任何一处去重算指标表84.8%的同比。"
+        ]
+      },
+      {
+        "metric": "capex",
+        "summary": "资本开支365.78亿元。指标表没有同比。John称合计366亿元、同比增386%；经营性资本开支349亿元、同比增421%，用于GPU和服务器；非经营性资本开支17亿元、同比增103%，主要是在建数据中心。386%、421%、103%以及349亿元、17亿元都是口述。Martin另有一句全年资本开支增至10.7亿美元、约当收入12%，该美元数字与本季人民币锚点不是同一口径，摘要不采用，也不把它换算成美元或人民币。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营性资本开支大增，用于购买GPU和服务器，以提升AI能力。",
+            "evidence_quote": "For the fourth quarter, operating CapEx was RMB34.9 billion, up 421% year-on-year, driven by increased investment in GPUs and servers to ramp up our AI capabilities.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "非经营性资本开支同比增加，主要是在建数据中心。",
+            "evidence_quote": "Non-operating CapEx was RMB1.7 billion, up 103% year-on-year, primarily driven by data center construction in progress.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称资本开支合计366亿元。指标表365.78亿元。摘要用指标表。",
+          "Martin称2024年全年资本开支增加三倍以上至10.7亿美元，约当收入的12%，并称四季度有明显抬升。这是美元全年口径，且in2024连写，和指标表的季度人民币365.78亿元不是同一个数。摘要忽略该美元数字，不换算。"
+        ]
+      },
+      {
+        "metric": "free_cash_flow",
+        "summary": "自由现金流45亿元，与John所述45亿元一致。指标表没有同比或环比。电话会称同比降87%、环比降92%，主因是GPU、服务器和数据中心的资本开支；环比还受部分应计费用结算时点，以及游戏流水季节性偏低的影响。87%和92%只作为口述。指标表未单列经营现金流，电话会也没有给出经营现金流金额，摘要不回填。季末净现金电话会称768亿元、环比降20%，流出用于资本开支和回购，这是余额而不是经营现金流。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": true,
+            "description": "自由现金流同比下降，主因是GPU、服务器和数据中心资本开支增加。",
+            "evidence_quote": "Free cash flow was RMB4.5 billion down 87% year-on-year, primarily due to increased CapEx spending on GPUs, servers and data centers.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "-",
+            "is_primary": false,
+            "description": "环比下降的一部分来自部分应计费用的结算时点。",
+            "evidence_quote": "On a Q-on-Q basis, free cash flow was down 92% due to timing differences settlement of certain accrued expenses, higher CapEx spending on GPUs and servers alongside with seasonally lower games gross receipts.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": false,
+            "description": "环比还受到游戏流水季节性偏低的影响。",
+            "evidence_quote": "On a Q-on-Q basis, free cash flow was down 92% due to timing differences settlement of certain accrued expenses, higher CapEx spending on GPUs and servers alongside with seasonally lower games gross receipts.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "selling_expense",
+        "summary": "销售费用102.85亿元。上年同期109.71亿元，上季94.11亿元。指标表没有同比。John称103亿元、同比降6%，占收入6%，上年同期占7%。6%的降幅是口述。环比高于上季，电话会没有解释环比上升。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "销售及市场费用同比下降，来自去年同期的高基数。",
+            "evidence_quote": "Our fourth quarter operating expenses, selling and marketing expenses were RMB10.3 billion down 6% from a high base in the same quarter last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "销售费用率从7%降到6%。",
+            "evidence_quote": "Selling and marketing expenses represented 6% of revenues down from 7% in the same quarter last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "ga_expense",
+        "summary": "管理费用314.03亿元。上年同期271.75亿元，上季290.58亿元。指标表没有同比。John称314亿元、同比增16%，主要由研发带动。研发198亿元、同比增21%，主因是人员成本，以及AI相关的GPU服务折旧。不含研发的管理费用116亿元、同比增8%。季末员工约11.1万人，同比增5%，环比增2%。这些增速都是口述。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "管理费用同比上升，主因研发同比增21%，来自人员成本和AI相关GPU折旧。",
+            "evidence_quote": "Total G&A expenses were RMB31.4 billion, up 16% Y-on-Y substantially driven by increased R&D expenses which grew 21% year-on-year to RMB19.8 billion mainly due to higher staff costs and GPU service depreciation related to our AI initiatives.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "不含研发的管理费用同比增8%至116亿元。",
+            "evidence_quote": "G&A, excluding R&D was up 8% in Y-on-Y to RMB11.6 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "季末员工约11.1万人，同比增5%，环比增2%，与人员成本上升方向一致。",
+            "evidence_quote": "At quarter end, we had approximately 111,000 employees, up 5% year-on-year or 2% quarter-on-quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "other",
+        "metric_label": "2025年资本开支占收入",
+        "period": "FY2025",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "占收入比例",
+        "direction": "up",
+        "statement": "2025年资本开支还将增加，预计占收入的比例为低双位数。电话会没有给出人民币金额，也没有把低双位数拆成具体百分比区间。",
+        "source": "prepared_remarks",
+        "source_quote": "We intend to further increase our capital expenditures in 2025 and expect our CapEx to account for low-teens percentage of our revenue.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "2025年资本开支运行率",
+        "period": "FY2025",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "占收入比例",
+        "direction": null,
+        "statement": "James确认，2025年资本开支占收入维持在与2024年相近的一档，是因为2024年末的抬升已足以覆盖2025年生成式AI和其他需求，相当于新的常态运行率，因此资本开支增速会较2024年的跳升放慢。",
+        "source": "qa",
+        "source_quote": "And on your question about CapEx revenue then, yes, it is because the step up in late 2024 should be sufficient to address GenAI and other needs in 2025 at this sort of new normal run rate.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "GPU订单弹性",
+        "period": "FY2025",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "需求",
+        "direction": "up",
+        "statement": "Martin说上述资本开支是当前预期，可以变。如果需求突然上升，GPU订单还可以再增加。",
+        "source": "qa",
+        "source_quote": "But frankly, right, the expectation can change. If suddenly sort of there's a surge of demand, then we can definitely sort of increase our order for GPUs.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "股票回购",
+        "period": "FY2025",
+        "type": "numeric",
+        "low_raw": 80000000000,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "HKD",
+        "direction": null,
+        "statement": "2025年拟回购至少800亿港元的股票。这是下限，不是点估计。",
+        "source": "prepared_remarks",
+        "source_quote": "we intend to buy back at least HKD80 billion worth of our stock in 2025.",
+        "low": 80000000000,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "年度股息每股",
+        "period": "FY2024",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": 4.5,
+        "plus_minus_raw": null,
+        "basis": "HKD/share",
+        "direction": "up",
+        "statement": "拟派年度股息每股4.5港元，较上一年增加32%，待2025年股东周年大会批准，于2025年5月30日支付。",
+        "source": "prepared_remarks",
+        "source_quote": "Subject to shareholders' approval at the upcoming 2025 AGM, we are proposing an annual dividend of HKD4.5 per share, reflecting a 32% increase from previous year. The dividend will be payable to shareholders on May 30, 2025.",
+        "low": null,
+        "mid": 4.5,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "现金股息总额",
+        "period": "FY2025",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": 41000000000,
+        "plus_minus_raw": null,
+        "basis": "HKD",
+        "direction": null,
+        "statement": "Martin称今年现金股息410亿港元，并把今年所说的回购800亿港元与去年所说的回购目标1000亿港元对照，表示回购略降。每股股息以John的4.5港元为准，410亿港元是他给出的现金总额。",
+        "source": "qa",
+        "source_quote": "So as we look -- for this year, we have already announced that we're going to pay cash dividend of HKD41 billion and we would slightly reduce our share buyback from last year, we said we're going to buy back 100 billion and this year, we said we're going to buy back 80 billion, right?",
+        "low": null,
+        "mid": 41000000000,
+        "high": null
+      },
+      {
+        "metric_key": "revenue",
+        "metric_label": "云服务收入",
+        "period": "FY2025",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "增速",
+        "direction": "up",
+        "statement": "四季度已加大GPU采购，随着这些GPU部署，预期整体云服务收入增速会加快。没有给出加快后的增速。",
+        "source": "prepared_remarks",
+        "source_quote": "Since the fourth quarter of 2024, we have stepped up our purchase of GPUs and as we deploy these GPUs, we expect to accelerate the revenue growth of our overall cloud services.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "研发投入",
+        "period": "FY2025",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "金额方向",
+        "direction": "up",
+        "statement": "将继续投资自有模型，并加快各事业群AI应用的开发。没有给出研发金额。",
+        "source": "prepared_remarks",
+        "source_quote": "In terms of R&D, we will continue to invest in our own models and to accelerate the development AI applications of each of our business groups.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "metric_label": "利润率",
+        "period": "FY2025",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "方向",
+        "direction": "stable",
+        "statement": "James不认为利润率下降是必然的，并认为可以在业务继续增长的同时守住利润率。没有给出利润率目标。",
+        "source": "qa",
+        "source_quote": "And as a company executive, I think it would be remiss, if we were to say that lower margins are inevitable and we certainly don't believe that's the case.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -452,21 +1094,619 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "外部环境（宏观与消费）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "James（CSO）把四季度营销服务放在一个没有特别顺风的宏观环境里。他说增长比较内生，而且对照他所跟踪的几乎每一个行业都比较广，原因是正在部署的AI增强给广告主的投资回报，既好于这些广告主以前在腾讯得到的回报，也好于别处能得到的回报。他把宏观设成边界：只要环境不发生剧烈变化，他对广告业务就比较放心。他没有把四季度的增速说成下一年的承诺。Pony（CEO）对全年的说法是，营销服务增速跑赢行业，靠的是广告技术平台升级和用户流量增加，同样不是靠某一个行业的脉冲。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "消费端的温度要看支付。Martin（总裁）说，观察到的交易笔数还在增加，他据此认为消费者的支出意愿在回来；但供给端的价格压力还在，所以金额口径仍然大致持平。他的判断是，这有可能是一段艰难市场接近尾声的迹象，不过要等消费需求继续改善，商户才会不那么激烈地降价，金额才会跟着增长。James在准备发言里把同一件事说成：金融科技服务恢复低个位数增长，商业支付收入同比大致转稳，交易笔数的同比增速快于三季度，理财和消费贷收入增加。合并收入能回到双位数，不是因为支付已经转强，而是游戏和营销快、支付慢。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Pony（CEO）说收入增速在2024年改善，四季度回到双位数。James（CSO）把四季度结构拆开：增值服务占收入46%，其中社交网络17%、国内游戏20%、国际游戏9%；营销服务20%；金融科技及企业服务33%。国内游戏同比增23%，他特别指出是低基数季度，拉动项是王者荣耀、和平精英、无畏契约，以及新上的地下城与勇士手游和三角洲行动。三角洲行动四季度在中国的PC和手机流水超过10亿元。国际游戏同比增15%，固定汇率16%，来自荒野乱斗、PUBG MOBILE和流放之路2的抢先体验。社交网络收入同比增6%，音乐订阅收入同比增18%，订阅用户1.21亿；长视频订阅收入同比增3%，订阅用户1.13亿。春节期间五款最高流水游戏的日活都高于上年春节，James把它当作游戏热度的先行观察，而不是收入指引。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "营销服务四季度同比增17%。James按库存说，视频号营销收入同比增60%以上，来自用户时长、前面讲过的AI增强，以及视频号内成交增加带来的更多闭环电商广告；小程序营销收入同比快速增长；微信搜索收入同比翻倍有余，商业查询更多，AI优化了广告位置和形式、提高了点击率。Martin说2024年全年营销服务增长20%，环境并不宽松，他把这归到广告系统从2023年起加入大语言模型：审核更快、更懂品类和商业意图、定向更准，并向广告主提供生成式创意工具。金融科技及企业服务只增3%。企业服务收入温和增长，云收入有增加，电商成交带来的技术服务费也增加，但James转述Martin的意思：把更多GPU留给腾讯自己，暂时限制了当季云收入。企微收入同比翻倍有余，腾讯会议收入同比增40%以上。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AI需求强，但卡在供给上。Martin（总裁）说企业侧需求很强，四季度资本开支跳升，一部分就是推理和云的GPU急单。这些GPU要装进数据中心才谈得上承接需求，一季度大概还没兑现很多，装机之后才会兑现较大一块。John（CFO）给出季度人民币口径：经营性资本开支349亿元，同比增421%，用于GPU和服务器；非经营性资本开支17亿元，同比增103%，主要是在建数据中心；合计电话会称366亿元，指标表为365.78亿元。自由现金流因此只有45亿元，电话会称同比降87%。Martin在准备发言里还说过一个全年美元数字，和这个季度人民币锚点不是一回事，这里不采用。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "GPU怎么分，决定了云还能对外卖多少。Martin说，先是广告技术和基础模型训练，最近则是元宝和微信的推理，内部占用增加之后，对外提供的GPU变少，云服务收入被压住。对外的负荷把还可用的GPU优先给高价值场景和客户。James在问答里补了另一头供给：曾经有一段时间，市场以为每一代大模型都要多一个数量级的GPU；DeepSeek之后，这个阶段结束了，行业用现有GPU做训练的产出提高，不必再按以前预期的速度加卡。所以供给约束仍然在，但训练侧的加卡斜率，管理层认为已经低于去年一度以为的那种斜率。数据中心在建，是非经营性资本开支上升的原因，装机进度因此也是云收入什么时候能接住需求的原因。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "James（CSO）谈AI提示和传统搜索时，用的类比是网页搜索曾经吞掉网页目录。他认为AI搜索有可能吞掉传统搜索，因为目录、搜索和AI提示都是进入互联网知识图谱的方式，而AI提示多了以前没有的代理式交易能力。变现顺序他按市场分开：西方已经先看到订阅，效果广告随后；中国会先从效果广告开始，增值服务随后。他没有给AI搜索最终会占多少查询。微信搜索已经接入混元和DeepSeek，腾讯自己的模型覆盖的问答式搜索超过90%。Martin（总裁）说元宝现在同时是聊天和搜索，以后会扩成覆盖学习和办公、包括深度研究的助手。他强调的差异不是参数，而是接得到公众号和视频号这些内容，以及可以组合多个模型，而不是押一个模型。元宝日活从2月到3月增至约20倍，成为中国日活第三的AI原生移动应用。他同时说元宝不会是唯一入口，QQ、浏览器、微信都会有自己的用法。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "游戏竞争被他说成更有利于已经大的产品。Martin认为AI会让长青游戏更长青：内容可以在更短时间里做出来，更新频率提高；PVE里更聪明的机器人更接近人对人；PVP的匹配、平衡和新手辅导也会更好，已经流行的大型游戏会更有吸引力。James补充了和全球广告同行的差别。那些同行往往在产品还早的时候就把广告负载加满，腾讯对短视频这类新产品是逐步、小步地加负载，而且现在仍然如此。所以同样是AI提升广告回报，腾讯选择把库存放慢一点变现，而不是立刻追到同行的负载。广告系统的AI增强也是先上视频号，再渗透到微信其他场景、腾讯其他产品和广告联盟。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "小店是微信里新的交易层，不是一个独立电商应用。Martin（总裁）把它定义成统一、可索引的商品信息平台，让商品信息在社交、内容、搜索、小程序、交易和企微之间流动，方便用户找到有质量的商品和商家。送礼是其中的社交功能：收礼人必须填地址，公司因此积累配送位置图谱，以后的购物和履约都会更方便。他观察到春节期间不少人用这个功能送礼，而且人只会送自己觉得好的东西，口碑会被放大，收到礼物的人有时还会再送出去。商家反馈不错。他反复说这是马拉松不是冲刺，四季度GMV仍很快，但没有给金额。James在准备发言里把同一功能讲成：用微信的社交关系和送礼意愿，去刺激新客和复购。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "广告和资本开支的回报要按用途拆开，James（CSO）在回答利润率问题时就是这样拆的。最直接的GPU给广告技术，以及程度较轻的游戏。广告侧从2015年就有神经网络，2020年起用大模型重建广告技术、做跨产品的长序列行为，点击率上升；2023年起加大语言模型做审核、品类和意图。这部分开支他的判断是已经带来较好的利润率和回报。第二块是大模型训练，DeepSeek之后不必按旧斜率无限加卡。第三块是云：买来GPU服务器租给客户，回报不是组合里最高的，但是正的，能覆盖GPU成本和相应折旧。第四块、也是他承认短期有压力的，是面向消费者的推理。这只是总资本开支的一部分。Martin补充，消费端推理的单位成本还可以用软件和算法降下来。毛利率的模型则是James说的那组已发生的结构：基础业务综合毛利率大约50%，贡献大部分增量的新收入流在70%到80%，所以毛利一直快于收入。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Pony（CEO）把2024年收成一件事：把主要服务的长期价值做实。微信侧是加强交易能力，上线小店，并升级微信搜索；视频号时长在内容算法改进后增长很快。长青游戏从2023年的12款增加到2024年的14款，同时培养有长青潜力的新游戏。腾讯视频有三部剧进入2024年行业前五。腾讯音乐订阅用户1.21亿，继续保持行业领先。金融科技侧是升级风控、优化支付资金成本，加强整个金融科技的特许经营和盈利能力。AI侧是推进混元、把AI用于内部场景，并为消费侧AI的突破做准备。财务结果是收入增速改善、四季度回到双位数，毛利和经营利润快于收入，因为收入组合转向高质量。股东回报上，2024年已支付现金股息320亿港元，回购1120亿港元。",
+            "items": []
+          },
+          {
+            "type": "ul",
+            "text": "",
+            "items": [
+              "混元按Martin的时间表：2024年3月用混合专家，9月推出异构混合专家的Turbo，2025年2月推出混合Mamba-Transformer的Turbo S，用Mamba提高长序列效率；同月发布深度思考模型T1，是国内较早的长思维链模型。",
+              "多模态上，图像生成2024年12月在FlagEval拿了最高分，视频生成同月在Hugging Face排名第一，3D生成是业内第一个支持文字和图像生成3D的开源模型，并开放了3D、视频、语言和图像一系列模型。",
+              "产品上，元宝接入混元T1、DeepSeek-R1和快速思考的Turbo S，可以带网页搜索，并能直接用到公众号和视频号的内容，输入不限于文字，还包括图像、语音和文档。微信已开始测试搜索、语言输入和内容生成的AI功能。",
+              "企业侧，腾讯会议的实时转写和会议纪要月活用户同比翻倍至1500万。2024年AI云收入大约同比翻倍，但内部占用GPU限制了对外云的增速，这是战略上先保内部和训练、再对外出租的结果。",
+              "组织上，AI团队已重组，一边加快产品创新，一边做深度模型研究。资本回报与投入并行：2024年回购3.07亿股、金额1120亿港元，加权平均股数同比降2%。这些是已经发生的分配，不是对下一年金额的复述。"
+            ]
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "non-GAAP",
+      "next_quarter": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2025Q1",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2025",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Kenneth Fong",
+        "firm": "UBS",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "AI资本开支抬升后，折旧和研发会不会拖累利润率？过去几年靠高质量增长把利润率做上去了，往后增长和盈利改善怎么平衡？",
+        "answer_summary": "James（CSO）：他不认为利润率下降是必然的。研发开支几乎每年都在增加，本身不算利润率压力。资本开支在去年四季度抬到一个更高的稳态，增量会在随后几年变成折旧，但要看钱花在哪里。最直接的是广告技术GPU，以及程度较轻的游戏，这部分已经带来较好的利润率和回报。第二是大模型训练。曾经有人以为每一代模型都要多一个数量级的GPU，DeepSeek之后这个阶段结束了，现有GPU的训练产出提高，不必再按以前的速度加卡。第三是云，买GPU租给客户，回报不是组合里最高的，但是正的，能覆盖成本和折旧。短期压力在面向消费者的推理，但这只是总资本开支的一部分，而且他预期这些使用以后会像腾讯其他平台一样，用广告和增值服务变现。所以他仍然乐观，认为可以一边增长一边守住利润率。\nMartin（总裁）：消费端推理还有不少办法降低单位成本，包括技术手段、软件和更好的算法。",
+        "new_numbers": [],
+        "directness": "direct",
+        "tone": "positive",
+        "answer_quote": "So overall, while we understand that you have questions around the step up in CapEx and how that translates into profitability over time, we're actually quite optimistic that we can continue to grow the business while protecting margins.",
+        "evasion_note": "",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Kenneth Fong",
+        "firm": "UBS",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "微信小店和蓝包送礼在三季度上线后反馈很好。今年电商的策略和关键动作是什么？",
+        "answer_summary": "Martin（总裁）：小店是很长线的项目，任何一次功能都只是建设生态的一步。它的定位是微信里统一、可索引的商品信息平台，让商品信息在社交、内容、搜索、小程序、交易和企微之间流动，方便用户找到有质量的商品和商家。送礼只是社交组件里的一个功能。春节期间不少人用它给朋友送礼，而且人只会送自己觉得好的东西，口碑会被放大；收礼人填写地址，有助于建成配送图谱，以后成交更方便，收到礼物的人有时还会再送出去。商家反馈不错。他把它看成马拉松而不是冲刺，四季度小店GMV仍在很快增长。",
+        "new_numbers": [
+          {
+            "number": "GMV增长很快",
+            "meaning": "四季度小店GMV仍很快，没有绝对额或增速"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "策略和生态定位讲清楚了，但没有给出小店GMV、增速，也没有今年电商的量化目标。",
+        "tone": "cautious",
+        "answer_quote": "And if you look at the GMV of Mini Shop, it continues to grow at a very fast pace in the fourth quarter of last year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Alicia Yap",
+        "firm": "Citigroup",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "企业侧AI服务过去两个月的需求和采用率怎么样，未来几个季度需求怎么看？除了腾讯会议和腾讯文档，还有哪些软件可以卖给云客户？",
+        "answer_summary": "Martin（总裁）：企业侧AI需求很强，但供给受限，James也讲过这一点。四季度资本开支跳升，一部分就是推理和云的GPU急单。这些卡要装进数据中心才能接住需求的大幅增加，需要时间。一季度大概还没兑现很多，随着GPU到货和安装，往后会兑现较大一块。软件上，企微其实是收入最大的SaaS，上一季度收入同比翻倍，而且增长很多。另外还有卖给云客户的安全PaaS、音视频PaaS，包括实时通信和直播，其中不少可以加AI、给客户额外价值。",
+        "new_numbers": [
+          {
+            "number": "企微收入同比翻倍",
+            "meaning": "Martin称上一季度企微收入同比翻倍，且是最大的SaaS"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出过去两个月的采用率，也没有未来几个季度的需求增速，只说需求强、供给受限、一季度还没兑现很多。",
+        "tone": "cautious",
+        "answer_quote": "Okay. In terms of the AI service demand, it's actually very strong, but as I said earlier and then James also talked about it, right, we actually supply constraints.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Alicia Yap",
+        "firm": "Citigroup",
+        "topic": "AI产品",
+        "is_new_topic": true,
+        "question_summary": "除了元宝，还有听写不清的Copilot和微信搜索增强。这些产品最后会怎么演变，元宝会不会成为汇总搜索和发现入口、并与微信超级应用互补的AI入口？",
+        "answer_summary": "Martin（总裁）：消费端产品会有一批，而且还会再多。AI还很早，很难讲最终形态。每个产品都会继续变得更有用：元宝可以做成很强的AI原生助手，电话会里的Copilot可以是个人资料库，也可以是团队协作的资料库，微信还会加很多功能。QQ、浏览器和其他产品也会有AI体验。元宝确实在整合很多功能，但不会是唯一入口。每个产品找自己能用AI做好的场景，同时产品之间也会互相给AI产品带用户。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "明确说AI仍早、难以描述最终形态，也没有说元宝会在什么时间、以多大份额成为统一搜索入口。",
+        "tone": "cautious",
+        "answer_quote": "I think, if you look at Yuanbao, it is indeed consolidating a lot of different functionalities, but it will not be the only gateway.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Jialong Shi",
+        "firm": "Nomura",
+        "topic": "AI产品",
+        "is_new_topic": true,
+        "question_summary": "元宝今年增长很猛，在很拥挤的市场里怎么继续做用户？聊天和搜索两块，公司更兴奋哪一块？",
+        "answer_summary": "Martin（总裁）：元宝现在是聊天加搜索，以后会扩成面向不同人群的全能助手，从想学习的学生到要完成工作的知识工作者，也包括让人做深度研究的功能。持续加功能是竞争的办法。独特之处是接得到腾讯的内容生态，尤其是公众号和视频号这些高质量信息，以及多模型策略能让用户用到更好的模型、并用模型组合完成复杂任务。以后多个大日活产品会加AI功能，有些会通向元宝，产品之间互相带动。他也承认别人有自己的优势。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有明确更看好聊天还是搜索，也没有用户规模或份额目标。",
+        "tone": "positive",
+        "answer_quote": "But I think Yuanbao has got the unique advantage of having access to the content ecosystem of Tencent, especially, around official accounts and video accounts, these are sort of very high quality information sources.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Jialong Shi",
+        "firm": "Nomura",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "AI搜索最终会在全部搜索查询里占多大份额，以后打算怎么变现？",
+        "answer_summary": "James（CSO）：不同人会有不同看法，还要时间。从网页搜索吞掉目录的历史、以及他们自己用AI提示和传统搜索的习惯看，AI搜索有可能吞掉传统搜索。目录、传统搜索和AI提示都是进入互联网知识图谱的方式，AI提示多了新技术、新效率和代理式交易。变现还要看。西方已经先看到订阅，之后才是效果广告。中国会先从效果广告开始，增值服务随后。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出AI搜索在总查询中的份额。变现只给了中国先效果广告、后增值服务的顺序，没有时间和金额，他自己也说只能等以后再看。",
+        "tone": "cautious",
+        "answer_quote": "I think in China, it will start with performance advertising and then value-added services will follow.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Ronald Keung",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "营销服务四季度增长17%，能不能把这个退出增速当成2025年的代理？AI会不会像部分全球同行那样，让这条线再加速？",
+        "answer_summary": "James（CSO）：四季度增速他满意，而且明显跑赢行业。没有什么特别的一次性顺风，是比较内生、而且对跟踪的几乎每个行业都比较广的增长。原因是AI增强正在这些行业里带来更好的广告主回报，既好于以前，也好于别处。和全球同行比是对的，但那些同行往往更早把广告负载加满，腾讯对短视频这类新产品是逐步加负载，现在仍然如此，冲刺的速度不一样。只要宏观不剧烈变化，他对广告业务比较放心。",
+        "new_numbers": [
+          {
+            "number": "17%",
+            "meaning": "问题里的四季度营销服务增速，回答没有把它确认为2025年目标"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有把四季度17%确认为2025年的增速代理，也没有承诺AI会让营销服务进一步加速。",
+        "tone": "cautious",
+        "answer_quote": "But overall, as long as the macro environment doesn't change dramatically, then I think we feel quite comfortable with our advertising business.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Ronald Keung",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "今年国内游戏和国际游戏的增长怎么看，尤其是国内下半年基数变高之后？AI对游戏的寿命、竞争和成本结构意味着什么？",
+        "answer_summary": "James（CSO）：他没有给2025年国内或国际游戏的增速。他给了两个可观察的事实。一是去年末递延收入同比增幅为高双位数，其中很多来自游戏，会在2025年上半年、下半年以及一部分2026年确认为收入。二是今年春节五款最高流水游戏的日活都高于去年春节，这是热度的先行指标。主观上，有几款游戏正在走向长青，其中点名三角洲行动；管线里还有一批新游戏。AI的直接作用是帮开发者更快做内容、更有效地服务用户；更间接、也更长期的作用是，人使用AI更广之后，会有更多时间和意愿做高能动的互动娱乐，而不是只做被动消费。\nMartin（总裁）：从竞争看，AI会让长青游戏更长青，他们已经看到它在放大长青策略。内容可以在更短时间里做出来，从而更高频地更新高质量内容。PVE里更聪明的机器人会让游戏更接近PVP。PVP里的匹配、平衡和新手辅导，用上AI也会更好。已经大而流行的游戏会因此更有吸引力。",
+        "new_numbers": [
+          {
+            "number": "高双位数",
+            "meaning": "去年末递延收入同比增幅，其中大部分来自游戏"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出2025年国内或国际游戏收入增速，也没有量化下半年高基数会把增速压到什么水平。",
+        "tone": "cautious",
+        "answer_quote": "One is that we ended last year with our deferred revenue, much of which comes from the game business, up high-teens percentage year-on-year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Alex Yao",
+        "firm": "JP Morgan",
+        "topic": "定价与 ASP",
+        "is_new_topic": false,
+        "question_summary": "商业支付收入从三季度的负增长变成四季度同比大致持平。2025年一季度到目前，支付活动怎么走？",
+        "answer_summary": "Martin（总裁）：观察到的情况是交易笔数还在进一步增加，但ASP的价格压力继续，所以从金额看仍然大致持平。他的理解是消费者的支出意愿在回来，供给端却还有很多价格压力。这可能是艰难市场接近尾声的迹象。等消费需求继续改善，供给方会不那么激烈地降价，金额才会增长。这件事还要往下看。",
+        "new_numbers": [],
+        "directness": "direct",
+        "tone": "cautious",
+        "answer_quote": "In terms of commercial payments, what our observation is that the volume of transactions actually sort of increase further, but then the pricing pressure on the ASP actually continued.",
+        "evasion_note": "",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Alex Yao",
+        "firm": "JP Morgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "2025年资本开支占收入是低双位数，和2024年差不多。这是不是意味着资本开支增速会明显放慢？是因为生成式AI需求放缓，还是因为2024年的大幅抬升已经够2025年用？",
+        "answer_summary": "James（CSO）：是的，原因是2024年末的抬升，按这个新的常态运行率，应该足以覆盖2025年的生成式AI和其他需求。下单GPU服务器和在数据中心全部署之间有时滞，四季度以及一季度的一部分时间都处在这个时滞里。按Martin所说，一季度末这些GPU正在部署，内部的元宝推理和对外出租的腾讯云都会受益。他把图画拉大：上市的中国科技公司里，自己四季度资本开支最大。中国公司资本开支占收入一般低于一些西方同行，是因为更重视GPU的利用效率，这不一定损害最终的技术效果，DeepSeek把这件事展示出来了。\nMartin（总裁）：情况很动态，现在给的是预期，预期可以变。如果需求突然涌上来，肯定可以再增加GPU订单。他们会按市场变化灵活调整。",
+        "new_numbers": [
+          {
+            "number": "低双位数",
+            "meaning": "2025年资本开支占收入的表述，James确认对应资本开支增速放慢"
+          }
+        ],
+        "directness": "direct",
+        "tone": "neutral",
+        "answer_quote": "And on your question about CapEx revenue then, yes, it is because the step up in late 2024 should be sufficient to address GenAI and other needs in 2025 at this sort of new normal run rate.",
+        "evasion_note": "",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "John Choi",
+        "firm": "Daiwa",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "准备发言说大多数行业的广告都在增长。哪些垂直行业受益最多？视频号、小程序、微信搜索都在涨，广告主行为有什么变化，又怎么帮助广告收入？",
+        "answer_summary": "James（CSO）：同比有增长的类别包括电商、金融、快消、游戏、本地生活、教育、医疗，名单很长，是全面的。AI增强一般先放在视频号，再渗透到微信的其他场景、腾讯的其他产品以及广告联盟，好处会越来越广。",
+        "new_numbers": [],
+        "directness": "direct",
+        "tone": "positive",
+        "answer_quote": "Sure. So on your advertising question, in some of the categories where we saw year-on-year growth included e-commerce, financial, fast moving consumer goods, games, local service, education, healthcare, so a long list of categories across the board.",
+        "evasion_note": "",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "John Choi",
+        "firm": "Daiwa",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "今年回购少于去年，股息却在增加。资本配置的优先顺序是什么？AI需求很强的时候，并购投资怎么看？",
+        "answer_summary": "Martin（总裁）：压倒性的原则是投资要给公司和股东带来回报，不同时期放在不同地方。以前大量投生态和生态伙伴，做成很大的投资组合；后来通过股息和回购把现金还给股东；现在是AI，他认为AI有机会带来未来的回报。所以现在要一边投未来，一边用股息和回购给当期回报。经营现金流强，投资组合大而且相当一部分流动性好，因此既有资源投AI，需要的话也可以做一些投资。投资组合基本上自筹。今年已经宣布现金股息410亿港元，回购从去年所说的1000亿港元降到今年所说的800亿港元，中间大约200亿港元是年内观察要不要为AI再投的缓冲。他另外说，去年股息目标320亿港元、回购目标1000亿港元，合计1320亿港元；今年800加410是1210亿港元，如果再加上他所说的去年回购超额约150亿港元，就和去年目标差不多。这个150亿和John、Pony所说的实际回购1120亿港元对不上，不把它当成超额的事实。",
+        "new_numbers": [
+          {
+            "number": "410亿港元",
+            "meaning": "Martin称今年现金股息"
+          },
+          {
+            "number": "800亿港元",
+            "meaning": "Martin称今年回购，低于去年所说的1000亿港元目标"
+          },
+          {
+            "number": "200亿港元",
+            "meaning": "他把1000亿和800亿的差额说成观察AI追加投资的缓冲"
+          }
+        ],
+        "directness": "direct",
+        "tone": "positive",
+        "answer_quote": "So as we look -- for this year, we have already announced that we're going to pay cash dividend of HKD41 billion and we would slightly reduce our share buyback from last year, we said we're going to buy back 100 billion and this year, we said we're going to buy back 80 billion, right?",
+        "evasion_note": "",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Thomas Chong",
+        "firm": "Jefferies",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "过去几年追求高质量增长，经营利润快于收入，但两者的差距会随时间收窄。2025年和之后几年的利润率扩张该怎么看？",
+        "answer_summary": "James（CSO）：过去两年经营利润率有杠杆，一个关键原因是毛利率有杠杆。基础业务的综合毛利率大约50%，而贡献大部分收入增量的一批新收入流，毛利率在70%、80%，组合被往上拉，毛利就快于收入。时间长了会有渐近效应：综合毛利率越靠近增量毛利率，综合毛利率的改善就越慢。这在更长的时间里成立。不过视频号广告、搜索广告、一部分增值金融服务、电商交易佣金和自有游戏，一般仍快于整体收入，毛利率也仍明显高于综合水平。所以他相信毛利杠杆、从而经营利润相对收入的杠杆还会在，但是渐进的、会趋缓。\nMartin（总裁）：AI投入会反向作用于这套杠杆，两边要重新平衡。他补这一句，是为了把图画完整。",
+        "new_numbers": [
+          {
+            "number": "50%",
+            "meaning": "James所说的基础业务综合毛利率"
+          },
+          {
+            "number": "70%、80%",
+            "meaning": "贡献大部分收入增量的新收入流毛利率"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "讲清了杠杆来自收入结构和为什么改善会趋缓，也指出AI投入会反向作用，但没有给出2025年经营利润率或利润与收入的增速差。",
+        "tone": "cautious",
+        "answer_quote": "And so, we believe that we will continue to enjoy that gross profit leverage and therefore operating profit leverage vis-a-vis revenue on a sort of progressive asymptotic basis.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Yuan Liao",
+        "firm": "CITIC Securities",
+        "topic": "AI产品",
+        "is_new_topic": true,
+        "question_summary": "很多公司在发AI智能体。以后大模型竞争的关键因素是什么，腾讯的优势在哪里？澄清后的问题是，面对市场上很多智能体，怎么靠更多功能提高用户参与？",
+        "answer_summary": "Martin（总裁）：他先没听清问题的后半段，请对方重复。澄清之后他说，智能体有很多种，本质是用模型的能力，再接到不同的软件工具上，把复杂任务做完。它可以独立存在，也可以住在不同应用里。腾讯可以靠高质量的模型，加上浏览器、以及以后的元宝这些软件平台上的大量用户，做独立的智能体；微信和QQ里面也可以有智能体，并利用应用内的生态完成复杂任务。微信的第一项优势是用户多、每人每天使用时间长、打开频次高。第二项是里面的活动很杂，不只是娱乐或交易，还有社交、内容、工作、学习和大量交易，小程序让各种活动都能发生。因此可以基于模型做一个智能体，去连接很多小程序，替用户完成活动和复杂任务。这些体验要很谨慎、很有耐心地做，注意数据安全以及用户的舒适感和安全感。他把它看成以后的机会。",
+        "new_numbers": [],
+        "directness": "direct",
+        "tone": "positive",
+        "answer_quote": "So you look at the Mini Program ecosystem, we can easily build an agent based on the model that actually can connect to a lot of the different Mini Programs and have activities and complex tasks completed for our users.",
+        "evasion_note": "",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "费用与运营": 1,
+      "产品结构": 1,
+      "需求与出货": 1,
+      "AI产品": 3,
+      "竞争格局": 1,
+      "指引与展望": 2,
+      "定价与 ASP": 1,
+      "产能与资本开支": 1,
+      "客户与订单": 1,
+      "其他": 1,
+      "毛利率与成本": 1
+    },
+    "new_topics": [
+      "AI产品",
+      "产品结构",
+      "产能与资本开支",
+      "其他",
+      "定价与 ASP",
+      "客户与订单",
+      "指引与展望",
+      "毛利率与成本",
+      "竞争格局",
+      "费用与运营",
+      "需求与出货"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "AI产品",
+      "指引与展望",
+      "费用与运营"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Kenneth Fong",
+        "firm": "UBS",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "微信小店和蓝包送礼在三季度上线后反馈很好。今年电商的策略和关键动作是什么？",
+        "answer_summary": "Martin（总裁）：小店是很长线的项目，任何一次功能都只是建设生态的一步。它的定位是微信里统一、可索引的商品信息平台，让商品信息在社交、内容、搜索、小程序、交易和企微之间流动，方便用户找到有质量的商品和商家。送礼只是社交组件里的一个功能。春节期间不少人用它给朋友送礼，而且人只会送自己觉得好的东西，口碑会被放大；收礼人填写地址，有助于建成配送图谱，以后成交更方便，收到礼物的人有时还会再送出去。商家反馈不错。他把它看成马拉松而不是冲刺，四季度小店GMV仍在很快增长。",
+        "new_numbers": [
+          {
+            "number": "GMV增长很快",
+            "meaning": "四季度小店GMV仍很快，没有绝对额或增速"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "策略和生态定位讲清楚了，但没有给出小店GMV、增速，也没有今年电商的量化目标。",
+        "tone": "cautious",
+        "answer_quote": "And if you look at the GMV of Mini Shop, it continues to grow at a very fast pace in the fourth quarter of last year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Alicia Yap",
+        "firm": "Citigroup",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "企业侧AI服务过去两个月的需求和采用率怎么样，未来几个季度需求怎么看？除了腾讯会议和腾讯文档，还有哪些软件可以卖给云客户？",
+        "answer_summary": "Martin（总裁）：企业侧AI需求很强，但供给受限，James也讲过这一点。四季度资本开支跳升，一部分就是推理和云的GPU急单。这些卡要装进数据中心才能接住需求的大幅增加，需要时间。一季度大概还没兑现很多，随着GPU到货和安装，往后会兑现较大一块。软件上，企微其实是收入最大的SaaS，上一季度收入同比翻倍，而且增长很多。另外还有卖给云客户的安全PaaS、音视频PaaS，包括实时通信和直播，其中不少可以加AI、给客户额外价值。",
+        "new_numbers": [
+          {
+            "number": "企微收入同比翻倍",
+            "meaning": "Martin称上一季度企微收入同比翻倍，且是最大的SaaS"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出过去两个月的采用率，也没有未来几个季度的需求增速，只说需求强、供给受限、一季度还没兑现很多。",
+        "tone": "cautious",
+        "answer_quote": "Okay. In terms of the AI service demand, it's actually very strong, but as I said earlier and then James also talked about it, right, we actually supply constraints.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Alicia Yap",
+        "firm": "Citigroup",
+        "topic": "AI产品",
+        "is_new_topic": true,
+        "question_summary": "除了元宝，还有听写不清的Copilot和微信搜索增强。这些产品最后会怎么演变，元宝会不会成为汇总搜索和发现入口、并与微信超级应用互补的AI入口？",
+        "answer_summary": "Martin（总裁）：消费端产品会有一批，而且还会再多。AI还很早，很难讲最终形态。每个产品都会继续变得更有用：元宝可以做成很强的AI原生助手，电话会里的Copilot可以是个人资料库，也可以是团队协作的资料库，微信还会加很多功能。QQ、浏览器和其他产品也会有AI体验。元宝确实在整合很多功能，但不会是唯一入口。每个产品找自己能用AI做好的场景，同时产品之间也会互相给AI产品带用户。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "明确说AI仍早、难以描述最终形态，也没有说元宝会在什么时间、以多大份额成为统一搜索入口。",
+        "tone": "cautious",
+        "answer_quote": "I think, if you look at Yuanbao, it is indeed consolidating a lot of different functionalities, but it will not be the only gateway.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Jialong Shi",
+        "firm": "Nomura",
+        "topic": "AI产品",
+        "is_new_topic": true,
+        "question_summary": "元宝今年增长很猛，在很拥挤的市场里怎么继续做用户？聊天和搜索两块，公司更兴奋哪一块？",
+        "answer_summary": "Martin（总裁）：元宝现在是聊天加搜索，以后会扩成面向不同人群的全能助手，从想学习的学生到要完成工作的知识工作者，也包括让人做深度研究的功能。持续加功能是竞争的办法。独特之处是接得到腾讯的内容生态，尤其是公众号和视频号这些高质量信息，以及多模型策略能让用户用到更好的模型、并用模型组合完成复杂任务。以后多个大日活产品会加AI功能，有些会通向元宝，产品之间互相带动。他也承认别人有自己的优势。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有明确更看好聊天还是搜索，也没有用户规模或份额目标。",
+        "tone": "positive",
+        "answer_quote": "But I think Yuanbao has got the unique advantage of having access to the content ecosystem of Tencent, especially, around official accounts and video accounts, these are sort of very high quality information sources.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Jialong Shi",
+        "firm": "Nomura",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "AI搜索最终会在全部搜索查询里占多大份额，以后打算怎么变现？",
+        "answer_summary": "James（CSO）：不同人会有不同看法，还要时间。从网页搜索吞掉目录的历史、以及他们自己用AI提示和传统搜索的习惯看，AI搜索有可能吞掉传统搜索。目录、传统搜索和AI提示都是进入互联网知识图谱的方式，AI提示多了新技术、新效率和代理式交易。变现还要看。西方已经先看到订阅，之后才是效果广告。中国会先从效果广告开始，增值服务随后。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出AI搜索在总查询中的份额。变现只给了中国先效果广告、后增值服务的顺序，没有时间和金额，他自己也说只能等以后再看。",
+        "tone": "cautious",
+        "answer_quote": "I think in China, it will start with performance advertising and then value-added services will follow.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Ronald Keung",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "营销服务四季度增长17%，能不能把这个退出增速当成2025年的代理？AI会不会像部分全球同行那样，让这条线再加速？",
+        "answer_summary": "James（CSO）：四季度增速他满意，而且明显跑赢行业。没有什么特别的一次性顺风，是比较内生、而且对跟踪的几乎每个行业都比较广的增长。原因是AI增强正在这些行业里带来更好的广告主回报，既好于以前，也好于别处。和全球同行比是对的，但那些同行往往更早把广告负载加满，腾讯对短视频这类新产品是逐步加负载，现在仍然如此，冲刺的速度不一样。只要宏观不剧烈变化，他对广告业务比较放心。",
+        "new_numbers": [
+          {
+            "number": "17%",
+            "meaning": "问题里的四季度营销服务增速，回答没有把它确认为2025年目标"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有把四季度17%确认为2025年的增速代理，也没有承诺AI会让营销服务进一步加速。",
+        "tone": "cautious",
+        "answer_quote": "But overall, as long as the macro environment doesn't change dramatically, then I think we feel quite comfortable with our advertising business.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Ronald Keung",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "今年国内游戏和国际游戏的增长怎么看，尤其是国内下半年基数变高之后？AI对游戏的寿命、竞争和成本结构意味着什么？",
+        "answer_summary": "James（CSO）：他没有给2025年国内或国际游戏的增速。他给了两个可观察的事实。一是去年末递延收入同比增幅为高双位数，其中很多来自游戏，会在2025年上半年、下半年以及一部分2026年确认为收入。二是今年春节五款最高流水游戏的日活都高于去年春节，这是热度的先行指标。主观上，有几款游戏正在走向长青，其中点名三角洲行动；管线里还有一批新游戏。AI的直接作用是帮开发者更快做内容、更有效地服务用户；更间接、也更长期的作用是，人使用AI更广之后，会有更多时间和意愿做高能动的互动娱乐，而不是只做被动消费。\nMartin（总裁）：从竞争看，AI会让长青游戏更长青，他们已经看到它在放大长青策略。内容可以在更短时间里做出来，从而更高频地更新高质量内容。PVE里更聪明的机器人会让游戏更接近PVP。PVP里的匹配、平衡和新手辅导，用上AI也会更好。已经大而流行的游戏会因此更有吸引力。",
+        "new_numbers": [
+          {
+            "number": "高双位数",
+            "meaning": "去年末递延收入同比增幅，其中大部分来自游戏"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出2025年国内或国际游戏收入增速，也没有量化下半年高基数会把增速压到什么水平。",
+        "tone": "cautious",
+        "answer_quote": "One is that we ended last year with our deferred revenue, much of which comes from the game business, up high-teens percentage year-on-year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Thomas Chong",
+        "firm": "Jefferies",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "过去几年追求高质量增长，经营利润快于收入，但两者的差距会随时间收窄。2025年和之后几年的利润率扩张该怎么看？",
+        "answer_summary": "James（CSO）：过去两年经营利润率有杠杆，一个关键原因是毛利率有杠杆。基础业务的综合毛利率大约50%，而贡献大部分收入增量的一批新收入流，毛利率在70%、80%，组合被往上拉，毛利就快于收入。时间长了会有渐近效应：综合毛利率越靠近增量毛利率，综合毛利率的改善就越慢。这在更长的时间里成立。不过视频号广告、搜索广告、一部分增值金融服务、电商交易佣金和自有游戏，一般仍快于整体收入，毛利率也仍明显高于综合水平。所以他相信毛利杠杆、从而经营利润相对收入的杠杆还会在，但是渐进的、会趋缓。\nMartin（总裁）：AI投入会反向作用于这套杠杆，两边要重新平衡。他补这一句，是为了把图画完整。",
+        "new_numbers": [
+          {
+            "number": "50%",
+            "meaning": "James所说的基础业务综合毛利率"
+          },
+          {
+            "number": "70%、80%",
+            "meaning": "贡献大部分收入增量的新收入流毛利率"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "讲清了杠杆来自收入结构和为什么改善会趋缓，也指出AI投入会反向作用，但没有给出2025年经营利润率或利润与收入的增速差。",
+        "tone": "cautious",
+        "answer_quote": "And so, we believe that we will continue to enjoy that gross profit leverage and therefore operating profit leverage vis-a-vis revenue on a sort of progressive asymptotic basis.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "收入增11.1%至1724亿，毛利率扩至52.6%",
+    "key_findings": [
+      {
+        "finding": "四季度收入1724.46亿元，同比增11.1%、环比增3.1%，国内游戏同比增23%、营销服务同比增17%，金融科技及企业服务仅增3%。",
+        "text": "四季度收入1724.46亿元，同比增11.1%、环比增3.1%，国内游戏同比增23%、营销服务同比增17%，金融科技及企业服务仅增3%。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "毛利率52.57%，同比升2.59个百分点、环比降0.56个百分点，经营利润率29.85%，同比升3.18个百分点、环比降2.05个百分点。",
+        "text": "毛利率52.57%，同比升2.59个百分点、环比降0.56个百分点，经营利润率29.85%，同比升3.18个百分点、环比降2.05个百分点。",
+        "evidence": "gross_margin_gaap"
+      },
+      {
+        "finding": "资本开支365.78亿元、自由现金流45亿元，非国际财务报告准则每股盈利5.909元，指标表未单列经营现金流。",
+        "text": "资本开支365.78亿元、自由现金流45亿元，非国际财务报告准则每股盈利5.909元，指标表未单列经营现金流。",
+        "evidence": "capex"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2025Q1收入同比是否仍不低于10%。本季指标表同比为11.1%，电话会称回到双位数。",
+        "threshold": "同比不低于10%"
+      },
+      {
+        "metric_key": "advertising_revenue",
+        "condition": "FY2025Q1广告或营销服务收入同比是否仍不低于15%。本季电话会称营销服务同比17%，指标表广告收入350.04亿元。",
+        "threshold": "同比不低于15%"
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "condition": "FY2025Q1毛利率是否仍不低于52.57%。本季52.57%，环比已降0.56个百分点。",
+        "threshold": "不低于52.57%"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "FY2025Q1资本开支除以当季收入是否仍高于20%。本季资本开支365.78亿元、收入1724.46亿元。",
+        "threshold": "资本开支/收入高于20%"
+      },
+      {
+        "metric_key": "free_cash_flow",
+        "condition": "FY2025Q1自由现金流是否高于本季的45亿元。本季电话会称同比降87%，主因GPU和服务器资本开支。",
+        "threshold": "高于45亿元"
+      }
+    ]
   },
   "thesis_review": {}
 }

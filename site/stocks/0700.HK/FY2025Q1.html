@@ -95,7 +95,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>12</b></a>
     <a href="#notes">数据来源<b>3</b></a>
   </div>
 </nav>
@@ -124,7 +124,7 @@
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">港股手工导入未调用变动原因模型</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">收入</span>
@@ -132,7 +132,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+12.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+4.4%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表收入1800.22亿元，同比增12.87%，环比增4.39%。电话会Pony与John都称人民币1800亿元、同比增13%。Martin称增值服务占收入51%（社交网络18%、本土游戏24%、国际游戏9%），营销服务18%，金融科技及企业服务30%。电话会另称增值服务同比增17%、营销服务同比增20%、金融科技及企业服务同比增5%，这三项同比不是指标表字段。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -160,7 +160,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note>人民币金额来自已保存的季度 JSON，不覆盖这些文件。收入、毛利取季度 JSON。营业成本仅在两者都有时用收入减毛利。营业费用只在销售及市场推广、一般及行政都有时相加。业务分部只取季度 JSON 里已经抽出的增值服务、营销服务、金融科技及企业服务；没有单独披露的「其他」不倒挤。业绩稿简明综合收益表能读出的季度改用表内原数，包括表里的其他。没有季度文件、也没有表内数字的季度留空。地区收入未披露。不把港币或美元写进人民币字段。 已保存的披露文字里没有地区收入，地区柱留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。</p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>本土游戏流水是增值服务、也是总收入增量里管理层点名的主要一块。Martin说同比增24%，对照2024年一季度低基数，来自《王者荣耀》《和平精英》以及《地下城与勇士》手游和《三角洲行动》。</p>
+<blockquote>Domestic games revenue grew by 24% year-on-year against the low base quarter of first quarter of 2024, mainly driven by growth from flagship games notably Honor of Kings and Peacekeeper Elite, and contributions from recently released games, notably DnF Mobile and Delta Force.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营销服务是第二大增量。James说同比增20%至约320亿元，来自用户参与提高、广告平台持续做AI升级，以及微信里的交易生态变强。</p>
+<blockquote>For marketing services, our revenue grew 20% year-on-year to RMB32 billion, benefiting from higher user engagement, ongoing AI upgrades to our ad platform and a strengthening transaction ecosystem within Weixin.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>国际游戏按人民币同比增23%，固定汇率增22%，汇率大约吃掉1个百分点，但没有把这项收入打成负增长。</p>
+<blockquote>International Games revenue increased by 23% year-on-year or 22% in constant currency terms driven by titles including Brawl Stars, Clash Royale and PUBG Mobile.</blockquote>        </div>
+<p class="conflict">冲突：电话会Pony与John均称总收入人民币1800亿元、同比增13%。指标表为1800.22亿元，同比12.87%，环比4.39%。1800亿元是四舍五入；13%比指标表同比高0.13个百分点。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -189,7 +204,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+3.2pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+3.3pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表毛利率55.82%，同比升3.24个百分点，环比升3.25个百分点。John称整体毛利率56%、同比升3个百分点。分部上，增值服务毛利率60%、同比升2个百分点，营销服务毛利率56%、同比升1个百分点，金融科技及企业服务毛利率50%、同比升5个百分点。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -202,7 +217,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率上升的主因是高毛利本土游戏在增值服务里的占比提高。增值服务毛利占公司毛利的大头，John说这块毛利率60%、同比升2个百分点。</p>
+<blockquote>And by segment, VAS gross margin was 60%, up 2 percentage points year-on-year primarily driven by a higher mix of high-margin domestic games revenue.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>金融科技及企业服务毛利率同比升5个点到50%，John说主要是金融科技和云服务的成本效率改善，不是单纯提价。</p>
+<blockquote>Fintech and business services gross margin was 50%, up 5 percentage points year-on-year, mainly due to improved cost efficiency in fintech and cross services.</blockquote>        </div>
+<p class="conflict">冲突：John称整体毛利率56%、同比升3个百分点。指标表55.82%，同比升3.24个百分点，环比升3.25个百分点。56%和3个百分点都是口述取整。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
       <span class="m-name">营业费用</span>
@@ -229,7 +254,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+1.8pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+4.0pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表非IFRS经营利润率38.51%，同比升1.75个百分点，环比升4.02个百分点。John称39%、同比升2个百分点。升幅小于毛利率的3.24个百分点。Martin说长周期GPU和AI投入会抵掉一部分经营杠杆，收入增速和经营利润增速的差距会暂时小于近几个季度。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_nongaap" data-fin-panel="operating_margin_nongaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -242,28 +267,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_income_nongaap">
-      <span class="m-name">营业利润（Non-IFRS）</span>
-      <span class="m-val num">¥69.32B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+18.3%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+16.6%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_nongaap" data-fin-panel="operating_income_nongaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>非IFRS经营利润率仍同比上升，方向和毛利率一致。增值服务毛利率升到60%，主因是高毛利本土游戏占比提高。</p>
+<blockquote>And by segment, VAS gross margin was 60%, up 2 percentage points year-on-year primarily driven by a higher mix of high-margin domestic games revenue.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>研发和AI投入限制了利润率升幅。Martin预期长周期GPU与AI成本会抵消底层经营杠杆，使收入和经营利润的增速差暂时变小。</p>
+<blockquote>During this time lag period, we expect the costs of those GPU and AI investments to offset our underlying operating leverage, resulting in a temporary smaller gap between our revenue and operating profit growth rates than we have achieved in recent quarters.</blockquote>        </div>
+<p class="conflict">冲突：John称非IFRS经营利润率39%、同比升2个百分点。指标表38.51%，同比升1.75个百分点，环比升4.02个百分点。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_gaap">
       <span class="m-name">经营利润率（IFRS）</span>
@@ -271,7 +285,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-1.0pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+2.1pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表IFRS经营利润率31.98%，同比降0.97个百分点，环比升2.13个百分点。电话会没有直接报这个比率。毛利率同比升3.24个百分点，没有变成IFRS经营利润率同比上升。John说剔除研发后的一般行政费用同比增62%至147亿元，主因是海外子公司一项商业安排重组带来的股权激励，而且不计入非IFRS。股权激励金额原文听不清。研发费用同比增21%至189亿元。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -284,70 +298,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（IFRS）</span>
-      <span class="m-val num">¥57.57B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+9.5%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+11.8%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
-      <span class="m-name">净利润率（IFRS）</span>
-      <span class="m-val num">27.6%</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+0.9pp</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-2.2pp</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
-      <span class="m-name">净利润（IFRS）</span>
-      <span class="m-val num">¥49.73B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+16.6%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-3.4%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>IFRS经营利润率同比下降、而非IFRS经营利润率同比上升，差别主要在这笔不计入非IFRS的股权激励。John把它说成剔除研发后一般行政费用同比大增的主因。</p>
+<blockquote>G&amp;A excluding R&amp;D expenses increased by 62% year-on-year to RMB14.7 billion primarily driven by [RMB1 billion of RMB4 billion] (ph) stock-based compensation expense related to the restructuring of an existing commercial arrangement at an overseas subsidiary which was not included in the calculation of our non-IFRS operating profit and net profit.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>研发费用189亿元、同比增21%，John说是人员成本上升，以及为AI相关工作增加的投入。这笔费用IFRS和非IFRS都会进经营利润。</p>
+<blockquote>R&amp;D expenses rose by 21% year-on-year to RMB18.9 billion reflecting higher staff courses and increased investment to support our AI-related efforts.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率同比上升抵消了一部分费用压力。John称整体毛利率56%、同比升3个百分点，主因仍是高毛利游戏占比。</p>
+<blockquote>Overall gross margin was 56%, up 3 percentage points year-on-year.</blockquote>        </div>
+<p class="conflict">冲突：电话会没有给出IFRS经营利润率。指标表31.98%，同比降0.97个百分点，环比升2.13个百分点。John说的39%、同比升2个百分点是非IFRS口径，对应指标表38.51%、同比升1.75个百分点。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_nongaap" aria-pressed="false" aria-controls="fin-panel-eps_nongaap">
       <span class="m-name">摊薄每股盈利（Non-IFRS）</span>
@@ -355,7 +321,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表非IFRS摊薄每股盈利6.583元，没有同比和环比。John称RMB6.58、同比增25%，并说这个增幅快于非IFRS净利润，因为回购之后计算稀释每股盈利的加权平均股数同比减少2%。非IFRS权益持有人应占净利润他称613亿元、同比增22%；Pony称610亿元、同比增22%。指标表没有非IFRS净利润。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_nongaap" data-fin-panel="eps_nongaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -368,7 +334,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>非IFRS每股盈利上升的底子是非IFRS净利润。John称权益持有人应占净利润613亿元、同比增22%。</p>
+<blockquote>Net profit attributable to equity holders was RMB61.3 billion, up 22% year-on-year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>回购降低了股数。John说计算2025年一季度稀释每股盈利的加权平均股数同比减少2%，因此非IFRS每股盈利增速高于非IFRS净利润增速。</p>
+<blockquote>Our weighted average number of shares for calculating Q1 &#39;25 diluted EPS decreased by 2% year-on-year.</blockquote>        </div>
+<p class="conflict">冲突：John称非IFRS摊薄每股盈利RMB6.58、同比增25%。指标表6.583元，没有同比和环比。6.58元与6.583元一致到分。25%只是电话会口径。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">摊薄每股盈利（IFRS）</span>
@@ -376,7 +352,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+16.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-6.5%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表IFRS摊薄每股盈利5.129元，同比增16.94%，环比降6.49%。电话会没有报IFRS每股盈利。期内盈利同比增16.59%，快于IFRS经营盈利的9.53%。联营及合营收益46亿元，上年同期22亿元。财务费用39亿元、同比增37%，John说主因是本季汇兑损失、去年同期是汇兑收益。利息收入37亿元、同比降12%，因为收益率下降。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -389,7 +365,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>IFRS每股盈利同比上升，首先跟着经营盈利走。John称IFRS经营利润576亿元、同比增10%。</p>
+<blockquote>Operating profit was RMB57.6 billion, up 10% year-on-year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>经营利润以下，联营及合营贡献上升。John说应占联营及合营收益46亿元，上年同期22亿元；非IFRS口径则是76亿元，上年同期55亿元。</p>
+<blockquote>The share of profit of associates and JV was RMB4.6 billion compared to RMB2.2 billion in the same quarter last year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>财务费用同比增37%至39亿元，John说主因是今年汇兑损失、去年同期汇兑收益。这是每股盈利的减项。</p>
+<blockquote>Finance costs were RMB3.9 billion, up 37% year-on-year, primarily due to foreign exchange losses this quarter compared to gains in the same quarter last year.</blockquote>        </div>
+<p class="conflict">冲突：电话会没有给出IFRS摊薄每股盈利。指标表5.129元，同比增16.94%，环比降6.49%。John所说RMB6.58、同比增25%是非IFRS每股盈利，指标表非IFRS为6.583元且没有同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
@@ -397,7 +388,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+91.4%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-24.9%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表资本开支274.76亿元，同比增91.35%，环比降24.88%。John称经营性资本开支264亿元、同比近300%，用于GPU和服务器；非经营性资本开支11亿元、同比降86%，因为去年同期买土地使用权的基数高；合计275亿元、同比增91%。近300%说的是经营性资本开支，不是合计资本开支的指标表同比。指标表没有把两项拆开。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -410,14 +401,153 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>合计资本开支同比几乎翻倍，主因是为AI能力购买GPU和服务器。John说经营性资本开支264亿元、同比近300%。</p>
+<blockquote>Operating CapEx was RMB26.4 billion, up almost 300% year-on-year, driven by increased investments in GPUs and servers to ramp up our AI capabilities.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>非经营性资本开支11亿元，同比降86%。John说去年同期有土地使用权购置，基数高。</p>
+<blockquote>Non-operating CapEx was RMB1.1 billion, down 86% from the high base in the same quarter last year due to the acquisition of land use rights.</blockquote>        </div>
+<p class="conflict">冲突：John称合计资本开支人民币275亿元、同比增91%，经营性人民币264亿元、同比近300%，非经营性人民币11亿元、同比降86%。指标表合计274.76亿元，同比91.35%，环比降24.88%。合计金额和91%是四舍五入。近300%不是合计资本开支的指标表同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="gross_profit_gaap" aria-pressed="false" aria-controls="fin-panel-gross_profit_gaap">
+      <span class="m-name">毛利（IFRS）</span>
+      <span class="m-val num">¥100.49B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+19.8%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+10.9%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表毛利1004.93亿元，同比增19.82%，环比增10.85%。John称人民币1005亿元、同比增20%；Pony称人民币1000亿元、同比增20%。Martin说这是公司毛利第一次超过1000亿元。分部毛利电话会称增值服务550亿元、同比增22%，营销服务180亿元、同比增22%，金融科技及企业服务280亿元、同比增16%。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-gross_profit_gaap" data-fin-panel="gross_profit_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利同比上升首先因为收入增长。John称毛利1005亿元、同比增20%，快于收入的13%。</p>
+<blockquote>Gross profit was RMB100.5 billion, up 20% year-on-year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率上升放大了毛利增速。增值服务毛利率升至60%，主因高毛利本土游戏占比提高。</p>
+<blockquote>And by segment, VAS gross margin was 60%, up 2 percentage points year-on-year primarily driven by a higher mix of high-margin domestic games revenue.</blockquote>        </div>
+<p class="conflict">冲突：Pony称毛利人民币1000亿元、同比增20%；John称人民币1005亿元、同比增20%。指标表1004.93亿元，同比19.82%，环比10.85%。John的1005亿元与指标表只差约0.07亿元。20%高于指标表同比0.18个百分点。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">经营盈利（IFRS）</span>
+      <span class="m-val num">¥57.57B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+9.5%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+11.8%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表IFRS经营盈利575.66亿元，同比增9.53%，环比增11.83%。John称人民币576亿元、同比增10%。增速低于毛利的19.82%，因为研发和一般行政费用上升，其中股权激励不计入非IFRS。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>IFRS经营盈利仍同比上升，底子是毛利增长。John称经营利润576亿元、同比增10%。</p>
+<blockquote>Operating profit was RMB57.6 billion, up 10% year-on-year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>股权激励把IFRS经营盈利的增速压到低于非IFRS。John说这笔海外子公司重组相关的费用不计入非IFRS经营利润。</p>
+<blockquote>G&amp;A excluding R&amp;D expenses increased by 62% year-on-year to RMB14.7 billion primarily driven by [RMB1 billion of RMB4 billion] (ph) stock-based compensation expense related to the restructuring of an existing commercial arrangement at an overseas subsidiary which was not included in the calculation of our non-IFRS operating profit and net profit.</blockquote>        </div>
+<p class="conflict">冲突：John称经营利润人民币576亿元、同比增10%。指标表575.66亿元，同比9.53%，环比11.83%。金额是四舍五入，10%高于指标表同比约0.47个百分点。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_income_nongaap">
+      <span class="m-name">经营盈利（Non-IFRS）</span>
+      <span class="m-val num">¥69.32B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+18.3%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+16.6%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表非IFRS经营盈利693.20亿元，同比增18.26%，环比增16.55%。John称人民币693亿元、同比增18%；Pony称人民币690亿元、同比增18%。收入和毛利仍在增长，研发与AI投入占用了一部分杠杆。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_nongaap" data-fin-panel="operating_income_nongaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>非IFRS经营盈利同比增18%，快于收入。John称693亿元。高毛利游戏和营销服务把毛利增速拉到约20%。</p>
+<blockquote>On non-IFRS financial figures, operating profit was RMB69.3 billion, up 18% year-on-year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>研发费用同比增21%至189亿元，AI相关投入增加，使经营利润增速低于毛利增速。</p>
+<blockquote>R&amp;D expenses rose by 21% year-on-year to RMB18.9 billion reflecting higher staff courses and increased investment to support our AI-related efforts.</blockquote>        </div>
+<p class="conflict">冲突：同非IFRS经营盈利KPI。Pony称人民币690亿元，John称人民币693亿元、同比增18%。指标表693.20亿元，同比18.26%，环比16.55%。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
+      <span class="m-name">期内盈利（IFRS）</span>
+      <span class="m-val num">¥49.73B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+16.6%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-3.4%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表IFRS期内盈利497.25亿元，同比增16.59%，环比降3.38%。电话会没有报这个IFRS净利润。Pony称非IFRS权益持有人应占净利润610亿元、同比增22%，John称613亿元、同比增22%。所得税137亿元、同比降3%，John说主因是去年同期预提税基数高；境内企业所得税同比增加。利息收入37亿元、同比降12%。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>IFRS期内盈利同比上升，主要仍跟着经营盈利。John称IFRS经营利润576亿元、同比增10%。</p>
+<blockquote>Operating profit was RMB57.6 billion, up 10% year-on-year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>联营及合营收益从22亿元增至46亿元，税项同比降3%至137亿元。John说非IFRS经营利润和净利润的增速差，部分就是更高的联营收益。</p>
+<blockquote>The share of profit of associates and JV was RMB4.6 billion compared to RMB2.2 billion in the same quarter last year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>财务费用同比增37%至39亿元，主因汇兑由去年同期的收益变成今年的损失。</p>
+<blockquote>Finance costs were RMB3.9 billion, up 37% year-on-year, primarily due to foreign exchange losses this quarter compared to gains in the same quarter last year.</blockquote>        </div>
+<p class="conflict">冲突：Pony称非IFRS权益持有人应占净利润人民币610亿元、同比增22%；John称人民币613亿元、同比增22%。指标表IFRS期内盈利497.25亿元，同比16.59%，环比降3.38%。610亿元、613亿元和22%都不是这一IFRS口径。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
   </div>
 <p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>  </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 6 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
@@ -426,25 +556,256 @@
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境（技术与监管）</h4>
+          <div class="outlook-copy">
+            <p>Martin（总裁）把高端芯片的外部环境说成自上季电话会以来一直在变。他先看到H20禁令，随后是隔夜才到的BIS新指引，所以一边要完全合规，一边还得让既定的AI战略继续执行。他给出的缓冲是，公司先前已经囤下一批芯片，训练侧也不必再跟着美国公司所讲的规模定律把集群无限做大，较小集群加上后训练就能出结果，因此现有高端芯片够再训练几代模型。真正更吃GPU的是推理：思维链回答一个复杂问题就要更多token，走到代理式人工智能还要再多一截。James（CSO）说腾讯云里与AI相关的收入同比增长很快，客户要的是GPU、API和平台方案，但这块被有限的GPU供应卡住。支付和消费这边，Martin看一季度是交易笔数还在上升、客单价下降，并认为在关税真正起作用之前，消费有见底后慢慢恢复的样子。关税幅度有多大、刺激还有多少空间，他明确说要看到下一季，不在这季给出消费预测。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化</h4>
+          <div class="outlook-copy">
+            <p>游戏需求的增量很具体，而且新旧产品叠在一起。Martin在准备稿里说本土游戏收入同比增24%，对照的是2024年一季度的低基数，主力是《王者荣耀》和《和平精英》，再加上《地下城与勇士》手游和《三角洲行动》。国际游戏同比增23%，固定汇率22%，标题包括Brawl Stars、Clash Royale和PUBG Mobile。James说《王者荣耀》单季流水创纪录；《无畏契约》国服流水和日活同比都翻倍以上，并已成为中国网吧游戏时长第二，只落后于《英雄联盟》；《三角洲行动》4月PC加移动的峰值日活被写成1200万，语境是用户数。回答William的发言人认为这种低基数不会每季都有，但中国玩家正在把时长往第一人称动作上搬。广告需求方面，James说营销服务同比增20%到约320亿元，视频号营销服务同比增60%以上；部分广告库存的点击率在AI帮助下可以走向3%，而横幅广告历史上大约0.1%、信息流大约1%。视频号广告负载过去约六个月维持在3%到4%，他后来明确说一季度完全没有增加库存，所以这20%不是靠多塞广告条数。微信和WeChat合并月活同比、环比都增至14亿，长视频订阅收入同比持平，音乐订阅收入同比增17%。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化</h4>
+          <div class="outlook-copy">
+            <p>这季供给约束集中在GPU，不在游戏版号或内容产能。John（CFO）说经营性资本开支264亿元，同比接近300%，就是加买GPU和服务器；非经营性资本开支11亿元，同比降86%，因为去年同期购买土地使用权的基数高。合计资本开支电话会称275亿元、同比增91%，指标表是274.76亿元、同比91.35%。Martin把芯片怎么分讲清楚：先给广告和内容推荐这些马上能出回报的应用，再给大模型训练，训练要用更高端的芯片。推理侧他不主张只靠继续买卡。三条路是把软件优化做上去、按场景蒸馏出较小模型，以及使用在中国合规或可以进口的其他芯片、ASIC，还有部分小模型推理可用的GPU。他把推理效率提高2倍直接说成GPU容量翻倍。Pony（CEO）在问答里补充，GPU短缺时，GPU租赁这种偏转售的业务会被放到更低优先级。云的另一侧，James说头部互联网平台在采用腾讯的音视频方案、TDSQL和通用云基础设施来应付用量尖峰，企业服务毛利率同比上升，靠的是效率。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>应用商店分成是这季讲得最清楚的竞争制度变化。回答William的管理层说，旧的经济分配不公平地惩罚数字内容、尤其是游戏公司，让实物商品提供者搭车；腾讯自己既开应用商店又做数字内容，认为商店被过度奖励。中国这场调整已经进行了数年，数字内容方拿到的终端消费份额更公平。西方直到最近才出现一批诉讼和监管干预，他认为长期方向是内容方留下更多自己创造的价值，而不是继续补贴那些不向应用商店生态付费的电商和其他公司。中国已经比较明显，海外会慢慢明显。游戏品类内部，Martin在回答John Choi时说，搜打撤这类新玩法是在扩大第一人称动作的总受众，而不是只在腾讯自己的几款游戏之间互抢。《和平精英》的使用增长主要就在搜打撤，《三角洲行动》的高留存用户也大多玩这个模式。海外这个品类占玩家时长和收入的40%到50%，中国历史上是10%到20%。广告竞争上，James和Martin都把延长跑道放在单季增速前面：视频号、小程序、公众号和微信搜索的流量还在涨，AI把内容推准可以拉长那些看一下就走的用户的时长，这样不必马上加广告负载，体验本身成为优势。元宝下一阶段则要靠社交、内容和小程序，做出和其他AI聊天机器人不同的产品。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>Pony把AI怎么赚钱拆成四条，而且讲了哪条现在不做大。广告是直接增强：定向更好、投放结果更好，就变成额外广告收入，效果广告里已经在兑现，后面还有空间。交易和他眼中的广告是绑在一起的，点击之后能成交，广告价值会明显上去，这也是微信交易生态要补上的一块。GPU租赁对应云业务，目前大多是转售，GPU不够时优先级靠后。订阅在中国不太可能成为主流，因为现在大家把AI免费提供，海外那种订阅不会是中国AI的主模式。微信内部的代理式人工智能要接上社交关系、通讯和社群、公众号、视频号，以及数百万小程序里的信息和交易能力；元宝和Ima走的是另一条，从快答、思维链再走到调用外部应用和API，和其他公司的通用智能体差别不大。James谈贷款撮合时说，平台促成贷款的信用质量今年逐步、持续变好，一部分是借款人筛选，一部分是居民储蓄偏高，所以放贷对象的缓冲更厚。相对最大同业，这笔贷款账本目前只是一个零头，但会以很克制的速度增长，因为这是高利润收入。商业支付一季度金额同比略降、4月好转。James说这不是公司在4月突然加大补贴或更激进地接受信用卡，份额会随补贴和信用卡策略波动，但他们没有按月把竞争强度调上去。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略</h4>
+          <div class="outlook-copy">
+            <p>Pony开场把战略收成一句：高质量收入还在增长，AI已经实际贡献效果广告和长青游戏，同时公司加大元宝和微信内AI的支出。他的判断是，现有收入的经营杠杆要吸收这些新增成本，投入期的财务表现仍然健康，更长时间里再拿出增量回报。Martin把再投资分成已经能产生收入的和长周期两类。前者包括更好的广告定向、用推荐拉长使用时间从而带动广告、长青游戏里的AI提升参与，以及把GPU和AI铺到计算基础设施、API和平台方案里去产生云收入。后者从投入到出现明显收入有自然时滞。这段时间里，GPU和AI的成本会抵掉一部分经营杠杆，收入增速和经营利润增速的差距会暂时小于近几个季度。John把这笔账落在报表上：研发开支189亿元、同比增21%，来自人员成本和AI相关投入；销售费用79亿元、同比增4%，AI原生产品推广增加，新游戏投放减少，销售费用占收入4%，去年同期是5%；季末约10.9万名员工，同比增4%、环比降1%。问答里Martin补充，人数不会台阶式上跳，仍会管住总人数，但懂AI的工程师薪酬高。除资本开支及其折旧之外，元宝有额外市场费用，微信内AI的市场费用不多，折旧是造成利润增速差收窄的最主要成本。</p>
+            <ul><li>已经能产生收入的AI：广告定向、内容推荐带来的时长、长青游戏里的参与，以及云上的GPU、API和平台方案。</li><li>长周期项目：元宝和微信内的代理式人工智能。收入滞后，先用现有高质量收入的杠杆吸收成本。</li><li>芯片使用顺序：马上能变现的内部应用优先于大模型训练，训练优先于对外的GPU转售。</li></ul>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">16 轮 · 部分回答 / 回避 12</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>16</b> 轮</span>
+<span>热门话题：<b>AI产品与模型、宏观与汇率、产品结构</b></span><span>新出现：<b>AI产品与模型、宏观与汇率</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 12</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Thomas Chong<small>Jefferies</small></span>
+        <span class="qa-q">代理式人工智能的前景，以及相对同业的定价差异。广告、交易、GPU租赁、订阅这几种AI商业模式分别怎么做。</span>
+        <span class="qa-tags">
+<span class="pill">AI产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Pony（CEO）：通用代理式人工智能和放在微信里的代理式人工智能是两种产品。元宝和Ima会从快速回答、思维链走到能做复杂任务，调用其他应用、程序和外部API，这部分和其他公司的通用智能体差别不大。微信里的版本要接上社交关系、通讯和社群、公众号、视频号，以及数百万小程序里的信息和交易能力，他认为这才是差异化。广告已经被AI改进定向，效果更好就直接变成额外广告收入，效果广告里已经在兑现，后面还有空间。交易和广告绑在一起，点完能成交，广告价值会明显上升。GPU租赁对应云，目前大多是转售，GPU短缺时优先级放低。中国现在普遍把AI免费提供，海外那种订阅不太会成为中国AI的主流模式。</p>
+<p class="small">未回答的部分：没有比较代理式人工智能相对同业的定价，也没有给四种模式的收入占比。</p><blockquote>GPU rental is directly related to cloud business and that&#39;s more like a reselling business mostly. And to a large extent right now, we are putting it on a lower priority because especially when there&#39;s a short supply of GPUs then the GPU rental is lower priority for us. And subscriptions, I think, it&#39;s not the most likely business model for AIs in China. Right now, everybody is actually providing, AI is for free. So the subscription model which exists outside of China, I think it&#39;s not going to be mainstream business model for AI in China.</blockquote>        <p class="small">新数字：较低优先级（GPU短缺时，GPU租赁被放到更低优先级）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Thomas Chong<small>Jefferies</small></span>
+        <span class="qa-q">电商组织调整的含义，小店进展、往后的KPI，和直播平台怎么区分，以及618准备。</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill alert">回避</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Pony（CEO）：他先说第二个问题只简单答。电商团队原先孵化在开放平台部门，规模变大后正式拆成独立部门，负责人不变。他认为这是小调整，不应过度解读。</p>
+<p class="small">未回答的部分：只说明组织调整很小。小店进展、KPI、与直播平台的差异和618准备都没有回答。</p><blockquote>In terms of e-commerce, I think the latest organizational adjustment is a small one, frankly, because our Weixin e-commerce team was actually incubated within our Open Platform department, and over time it has grown in size and now we are just making the formal change of separating the two so that the e-commerce team is now become an independent department but it&#39;s actually still managed by the same manager. So it&#39;s not a big change and I don&#39;t think we should be reading too much into it.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Adi Yao<small>Macquarie</small></span>
+        <span class="qa-q">元宝接入微信之后的用户行为，以及和小店、公众号、视频号的协同，下一步会不会把私域和公域一起做进元宝。电话会把分析师名写成音译Adi Yao，回答时称对方为Alicia。</span>
+        <span class="qa-tags">
+<span class="pill">AI产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Pony（CEO）：他还把分析师叫成Alicia。元宝接入微信仍很早。看得到的用法是提问、对话，以及把内容交给元宝做摘要和分析；用户用了之后往往会再用。往后一定会把更多微信生态接到这个聊天伙伴上，做不同实验，也许几个季度后才有系统的东西可讲。现在做系统总结太早。</p>
+<p class="small">核对：分析师名在电话会里标成音译Adi Yao，回答称其为Alicia</p><p class="small">未回答的部分：没有留存、时长或小店、公众号、视频号的协同数据，并明确说还不到系统总结的时候。</p><blockquote>So, Alicia, to be honest, right now this is still at a very early stage of development and I think we can see users as they use it, they use it more. We can see that users are using it to ask questions, to have some dialogues, and also to have content directed to the Yuanbao so that Yuanbao can do summarization and help them to analyze.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Adi Yao<small>Macquarie</small></span>
+        <span class="qa-q">用户和企业使用上来之后，怎么在投入节奏和收入跑道之间取平衡，尤其是早期爬坡。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Pony（CEO）：这个阶段希望全速制造需求。如果需求大到GPU接不住，再考虑怎么放慢，那会是一个好问题。目前还没到那一步。</p>
+<p class="small">核对：分析师名在电话会里标成音译Adi Yao</p><blockquote>Well, at this stage, I think we want to go full speed in terms of trying to generate demand and if frankly there&#39;s too much demand that our GPUs can handle, then we would start thinking about how do we pace it. It would be a nice problem to have.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">William Packer<small>BNP</small></span>
+        <span class="qa-q">本土游戏强劲是2021到2023年的需求回补，还是头部游戏集中、AI加快内容周期带来的结构性增长。增长算法往后怎么看。</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：电话会把整段标成Pony Ma。Martin后来回答Alicia时说，自己在回应William时已经讲过如何把游戏AI用进大型竞技游戏，因此按他的自述归属，不把标签当成另一位发言人。一季度确实受益于相对2024年一季度的低基数，这种容易比较不会每季都有。他仍认为本土和海外游戏收入有很长的跑道。原因有三条：去年调整了最大几款本土游戏的设想、运营方式和负责人，已经结果，后面还会有；AI特别有利于占本土游戏收入大多数的大型竞技多人游戏，用来辅导新玩家、陪伴现有玩家、反作弊；中国玩家正转向第一人称动作，腾讯在这个品类领先，《和平精英》《穿越火线》手游、《使命召唤》手游、《无畏契约》和《三角洲行动》合计在增长，其中《无畏契约》和《三角洲行动》很快。</p>
+<p class="small">核对：电话会把该段标成Pony Ma，Martin随后说自己在回答William时讲过游戏AI</p><blockquote>Thank you, William. So on your question about domestic games, the first quarter, we did have the benefit of easy comparison against the first quarter of 2024. So that certainly played in our favor during the first quarter in a way that won&#39;t be true in every future quarter. But we do feel, we do believe we have a long runway for our domestic and indeed international game revenue growth looking forward.</blockquote>        <p class="small">新数字：2024年一季度（本土游戏24%增速所对照的低基数季度）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">William Packer<small>BNP</small></span>
+        <span class="qa-q">全球都在讨论监管改变应用商店和开发者的分成。腾讯近些年是否关注，中国游戏在应用和商店之间的价值分割走到哪一步，还有没有空间。</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：与上一问同一段发言，电话会标成Pony Ma，这里沿用Martin的自述。过去的分成不公平地惩罚数字内容、尤其是游戏公司，让实物商品提供者免费搭车。腾讯既运营应用商店又做数字内容，认为商店被过度奖励。中国这场调整已经进行数年，内容方拿到的终端用户消费份额更公平。西方直到最近才慢下来或根本没发生，现在有诉讼和监管干预。未来一两周难以预测，更长期会走向内容方留下更多自己创造的价值，而不是去补贴不向商店生态付费的电商和其他公司。中国已经比较明显，海外他预期会逐渐明显。</p>
+<p class="small">核对：电话会把该段标成Pony Ma，与游戏回答同属一段</p><blockquote>And in our view, as a company that operates an app store but is also a digital content provider, we&#39;re over-rewarding the app stores. And that change has been underway in China for several years and now the digital content creators, including ourselves, are getting a fairer share of the end user spend.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alicia Yap<small>Citigroup</small></span>
+        <span class="qa-q">除了已经受益于AI的大游戏，接下来几个季度中小游戏会不会也接AI，从而改善变现或把腰部产品的参与拉回来。她的前一问是AI接入后的用户行为，Pony说前面已经答过、仍太早做系统分析。</span>
+        <span class="qa-tags">
+<span class="pill">AI产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：大型竞技游戏里的游戏AI仍在很早的部署阶段，最大的机会是沿着这条路继续做。另一条是把更多生成式AI用到内容驱动的游戏里，先加快工作室自己做内容，再往用户生成内容、不同质量的体验，以及玩家走出预设地图时由游戏动态生成环境走。这些要放在后面几年探索。眼下更实在的机会，是在大型竞技多人游戏里用他所说的游戏人工智能。</p>
+<p class="small">未回答的部分：没有说中小游戏会在接下来几个季度靠AI改善变现或恢复参与。</p><blockquote>But all of that is, I think, to be explored in the years ahead. And as of right now, the bigger more tangible opportunity is around utilizing what we&#39;ll call game artificial intelligence within the big competitive multiplayer games.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Kenneth Fong<small>UBS</small></span>
+        <span class="qa-q">美国对高端GPU加了许可要求。公司优先内部使用。这对资本开支、AI研发和产品上线有没有影响。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：情况很动态。上季电话会之后先是H20禁令，接着BIS新指引隔夜才到。一边要完全合规，一边还要让AI战略执行下去。有利点是先前已经囤了一批芯片。使用顺序上，先给马上能出回报的广告和内容推荐，大模型训练排第二，而且训练要用更高端芯片。公司不再相信必须按美国公司的规模定律把训练集群持续做大，较小集群和后训练也能出结果，所以现有高端芯片够再训练几代模型。更大的需求在推理，思维链和代理式人工智能会吃掉更多token。应对办法是把推理效率做上去，效率提高2倍就相当于GPU容量翻倍；按场景定制和蒸馏较小模型；以及使用在中国合规或可以进口的其他芯片、ASIC，和部分小模型可用的GPU。他倾向于多花时间在软件上，而不是硬买GPU。</p>
+<p class="small">未回答的部分：没有说资本开支金额、模型发布时间或产品上线会因此改变多少。</p><blockquote>So the -- since the last earnings call, we have seen an H20 ban and then after that there was the BIS new guidelines that just came in overnight. So it&#39;s a very dynamic situation and we just sort of have to manage the situation, on one end sort of in a completely compliant way, and on the other end, sort of, we try to figure out the right solution for us to make sure that our AI strategy can still be executed. So, the good thing that we are in is that, number one, I think we have a pretty strong stockpile of chips that we acquired previously and that would be very useful for us in executing our AI strategy.</blockquote>        <p class="small">新数字：2x（推理效率提高2倍，被说成相当于GPU容量翻倍）；再有几代（现有高端芯片够再训练的模型代数）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Kenneth Fong<small>UBS</small></span>
+        <span class="qa-q">宏观仍不确定。新闻稿说消费贷在去年更保守之后重新同比正增长。管理层在客户和广告主两侧分别看到什么。</span>
+        <span class="qa-tags">
+<span class="pill">宏观与汇率</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：今年观察到，平台促成的贷款信用质量逐步、持续变好，一部分是借款人筛选，一部分是过去几年中国居民积累了异常高的储蓄，把钱贷给储蓄厚的消费者比贷给储蓄薄的人更合适。贷款账本因此以很克制的方式增长。相对最大同业，目前只是一个零头，但仍有多年跑道去增长这块高利润收入。</p>
+<p class="small">未回答的部分：贷款和信用质量有观察。广告主一侧没有展开。</p><blockquote>what we have observed on the ground this year is that the credit quality for the loans that we facilitate through our platform has been gradually but consistently improving. And we think that&#39;s partly due to better selection of borrowers and so forth.</blockquote>        <p class="small">新数字：规模只是它们的一小部分（平台促成的贷款账本相对最大同业的体量）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">John Choi<small>Daiwa</small></span>
+        <span class="qa-q">开场说收入和经营利润的增速差变小。幅度有多大、会持续多久。除了资本开支，还要看哪些费用。</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：AI部署对腾讯和全世界都是没走过的路，这几句话把握不高。若用过去把新产品养到流行再变现的经验，空档大体一到两年，还要看中国同业以及用户、广告主习惯。幅度上他不愿超出前面说过的“收窄”：不预期本季这种收入增速和经营利润增速的差距继续下去，差距会变小，但经营杠杆也不会转负。除资本开支、实际上是折旧之外，折旧是最重要的成本；元宝有一些额外市场费用，微信内AI的市场费用不多；懂AI的工程师贵，但总人数看不到台阶式上升。</p>
+<p class="small">未回答的部分：没有给出增速差会收窄到多少个百分点，并说明把握不高。</p><blockquote>So we don&#39;t expect the delta between revenue growth and operating profit growth that we experienced this quarter to continue. There&#39;ll be a narrowing, but on the other hand, we don&#39;t expect our operating leverage to turn negative either.</blockquote>        <p class="small">新数字：一到两年（用历史经验估计的投入到变现空档）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">John Choi<small>Daiwa</small></span>
+        <span class="qa-q">第一人称射击是否在发生结构性变化。《三角洲行动》和《穿越火线》手游之外，这个品类里能不能有多款长青游戏。</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：这在很大程度上是中国玩家行为在向海外长期存在的行为靠拢。海外第一人称动作是游戏里的超级品类，占玩家时长和收入的40%到50%，像电视剧里的连续剧；中国历史上是10%到20%。分年龄看，更年轻的玩家不成比例地被这个品类吸引，直接打20到30岁的《无畏契约》特别好。老游戏也没掉队，《和平精英》《使命召唤》手游和《穿越火线》手游都在增长。几年前大逃杀把品类抬上去，最近搜打撤又抬了一次。《和平精英》的使用增长主要在搜打撤，《三角洲行动》的高留存用户也大多玩这个模式。他认为这类新玩法每隔几年出现一次，扩大总受众多于互相蚕食。</p>
+<blockquote>In the rest of the world, the first-person action genre is the super genre within games. It&#39;s the equivalent of a drama series on television. It represents 40% to 50% of gamer time spent and gamer revenue generation. In China historically it had been 10% to 20%.</blockquote>        <p class="small">新数字：40%至50%（海外第一人称动作占玩家时长和收入的比例）；10%至20%（中国历史上第一人称动作占玩家时长和收入的比例）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Jialong Shi<small>Nomura</small></span>
+        <span class="qa-q">AI还能给广告带来多少增长空间。视频号广告负载和eCPM现在是多少。微信搜索的查询份额、广告收入占比，以及加上AI搜索后用户是否从传统搜索迁走。</span>
+        <span class="qa-tags">
+<span class="pill">定价与 ASP</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：AI还能把广告收入再抬多少，是全行业的问题，知道答案也会帮着理解Meta和Google，不只是腾讯。今天AI带来的抬升里，很大一块可以落在点击率上：横幅广告历史大约0.1%，信息流大约1%，有AI之后某些库存可以走向3%。上限是多少没人知道，因为那几乎变成哲学问题。AI还能把更合适的内容推给用户、拉长停留、从而看到更多广告，但他认为点击率最重要。视频号广告负载过去大约六个月保持稳定，仍在3%到4%附近。视频号CPM仍然很好，一部分因为点击率高，一部分因为广告主争这块库存。微信搜索的查询份额没有披露，但趋势向上。AI搜索还早，而且纯提示词和传统搜索结果的边界在混在一起；作为搜索的后来者，这种混合对他有利，有机会做用户份额，再做收入份额。</p>
+<p class="small">未回答的部分：没有视频号eCPM数值，没有AI还能贡献多少广告增速，也没有披露微信搜索查询份额和广告收入占比。</p><blockquote>Historically, banner ads achieved a roughly 0.1% click-through rate. Feed ads achieved a roughly 1.0% click-through rate. With the benefit of AI, we&#39;ve seen that the click-through rate on certain ad inventories can improve toward 3.0%, for example.</blockquote>        <p class="small">新数字：0.1%（横幅广告历史上的大致点击率）；1.0%（信息流广告历史上的大致点击率）；3.0%（AI之后某些广告库存点击率可以走向的水平）；3%至4%（视频号广告负载近六个月大致维持的区间）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alex Yao<small>JPMorgan</small></span>
+        <span class="qa-q">营销服务增速从四季度的17%加快到一季度的20%。宏观复苏、技术改进、库存释放各自占多少，能否排序。他判断库存释放应该是最小的一项。</span>
+        <span class="qa-tags">
+<span class="pill">宏观与汇率</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>James（CSO）：不要对广告增速的季度波动读得太重，它一直在一个区间里，一季度在区间上沿。公司甚至不一定想要加速，更想把这个区间维持很多年。若太靠近上沿，会放慢现有产品加负载的速度，也更晚把广告放到新的AI产品上，先优化时长和体验，否则区间能维持的时间会变短。一季度向上波动的原因里，库存可以排除，因为库存完全没增加。是不是宏观，他不知道，要等其他公司的业绩。AI广告技术的节奏也不是按季度计划的。所以这是区间内到上沿的正常波动，不要过度外推。</li><li>Martin（总裁）：还有流量的自然增长，这大概是很重要的驱动。</li><li>James（CSO）：流量增长和广告技术改进，是增速区间落在十几、而不是个位数正增长或个位数负增长的原因，区间内部还有季度噪音。最想要的库存是视频号、小程序、公众号和微信搜索。</li><li>Martin（总裁）：他们看广告是一条很长的跑道，做的事是把跑道延长，而不是按季度管增速。AI把内容推准，可以明显拉长那些进来看一下就走的用户的时长；有了时长，不必马上加负载，收入仍能跟着流量走，新负载留到以后，体验也会更好。微信交易生态变强之后，点击更容易变成交易，广告主花钱的意愿和每次点击的价值都会上去。</li></ul></div>
+<p class="small">未回答的部分：没有给宏观、技术和库存的量化排序。库存被明确排除，宏观他说要等其他公司业绩。</p><blockquote>In terms of your question and sub-question about the specific drivers for the fluctuation upward in the first quarter, it&#39;s certainly not inventory because we haven&#39;t increased inventory at all. I don&#39;t know whether it&#39;s macro or not. We probably need to wait and see what other companies report.</blockquote>        <p class="small">新数字：17%（Alex所说的四季度营销服务增速）；20%（Alex所说的一季度营销服务增速）；百分之十几（James所说广告增速所处的区间）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alex Yao<small>JPMorgan</small></span>
+        <span class="qa-q">元宝主动拉新之后，活跃用户的反馈和留存如何。聊天机器人会不会是生成式AI的最终形态。</span>
+        <span class="qa-tags">
+<span class="pill">AI产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>James（CSO）：他明确不答AI产品这问，只答广告。</li><li>Martin（总裁）：刚过去的这个季度，元宝用户基数增长了很多。公司花了很多时间做留存，他认为已经证明能把用户留下来，体验足够好，用户会回来并且用得更多。当前产品形态里聊天是主流。功能变多之后界面会变：替用户执行复杂任务时，可能变成一个放得更久的项目，而不是一段聊天，形态会跟着功能走。下一阶段的当前阶段是已经有规模、也能留住用户；再下一阶段是继续加功能，用来留存、激活并拉新；然后用社交、内容和小程序做出和其他AI聊天机器人不同的东西。同时继续升级混元，让双模型策略更强。</li></ul></div>
+<p class="small">未回答的部分：没有给出元宝留存率、用户规模或活跃定义。</p><blockquote>I think right now, just within the past quarter, we actually grew our Yuanbao user base by a lot. And we spent a lot of time in making sure that we can retain them, which I think we have proven ourselves to be able to retain the users and provide them with good enough experience so that they keep coming back and they keep using Yuanbao more.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Ronald Keung<small>Goldman Sachs</small></span>
+        <span class="qa-q">微信电商看哪些KPI，有没有时间表把今天以直播和搜索为主的形态做成货架。</span>
+        <span class="qa-tags">
+<span class="pill">客户与订单</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：他们不靠规定性的KPI来经营，这是跑道很长的项目，延续增长比冲刺重要。优先顺序是：先把购物体验做扎实，包括货的质量、方便的退货、客服和价格；再引入更多好货、好品牌和有意愿的商家；然后给商家更多流量，让消费者碰到商品。第一步用直播把流量做起来，这是其他平台验证过的、不做会后悔的事。更长期要有微信自己的接法，比如把已经在小程序里发生的购买，转一部分到基础设施更好的小店里，把交易放大。还有社交、通讯、朋友圈、搜索、送礼和公众号。这些还在第一局，小店交易GMV仍然增长很强。他没有给GMV数字。</p>
+<p class="small">未回答的部分：没有小店KPI数值，也没有货架形态相对直播的时间表。</p><blockquote>In terms of e-commerce strategy, I don&#39;t think we operate by setting prescriptive KPIs. This is a very long-term project with very long runway. Again, I keep on going back to the same term runway because we felt it&#39;s much more important for us to make sure that the business can keep growing for a very long time rather than sort of go for these sprints so that you have a KPI and then sort of you need it.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Ronald Keung<small>Goldman Sachs</small></span>
+        <span class="qa-q">一季度支付金额略降，是宏观还是支付策略。公司也提到4月有所改善，怎么理解。</span>
+        <span class="qa-tags">
+<span class="pill">宏观与汇率</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>James（CSO）：份额会随补贴力度、以及是否更积极接受信用卡交易而波动，但公司不会按月大幅改策略。从一季度到4月，他们没有把竞争强度调高。大图景是消费支出过去几个季度在波动，最近一个点是向上波动，有可能反映消费信心和消费活动在企稳，希望以后变成持续向上，但要时间验证。</li><li>Martin（总裁）：一季度交易笔数继续上升，价格下降。他的假设是，需求端开始回暖时，供给端竞争还在走最后一程，4月的趋势有些印证。这是关税起作用之前的情况。没有关税的话，他认为消费已经见底并开始慢慢恢复；关税进来之后，下一季只能再看。关税幅度、政府刺激还有多大空间，以及两者对冲，是要观察的两个因素。</li></ul></div>
+<p class="small">未回答的部分：4月改善有方向，但关税发生后的下一季消费和支付金额没有给出判断。</p><blockquote>So, without the tariff, I think we clearly see that the consumption pattern has bottomed out and start to slowly recover. But now with the interaction with the tariff, I think we just have to see what will be happening in the next quarter.</blockquote>      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 3 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：<a href="file:data/0700.HK/raw/FY2025Q1/press_release.pdf" rel="noopener">SEC EDGAR</a> · 文件编号 manual:69612733d10a · 文字稿：local_import</p>
+    <p>新闻稿：<a href="file:data/0700.HK/raw/FY2025Q1/press_release.pdf" rel="noopener">SEC EDGAR</a> · 文件编号 manual:69612733d10a · 文字稿：roic</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±¥0.01 以内为「符合预期」。</p>
-<ul class="warn-list"><li>自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf</li><li>listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期</li><li>电话会已导入（local_import）。其中的美元口径未写入财务字段；Stage2 解读需另跑 run --stage 2。</li></ul>  </div>
+<ul class="warn-list"><li>自由现金流只记在指标里；公告未单列经营现金流，不回填自由现金流科目。</li><li>港股按收益表规则抽取，未调用模型，也未接一致预期。</li><li>电话会已导入。其中的美元口径未写入财务字段。</li></ul>  </div>
 </details>
   </main>
   <footer>数据来源：SEC EDGAR / Yahoo Finance / 电话会文字稿。解读由模型生成并经原文引用校验，仅供研究参考，不构成投资建议。</footer>
