@@ -132,6 +132,22 @@ section.dim > h2 { font-size: 20px; display: flex; justify-content: space-betwee
 .guide-empty { margin: 0; color: var(--muted); font-size: 13.5px; }
 .guide-table { margin-top: 0; }
 .guide-table td:first-child small { display: block; margin: 2px 0 0; font-weight: 400; }
+.guide-table tr.guide-hit { cursor: pointer; }
+.guide-table tr.guide-hit:hover td,
+.guide-table tr.guide-hit[aria-expanded="true"] td { background: var(--surface-2); }
+.guide-table tr.guide-hit:focus-visible td { box-shadow: inset 0 0 0 1px var(--accent); }
+.guide-table tr.guide-detail[hidden] { display: none; }
+.guide-table tr.guide-detail > td {
+  background: color-mix(in srgb, var(--surface-2) 55%, var(--surface));
+  text-align: left;
+  white-space: normal;
+  padding: 8px 12px 14px;
+}
+.guide-detail-body { display: grid; gap: 8px; min-width: 0; }
+.guide-detail-body .layer-sub { margin: 0; }
+.guide-chart { margin: 0; }
+.guide-hist { margin: 0; }
+.guide-hist td:first-child small { display: block; margin: 2px 0 0; font-weight: 400; }
 .outlook-list { display: grid; gap: 0; }
 .outlook-block { padding: 0 0 2px; }
 .outlook-block + .outlook-block { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--grid); }

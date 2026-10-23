@@ -716,4 +716,112 @@ if (page.epsChart) {
   draw('eps');
 })();
 }
+
+function guideColorAlpha(color, alpha) {
+  var rgb = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(color || '');
+  if (rgb) return 'rgba(' + rgb[1] + ',' + rgb[2] + ',' + rgb[3] + ',' + alpha + ')';
+  var hex = /^#([0-9a-f]{6})$/i.exec(color || '');
+  if (!hex) return color;
+  var n = parseInt(hex[1], 16);
+  return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + alpha + ')';
+}
+
+window.drawGuideCharts = function (root) {
+  if (typeof Chart === 'undefined') return;
+  var scope = root || document;
+  scope.querySelectorAll('canvas[data-guide-chart]').forEach(function (canvas) {
+    if (canvas.dataset.charted === '1' || canvas.offsetWidth < 20) return;
+    var spec;
+    try { spec = JSON.parse(canvas.getAttribute('data-guide-chart') || ''); }
+    catch (err) { return; }
+    if (!spec || !spec.values || !spec.values.length) return;
+    var css = getComputedStyle(document.documentElement);
+    var color = function (name) { return css.getPropertyValue(name).trim(); };
+    var up = color('--pos') || '#2a78d6';
+    var down = color('--neg') || '#e34948';
+    var flat = color('--muted') || '#898781';
+    var unit = spec.unit || '%';
+    var max = 0;
+    spec.values.forEach(function (value) {
+      if (Math.abs(value) > max) max = Math.abs(value);
+    });
+    if (!max) max = 1;
+    var colors = spec.values.map(function (value, index) {
+      var base = value > 0 ? up : value < 0 ? down : flat;
+      var solid = spec.outside && spec.outside[index];
+      return solid ? base : guideColorAlpha(base, 0.4);
+    });
+    new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: spec.labels || [],
+        datasets: [{
+          data: spec.values,
+          backgroundColor: colors,
+          borderRadius: 3,
+          maxBarThickness: 22
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        layout: { padding: { top: 16, bottom: 16 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var tip = (spec.tips || [])[ctx.dataIndex];
+                if (tip) return tip;
+                var value = ctx.parsed.y;
+                return '相对中值 ' + (value > 0 ? '+' : '') + value + unit;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, color: color('--ink-2') } },
+          y: {
+            min: -(max * 1.35),
+            max: max * 1.35,
+            grid: {
+              color: function (context) {
+                if (context.tick && context.tick.value === 0) return color('--ink-2') || '#52514e';
+                return color('--grid');
+              }
+            },
+            ticks: {
+              callback: function (value) {
+                var n = Number(value);
+                return (n > 0 ? '+' : '') + n.toFixed(1) + unit;
+              }
+            }
+          }
+        }
+      },
+      plugins: [{
+        id: 'guideBeatLabels',
+        afterDatasetsDraw: function (chart) {
+          var ctx = chart.ctx;
+          var meta = chart.getDatasetMeta(0);
+          meta.data.forEach(function (bar, index) {
+            var text = (spec.texts || [])[index];
+            if (!text) return;
+            var value = spec.values[index];
+            ctx.save();
+            ctx.fillStyle = value > 0 ? up : value < 0 ? down : flat;
+            ctx.font = '11px ' + (Chart.defaults.font.family || 'sans-serif');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = value >= 0 ? 'bottom' : 'top';
+            ctx.fillText(text, bar.x, value >= 0 ? bar.y - 2 : bar.y + 2);
+            ctx.restore();
+          });
+        }
+      }]
+    });
+    canvas.dataset.charted = '1';
+  });
+};
 })();
