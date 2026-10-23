@@ -166,7 +166,7 @@ TONE_LABELS = {"positive": "偏积极", "neutral": "中性", "cautious": "偏谨
 VERDICT_LABELS = {"beat": "超预期", "miss": "不及预期", "inline": "符合预期", "unknown": "待核对"}
 
 METRIC_SECTIONS = [
-    ("revenue", "营收", False),
+    ("revenue", "营业收入", False),
     ("gross_margin_nongaap", "毛利率（Non-GAAP）", True),
     ("gross_margin_gaap", "毛利率（GAAP）", True),
     ("operating_margin_nongaap", "营业利润率（Non-GAAP）", True),
@@ -430,7 +430,7 @@ def _with_profit_companions(
     ticker: str,
     period: str,
 ) -> list[dict[str, Any]]:
-    """毛利率 / 营业利润率下面补利润额；营业利润块之后补净利润率与净利润。"""
+    """营业利润率下面补利润额；营业利润块之后补净利润率与净利润。"""
     seen = {row["key"] for row in rows}
     out: list[dict[str, Any]] = []
     for row in rows:
@@ -1711,6 +1711,7 @@ def _fin_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None
                 "nested": False,
             }
         )
+    rows = _with_cogs_row(rows, ticker, period)
     rows = _with_profit_companions(rows, doc, docs, ticker, period)
     rows = _with_opex_row(rows, ticker, period)
     rows.extend(_activity_rows(ticker, period, doc, docs))
@@ -1756,6 +1757,234 @@ def _with_opex_row(rows: list[dict[str, Any]], ticker: str, period: str) -> list
         if str(row["key"]).startswith("operating_margin") or str(row["key"]).startswith("operating_income"):
             return rows[:index] + [made] + rows[index:]
     return rows + [made]
+
+
+def _component_lines(row: dict[str, Any], field: str) -> list[dict[str, Any]]:
+    lines = []
+    for line in row.get(field) or []:
+        if not isinstance(line, dict) or line.get("value") is None or not line.get("name"):
+            continue
+        lines.append(line)
+    return lines
+
+
+def _has_component_breakdown(quarters: list[dict[str, Any]], field: str) -> bool:
+    return any(len(_component_lines(row, field)) >= 2 for row in quarters)
+
+
+def _cost_total(row: dict[str, Any]) -> float | None:
+    if row.get("cost_of_revenue") is not None:
+        return float(row["cost_of_revenue"])
+    lines = _component_lines(row, "cogs_lines")
+    if len(lines) >= 2:
+        return sum(float(line["value"]) for line in lines)
+    return None
+
+
+def _cost_geo_lines(row: dict[str, Any]) -> list[dict[str, Any]]:
+    return _component_lines(row, "cost_geo") or _component_lines(row, "cogs_geo")
+
+
+def _quote_slots(ticker: str, period: str, field: str) -> dict[str, float | None]:
+    """新闻稿表格上的一个金额：本季、上季、去年同季。列位置跟营收行的版式。"""
+    extracted = _read_json(data_dir(ticker) / "raw" / period / "extracted_financials.json") or {}
+    item = extracted.get(field)
+    if not isinstance(item, dict) or not item.get("raw"):
+        return {}
+    from pipeline.compute.comparatives import _cells_from_anchor, detect_layout
+    from pipeline.extract.numbers import ParsedAmount
+
+    slots: dict[str, float | None] = {
+        "value": ParsedAmount.from_dict(item).value,
+        "year_ago": None,
+        "prior_q": None,
+    }
+    layout = detect_layout(extracted) or {}
+    cells = _cells_from_anchor(item)
+    if cells and layout:
+        for name, key in (("year_ago", "yoy"), ("prior_q", "qoq")):
+            idx = layout.get(key)
+            if idx is None or idx >= len(cells):
+                continue
+            slots[name] = ParsedAmount.from_dict(
+                {"raw": repr(cells[idx]), "unit": item.get("unit")}
+            ).value
+    if slots.get("value") is None:
+        return {}
+    return slots
+
+
+def _statement_cost_quarters(ticker: str) -> list[dict[str, Any]]:
+    quarters = [row for row in (_load_statement(ticker).get("quarters") or []) if row.get("period")]
+    if not any(_cost_total(row) is not None for row in quarters):
+        return []
+    out = []
+    for row in quarters:
+        out.append({**row, "cost_of_revenue": _cost_total(row)})
+    return out
+
+
+def _extracted_cost_quarters(ticker: str) -> list[dict[str, Any]]:
+    values: dict[str, float] = {}
+    for period in _load_docs(ticker):
+        slots = _quote_slots(ticker, period, "cost_of_revenue")
+        if not slots:
+            continue
+        if slots.get("value") is not None:
+            values[period] = float(slots["value"])
+        if slots.get("year_ago") is not None:
+            values.setdefault(yoy_fiscal_period(period), float(slots["year_ago"]))
+        if slots.get("prior_q") is not None:
+            values.setdefault(prior_fiscal_period(period), float(slots["prior_q"]))
+    return [{"period": period, "cost_of_revenue": values[period]} for period in sorted(values)]
+
+
+def _derived_cost_quarters(ticker: str) -> list[dict[str, Any]]:
+    """没有申报成本时，用已有的营业收入和 GAAP 毛利率倒算，不另造拆分。"""
+    values: dict[str, float] = {}
+
+    def put(period: str, revenue: float | None, margin: float | None, *, overwrite: bool) -> None:
+        if revenue is None or margin is None:
+            return
+        amount = float(revenue) * (1 - float(margin))
+        if overwrite:
+            values[period] = amount
+        else:
+            values.setdefault(period, amount)
+
+    for period, doc in _load_docs(ticker).items():
+        put(period, _block_num(doc, "revenue"), _block_num(doc, "gross_margin_gaap"), overwrite=True)
+        put(
+            yoy_fiscal_period(period),
+            _block_num(doc, "revenue", "year_ago"),
+            _block_num(doc, "gross_margin_gaap", "year_ago"),
+            overwrite=False,
+        )
+        put(
+            prior_fiscal_period(period),
+            _block_num(doc, "revenue", "prior_q"),
+            _block_num(doc, "gross_margin_gaap", "prior_q"),
+            overwrite=False,
+        )
+    return [{"period": period, "cost_of_revenue": values[period]} for period in sorted(values)]
+
+
+def _cost_series(ticker: str) -> tuple[list[dict[str, Any]], str]:
+    """营业成本序列。优先 XBRL / statement_history，其次新闻稿，最后才用毛利倒算。"""
+    statement = _statement_cost_quarters(ticker)
+    if statement:
+        return statement, "xbrl"
+    extracted = _extracted_cost_quarters(ticker)
+    if extracted:
+        return extracted, "press"
+    derived = _derived_cost_quarters(ticker)
+    if derived:
+        return derived, "derived"
+    return [], ""
+
+
+def _breakdown_quarters(quarters: list[dict[str, Any]], field: str, picker) -> list[dict[str, Any]]:
+    prepared = []
+    for row in quarters:
+        lines = picker(row)
+        prepared.append({**row, field: lines if len(lines) >= 2 else []})
+    return prepared
+
+
+def _cost_charts(quarters: list[dict[str, Any]], period: str) -> list[dict[str, Any]]:
+    """合计 + 同比。有两项以上的成本拆分才加占比；没有地区成本就不画第三张。"""
+    charts = [_amount_yoy_chart(quarters, "cost_of_revenue", "营业成本", "十亿美元")]
+    if _has_component_breakdown(quarters, "cogs_lines"):
+        charts.append(
+            _share_chart(
+                _line_points(
+                    _breakdown_quarters(quarters, "cogs_lines", lambda row: _component_lines(row, "cogs_lines")),
+                    "cogs_lines",
+                    denominator="lines",
+                ),
+                "成本构成",
+                "占比",
+                period,
+            )
+        )
+    if any(len(_cost_geo_lines(row)) >= 2 for row in quarters):
+        charts.append(
+            _share_chart(
+                _line_points(
+                    _breakdown_quarters(quarters, "cost_geo", _cost_geo_lines),
+                    "cost_geo",
+                    denominator="lines",
+                ),
+                "按地区",
+                "占比",
+                period,
+            )
+        )
+    return charts
+
+
+def _cost_note(quarters: list[dict[str, Any]], source: str) -> str:
+    if source == "xbrl":
+        bits = ["营业成本来自 SEC companyfacts 的单季 us-gaap。"]
+        if any(row.get("cost_method") == "residual" for row in quarters):
+            bits.append("第四季没有单季事实时用全年减前九个月。")
+    elif source == "press":
+        bits = ["营业成本来自新闻稿表格。"]
+    else:
+        bits = ["营业成本由营业收入减去毛利得到。"]
+    if _has_component_breakdown(quarters, "cogs_lines"):
+        bits.append("占比以这些成本项合计为分母。")
+    else:
+        bits.append("没有把营业成本再拆开。")
+    if any(len(_cost_geo_lines(row)) >= 2 for row in quarters):
+        bits.append("地区成本来自申报的地区轴。")
+    return "".join(bits)
+
+
+def _cogs_summary(current: dict[str, Any], source: str) -> str:
+    lines = _component_lines(current, "cogs_lines")
+    if len(lines) >= 2:
+        return "、".join(str(line["name"]) for line in lines) + "合计。"
+    if source == "xbrl":
+        return "申报营业成本，没有再拆开。"
+    if source == "press":
+        return "新闻稿中的营业成本，没有再拆开。"
+    return "营业收入减去毛利，没有单独的营业成本科目。"
+
+
+def _with_cogs_row(rows: list[dict[str, Any]], ticker: str, period: str) -> list[dict[str, Any]]:
+    """营业成本放在毛利率上面，替换原来的毛利润行。没有成本数就不加。"""
+    if any(row["key"] == "cost_of_revenue" for row in rows):
+        return rows
+    quarters, source = _cost_series(ticker)
+    by_period = {str(row["period"]): row for row in quarters}
+    current = by_period.get(period)
+    value = None if current is None else current.get("cost_of_revenue")
+    if value is None:
+        return rows
+    yoy_row = by_period.get(yoy_fiscal_period(period)) or {}
+    qoq_row = by_period.get(prior_fiscal_period(period)) or {}
+    made = {
+        "key": "cost_of_revenue",
+        "label": "营业成本",
+        "value": _fmt_money(value),
+        "yoy": _change(_rel(value, yoy_row.get("cost_of_revenue"), False)),
+        "qoq": _change(_rel(value, qoq_row.get("cost_of_revenue"), False)),
+        "vs": {"text": "—", "cls": "na"},
+        "vs_source": "",
+        "summary": _cogs_summary(current, source),
+        "drivers": [],
+        "conflicts": [],
+        "from_press": source != "xbrl",
+        "nested": False,
+    }
+    for index, row in enumerate(rows):
+        if str(row["key"]).startswith("gross_margin"):
+            return rows[:index] + [made] + rows[index:]
+    for index, row in enumerate(rows):
+        if row["key"] == "revenue":
+            return rows[: index + 1] + [made] + rows[index + 1 :]
+    return [made] + rows
 
 
 def _amount_yoy_chart(quarters: list[dict[str, Any]], field: str, title: str, subtitle: str) -> dict[str, Any]:
@@ -1805,8 +2034,6 @@ def _line_points(quarters: list[dict[str, Any]], field: str, *, denominator: str
     points = []
     for row in quarters:
         lines = list(row.get(field) or [])
-        if field == "cogs_lines" and row.get("gross_profit"):
-            lines = lines + [{"key": "gp", "name": "毛利", "value": row["gross_profit"]}]
         if not lines:
             points.append({"period": row["period"], "gap": True, "items": []})
             continue
@@ -1876,29 +2103,8 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
     if quarters:
         by_key["revenue"] = {
             "note": statement.get("source") or "",
-            "charts": [_amount_yoy_chart(quarters, "revenue", "营收", "十亿美元")],
+            "charts": [_amount_yoy_chart(quarters, "revenue", "营业收入", "十亿美元")],
         }
-        if any(row.get("gross_profit") is not None for row in quarters):
-            gross_charts = [_amount_yoy_chart(quarters, "gross_profit", "毛利", "十亿美元")]
-            if any(row.get("cogs_lines") or row.get("cost_of_revenue") for row in quarters):
-                # 成本项用申报里的名字；毛利是营收减这些成本后的剩余。
-                prepared = []
-                for row in quarters:
-                    lines = list(row.get("cogs_lines") or [])
-                    if not lines and row.get("cost_of_revenue"):
-                        lines = [{"key": "cogs", "name": "营业成本", "value": row["cost_of_revenue"]}]
-                    prepared.append({**row, "cogs_lines": lines})
-                gross_charts.append(
-                    _share_chart(
-                        _line_points(prepared, "cogs_lines", denominator="revenue"),
-                        "毛利构成",
-                        "占比",
-                        period,
-                    )
-                )
-            gross_note = "毛利 = 营收 − 申报中的营业成本。成本项用文件里的科目，没有再拆的不补。"
-            for key in ("gross_profit_gaap", "gross_profit_nongaap", "gross_profit"):
-                by_key[key] = {"note": gross_note, "charts": gross_charts}
         if any(row.get("opex_lines") for row in quarters):
             by_key["opex"] = {
                 "note": "营业费用按申报列出的费用项加总，不含营业成本。占比以这些费用项合计为分母。",
@@ -1937,6 +2143,12 @@ def _fin_view(ticker: str, period: str) -> dict[str, Any]:
         by_key["revenue"] = {
             "note": mix.get("note") or "",
             "charts": [_share_chart(business, "按业务", "占比", period)],
+        }
+    cost_quarters, cost_source = _cost_series(ticker)
+    if cost_quarters and any(row.get("cost_of_revenue") is not None for row in cost_quarters):
+        by_key["cost_of_revenue"] = {
+            "note": _cost_note(cost_quarters, cost_source),
+            "charts": _cost_charts(cost_quarters, period),
         }
     return {"by_key": by_key}
 
@@ -2828,11 +3040,9 @@ _HISTORY_SPECS: tuple[tuple[str, str, bool], ...] = (
     ("fcf", "fcf", False),
 )
 
-# 利润率行下面跟的金额。净利润率不是原表里的行，排在营业利润块之后。
+# 利润率行下面跟的金额。毛利润改由营业成本行代替，插在毛利率上面。
+# 净利润率不是原表里的行，排在营业利润块之后。
 _MARGIN_COMPANIONS: tuple[tuple[str, str, str], ...] = (
-    ("gross_margin_nongaap", "gross_profit_nongaap", "毛利润（Non-GAAP）"),
-    ("gross_margin_gaap", "gross_profit_gaap", "毛利润（GAAP）"),
-    ("gross_margin", "gross_profit", "毛利润"),
     ("operating_margin_nongaap", "operating_income_nongaap", "营业利润（Non-GAAP）"),
     ("operating_margin_gaap", "operating_income_gaap", "营业利润（GAAP）"),
     ("operating_margin", "operating_income", "营业利润"),
