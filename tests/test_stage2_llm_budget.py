@@ -318,6 +318,192 @@ def test_analyze_drivers_asks_for_full_json_and_splits_when_truncated(monkeypatc
         drivers.analyze_drivers({"revenue": {"value": 1}}, "新闻稿", "", "")
 
 
+def test_strip_driver_warnings_drops_stale_stage2_failures():
+    from pipeline.analyze.drivers import strip_driver_warnings
+
+    kept = strip_driver_warnings(
+        [
+            "listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期",
+            "Stage2 drivers 失败: LLM 输出被 max_tokens=4096 截断（completion_tokens=4096，content 12354 字符）",
+            "Stage2 drivers 失败: listing 只能是 domestic 或 adr，收到 'hk'",
+            "Stage2 drivers 失败: listing 只能是 domestic 或 adr，收到 'hk'",
+            "driver quote 未匹配: 1 条引文未在原文中找到",
+        ]
+    )
+    assert kept == ["listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期"]
+
+
+def test_bypass_llm_cache_read_calls_model_again(monkeypatch, tmp_path):
+    from pipeline.llm import LLMClient, bypass_llm_cache_read
+    from pipeline.schemas import SummaryResult
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-key-for-unit")
+    monkeypatch.setattr("pipeline.llm.cache_dir", lambda: tmp_path)
+    calls = {"n": 0}
+
+    def fake_post(self, messages, *, json_object=True):
+        calls["n"] += 1
+        return '{"headline": "h", "key_findings": []}', {"prompt_tokens": 1, "completion_tokens": 1}, 1.0
+
+    monkeypatch.setattr(LLMClient, "_post_chat", fake_post)
+    monkeypatch.setattr(LLMClient, "_load_pricing", lambda self: None)
+    client = LLMClient(require_key=True, use_cache=True)
+    client._pricing = None
+    assert client.complete_json("summarize.md", "same", SummaryResult).headline == "h"
+    assert client.complete_json("summarize.md", "same", SummaryResult).headline == "h"
+    assert calls["n"] == 1
+    with bypass_llm_cache_read():
+        assert client.complete_json("summarize.md", "same", SummaryResult).headline == "h"
+    assert calls["n"] == 2
+    assert client.complete_json("summarize.md", "same", SummaryResult).headline == "h"
+    assert calls["n"] == 2
+
+
+def _hk_stage2_doc() -> dict:
+    return {
+        "meta": {
+            "fiscal_period": "FY2026Q1",
+            "release_at_utc": "2026-05-13T05:41:43Z",
+            "transcript_source": "local_import",
+        },
+        "status": {
+            "stage": "stage2_done",
+            "needs_review": False,
+            "warnings": [
+                "listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期",
+                "Stage2 drivers 失败: LLM 输出被 max_tokens=4096 截断（completion_tokens=4096，content 12354 字符）",
+                "Stage2 drivers 失败: listing 只能是 domestic 或 adr，收到 'hk'",
+                "Stage2 drivers 失败: listing 只能是 domestic 或 adr，收到 'hk'",
+            ],
+        },
+        "qa": {"items": [{"exchange_id": "1", "question_summary": "旧"}]},
+        "drivers": {"stage": 2, "metrics": [{"metric": "revenue", "drivers": []}]},
+        "summary": {"headline": "旧标题", "key_findings": [], "next_watchlist": []},
+        "guidance": {"items": []},
+        "financials": {"revenue": {"value": 1}},
+        "scorecard": [],
+    }
+
+
+def _patch_stage2_hk(monkeypatch, doc: dict, *, drivers):
+    from pipeline.llm import llm_cache_read_bypassed
+
+    cfg = {
+        "listing": "hk",
+        "reporting_currency": "CNY",
+        "accounting_basis": "hkfrs",
+        "sec": None,
+        "name": "腾讯",
+    }
+
+    def load_doc(_ticker, period):
+        return doc if period == "FY2026Q1" else None
+
+    monkeypatch.setattr("pipeline.commands.run_cmd.load_period_json", load_doc)
+    monkeypatch.setattr("pipeline.commands.run_cmd.load_ticker_config", lambda *_: cfg)
+    monkeypatch.setattr(
+        "pipeline.commands.run_cmd.fetch_transcript",
+        lambda *_a, **_k: ("电话会正文。", "local_import"),
+    )
+    monkeypatch.setattr("pipeline.commands.run_cmd.save_period_json", lambda *_a, **_k: None)
+    monkeypatch.setattr("pipeline.commands.run_cmd.mark_stage", lambda *_a, **_k: None)
+    monkeypatch.setattr("pipeline.commands.run_cmd.maybe_notify", lambda *_a, **_k: None)
+    monkeypatch.setattr("pipeline.config.load_position", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        "pipeline.sources.alpha_vantage.fetch_earnings_estimates",
+        lambda _ticker: {"called": True, "status": "ok", "reason": ""},
+    )
+    monkeypatch.setattr("pipeline.analyze.outlook.extract_industry_outlook", lambda *_a, **_k: [])
+
+    def fake_qa(_text, _nums=None):
+        assert llm_cache_read_bypassed()
+        return {
+            "items": [{"exchange_id": "1", "question_summary": "新"}],
+            "prepared_remarks": "发言",
+            "qa_text": "问答",
+            "fact_warnings": [],
+        }
+
+    monkeypatch.setattr("pipeline.commands.run_cmd.structure_qa", fake_qa)
+    monkeypatch.setattr(
+        "pipeline.commands.run_cmd.summarize_period",
+        lambda *_a, **_k: {"headline": "新标题", "key_findings": [], "next_watchlist": []},
+    )
+    monkeypatch.setattr("pipeline.commands.run_cmd.analyze_drivers", drivers)
+
+    class GuidanceOnly:
+        def load_prompt(self, name, **_kwargs):
+            return "PROMPT"
+
+        def complete_json_list(self, *_a, **_k):
+            assert llm_cache_read_bypassed()
+            return []
+
+    monkeypatch.setattr("pipeline.commands.run_cmd.LLMClient", GuidanceOnly)
+
+
+def test_stage2_force_hk_clears_stale_driver_warnings(monkeypatch):
+    from pipeline.llm import llm_cache_read_bypassed
+
+    doc = _hk_stage2_doc()
+    seen = {}
+
+    def drivers(*_a, **_k):
+        from pipeline.analyze.drivers import _drivers_budget
+
+        assert llm_cache_read_bypassed()
+        seen["tokens"] = _drivers_budget()[0]
+        return {
+            "stage": 2,
+            "metrics": [{"metric": "revenue", "summary": "增值服务增长", "drivers": []}],
+            "warnings": [],
+        }
+
+    _patch_stage2_hk(monkeypatch, doc, drivers=drivers)
+    out = run_stage2("0700.HK", "FY2026Q1", force=True)
+    warnings = out["status"]["warnings"]
+    assert not any(str(w).startswith("Stage2 drivers 失败") for w in warnings)
+    assert not any("max_tokens=4096" in str(w) for w in warnings)
+    assert not any("只能是 domestic" in str(w) for w in warnings)
+    assert any("Stage1" in str(w) for w in warnings)
+    assert seen["tokens"] >= 16384
+    assert out["drivers"]["metrics"][0]["summary"] == "增值服务增长"
+    assert out["status"]["stage"] == "stage2_done"
+    assert llm_cache_read_bypassed() is False
+
+
+def test_stage2_driver_failure_replaces_stale_warning(monkeypatch):
+    from pipeline.llm import LLMTruncatedError
+
+    doc = _hk_stage2_doc()
+
+    def drivers(*_a, **_k):
+        raise LLMTruncatedError("LLM 输出被 max_tokens=16384 截断")
+
+    _patch_stage2_hk(monkeypatch, doc, drivers=drivers)
+    out = run_stage2("0700.HK", "FY2026Q1", force=True)
+    fails = [w for w in out["status"]["warnings"] if str(w).startswith("Stage2 drivers 失败")]
+    assert fails == ["Stage2 drivers 失败: LLM 输出被 max_tokens=16384 截断"]
+
+
+def test_hk_av_skip_is_not_a_failure(monkeypatch):
+    from pipeline.commands import av_estimates_cmd as cmd
+
+    monkeypatch.setattr(cmd, "alphavantage_api_key", lambda: "secret-key")
+    monkeypatch.setattr(cmd, "load_ticker_config", lambda symbol: {"listing": "hk"})
+
+    def boom(*_a, **_k):
+        raise AssertionError("港股不应请求 Alpha Vantage")
+
+    monkeypatch.setattr(cmd, "fetch_earnings_estimates_payload", boom)
+    out = cmd.refresh_earnings_estimates(["0700.HK"])
+    assert out["ok"] is True
+    assert out["written"] == 0
+    item = out["results"][0]
+    assert item["ok"] is True and item["skipped"] is True
+    assert "listing=hk" in item["reason"] and "不是失败" in item["reason"]
+
+
 def test_settings_disable_reasoning_by_default():
     from pipeline.config import load_settings
     from pipeline.llm import _reasoning_param

@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 from pipeline.config import load_settings
-from pipeline.llm import LLMClient, LLMTruncatedError
+from pipeline.llm import LLMClient, LLMTruncatedError, llm_cache_read_bypassed
 from pipeline.schemas import DriversResult
 from pipeline.validate import fuzzy_quote_ok
 
@@ -62,6 +62,11 @@ def _complete_drivers(
     """一次要完整 JSON。被截断就按指标对半拆开再合并，不把半截结果写入。"""
     tokens, timeout = _drivers_budget()
     user = _drivers_user(prompt, metrics_table, press_text, prepared_remarks, qa_text)
+    cache_note = "，不读缓存" if llm_cache_read_bypassed() else ""
+    print(
+        f"[stage2/drivers] max_tokens={tokens} metrics={len(metrics_table)}{cache_note}",
+        flush=True,
+    )
     try:
         result = llm.complete_json(
             "analyze_drivers.md",
@@ -94,9 +99,22 @@ def _complete_drivers(
         return {"metrics": merged}, warnings
 
 
+DRIVER_FAILURE_PREFIX = "Stage2 drivers 失败:"
+
+
 def strip_driver_warnings(warnings: list[str]) -> list[str]:
-    """重跑 drivers 前去掉上一轮的引文告警，避免 Stage1 的告警残留到 Stage2。"""
-    return [w for w in warnings if not str(w).startswith(DRIVER_QUOTE_WARNING_PREFIX)]
+    """重跑 drivers 时去掉上一轮的引文告警和 drivers 失败句。
+
+    失败句（listing 校验、max_tokens 截断）不能留在季度 JSON 里跨次运行叠加。
+    Stage1 的其它告警保留。
+    """
+    kept: list[str] = []
+    for item in warnings or []:
+        text = str(item)
+        if text.startswith(DRIVER_QUOTE_WARNING_PREFIX) or text.startswith(DRIVER_FAILURE_PREFIX):
+            continue
+        kept.append(text)
+    return kept
 
 
 def analyze_drivers(

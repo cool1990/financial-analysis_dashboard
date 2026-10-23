@@ -279,6 +279,7 @@ def test_workflows_pass_alphavantage_key():
     assert "python -m pipeline av-estimates" in manual
     assert "python -m pipeline av-estimates" in poll
     assert "python -m pipeline av-estimates" in daily
+    assert 'if [ "${{ inputs.force }}" = "true" ]; then ARGS+=(--force); fi' in manual
     assert "python -m pipeline tv-scan" in daily
 
 

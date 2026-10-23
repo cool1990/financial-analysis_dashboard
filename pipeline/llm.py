@@ -7,9 +7,11 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeout
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Type, TypeVar
+from typing import Any, Iterator, Type, TypeVar
 
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -36,6 +38,24 @@ class LLMTruncatedError(LLMError):
 
     同样的请求重发只会得到同样的结果并再付一次钱，调用方应缩小输入或放弃，不要原样重试。
     """
+
+
+# Stage2 --force 时为真：不读旧缓存（仍写入这次的结果），避免 0.0s 重放上次失败。
+_skip_cache_read: ContextVar[bool] = ContextVar("pipeline_llm_skip_cache_read", default=False)
+
+
+@contextmanager
+def bypass_llm_cache_read() -> Iterator[None]:
+    """跳过读 LLM 缓存，新的成功结果仍写回缓存。"""
+    token = _skip_cache_read.set(True)
+    try:
+        yield
+    finally:
+        _skip_cache_read.reset(token)
+
+
+def llm_cache_read_bypassed() -> bool:
+    return bool(_skip_cache_read.get())
 
 
 _SENSITIVE_RE = re.compile(
@@ -328,7 +348,7 @@ class LLMClient:
         return h.hexdigest()
 
     def _read_cache(self, key: str) -> dict[str, Any] | None:
-        if not self.use_cache:
+        if not self.use_cache or _skip_cache_read.get():
             return None
         path = self.cache_root / f"{key}.json"
         if path.exists():

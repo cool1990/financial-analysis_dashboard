@@ -1,6 +1,7 @@
 """股票配置里的上市地与 SEC 业绩发现规则。
 
 国内默认 8-K Item 2.02。ADR 用 6-K（含 6-K/A）加 exhibit 描述过滤，不用 Item 2.02。
+港股 listing=hk 与 domestic / adr 一样是合法上市地，但不走 SEC。
 第二个 ADR 只改 yaml：写入 listing / reporting_currency / accounting_basis / sec.*。
 """
 
@@ -16,8 +17,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from pipeline.config import load_settings
 
 
-Listing = Literal["domestic", "adr"]
-AccountingBasis = Literal["us_gaap", "ifrs", "taiwan_ifrs"]
+Listing = Literal["domestic", "adr", "hk"]
+AccountingBasis = Literal["us_gaap", "ifrs", "taiwan_ifrs", "hkfrs"]
+LISTINGS = frozenset({"domestic", "adr", "hk"})
 
 # 与 ADR 约定草案一致。股票 yaml 写了同名字段就覆盖；未写的键用这里。
 DEFAULT_ADR_EARNINGS_6K: dict[str, Any] = {
@@ -97,10 +99,17 @@ class EarningsSpec(BaseModel):
     @field_validator("earnings_forms")
     @classmethod
     def _forms(cls, value: list[str]) -> list[str]:
-        forms = [str(item).strip() for item in value if str(item).strip()]
-        if not forms:
+        return [str(item).strip() for item in value if str(item).strip()]
+
+    @model_validator(mode="after")
+    def _forms_required_unless_hk(self) -> "EarningsSpec":
+        if self.listing == "hk":
+            if self.earnings_forms or self.earnings_items or self.earnings_6k is not None:
+                raise ValueError("listing=hk 不使用 SEC earnings_forms / earnings_items / earnings_6k")
+            return self
+        if not self.earnings_forms:
             raise ValueError("sec.earnings_forms 必须是非空列表")
-        return forms
+        return self
 
     @field_validator("earnings_items")
     @classmethod
@@ -134,11 +143,11 @@ def _apply_profiles(merged: dict[str, Any], sec: dict[str, Any], listing: str) -
 
 
 def resolve_earnings_spec(cfg: dict[str, Any] | None) -> EarningsSpec:
-    """未写 listing 时等同 domestic + 8-K Item 2.02。"""
+    """未写 listing 时等同 domestic + 8-K Item 2.02。listing=hk 不套 SEC 表单。"""
     cfg = cfg or {}
     listing = str(cfg.get("listing") or "domestic").strip().lower()
-    if listing not in {"domestic", "adr"}:
-        raise ValueError(f"listing 只能是 domestic 或 adr，收到 {listing!r}")
+    if listing not in LISTINGS:
+        raise ValueError(f"listing 只能是 domestic、adr 或 hk，收到 {listing!r}")
     sec = cfg.get("sec") or {}
     if not isinstance(sec, dict):
         raise ValueError("sec 必须是映射")
@@ -152,6 +161,10 @@ def resolve_earnings_spec(cfg: dict[str, Any] | None) -> EarningsSpec:
             merged.update(inline)
         _apply_profiles(merged, sec, listing)
         filters: Earnings6kFilters | None = Earnings6kFilters.model_validate(merged)
+    elif listing == "hk":
+        forms = []
+        items = []
+        filters = None
     else:
         forms = list(sec.get("earnings_forms") or ["8-K"])
         items = list(sec["earnings_items"]) if "earnings_items" in sec else ["2.02"]
