@@ -5091,7 +5091,14 @@ def _market_cap_view(
     currency: str,
     share_note: str = "股价 × 稀释加权股本",
 ) -> dict[str, Any]:
-    """市值。扫描里的 market_cap_basic 优先；否则用股价乘已有股本。两边都没有就留空。"""
+    """当前市值。历史柱图和 Stage1 稀释股本不走这里。
+
+    优先级：
+    1. ``market_cap_basic`` / ``market_cap_calc`` / ``market_cap``（大于 0）
+    2. 股价 × TradingView ``total_shares_outstanding``（当前总股本）
+    3. 股价 × 调用方传入的财报稀释 / 已披露股本
+    都没有就留空。流通股不参与。和 close×股本冲突时仍以第 1 步为准。
+    """
     columns = columns or {}
     cap = None
     for key in _CAP_KEYS:
@@ -5104,6 +5111,14 @@ def _market_cap_view(
         ccy = (currency or "USD").upper()
     if cap is not None:
         return {"value": _fmt_cap(cap, ccy), "sub": "TradingView", "vendor": "TradingView"}
+    px = price if price is not None else _finite(columns.get("close"))
+    tv_shares = _finite(columns.get("total_shares_outstanding"))
+    if px is not None and px > 0 and tv_shares is not None and tv_shares > 0:
+        return {
+            "value": _fmt_cap(px * tv_shares, currency or "USD"),
+            "sub": "股价 × TradingView 总股本",
+            "vendor": "TradingView",
+        }
     if price is not None and shares:
         return {
             "value": _fmt_cap(price * shares, currency or "USD"),

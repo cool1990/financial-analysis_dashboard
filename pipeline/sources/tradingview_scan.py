@@ -5,6 +5,8 @@
 - 港股 ``0700.HK`` → ``HKEX:700``（带前导零的 ``HKEX:0700`` 扫不到）
 - 美股按 NASDAQ → NYSE → AMEX 候选，取扫到的第一个
 - ``change`` 是百分比点数（1.23 = +1.23%），写入 ``day_change_pct`` / ``change_pct`` 时除以 100
+- ``total_shares_outstanding`` / ``float_shares_outstanding`` 是当前时点股本，和 ``market_cap_basic``
+  一起写入 ``quote.columns``。首页只在没有有效市值时用收盘价乘总股本兜底；不回填历史季稀释股本
 - 未来未公布季的 EPS / 营收写进 ``rows_used.earnings_fq_h`` / ``revenues_fq_h``
   （build 盈利预期图与记分卡兜底都读这里）；**全年 EPS 不在这里发明**，由 Alpha Vantage
   ``av_estimates.json`` 的 fiscal year 行供给 ``_annual_consensus``
@@ -54,6 +56,9 @@ SCAN_COLUMNS = [
     "dividends_yield",
     "dividends_yield_current",
     "market_cap_basic",
+    # 当前时点总股本 / 流通股。不是按季稀释加权股本，不回填 Stage1 / xbrl_activity。
+    "total_shares_outstanding",
+    "float_shares_outstanding",
     "time",
     "last_bar_update_time",
 ]
@@ -264,6 +269,8 @@ def quote_columns_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         "dividends_yield",
         "dividends_yield_current",
         "market_cap_basic",
+        "total_shares_outstanding",
+        "float_shares_outstanding",
         "volume",
     ):
         value = _num(raw.get(key))

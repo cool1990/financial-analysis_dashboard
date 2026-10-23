@@ -499,17 +499,23 @@ def test_meta_quote_card_divides_tradingview_columns():
 
 
 def test_market_cap_prefers_scan_then_stored_shares_and_does_not_invent(tmp_path, monkeypatch):
-    """有 market_cap_basic 就用它。没有时才用股价 × 已落盘股本。股本也没有就留空。"""
+    """有 market_cap_basic 就用它。没有时先用 close × TV 总股本，再退回已落盘股本。都没有就留空。"""
     import builder.build as build
 
     direct = build._market_cap_view(
-        {"market_cap_basic": 1_652_554_253_500, "currency": "USD", "close": 600},
+        {
+            "market_cap_basic": 1_652_554_253_500,
+            "currency": "USD",
+            "close": 600,
+            "total_shares_outstanding": 2_205_130_000,
+        },
         price=600,
         shares=2_500_000_000,
         currency="USD",
     )
     assert direct["value"] == build._fmt_cap(1_652_554_253_500, "USD")
     assert direct["sub"] == "TradingView"
+    assert direct["value"] != build._fmt_cap(600 * 2_205_130_000)
     assert direct["value"] != build._fmt_cap(600 * 2_500_000_000)
 
     fallback = build._market_cap_view(
@@ -547,6 +553,89 @@ def test_market_cap_prefers_scan_then_stored_shares_and_does_not_invent(tmp_path
     monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {"shares_outstanding": 1_000_000_000})
     configured, configured_note = build._stored_shares("ZZZ", "FY2026Q2")
     assert configured == 1_000_000_000 and configured_note == "股价 × 已披露股本"
+
+
+def test_homepage_uses_tv_total_shares_before_diluted(monkeypatch):
+    """首页：market_cap_basic 无效时用 close × total_shares_outstanding，不再用财报稀释股本。
+
+    流通股不参与。历史稀释股本、XBRL 缺口回补不读这个字段。
+    """
+    import inspect
+
+    import builder.build as build
+    from pipeline.config import load_ticker_config
+
+    tv_only = build._market_cap_view(
+        {
+            "close": 100,
+            "total_shares_outstanding": 2_000_000_000,
+            "float_shares_outstanding": 1_500_000_000,
+            "currency": "USD",
+        },
+        price=100,
+        shares=9_000_000_000,
+        currency="USD",
+        share_note="股价 × 稀释加权股本",
+    )
+    assert tv_only["value"] == build._fmt_cap(100 * 2_000_000_000)
+    assert tv_only["value"] != build._fmt_cap(100 * 9_000_000_000)
+    assert tv_only["sub"] == "股价 × TradingView 总股本"
+    assert tv_only["vendor"] == "TradingView"
+
+    invalid = build._market_cap_view(
+        {"market_cap_basic": 0, "close": 50, "total_shares_outstanding": 1_000_000_000},
+        price=50,
+        shares=3_000_000_000,
+        currency="USD",
+        share_note="股价 × 稀释加权股本",
+    )
+    assert invalid["value"] == build._fmt_cap(50 * 1_000_000_000)
+    assert invalid["sub"] == "股价 × TradingView 总股本"
+
+    float_only = build._market_cap_view(
+        {"close": 10, "total_shares_outstanding": 0, "float_shares_outstanding": 2_000_000_000},
+        price=10,
+        shares=4_000_000_000,
+        currency="HKD",
+        share_note="股价 × 已披露股本",
+    )
+    assert float_only["value"] == build._fmt_cap(10 * 4_000_000_000, "HKD")
+    assert float_only["sub"] == "股价 × 已披露股本"
+
+    monkeypatch.setattr(
+        build,
+        "_saved_quote",
+        lambda ticker: {
+            "columns": {
+                "close": 386.0,
+                "total_shares_outstanding": 9_008_371_772,
+                "float_shares_outstanding": 6_151_096_413,
+                "currency": "HKD",
+            },
+            "fetched_at": "2026-10-23T12:00:00Z",
+        },
+    )
+    monkeypatch.setattr(build, "_next_earnings", lambda ticker: "")
+    monkeypatch.setattr(build, "_stored_shares", lambda *args, **kwargs: (1_000_000_000, "股价 × 稀释加权股本"))
+    monkeypatch.setattr(
+        "pipeline.sources.av_estimates.load_earnings_record",
+        lambda ticker, **kwargs: {"estimates": [], "fetched_at": ""},
+    )
+    row = build._index_row(
+        "0700.HK",
+        load_ticker_config("0700.HK"),
+        "FY2026Q1",
+        {"meta": {}},
+        today=date(2026, 10, 23),
+    )
+    assert row["market_cap"] == build._fmt_cap(386.0 * 9_008_371_772, "HKD")
+    assert row["market_cap"].startswith("HK$")
+    assert row["market_cap"] != "—"
+    assert "未接入" not in row["market_cap"]
+    assert row["market_cap"] != build._fmt_cap(386.0 * 1_000_000_000, "HKD")
+
+    for fn in (build._diluted_shares, build._stored_shares, build._fill_activity_gaps):
+        assert "total_shares_outstanding" not in inspect.getsource(fn)
 
 
 def test_header_eps_guidance_uses_only_management_nongaap():
