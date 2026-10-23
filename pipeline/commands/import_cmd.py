@@ -19,7 +19,8 @@ from dateutil.relativedelta import relativedelta
 from pipeline.compute.metrics import build_metric_block, ratio
 from pipeline.compute.scorecard import build_scorecard
 from pipeline.config import data_dir, is_hk_listing, load_ticker_config
-from pipeline.extract.hk_results import HkImportError, extract_hk_results, load_press_text
+from pipeline.extract.hk_residual import residual_flows, residual_from_quarter_sum
+from pipeline.extract.hk_results import HkCumulativeOnly, HkImportError, extract_hk_results, load_press_text
 from pipeline.extract.numbers import parse_number
 from pipeline.sources.transcripts import save_transcript
 from pipeline.state import add_processed, empty_period_doc, load_period_json, mark_stage, save_period_json
@@ -238,6 +239,7 @@ def assemble_hk_stage1(
     doc["meta"]["reporting_currency"] = "CNY"
     doc["meta"]["sec_form"] = None
     doc["meta"]["extract_method"] = "hk_results"
+    doc["meta"]["extract_mode"] = extracted.get("extract_mode") or "disclosed"
     doc["status"] = {
         "stage": "stage1_done",
         "needs_review": bool(checked["needs_review"]),
@@ -278,6 +280,221 @@ def _copy_transcript(raw: Path, source: Path) -> dict[str, Any]:
     text = source.read_text(encoding="utf-8")
     save_transcript(raw, text, source="local_import", source_url=str(source))
     return {"sha256": _sha256(source), "filename": source.name, "chars": len(text)}
+
+
+_FLOW_FROM_DOC = (
+    ("revenue", ("revenue",)),
+    ("gross_profit", ("gross_profit_gaap",)),
+    ("operating_income", ("operating_income_gaap",)),
+    ("operating_income_nongaap", ("operating_income_nongaap",)),
+    ("net_income", ("net_income_gaap",)),
+    ("capex", ("capex",)),
+    ("vas_revenue", ("kpis", "vas_revenue")),
+    ("advertising_revenue", ("kpis", "advertising_revenue")),
+    ("fintech_biz_revenue", ("kpis", "fintech_biz_revenue")),
+    ("selling_expense", ("kpis", "selling_expense")),
+    ("ga_expense", ("kpis", "ga_expense")),
+    ("rd_expense", ("kpis", "rd_expense")),
+)
+
+
+def _millions_of(node: dict[str, Any] | None) -> float | None:
+    if not node or node.get("value") is None:
+        return None
+    if node.get("unit") == "yuan":
+        return None
+    millions = float(node["value"]) / 1_000_000
+    if abs(millions - round(millions)) < 1e-4:
+        return float(round(millions))
+    return millions
+
+
+def _doc_flows(doc: dict[str, Any]) -> dict[str, float]:
+    financials = doc.get("financials") or {}
+    flows: dict[str, float] = {}
+    for key, path in _FLOW_FROM_DOC:
+        cursor: Any = financials
+        for part in path:
+            if not isinstance(cursor, dict):
+                cursor = None
+                break
+            cursor = cursor.get(part)
+        amount = _millions_of(cursor if isinstance(cursor, dict) else None)
+        if amount is not None:
+            flows[key] = amount
+    return flows
+
+
+def _fmt_millions(value: float) -> str:
+    if abs(value - round(value)) < 1e-6:
+        return f"{round(value):,}"
+    text = f"{value:,.3f}".rstrip("0").rstrip(".")
+    return text
+
+
+def _residual_node(raw: str, quote: str) -> dict[str, Any]:
+    return {
+        "raw": raw,
+        "unit": "millions",
+        "currency": "CNY",
+        "period_type": "3m",
+        "months": 3,
+        "derived": True,
+        "source_quote": quote[:200],
+        "year_ago_raw": None,
+        "prior_quarter_raw": None,
+    }
+
+
+def _saved_quarter_flows(ticker: str) -> list[dict[str, Any]]:
+    folder = data_dir(ticker)
+    saved = []
+    for path in sorted(folder.glob("FY*.json")):
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        meta = doc.get("meta") or {}
+        end = meta.get("period_end")
+        start = meta.get("period_start")
+        if not end or not start:
+            continue
+        saved.append({
+            "period": path.stem,
+            "start": date.fromisoformat(start),
+            "end": date.fromisoformat(end),
+            "flows": _doc_flows(doc),
+        })
+    return saved
+
+
+def _extracted_from_flows(
+    fiscal_period: str,
+    period_end: date,
+    flows: dict[str, float],
+    quote: str,
+) -> dict[str, Any] | None:
+    needed = ("revenue", "gross_profit", "net_income")
+    if any(flows.get(key) is None for key in needed):
+        return None
+    def take(key: str) -> dict[str, Any] | None:
+        if flows.get(key) is None:
+            return None
+        return _residual_node(_fmt_millions(flows[key]), quote)
+
+    rows = {key: take(key) for key in (
+        "revenue", "cost_of_revenue", "gross_profit", "operating_income",
+        "operating_income_nongaap", "net_income", "vas_revenue", "advertising_revenue",
+        "fintech_biz_revenue", "selling_expense", "ga_expense", "rd_expense", "capex",
+    )}
+    kpis = {
+        key: rows[key]
+        for key in (
+            "vas_revenue", "advertising_revenue", "fintech_biz_revenue",
+            "selling_expense", "ga_expense", "rd_expense", "operating_income_nongaap",
+        )
+        if rows.get(key)
+    }
+    if "operating_income_nongaap" in kpis:
+        kpis["non_ifrs_operating_profit"] = kpis.pop("operating_income_nongaap")
+    return {
+        "period_label": fiscal_period,
+        "period_end_date": period_end.isoformat(),
+        "release_date": None,
+        "period_type": "3m",
+        "currency": "CNY",
+        "column_labels": [],
+        "column_roles": {"current": 0},
+        "extract_mode": "residual",
+        "table_mode": "residual",
+        "revenue": rows["revenue"],
+        "cost_of_revenue": rows["cost_of_revenue"],
+        "gross_profit_gaap": rows["gross_profit"],
+        "gross_profit_nongaap": None,
+        "rd_expense": rows["rd_expense"],
+        "operating_income_gaap": rows["operating_income"],
+        "operating_income_nongaap": rows["operating_income_nongaap"],
+        "net_income_gaap": rows["net_income"],
+        "eps_gaap_diluted": None,
+        "eps_nongaap_diluted": None,
+        "has_nongaap_eps": False,
+        "capex_gross": rows["capex"],
+        "operating_cash_flow": None,
+        "kpis": kpis,
+        "prior_year_comparables": {"revenue": {"raw": None, "unit": "millions"}},
+        "warnings": [
+            f"{quote}。每股盈利未做累计相减。",
+            "公告未单列经营现金流，operating_cash_flow 与 fcf 留空",
+        ],
+    }
+
+
+def complete_residual_extraction(
+    ticker: str,
+    fiscal_period: str,
+    cumulative: dict[str, Any],
+) -> tuple[dict[str, Any] | None, str]:
+    """用已入库的前序季度，把六个月或全年累计收成单季。跨度不对则留空。"""
+    end = date.fromisoformat(cumulative["period_end"])
+    start = date.fromisoformat(cumulative["period_start"])
+    from pipeline.extract.hk_statement import _fiscal_from_end
+
+    try:
+        inferred = _fiscal_from_end(end, 12)
+    except HkImportError as exc:
+        return None, str(exc)
+    if inferred != fiscal_period.upper():
+        return None, f"累计期末 {end.isoformat()} 对应 {inferred}，与请求的 {fiscal_period} 不一致"
+    flows = cumulative.get("flows") or {}
+    saved = _saved_quarter_flows(ticker)
+    same_origin = [
+        item for item in saved
+        if item["start"] == start and item["end"] < end and item["flows"]
+    ]
+    same_origin.sort(key=lambda item: item["end"])
+    if same_origin:
+        prior = same_origin[-1]
+        got = residual_flows(
+            flows,
+            prior["flows"],
+            later_end=end,
+            earlier_end=prior["end"],
+            later_start=start,
+            earlier_start=prior["start"],
+        )
+        if got:
+            quote = (
+                f"累计相减 {prior['end'].isoformat()}→{end.isoformat()}"
+                f"（{prior['period']} 至本公告累计，跨度 {(end - prior['end']).days} 天）"
+            )
+            return _extracted_from_flows(fiscal_period, end, got, quote), ""
+        if cumulative.get("months") != 12:
+            gap = (end - prior["end"]).days
+            return None, (
+                f"最近一段同期累计止于 {prior['end'].isoformat()}，与 {end.isoformat()} 相距 {gap} 天，"
+                "不是一个季度，留空"
+            )
+    if cumulative.get("months") == 12:
+        year = end.year
+        quarters = []
+        missing = []
+        for month, day, name in ((3, 31, "Q1"), (6, 30, "Q2"), (9, 30, "Q3")):
+            target = date(year, month, day)
+            hit = next((item for item in saved if item["end"] == target), None)
+            if hit is None:
+                missing.append(f"FY{year}{name}")
+            else:
+                quarters.append((hit["end"], hit["flows"]))
+        if missing:
+            return None, f"全年没有单季列，且缺少 {'、'.join(missing)}，不能倒挤 {fiscal_period}"
+        got = residual_from_quarter_sum(
+            flows,
+            quarters,
+            year_start=start,
+            year_end=end,
+        )
+        if not got:
+            return None, f"全年减前三季的跨度不是一个季度，{fiscal_period} 留空"
+        quote = f"累计相减 FY{year}Q1+Q2+Q3→{end.isoformat()}（全年减前三季）"
+        return _extracted_from_flows(fiscal_period, end, got, quote), ""
+    return None, "没有可相减的前序累计，且跨度不能确认为一个季度，留空"
 
 
 def import_period(
@@ -324,7 +541,35 @@ def import_period(
 
     press = Path(pdf)
     text = load_press_text(press)
-    extracted = extract_hk_results(text, period, fiscal_year_end_month=int(cfg["fiscal_year_end_month"]))
+    try:
+        extracted = extract_hk_results(text, period, fiscal_year_end_month=int(cfg["fiscal_year_end_month"]))
+    except HkCumulativeOnly as err:
+        extracted, reason = complete_residual_extraction(ticker, period, err.cumulative)
+        if extracted is None:
+            _write_manifest(raw, {
+                "ticker": ticker.upper(),
+                "period": period,
+                "stage1": "skipped",
+                "reason": reason or str(err),
+                "extract_mode": "blank",
+                "source_pdf": press.name,
+                "cumulative": {
+                    "period_start": (err.cumulative or {}).get("period_start"),
+                    "period_end": (err.cumulative or {}).get("period_end"),
+                    "months": (err.cumulative or {}).get("months"),
+                },
+                "transcript": transcript_meta,
+                "transcript_source": "local_import" if transcript_meta else None,
+            })
+            return {
+                "ticker": ticker.upper(),
+                "period": period,
+                "stage1": "skipped",
+                "extract_mode": "blank",
+                "source_pdf": press.name,
+                "transcript_source": "local_import" if transcript_meta else None,
+                "reason": reason or str(err),
+            }
     stamped = _pdf_created_utc(press)
     if stamped and extracted.get("release_date") and stamped[:10] == extracted["release_date"]:
         extracted["release_at_utc"] = stamped
@@ -367,6 +612,13 @@ def import_period(
         "period_end": extracted.get("period_end_date"),
         "release_date": extracted.get("release_date"),
         "pdf_sha256": hashlib.sha256(blob).hexdigest(),
+        "source_pdf": press.name,
+        "extract_mode": extracted.get("extract_mode") or "disclosed",
+        "table_mode": extracted.get("table_mode"),
+        "revenue_million": (extracted.get("revenue") or {}).get("raw"),
+        "eps_gaap": (extracted.get("eps_gaap_diluted") or {}).get("raw"),
+        "eps_nongaap": (extracted.get("eps_nongaap_diluted") or {}).get("raw"),
+        "operating_income_nongaap_million": (extracted.get("operating_income_nongaap") or {}).get("raw"),
         "transcript": transcript_meta,
         "transcript_source": source_name,
     })
