@@ -40,6 +40,8 @@ def validate_extraction(
     ]:
         node = extracted.get(key) or {}
         raw = node.get("raw") if isinstance(node, dict) else None
+        if isinstance(node, dict) and node.get("derived"):
+            continue
         if raw and not raw_in_text(raw, press_text):
             warnings.append(f"V1: {key} raw={raw} 未在新闻稿中找到")
             needs_review = True
