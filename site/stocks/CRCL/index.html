@@ -59,16 +59,16 @@
   <div class="metric-strip" aria-label="行情与指引">
     <div class="m">
       <div class="k">股价</div>
-      <div class="v is-empty">未接入</div>
-<div class="s">行情未接入</div>    </div>
+      <div class="v">$86.62</div>
+<div class="s">2026-10-22 收盘</div>    </div>
     <div class="m">
       <div class="k">市值</div>
       <div class="v is-empty">未接入</div>
 <div class="s">缺股价或股本</div>    </div>
     <div class="m">
       <div class="k">RSI</div>
-      <div class="v is-empty">未接入</div>
-<div class="s">行情未接入</div>    </div>
+      <div class="v">51.8</div>
+<div class="s">TradingView</div>    </div>
     <div class="m">
       <div class="k">股息率</div>
       <div class="v is-empty">未接入</div>
@@ -82,7 +82,7 @@
       <div class="v is-empty">无</div>
 <div class="s">管理层 Non-GAAP</div>    </div>
   </div>
-</div>
+<p class="strip-asof">数据时间 2026-10-22 · 来源 TradingView · TradingView scanner · 截止 2026-10-23 05:29 PT</p></div>
 
 <nav class="section-nav" aria-label="分区">
   <div class="chips">
@@ -105,7 +105,7 @@
         <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比</small>
       </h2>
       <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
-      <p class="eps-note" id="expectNote">缺一致预期。浅蓝柱是已保存的实际，灰柱留空。</p>
+      <p class="eps-note" id="expectNote">深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。</p>
     </div>
     <div class="expect-pe" id="forward-pe">
       <h2>Forward PE <small>本财年与下财年按剩余月份加权</small></h2>
@@ -122,12 +122,32 @@
             <tr>
               <td>近 4 季（TTM）</td>
               <td>$-3.45</td>
-              <td>待核对</td>
+              <td>-25.1×</td>
+            </tr>
+            <tr class="fp-ntm">
+              <td>未来 12 个月（NTM）</td>
+              <td>$1.34</td>
+              <td>64.8×</td>
+            </tr>
+            <tr>
+              <td>FY26E</td>
+              <td>$1.08</td>
+              <td>80.2×</td>
+            </tr>
+            <tr>
+              <td>FY27E</td>
+              <td>$1.42</td>
+              <td>60.9×</td>
+            </tr>
+            <tr>
+              <td>FY28E</td>
+              <td>$1.86</td>
+              <td>46.7×</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="eps-note">股价未接入，P/E 显示待核对，不估算股价。NTM 用当前财年与下一财年共识按剩余 3 个月加权。不足 4 个季度且缺少两个财年共识时不显示，避免把两个季度加总当成一年。 FY26E、FY27E、FY28E 没有全年共识，也凑不满四个季度，所以不显示。</p>
+      <p class="eps-note">NTM 用当前财年与下一财年共识按剩余 3 个月加权。不足 4 个季度且缺少两个财年共识时不显示，避免把两个季度加总当成一年。 TradingView scanner（季度 EPS / 股价） · 截止 2026-10-23 05:29 PT；Alpha Vantage（全年 EPS） · 截止 2026-10-23 03:52 PT。</p>
     </div>
   </div>
 </section>
@@ -420,7 +440,7 @@ window.PAGE_CHARTS = {
   "moneyUnit": "十亿美元",
   "epsUnit": "美元",
   "finView": {"by_key": {}, "charts": [{"kind": "generic", "metric": "revenue", "series": "level", "subtitle": "本季水平", "title": "水平值"}, {"kind": "generic", "metric": "revenue", "series": "qoq", "subtitle": "较上一季", "title": "环比"}, {"kind": "generic", "metric": "revenue", "series": "yoy", "subtitle": "较去年同季", "title": "同比"}], "default": "revenue", "grain": false, "note": ""},
-  "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。", "quarters": [{"actual": 0.64, "basis": "", "consensus": null, "label": "FQ3 2025", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": null, "basis": "", "consensus": null, "label": "FQ4 2025", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.21, "basis": "", "consensus": null, "label": "FQ1 2026", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.18, "basis": "", "consensus": null, "label": "FQ2 2026", "note": "同比 +104.0%", "note_cls": "beat", "yoy_pct": 104.01785714285714}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。", "quarters": [{"actual": 0.74, "basis": "营收", "consensus": null, "label": "FQ3 2025", "note": "同比 +66.0%", "note_cls": "beat", "yoy_pct": 65.95380494523984}, {"actual": 0.77, "basis": "营收", "consensus": null, "label": "FQ4 2025", "note": "同比 +76.9%", "note_cls": "beat", "yoy_pct": 76.91556778533972}, {"actual": 0.69, "basis": "营收", "consensus": null, "label": "FQ1 2026", "note": "同比 +20.0%", "note_cls": "beat", "yoy_pct": 19.973279084921003}, {"actual": 0.7, "basis": "营收", "consensus": null, "label": "FQ2 2026", "note": "同比 +6.6%", "note_cls": "beat", "yoy_pct": 6.570193806813174}], "sides": []}, "sides": []}
+  "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。", "quarters": [{"actual": 0.64, "basis": "", "consensus": 0.19, "label": "FQ3 2025", "note": "超预期 $0.45", "note_cls": "beat", "yoy_pct": null}, {"actual": null, "basis": "", "consensus": 0.16, "label": "FQ4 2025", "note": "缺一致预期", "note_cls": "muted", "yoy_pct": null}, {"actual": 0.21, "basis": "", "consensus": 0.19, "label": "FQ1 2026", "note": "超预期 $0.02", "note_cls": "beat", "yoy_pct": null}, {"actual": 0.18, "basis": "", "consensus": 0.16, "label": "FQ2 2026", "note": "超预期 $0.02", "note_cls": "beat", "yoy_pct": 104.01785714285714}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。", "quarters": [{"actual": 0.74, "basis": "营收", "consensus": 0.71, "label": "FQ3 2025", "note": "超预期 $31.54M", "note_cls": "beat", "yoy_pct": 65.95380494523984}, {"actual": 0.77, "basis": "营收", "consensus": 0.75, "label": "FQ4 2025", "note": "超预期 $21.00M", "note_cls": "beat", "yoy_pct": 76.91556778533972}, {"actual": 0.69, "basis": "营收", "consensus": 0.71, "label": "FQ1 2026", "note": "不及预期 $20.57M", "note_cls": "miss", "yoy_pct": 19.973279084921003}, {"actual": 0.7, "basis": "营收", "consensus": 0.71, "label": "FQ2 2026", "note": "不及预期 $11.77M", "note_cls": "miss", "yoy_pct": 6.570193806813174}], "sides": []}, "sides": []}
 };
 </script>
 <script src="../../static/charts.js"></script>
