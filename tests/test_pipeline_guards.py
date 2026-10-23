@@ -851,7 +851,9 @@ def test_judgment_layer_rules():
     assert by["本季营收"]["has"] is False  # 缺一致预期不能当成符合预期
     assert by["下季 EPS 指引"]["gap"]["text"] == "+11.1%" and by["下季 EPS 指引"]["pos"] == pytest.approx(87.1, abs=0.1)
     market = _market_view(doc)
-    assert market["stance"]["text"] == "市场认可" and market["revision"]["label"] == "T+7"
+    # Stage3 已停用：次日反应与 T+N 分析师修正不再展示
+    assert market["stance"] is None and market["revision"] is None
+    assert market["price"]["text"] == "—"
     from pipeline.config import load_ticker_config
 
     qc = _quality_checks(doc, load_ticker_config("MU"))
