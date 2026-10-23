@@ -6,7 +6,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from pipeline.commands.run_cmd import _in_window, detect_new_filings, run_stage1, run_stage2
-from pipeline.config import data_dir, list_tickers, load_settings, load_ticker_config
+from pipeline.config import data_dir, is_hk_listing, list_tickers, load_settings, load_ticker_config
 
 
 ET = ZoneInfo("America/New_York")
@@ -78,6 +78,8 @@ def poll_once(now: datetime | None = None) -> dict[str, Any]:
     reported: list[str] = []
     for ticker in list_tickers():
         cfg = load_ticker_config(ticker)
+        if is_hk_listing(cfg):
+            continue
         timing = cfg.get("release_timing") or "amc"
         state_dir = data_dir(ticker) / "state"
         for sp in sorted(state_dir.glob("*.json")) if state_dir.exists() else []:

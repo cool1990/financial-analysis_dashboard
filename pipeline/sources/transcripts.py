@@ -9,9 +9,10 @@ from pipeline.sources.motley_fool import fetch_motley_fool_transcript
 
 
 def load_manual_transcript(raw_dir: Path) -> str | None:
-    path = raw_dir / "transcript.txt"
-    if path.exists():
-        return path.read_text(encoding="utf-8")
+    for name in ("transcript.txt", "transcript.md"):
+        path = raw_dir / name
+        if path.exists() and path.stat().st_size:
+            return path.read_text(encoding="utf-8")
     return None
 
 
@@ -56,10 +57,10 @@ def fetch_transcript(
     period = fiscal_period or ""
 
     for src in order:
-        if src == "manual":
+        if src in {"manual", "local_import"}:
             text = load_manual_transcript(raw_dir)
             if text:
-                return text, "manual"
+                return text, "local_import" if src == "local_import" else "manual"
         elif src == "motley_fool":
             if not period:
                 continue

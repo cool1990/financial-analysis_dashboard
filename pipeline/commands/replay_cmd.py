@@ -7,7 +7,7 @@ import sys
 from collections import Counter
 from typing import Any
 
-from pipeline.config import load_ticker_config
+from pipeline.config import is_hk_listing, load_ticker_config
 from pipeline.earnings_config import resolve_earnings_spec
 from pipeline.sources.sec_edgar import SecEdgarClient
 
@@ -15,6 +15,8 @@ from pipeline.sources.sec_edgar import SecEdgarClient
 def replay_earnings_filters(ticker: str) -> dict[str, Any]:
     """扫描 submissions 最近一批。ADR 必须命中 Press release，且主文档噪声不能进 hits。"""
     cfg = load_ticker_config(ticker)
+    if is_hk_listing(cfg):
+        raise RuntimeError(f"{ticker} listing=hk，不查询 SEC")
     spec = resolve_earnings_spec(cfg)
     if spec.listing != "adr" or spec.earnings_6k is None:
         raise RuntimeError(f"{ticker} 的 listing 不是 adr，没有 6-K 过滤器可回放")

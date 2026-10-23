@@ -62,7 +62,7 @@
             <td class="num{% if r.quote_price == '—' %} muted{% endif %}">{{ r.quote_price }}</td>
             <td class="num c-{{ r.change.cls }}">{{ r.change.text }}</td>
             <td class="num{% if r.rsi == '—' %} muted{% endif %}">{{ r.rsi }}</td>
-            <td class="num{% if r.forward_pe == '—' %} muted{% endif %}">{{ r.forward_pe }}</td>
+            <td class="num{% if r.forward_pe == '—' %} muted{% endif %}">{% if r.forward_pe == '待核对' %}<b class="v-unknown">待核对</b>{% else %}{{ r.forward_pe }}{% endif %}{% if r.forward_pe_fx %} <span class="muted">{{ r.forward_pe_fx }}</span>{% endif %}</td>
             <td class="num{% if r.target == '—' %} muted{% endif %}">{{ r.target }}</td>
             <td class="mid trig-cell t-{{ r.triggered.cls }}">{{ r.triggered.text }}</td>
             <td class="mid sig c-{{ r.quarter.signal_cls }}{% if r.quarter.stale %} stale{% endif %}"{% if r.quarter.stale_title %} title="{{ r.quarter.stale_title }}"{% endif %}>{{ r.quarter.signal }}</td>

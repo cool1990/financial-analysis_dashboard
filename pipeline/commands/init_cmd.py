@@ -4,7 +4,7 @@ from datetime import date
 from typing import Any
 
 from pipeline.compute.periods import build_period_info
-from pipeline.config import load_ticker_config, save_ticker_config
+from pipeline.config import is_hk_listing, load_ticker_config, save_ticker_config
 from pipeline.earnings_config import resolve_earnings_spec
 from pipeline.extract.press_release import detect_nongaap_eps_regex, load_press_release
 from pipeline.sources.sec_edgar import (
@@ -18,6 +18,8 @@ from pipeline.validate import classify_eps_basis
 
 def init_ticker(ticker: str, *, force: bool = False) -> dict[str, Any]:
     cfg = load_ticker_config(ticker)
+    if is_hk_listing(cfg):
+        return cfg
     client = SecEdgarClient()
     if not cfg.get("cik") or force:
         cfg["cik"] = client.lookup_cik(ticker)
@@ -131,7 +133,8 @@ def init_missing() -> dict[str, Any]:
 
     out: dict[str, Any] = {}
     for t in list_tickers():
-        if load_ticker_config(t).get("cik"):
+        cfg = load_ticker_config(t)
+        if is_hk_listing(cfg) or cfg.get("cik"):
             continue
         try:
             cfg = init_ticker(t)

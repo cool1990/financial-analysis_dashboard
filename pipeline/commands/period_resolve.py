@@ -6,7 +6,7 @@ domestic 用 8-K Item 2.02；adr 用通过过滤器的 6-K。
 """
 
 from pipeline.compute.periods import build_period_info
-from pipeline.config import data_dir, load_ticker_config
+from pipeline.config import data_dir, is_hk_listing, load_ticker_config
 from pipeline.sources.sec_edgar import SecEdgarClient
 
 
@@ -18,6 +18,8 @@ def resolve_latest_period(ticker: str) -> str:
         return existing[0].stem
 
     cfg = load_ticker_config(ticker)
+    if is_hk_listing(cfg):
+        raise RuntimeError(f"{ticker} 没有已导入的季度，无法解析 latest")
     if not cfg.get("cik"):
         raise RuntimeError(f"{ticker} 尚未 init，无法解析 latest 财季")
     from pipeline.earnings_config import resolve_earnings_spec

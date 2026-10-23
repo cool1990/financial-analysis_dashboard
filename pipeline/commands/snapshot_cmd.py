@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
-from pipeline.config import data_dir, list_tickers, load_ticker_config
+from pipeline.config import data_dir, is_hk_listing, list_tickers, load_ticker_config
 from pipeline.sources.yfinance_src import YFinanceSource
 
 
@@ -16,6 +16,8 @@ def _next_fiscal_guess(ticker: str) -> str | None:
 
 
 def take_snapshot(ticker: str) -> dict[str, Any]:
+    if is_hk_listing(load_ticker_config(ticker)):
+        return {"ticker": ticker.upper(), "skipped": True, "reason": "listing=hk，持仓阶段不做美股一致预期快照"}
     yf = YFinanceSource(ticker)
     bundle = yf.snapshot_bundle()
     # Bind 0q to upcoming fiscal period when possible

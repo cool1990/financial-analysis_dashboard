@@ -7,7 +7,7 @@ from typing import Any
 
 from pipeline import ROOT
 from pipeline.compute.periods import build_period_info
-from pipeline.config import data_dir, load_ticker_config, openrouter_api_key
+from pipeline.config import data_dir, is_hk_listing, load_ticker_config, openrouter_api_key
 from pipeline.earnings_config import resolve_earnings_spec
 from pipeline.extract.numbers import ParsedAmount
 from pipeline.extract.press_release import load_press_release
@@ -39,6 +39,8 @@ def _block(node: dict[str, Any] | None, *, yoy: float | None, qoq: float | None,
 def write_xbrl_history(ticker: str, *, start: str = "2016-01-01") -> dict[str, Any]:
     """用 companyfacts 回补单季 GAAP。不覆盖已经跑过新闻稿阶段的季度。"""
     cfg = load_ticker_config(ticker)
+    if is_hk_listing(cfg):
+        raise RuntimeError(f"{ticker} listing=hk，不用 SEC companyfacts 回补")
     if not cfg.get("cik"):
         raise RuntimeError("请先运行 init")
     start_d = date.fromisoformat(start)
@@ -245,6 +247,8 @@ def backfill(
     xbrl_only=True 时只写 companyfacts 单季 GAAP，不调用模型（ADR 会拒绝）。
     """
     cfg = load_ticker_config(ticker)
+    if is_hk_listing(cfg):
+        raise RuntimeError(f"{ticker} listing=hk，不用 SEC 回补")
     spec = resolve_earnings_spec(cfg)
     if spec.listing == "adr":
         if xbrl_only:

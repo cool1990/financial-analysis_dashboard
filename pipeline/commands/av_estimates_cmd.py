@@ -8,7 +8,7 @@ from datetime import date, datetime
 from typing import Any, Callable
 
 from pipeline.compute.revision_signal import choose_current_estimate, format_current_quarter
-from pipeline.config import data_dir, list_tickers, load_ticker_config
+from pipeline.config import data_dir, is_hk_listing, list_tickers, load_ticker_config
 from pipeline.sources.alpha_vantage import alphavantage_api_key, fetch_earnings_estimates_payload
 from pipeline.sources.av_estimates import cache_is_fresh, write_estimates_cache
 
@@ -65,6 +65,18 @@ def refresh_earnings_estimates(
     preview_day = today or (now.date() if now else date.today())
     requested = 0
     for symbol in names:
+        try:
+            hk = is_hk_listing(load_ticker_config(symbol))
+        except FileNotFoundError:
+            hk = False
+        if hk:
+            results.append({
+                "ticker": symbol,
+                "ok": True,
+                "skipped": True,
+                "reason": "listing=hk，持仓阶段不做 AV 共识",
+            })
+            continue
         if cache_is_fresh(symbol, now=now):
             results.append({
                 "ticker": symbol,
