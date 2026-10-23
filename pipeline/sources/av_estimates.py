@@ -1,7 +1,9 @@
 """当前季一致预期缓存。
 
-Hermes 读的是 /home/box/.hermes/data/av_estimates/{TICKER}.json。这台机器读不到那份目录时，
-观察池改读 data/{TICKER}/consensus/av_estimates.json。两处都没有、环境里也没有 key，就留空。
+观察池读 data/{TICKER}/consensus/av_estimates.json。
+若设置了 HERMES_AV_ESTIMATES_DIR，本仓库没有缓存时再读
+{HERMES_AV_ESTIMATES_DIR}/{TICKER}.json。没设置就不查那条路径。
+两处都没有、环境里也没有 key，就留空。
 
 需要的环境变量（任一即可，与财报流水线相同）：
 ALPHAVANTAGE_API_KEY、ALPHAVANTAGE_KEY、ALPHA_VANTAGE_API_KEY。
@@ -15,7 +17,7 @@ ALPHAVANTAGE_API_KEY、ALPHAVANTAGE_KEY、ALPHA_VANTAGE_API_KEY。
   "estimates": [
     {
       "date": "2026-11-30",
-      "horizon": "next fiscal quarter",
+      "horizon": "fiscal quarter",
       "eps_estimate_average": "38.28",
       "eps_estimate_analyst_count": "29",
       "eps_estimate_average_30_days_ago": "35.66",
@@ -31,7 +33,8 @@ ALPHAVANTAGE_API_KEY、ALPHAVANTAGE_KEY、ALPHA_VANTAGE_API_KEY。
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+import os
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -39,8 +42,9 @@ from pipeline.config import data_dir
 from pipeline.sources.alpha_vantage import alphavantage_api_key, fetch_earnings_estimates_payload
 
 
-HERMES_DIR = Path("/home/box/.hermes/data/av_estimates")
+HERMES_DIR_ENV = "HERMES_AV_ESTIMATES_DIR"
 CACHE_NAME = "av_estimates.json"
+FRESH_HOURS = 20
 _AV_FIELDS = {
     "eps_estimate_average",
     "eps_estimate_analyst_count",
@@ -54,8 +58,11 @@ def cache_path(ticker: str) -> Path:
     return data_dir(ticker) / "consensus" / CACHE_NAME
 
 
-def hermes_cache_path(ticker: str) -> Path:
-    return HERMES_DIR / f"{(ticker or '').upper()}.json"
+def hermes_cache_path(ticker: str) -> Path | None:
+    raw = (os.environ.get(HERMES_DIR_ENV) or "").strip()
+    if not raw:
+        return None
+    return Path(raw) / f"{(ticker or '').upper()}.json"
 
 
 def estimates_from_payload(data: Any) -> list[dict[str, Any]]:
@@ -100,26 +107,80 @@ def write_estimates_cache(symbol: str, estimates: list[dict[str, Any]]) -> Path:
     return path
 
 
+def _fetched_at(payload: Any) -> str:
+    if isinstance(payload, dict):
+        return str(payload.get("fetched_at") or "").strip()
+    return ""
+
+
+def _parse_fetched_at(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def cache_is_fresh(
+    ticker: str,
+    *,
+    now: datetime | None = None,
+    hours: float = FRESH_HOURS,
+) -> bool:
+    """本仓库缓存的 fetched_at 距 now 不足 hours 小时。没有时间戳不算新鲜。"""
+    payload = _read_json(cache_path(ticker))
+    fetched = _parse_fetched_at(_fetched_at(payload))
+    if fetched is None:
+        return False
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    return current - fetched < timedelta(hours=hours)
+
+
+def load_earnings_record(
+    ticker: str,
+    *,
+    get: Callable[..., Any] | None = None,
+    fetch: bool = True,
+) -> dict[str, Any]:
+    """先读本仓库缓存，再读 HERMES_AV_ESTIMATES_DIR。都没有且有 key 时才请求并写入缓存。
+
+    返回 {"estimates": [...], "fetched_at": "..."}。fetched_at 原样带出，供首页判断是否过期。
+    """
+    symbol = (ticker or "").upper()
+    paths = [cache_path(symbol)]
+    hermes = hermes_cache_path(symbol)
+    if hermes is not None:
+        paths.append(hermes)
+    for path in paths:
+        payload = _read_json(path)
+        if payload is None:
+            continue
+        return {"estimates": estimates_from_payload(payload), "fetched_at": _fetched_at(payload)}
+    if not fetch or not alphavantage_api_key():
+        return {"estimates": [], "fetched_at": ""}
+    body = fetch_earnings_estimates_payload(symbol, get=get)
+    if body.get("status") != "ok":
+        return {"estimates": [], "fetched_at": ""}
+    estimates = [row for row in body.get("estimates") or [] if isinstance(row, dict)]
+    if not estimates:
+        return {"estimates": [], "fetched_at": ""}
+    path = write_estimates_cache(symbol, estimates)
+    payload = _read_json(path) or {}
+    return {"estimates": estimates, "fetched_at": _fetched_at(payload)}
+
+
 def load_earnings_estimates(
     ticker: str,
     *,
     get: Callable[..., Any] | None = None,
     fetch: bool = True,
 ) -> list[dict[str, Any]]:
-    """先读本仓库缓存，再读 Hermes 路径。都没有且有 key 时才请求 EARNINGS_ESTIMATES 并写入缓存。"""
-    symbol = (ticker or "").upper()
-    for path in (cache_path(symbol), hermes_cache_path(symbol)):
-        payload = _read_json(path)
-        if payload is None:
-            continue
-        return estimates_from_payload(payload)
-    if not fetch or not alphavantage_api_key():
-        return []
-    body = fetch_earnings_estimates_payload(symbol, get=get)
-    if body.get("status") != "ok":
-        return []
-    estimates = [row for row in body.get("estimates") or [] if isinstance(row, dict)]
-    if not estimates:
-        return []
-    write_estimates_cache(symbol, estimates)
-    return estimates
+    """与 load_earnings_record 相同，只返回 estimates 列表。"""
+    return list(load_earnings_record(ticker, get=get, fetch=fetch)["estimates"])

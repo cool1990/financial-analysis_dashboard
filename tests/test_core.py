@@ -88,6 +88,23 @@ def test_nke_fiscal_mapping():
     assert info.fiscal_quarter == 4
 
 
+def test_offset_fiscal_year_next_quarter_is_q1():
+    """财年结束月之后的下一季是新财年 Q1，不能并进上一年 Q4。"""
+    assert build_period_info("2025-11-30", 8).fiscal_period == "FY2026Q1"  # MU
+    assert build_period_info("2025-08-31", 5).fiscal_period == "FY2026Q1"  # NKE / ORCL
+    assert build_period_info("2025-11-30", 5).fiscal_period == "FY2026Q2"
+    assert build_period_info("2026-02-28", 5).fiscal_period == "FY2026Q3"
+    assert build_period_info("2025-09-30", 6).fiscal_period == "FY2026Q1"  # MSFT
+    assert build_period_info("2025-12-31", 6).fiscal_period == "FY2026Q2"
+    assert build_period_info("2025-04-27", 1).fiscal_period == "FY2026Q1"  # NVDA
+    assert build_period_info("2025-07-27", 1).fiscal_period == "FY2026Q2"
+    assert build_period_info("2025-10-26", 1).fiscal_period == "FY2026Q3"
+    assert build_period_info("2026-01-25", 1).fiscal_period == "FY2026Q4"
+    assert build_period_info("2025-02-02", 11).fiscal_period == "FY2025Q1"  # AVGO
+    assert build_period_info("2025-11-02", 11).fiscal_period == "FY2025Q4"
+    assert build_period_info("2025-09-27", 6).fiscal_period == "FY2026Q1"  # SNDK-style June FYE
+
+
 def test_calendar_year_company_fiscal_mapping():
     """自然年公司（FYE=12）：日历 Q2 结束日 → 财年同季。"""
     info = build_period_info("2024-06-30", 12, "2024-04-01")

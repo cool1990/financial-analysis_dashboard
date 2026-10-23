@@ -70,8 +70,9 @@ def poll_once(now: datetime | None = None) -> dict[str, Any]:
     now = (now or datetime.now(tz=ET)).astimezone(ET)
     polling = load_settings().get("polling") or {}
     transcript_max_hours = float(polling.get("transcript_max_hours", 36))
-    results: dict[str, Any] = {"now_et": now.isoformat(), "actions": []}
+    results: dict[str, Any] = {"now_et": now.isoformat(), "actions": [], "reported": []}
     any_work = False
+    reported: list[str] = []
     for ticker in list_tickers():
         cfg = load_ticker_config(ticker)
         timing = cfg.get("release_timing") or "amc"
@@ -98,29 +99,36 @@ def poll_once(now: datetime | None = None) -> dict[str, Any]:
                     }
                 )
                 continue
-            any_work = True
             try:
                 run_stage2(ticker, period)
+                any_work = True
                 results["actions"].append({"ticker": ticker, "period": period, "action": "stage2", "ok": True})
             except Exception as e:
+                any_work = True
                 results["actions"].append({"ticker": ticker, "period": period, "action": "stage2", "ok": False, "error": str(e)})
         if not _in_window(timing, now) or not near_earnings(ticker, now.date()):
             continue
         if not cfg.get("cik"):
             continue
-        any_work = True
         try:
             if not detect_new_filings(ticker, now=now.astimezone(timezone.utc)):
                 results["actions"].append({"ticker": ticker, "action": "poll", "ok": True, "detail": "no new 8-K"})
                 continue
             doc = run_stage1(ticker)
+            any_work = True
+            reported.append(ticker)
             results["actions"].append(
                 {"ticker": ticker, "action": "stage1", "ok": True, "period": doc["meta"]["fiscal_period"]}
             )
         except Exception as e:
+            any_work = True
             results["actions"].append({"ticker": ticker, "action": "stage1", "ok": False, "error": str(e)})
     results["did_work"] = any_work
+    results["reported"] = reported
     if not any_work:
         results["skipped"] = True
-        results["reason"] = "不在财报窗口/财报日附近，且无等待文字稿的任务"
+        if any(item.get("detail") == "no new 8-K" for item in results["actions"]):
+            results["reason"] = "没有新的 8-K，也没有需要重试的文字稿"
+        else:
+            results["reason"] = "不在财报窗口/财报日附近，且无等待文字稿的任务"
     return results

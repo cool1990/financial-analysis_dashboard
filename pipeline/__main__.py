@@ -65,9 +65,10 @@ def main(argv: list[str] | None = None) -> int:
 
     p_build = sub.add_parser("build", help="生成静态页面到 site/")
     p_build.add_argument("--ticker", default=None)
+    p_build.add_argument("--out", default=None, help="输出目录。缺省写到 site/")
 
     p_av = sub.add_parser("av-estimates", help="用 EARNINGS_ESTIMATES 写入 data/{TICKER}/consensus/av_estimates.json")
-    p_av.add_argument("--ticker", default=None, help="缺省则全部股票")
+    p_av.add_argument("--ticker", default=None, help="一只，或逗号分隔。缺省则全部股票")
 
     p_ping = sub.add_parser("llm-ping", help="校验 OpenRouter 模型 slug 与 API key")
     p_ping.add_argument("--model", default=None, help="模型 slug，默认取 settings.yaml")
@@ -100,7 +101,9 @@ def main(argv: list[str] | None = None) -> int:
             gh_out = os.environ.get("GITHUB_OUTPUT")
             if gh_out:
                 with open(gh_out, "a", encoding="utf-8") as f:
+                    reported = ",".join(out.get("reported") or [])
                     f.write(f"did_work={'true' if out.get('did_work') else 'false'}\n")
+                    f.write(f"reported={reported}\n")
             write_github_step_summary()
             return 0
         if args.cmd == "init-missing":
@@ -165,15 +168,17 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "build":
             from builder.build import build_site
 
-            paths = build_site(args.ticker)
+            paths = build_site(args.ticker, out_dir=args.out)
             print(json.dumps({"pages": [str(p) for p in paths]}, ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "av-estimates":
             from pipeline.commands.av_estimates_cmd import refresh_earnings_estimates
 
-            out = refresh_earnings_estimates([args.ticker] if args.ticker else None)
+            raw = args.ticker or ""
+            tickers = [part.strip() for part in raw.split(",") if part.strip()] or None
+            out = refresh_earnings_estimates(tickers)
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if out.get("written") else 1
+            return 0 if out.get("ok") else 1
         if args.cmd == "llm-ping":
             require_openrouter_key(context="llm-ping")
             out = llm_ping(args.model)

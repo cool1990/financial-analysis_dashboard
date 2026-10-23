@@ -89,6 +89,77 @@ def test_poll_stops_stage2_after_transcript_deadline(monkeypatch, tmp_path):
     out = poll_cmd.poll_once(datetime(2026, 10, 1, 12, 0, tzinfo=timezone.utc))
     assert called == []
     assert out["did_work"] is False and out["actions"][0]["skipped"] is True
+    assert out["reported"] == []
+
+
+def test_poll_did_work_only_when_stage_runs(monkeypatch, tmp_path):
+    from pipeline.commands import poll_cmd
+
+    monkeypatch.setattr(poll_cmd, "list_tickers", lambda: ["NVDA"])
+    monkeypatch.setattr(poll_cmd, "load_ticker_config", lambda t: {"release_timing": "amc", "cik": "0001045810"})
+    monkeypatch.setattr(poll_cmd, "data_dir", lambda t=None: tmp_path)
+    monkeypatch.setattr(poll_cmd, "_in_window", lambda *a, **k: True)
+    monkeypatch.setattr(poll_cmd, "near_earnings", lambda *a, **k: True)
+    monkeypatch.setattr(poll_cmd, "detect_new_filings", lambda *a, **k: [])
+    monkeypatch.setattr(poll_cmd, "run_stage1", lambda *a, **k: (_ for _ in ()).throw(AssertionError("没有新 8-K 不应跑 Stage1")))
+    monkeypatch.setattr(poll_cmd, "run_stage2", lambda *a, **k: (_ for _ in ()).throw(AssertionError("不应跑 Stage2")))
+    quiet = poll_cmd.poll_once(datetime(2026, 10, 23, 21, 0, tzinfo=timezone.utc))
+    assert quiet["did_work"] is False and quiet["reported"] == []
+    assert quiet["actions"][0]["detail"] == "no new 8-K"
+
+    monkeypatch.setattr(poll_cmd, "detect_new_filings", lambda *a, **k: [{"accessionNumber": "new"}])
+    monkeypatch.setattr(poll_cmd, "run_stage1", lambda ticker: {"meta": {"fiscal_period": "FY2027Q3"}})
+    reported = poll_cmd.poll_once(datetime(2026, 10, 23, 21, 0, tzinfo=timezone.utc))
+    assert reported["did_work"] is True and reported["reported"] == ["NVDA"]
+
+    (tmp_path / "state").mkdir()
+    (tmp_path / "state" / "FY2027Q3.json").write_text(
+        json.dumps({"stage": "stage1_done", "fiscal_period": "FY2027Q3"}), encoding="utf-8"
+    )
+    (tmp_path / "FY2027Q3.json").write_text(
+        json.dumps({"meta": {"release_at_utc": "2026-10-23T20:00:00Z"}}), encoding="utf-8"
+    )
+    stage2 = []
+    monkeypatch.setattr(poll_cmd, "detect_new_filings", lambda *a, **k: [])
+    monkeypatch.setattr(poll_cmd, "run_stage1", lambda *a, **k: (_ for _ in ()).throw(AssertionError("不应跑 Stage1")))
+    monkeypatch.setattr(poll_cmd, "run_stage2", lambda *a, **k: stage2.append(a))
+    retried = poll_cmd.poll_once(datetime(2026, 10, 23, 22, 0, tzinfo=timezone.utc))
+    assert stage2 == [("NVDA", "FY2027Q3")]
+    assert retried["did_work"] is True and retried["reported"] == []
+
+
+def test_stage1_missing_period_end_uses_quarter_before_release_and_keeps_zero_eps():
+    from pipeline.commands.run_cmd import resolve_stage1_period_end, select_eps_actual
+    from pipeline.compute.periods import build_period_info
+
+    kept, inferred, label = resolve_stage1_period_end("2026-09-30", "2026-10-21T20:00:00Z", 12)
+    assert (kept, inferred, label) == ("2026-09-30", False, None)
+
+    # 11 月 20 日发布的仍是 9 月 30 日那季；直接拿发布日会标成 Q4
+    end, inferred, label = resolve_stage1_period_end(None, "2026-11-20T21:00:00Z", 12)
+    assert inferred is True and end == "2026-09-30" and label == "FY2026Q3"
+    assert build_period_info("2026-11-20", 12).fiscal_period == "FY2026Q4"
+    assert end != "2026-11-20"
+
+    # MU：8 月财年末，9 月 30 日发布对应 8 月 31 日结束的 Q4，不是发布日
+    end, inferred, label = resolve_stage1_period_end("", "2026-09-30T20:00:00Z", 8)
+    assert inferred is True and end == "2026-08-31" and label == "FY2026Q4"
+
+    try:
+        resolve_stage1_period_end(None, "", 12)
+    except ValueError as exc:
+        assert "period_end_date" in str(exc)
+    else:
+        raise AssertionError("推不出季末时应失败")
+
+    actual, warnings = select_eps_actual("unknown", 1.25, 0.0)
+    assert actual == 0.0 and warnings == ["eps_basis=unknown，记分卡待核对"]
+    actual, warnings = select_eps_actual("non_gaap", 1.25, 0.0)
+    assert actual == 0.0 and warnings == []
+    actual, warnings = select_eps_actual("gaap", 0.0, None)
+    assert actual == 0.0 and warnings == []
+    actual, warnings = select_eps_actual("non_gaap", 1.25, None)
+    assert actual == 1.25 and warnings == ["本季未披露 Non-GAAP EPS，改用 GAAP"]
 
 
 # ---- 新闻稿对比列 → 同比 / 环比 ----------------------------------------------------
@@ -276,119 +347,115 @@ def test_other_guidance_uses_raw_text():
     assert rng == "more than 75%" and "$" not in rng
 
 
-def test_build_site_renders(tmp_path, monkeypatch):
-    import builder.build as b
+def _position(stage: str) -> dict:
+    return {
+        "stage": stage,
+        "stage_label": {"hold": "持仓", "wait": "等待仓", "watch": "观察仓"}[stage],
+        "updated": "",
+        "theses": [],
+        "triggers": [],
+        "questions": [],
+        "group": "",
+        "kind": "",
+        "target_value": "",
+        "draft": False,
+    }
 
-    monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
-    pages = b.build_site()
-    html = (tmp_path / "stocks" / "MU" / "FY2026Q4.html").read_text(encoding="utf-8")
+
+def _render_fixture_site(monkeypatch, tmp_path):
+    """用冻结夹具建站，不读 data/ 里会随 daily 变化的现网文案。"""
+    import builder.build as b
+    import pipeline.commands.poll_cmd as poll_cmd
+    import pipeline.sources.av_estimates as av_estimates
+
+    data = tmp_path / "data"
+    (data / "FIX").mkdir(parents=True)
+    (data / "AAA").mkdir()
+    doc = json.loads((ROOT / "tests" / "fixtures" / "mu_fy2025q4_mock.json").read_text(encoding="utf-8"))
+    doc["meta"]["ticker"] = "FIX"
+    doc["meta"]["fiscal_period"] = "FY2026Q1"
+    doc["meta"]["release_at_utc"] = None
+    (data / "FIX" / "FY2026Q1.json").write_text(json.dumps(doc), encoding="utf-8")
+    # 已披露 FY2026Q1、财年末 12 月 → 当前季结束日 2026-06-30。horizon 用真实缓存里的 fiscal quarter。
+    # 下修为 null，页面应显示 2 / 0。fetched_at 远早于今天，格子标旧。
+    av = {
+        "symbol": "FIX",
+        "function": "EARNINGS_ESTIMATES",
+        "fetched_at": "2020-01-01T00:00:00+00:00",
+        "estimates": [
+            {
+                "date": "2024-06-30",
+                "horizon": "fiscal quarter",
+                "eps_estimate_average": "0.1000",
+                "eps_estimate_analyst_count": "3",
+            },
+            {
+                "date": "2026-06-30",
+                "horizon": "fiscal quarter",
+                "eps_estimate_average": "1.5000",
+                "eps_estimate_analyst_count": "8",
+                "eps_estimate_revision_up_trailing_30_days": "2",
+                "eps_estimate_revision_down_trailing_30_days": None,
+            },
+        ],
+    }
+    consensus = data / "FIX" / "consensus"
+    consensus.mkdir()
+    (consensus / "av_estimates.json").write_text(json.dumps(av), encoding="utf-8")
+
+    def data_dir(ticker=None):
+        return data if not ticker else data / str(ticker).upper()
+
+    configs = {
+        "FIX": {"name": "Fixture Co", "fiscal_year_end_month": 12, "release_timing": "amc", "eps_basis": "non_gaap"},
+        "AAA": {"name": "Alpha Hold", "fiscal_year_end_month": 12, "release_timing": "amc", "eps_basis": "gaap"},
+    }
+    positions = {"FIX": _position("watch"), "AAA": _position("hold")}
+    for mod in (b, poll_cmd, av_estimates):
+        monkeypatch.setattr(mod, "data_dir", data_dir)
+    monkeypatch.setattr(b, "list_tickers", lambda: ["FIX", "AAA"])
+    monkeypatch.setattr(b, "load_ticker_config", lambda ticker: configs[ticker])
+    monkeypatch.setattr(b, "load_position", lambda ticker: positions[ticker])
+    for key in ("ALPHAVANTAGE_API_KEY", "ALPHAVANTAGE_KEY", "ALPHA_VANTAGE_API_KEY", "HERMES_AV_ESTIMATES_DIR"):
+        monkeypatch.delenv(key, raising=False)
+
+    out = tmp_path / "site"
+    pages = b.build_site(out_dir=out)
+    return out, pages
+
+
+def test_build_site_renders(tmp_path, monkeypatch):
+    out, pages = _render_fixture_site(monkeypatch, tmp_path)
+    html = (out / "stocks" / "FIX" / "FY2026Q1.html").read_text(encoding="utf-8")
     assert "盈利预期" in html and "{{" not in html
+    assert "Fixture Co" in html and "$11.31B" in html
     assert "增长质量" not in html and "下季验证清单" not in html and "观察仓" not in html
     assert 'id="quality"' not in html and 'id="thesis"' not in html
-    assert "预期差" not in html and 'class="v-lines"' not in html and 'class="v-head"' not in html
     assert "市场怎么判" not in html and "次日涨跌" not in html
-    # 财报分析默认展开；点指标行才画水平值 / 环比 / 同比
     assert '<details class="ev" id="fin" open>' in html and 'data-series="level"' in html
-    assert "财报分析" in html and "指引展望" in html
+    assert "财报分析" in html and "指引展望" in html and "问答交流" in html and "数据来源" in html
     assert "revChart" not in html and "marginChart" not in html and "fcfChart" not in html
     assert 'id="epsSurprise"' not in html
-    meta_html = (tmp_path / "stocks" / "META" / "FY2026Q3.html").read_text(encoding="utf-8")
-    assert 'id="epsSurprise"' in meta_html and "超预期 $0.86" in meta_html
-    assert "实际 $3.83 · 预期 $6.54" not in meta_html and "GAAP $3.83" in meta_html
-    assert 'class="v-lines"' not in meta_html and 'class="v-head"' not in meta_html
-    assert "问题有答案" not in meta_html and "本季营收 beat" not in meta_html
-    assert "本季 EPS beat" not in meta_html and 'class="vchip"' not in meta_html
-    assert "本季 EPS（Non-GAAP）" not in meta_html
-    assert "增长质量" not in meta_html and "下季验证清单" not in meta_html and "观察仓" not in meta_html
-    assert "问答交流" in meta_html and "数据来源" in meta_html
-    assert 'id="quality"' not in meta_html and 'id="thesis"' not in meta_html and 'class="card verdict"' not in meta_html
-    assert "市场怎么判" not in meta_html and "阶段1" not in meta_html
-    assert "财报分析" in meta_html and '<details class="ev" id="fin" open>' in meta_html
-    assert "财报分析" in meta_html and 'data-fin="split"' not in meta_html
-    assert "rev-horizons" not in meta_html and "revHorizons" not in meta_html
-    assert 'data-fin-metric="revenue"' in meta_html and "按业务" in meta_html and "按地区" in meta_html
-    assert "费用构成" in meta_html and "毛利构成" not in meta_html
-    fin = meta_html.split('id="fin"', 1)[1].split('id="guide"', 1)[0]
-    assert fin.index('data-fin-metric="revenue"') < fin.index('data-fin-panel="revenue"') < fin.index('data-fin-metric="cost_of_revenue"')
-    assert fin.index('data-fin-metric="cost_of_revenue"') < fin.index('data-fin-panel="cost_of_revenue"') < fin.index(">毛利率（GAAP）<")
-    assert 'aria-label="营业收入"' in fin[: fin.index('data-fin-metric="cost_of_revenue"')]
-    assert "毛利润" not in fin and 'id="finCharts"' not in meta_html
-    assert "再点同一行就收起" in meta_html and "function collapseFin()" in meta_html
-    assert 'data-fin-grain="quarter"' in meta_html and 'data-fin-grain="year"' in meta_html
-    assert "没有完整财年" in meta_html and 'data-fin-bound' in meta_html
-    assert "营业费用" in meta_html and "$38.24B" in meta_html
-    assert "FY2016Q1" in meta_html and "$63.06B" in meta_html and "应用家族" in meta_html
-    assert "财务数据" not in meta_html and "业务拆分" not in meta_html
-    assert "股份数量" in meta_html and "存货周转天数" in meta_html and "应收账款周转天数" in meta_html
-    assert "预收账款周转天数" in meta_html and "未披露" in meta_html
-    assert 'class="nest"' not in meta_html and "└" not in meta_html
-    assert "广告" in meta_html and "应用家族" in meta_html and "美国和加拿大" in meta_html
-    assert "估值与技术" not in meta_html and 'class="card quote-card"' not in meta_html
-    assert 'class="metric-strip"' in meta_html and 'id="forward-pe"' in meta_html
-    assert 'data-expect="eps"' in meta_html and 'data-expect="revenue"' in meta_html
-    strip = meta_html.split('class="metric-strip"', 1)[1].split('class="strip-asof"', 1)[0]
-    assert "股价" in strip and "$697.52" in strip
-    assert "市值" in strip and "$1794.7B" in strip
-    assert "股息率" in strip and "0.30%" in strip and "TTM" in strip
-    assert "RSI" in strip and "47.4" in strip
-    assert "下季度 EPS 指引" in strip and "年度 EPS 指引" in strip
-    assert strip.count(">无<") == 2
-    assert "$32.03" not in strip and "8.29" not in strip
-    assert 'data-provided="0"' in strip and 'data-basis="non-GAAP"' in strip
-    assert 'data-source-period="FY2026Q4"' in strip and 'data-source-period="FY2026"' in strip
-    assert "数据时间 2026-10-21 · 来源 TradingView" in meta_html
-    expect = meta_html.split('id="expect"', 1)[1].split('id="fin"', 1)[0]
-    assert 'expect-frame' in expect and 'id="epsSurprise"' in expect and 'id="forward-pe"' in expect
-    assert expect.count('class="card') == 1
-    forward = meta_html.split('id="forward-pe"', 1)[1].split('id="fin"', 1)[0]
-    assert "<th>时间</th>" in forward and "<th>EPS</th>" in forward and "<th>P/E</th>" in forward
-    assert "相当于 TTM PE 的" not in forward and "$697.52" not in forward
-    assert "近 4 季（TTM）" in forward and "未来 12 个月（NTM）" in forward
-    table = forward.split("</table>", 1)[0]
-    assert "FY26E" in table and "FY27E" in table and "FY28E" not in table
-    assert "FY28E 没有全年共识" in forward
-    assert "<input" not in forward
-    assert "eps_estimate_ntm" not in forward and "price_earnings_forward" not in forward
-    assert "剩余 3 个月" in forward
-    mu_strip = html.split('class="metric-strip"', 1)[1].split('class="strip-asof"', 1)[0]
-    assert "下季度 EPS 指引" in mu_strip and "$38.15" in mu_strip
-    assert "年度 EPS 指引" in mu_strip and ">无<" in mu_strip
-    assert 'data-source-kind="press_release"' in mu_strip and 'data-metric-key="eps_nongaap"' in mu_strip
-    assert "数据时间 2026-09-30 · 来源 新闻稿 / 电话会" in html
-    assert "$37.84" not in mu_strip and "8.29" not in mu_strip and "Exhibit 99.1" not in mu_strip
-    mu_forward = html.split('id="forward-pe"', 1)[1]
-    assert "FY26E" in mu_forward and "FY27E" in mu_forward and "FY28E" in mu_forward
-    guide = meta_html.split('id="guide"', 1)[1].split('id="qa"', 1)[0]
-    assert "业绩指引" in guide and "行业展望" in guide and "gtile" not in guide
-    assert "分析师修正" not in guide and "分析师修正" not in meta_html and "分析师修正" not in html
-    assert 'class="guide-stack"' in guide and 'class="guide-part"' in guide
-    assert "隐含环比" in guide and "隐含同比" in guide and "较共识" in guide
-    assert "$73.00B – $76.00B" in guide and "+15.3%" in guide and "+24.4%" in guide and "+0.5%" in guide
-    assert "资本开支" in guide and "$135.00B – $145.00B" in guide and "FY2026全年" in guide and "+100.9%" in guide
-    assert "外部环境（技术变化）" in guide and "需求变化" in guide and "公司战略" in guide
-    assert "1000 万人" in guide and "10 倍以上" in guide and "150 亿美元" in guide
-    assert "$175.00B" not in guide and "全年费用" not in guide
-    assert "文本不足" not in meta_html
-    assert "未调用模型，变动原因未生成" not in meta_html
-    assert "量价齐升" in meta_html
-    index_html = (tmp_path / "index.html").read_text(encoding="utf-8")
-    assert "观察池" in index_html and "指标对比" in index_html
-    assert "beat 2.0%" in index_html and "beat 13.1%" in index_html
-    assert "beat 11.1%" in index_html
-    assert "$73–76B" not in index_html
-    assert "超预期 · Non-GAAP" not in index_html and "次日涨跌" not in index_html
-    assert "阶段1 · 新闻稿" not in index_html
-    assert "红色公告" not in index_html and "未来30天财报" not in index_html and "未来 30 天财报" not in index_html
-    assert "EPS预期上调" not in index_html and "待验证跟踪项" not in index_html
-    assert "公告与新闻" not in index_html and "财报日历" not in index_html and "最新发布" not in index_html
-    assert "Forward PE 默认升序" not in index_html
-    assert 'data-filter="status"' in index_html and 'data-filter="kind"' in index_html
-    for col in ("名称", "分组", "状态", "股价", "涨跌", "RSI", "Forward PE", "目标估值", "是否触发", "最近财报", "营收", "EPS", "下季指引", "下次财报"):
-        assert col in index_html
-    body = index_html.split("<tbody>", 1)[1]
-    assert body.index("SNDK") < body.index("MCD") < body.index("META")
-    assert (tmp_path / "static" / "vendor" / "chart.umd.min.js").exists()
+    assert "再点同一行就收起" in html and "function collapseFin()" in html
+    assert 'data-fin-grain="quarter"' in html and 'data-fin-grain="year"' in html
+    assert "没有完整财年" in html and 'data-fin-bound' in html
+    assert "财务数据" not in html and "业务拆分" not in html
+    assert "估值与技术" not in html and 'class="card quote-card"' not in html
+    assert "超预期 $0.86" not in html and "$697.52" not in html
+    assert "ALPHAVANTAGE_API_KEY" not in html
+    assert (out / "static" / "vendor" / "chart.umd.min.js").exists()
     assert any(p.name == "index.html" for p in pages)
+
+
+def test_build_cli_writes_only_the_out_dir(tmp_path, monkeypatch):
+    from pipeline.__main__ import main
+
+    out, _pages = _render_fixture_site(monkeypatch, tmp_path)
+    dest = tmp_path / "cli-out"
+    assert main(["build", "--out", str(dest)]) == 0
+    assert (dest / "index.html").is_file()
+    assert (dest / "stocks" / "FIX" / "FY2026Q1.html").is_file()
+    assert dest != out
 
 
 def test_meta_quote_card_divides_tradingview_columns():
@@ -1147,37 +1214,97 @@ def test_review_position_filters_and_checks_quotes(monkeypatch):
     assert "观察仓" in captured["user"] and len(captured["user"]) < 60000
 
 
-def test_watchlist_row_uses_saved_fields_and_eps_guidance():
+def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     """首页列只读已有配置和 scorecard。缺目标估值、涨跌、分组时留空，不拿营收指引充数。"""
-    from builder.build import _index_row, _next_text, _quote_view, _trigger_view
+    import builder.build as build
     from pipeline.config import load_position, load_ticker_config
 
-    meta = json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8"))
-    row = _index_row("META", load_ticker_config("META"), "FY2026Q3", meta, today=date(2026, 10, 23))
+    monkeypatch.setattr(
+        build,
+        "_saved_quote",
+        lambda ticker: {
+            "columns": {"close": 100, "eps_estimate_ntm": 5, "RSI": 47.35},
+            "fetched_at": "2026-10-23T00:00:00+00:00",
+        }
+        if ticker == "META"
+        else {},
+    )
+    monkeypatch.setattr(build, "_next_earnings", lambda ticker: "")
+
+    def record(ticker, **kwargs):
+        rows = {
+            # 已披露 FY2026Q3、财年末 12 月 → 2026-12-31。下修 null 当成 0。
+            "META": {
+                "date": "2026-12-31",
+                "horizon": "fiscal quarter",
+                "eps_estimate_average": "8.0000",
+                "eps_estimate_analyst_count": "10",
+                "eps_estimate_revision_up_trailing_30_days": "4",
+                "eps_estimate_revision_down_trailing_30_days": None,
+            },
+            # MU 财年末 8 月，FY2026Q4 的下一季是 2026-11-30。
+            "MU": {
+                "date": "2026-11-30",
+                "horizon": "fiscal quarter",
+                "eps_estimate_average": "1.2500",
+                "eps_estimate_analyst_count": "6",
+                "eps_estimate_revision_up_trailing_30_days": "1",
+                "eps_estimate_revision_down_trailing_30_days": None,
+            },
+        }
+        row = rows.get(ticker)
+        if row is None:
+            return {"estimates": [], "fetched_at": ""}
+        return {"estimates": [row], "fetched_at": "2020-01-01T00:00:00+00:00"}
+
+    monkeypatch.setattr("pipeline.sources.av_estimates.load_earnings_record", record)
+
+    meta = {
+        "meta": {"release_at_utc": "2026-10-21T20:03:00Z", "eps_basis": "non_gaap"},
+        "status": {"stage": "stage2_done"},
+        "scorecard": [
+            {"metric": "revenue", "actual": 100, "verdict": "beat", "benchmark": {"diff_pct": 0.02}},
+            {"metric": "eps", "actual": 1.2, "verdict": "beat", "benchmark": {"diff_pct": 0.131}},
+            {"metric": "next_q_revenue_guidance", "actual": 70, "verdict": "beat", "benchmark": {"diff_pct": 0.05}},
+        ],
+    }
+    row = build._index_row("META", load_ticker_config("META"), "FY2026Q3", meta, today=date(2026, 10, 23))
     assert row["status_label"] == "观察" and row["status_key"] == "watch"
     assert row["group"] == "—" and row["kind"] == ""
     assert row["target"] == "—" and row["triggered"]["text"] == "—"
-    assert row["quote_price"] == "$697.52" and row["rsi"] == "47.4" and row["forward_pe"] == "21.8×"
+    assert row["quote_price"] == "$100.00" and row["rsi"] == "47.4" and row["forward_pe"] == "20.0×"
     assert row["change"]["text"] == "—"
     assert row["revenue"]["label"] == "beat 2.0%" and row["eps"]["label"] == "beat 13.1%"
     assert row["guide"]["label"] == "—"
     assert row["reported"]["text"] == "2026-10-21"
     assert "16:03" in row["reported"]["title"]
-    assert row["next_text"].startswith("2027-01-27")
-    assert row["quarter"]["analysts"] == "—" and row["quarter"]["eps"] == "—"
-    assert row["quarter"]["revisions"] == "—"
-    assert row["quarter"]["signal"] == "无数据/财报驱动"
+    assert row["next_text"] == "下次财报日待定"
+    assert row["quarter"]["analysts"] == "10" and row["quarter"]["eps"] == "$8.00"
+    assert row["quarter"]["revisions"] == "4 / 0"
+    assert row["quarter"]["stale"] is True
+    assert row["quarter"]["stale_title"] == "旧 2020-01-01T00:00:00+00:00"
 
-    mu = json.loads((ROOT / "data" / "MU" / "FY2026Q4.json").read_text(encoding="utf-8"))
-    mu_row = _index_row("MU", load_ticker_config("MU"), "FY2026Q4", mu, today=date(2026, 10, 23))
+    mu = {
+        "meta": {"release_at_utc": "2026-09-30T20:00:00Z"},
+        "status": {"stage": "stage1_done"},
+        "scorecard": [
+            {"metric": "revenue", "actual": 1, "verdict": "unknown", "benchmark": {}},
+            {"metric": "eps", "actual": 2, "verdict": "beat", "benchmark": {"diff_pct": 0.03}},
+            {"metric": "next_q_eps_guidance", "actual": 3, "verdict": "beat", "benchmark": {"diff_pct": 0.111}},
+            {"metric": "next_q_revenue_guidance", "actual": 9, "verdict": "beat", "benchmark": {"diff_pct": 0.5}},
+        ],
+    }
+    mu_row = build._index_row("MU", load_ticker_config("MU"), "FY2026Q4", mu, today=date(2026, 10, 23))
     assert mu_row["revenue"]["label"] == "待核对"
     assert mu_row["eps"]["label"] == "beat 3.0%"
     assert mu_row["guide"]["label"] == "beat 11.1%"
     assert mu_row["quote_price"] == "—" and mu_row["forward_pe"] == "—" and mu_row["rsi"] == "—"
     assert mu_row["reported"]["text"] == "2026-09-30"
-    assert mu_row["quarter"]["signal"] == "无数据/财报驱动"
+    assert mu_row["quarter"]["eps"] == "$1.25" and mu_row["quarter"]["analysts"] == "6"
+    assert mu_row["quarter"]["revisions"] == "1 / 0"
+    assert mu_row["quarter"]["stale"] is True
 
-    labeled = _index_row(
+    labeled = build._index_row(
         "MU",
         {**load_ticker_config("MU"), "分组": "存储", "类型": "AI硬件", "目标估值": "12×"},
         "FY2026Q4",
@@ -1187,7 +1314,7 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance():
     assert labeled["group"] == "存储" and labeled["kind"] == "AI硬件" and labeled["target"] == "12×"
 
     sndk = load_position("SNDK")
-    assert _trigger_view(sndk, {})["text"] == "—"
+    assert build._trigger_view(sndk, {})["text"] == "—"
     reviewed = {
         "thesis_review": {
             "stage": "hold",
@@ -1197,41 +1324,40 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance():
             ],
         }
     }
-    assert _trigger_view(sndk, reviewed)["text"] == "否"
+    assert build._trigger_view(sndk, reviewed)["text"] == "否"
     reviewed["thesis_review"]["triggers"][1]["state"] = "triggered"
-    assert _trigger_view(sndk, reviewed)["text"] == "是"
-    assert _trigger_view(load_position("MU"), reviewed)["text"] == "—"
+    assert build._trigger_view(sndk, reviewed)["text"] == "是"
+    assert build._trigger_view(load_position("MU"), reviewed)["text"] == "—"
 
-    quote = _quote_view({"close": 100, "eps_estimate_ntm": 5, "RSI": 47.35, "day_change_pct": 0.012})
+    quote = build._quote_view({"close": 100, "eps_estimate_ntm": 5, "RSI": 47.35, "day_change_pct": 0.012})
     assert quote["price"] == "$100.00" and quote["pe"] == "20.0×" and quote["rsi"] == "47.4"
     assert quote["change"]["text"] == "+1.2%"
-    assert _next_text("", "盘后") == "下次财报日待定"
+    assert build._next_text("", "盘后") == "下次财报日待定"
 
 
 def test_watchlist_homepage_html(tmp_path, monkeypatch):
-    import builder.build as b
-
-    monkeypatch.setattr(b, "site_dir", lambda: tmp_path)
-    b.build_site()
-    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    out, _pages = _render_fixture_site(monkeypatch, tmp_path)
+    html = (out / "index.html").read_text(encoding="utf-8")
     assert "<h1>观察池</h1>" in html
     assert "指标对比" in html and "Forward PE 默认升序" not in html
     assert "红色公告" not in html and "公告与新闻" not in html and "财报日历" not in html and "最新发布" not in html
     assert 'data-filter="status"' in html and ">持仓</button>" in html and ">等待</button>" in html
     assert 'aria-label="按类型筛选"' in html and ">全部</button>" in html
-    assert "beat 2.0%" in html and "beat 13.1%" in html and "beat 11.1%" in html
-    assert "$73–76B" not in html and "$697.52" in html and "21.8×" in html and ">47.4<" in html
-    assert ">2026-10-21</td>" in html and ">2026-09-30</td>" in html
+    # 夹具记分卡：营收 +1.0%、EPS +5.9%、下季 EPS 指引 +4.5%。不写现网的 beat 2.0% / $697.52。
+    assert "beat 1.0%" in html and "beat 5.9%" in html and "beat 4.5%" in html
+    assert "beat 2.0%" not in html and "$697.52" not in html and "$73–76B" not in html
+    assert "$1.50" in html and "$0.10" not in html and "2 / 0" in html
+    assert 'title="旧 2020-01-01T00:00:00+00:00"' in html
     assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    assert "Yahoo 0q" not in html and "第一个未公布" not in html
     head = html.split("</thead>", 1)[0]
     assert head.index(">是否触发</th>") < head.index(">评价</th>") < head.index(">最近财报</th>")
     assert 'class="mid name"' in head and 'class="mid">评价</th>' in head and 'class="mid">下次财报</th>' in head
     assert "下季度" not in html and "温和上修" not in html and "温和下修" not in html
-    assert "无数据" in html and "ALPHAVANTAGE_API_KEY" in html
-    assert '<b>SNDK</b>' not in html and 'class="pool-name"' in html
+    assert "ALPHAVANTAGE_API_KEY" not in html
+    assert 'class="pool-name"' in html
     body = html.split("<tbody>", 1)[1]
-    assert body.index("SNDK") < body.index("MCD") < body.index(">META<")
-    # 没有类型配置时，类型筛选只保留「全部」
+    assert body.index(">AAA<") < body.index(">FIX<")
     kind_bar = html.split('aria-label="按类型筛选"', 1)[1].split("</div>", 1)[0]
     assert kind_bar.count("<button") == 1
 

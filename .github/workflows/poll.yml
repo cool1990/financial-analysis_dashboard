@@ -59,12 +59,18 @@ jobs:
           # 不在窗口时几秒内退出，不调用 LLM
           python -m pipeline poll 2>&1 | tee logs/poll.log
 
-      - name: Build site
-        if: steps.poll.outputs.did_work == 'true'
+      # 没有新 8-K（did_work 为 false）时不拉预期、也不建站。
+      # 只刷新刚刚跑完 Stage1 的股票；20 小时内已有缓存的由 av-estimates 自己跳过。
+      - name: Refresh estimates for new reports
+        if: steps.poll.outputs.did_work == 'true' && steps.poll.outputs.reported != ''
         env:
           ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
         run: |
-          python -m pipeline av-estimates 2>&1 | tee -a logs/poll.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
+          python -m pipeline av-estimates --ticker "${{ steps.poll.outputs.reported }}" 2>&1 | tee -a logs/poll.log || echo "::warning::EARNINGS_ESTIMATES 没有写入缓存，确认 Actions secret ALPHAVANTAGE_KEY"
+
+      - name: Build site
+        if: steps.poll.outputs.did_work == 'true'
+        run: |
           python -m pipeline build 2>&1 | tee -a logs/poll.log
 
       - name: Commit
