@@ -309,6 +309,16 @@ def test_build_site_renders(tmp_path, monkeypatch):
     assert 'data-fin-panel="split" hidden' in meta_html
     assert "rev-horizons" not in meta_html and "revHorizons" not in meta_html
     assert "按业务" in meta_html and "按地理" in meta_html
+    split_html = meta_html.split('data-fin-panel="split"', 1)[1].split('id="guide"', 1)[0]
+    assert split_html.count("<th>指标</th>") == 2
+    assert split_html.count("<th>金额</th>") == 2
+    assert split_html.count("<th>同比</th>") == 2
+    assert split_html.count("<th>环比</th>") == 2
+    assert split_html.count("<th>占比</th>") == 2
+    assert "split-list" not in split_html and "split-extra" not in split_html
+    assert "应用家族" in split_html and "$64.16B" in split_html and "99.3%" in split_html
+    assert 'class="split-child"' in split_html and "广告" in split_html and "97.6%" in split_html
+    assert "本季新闻稿没有按地区列示收入" in split_html
     assert "股份数量" in meta_html and "存货周转天数" in meta_html and "应收账款周转天数" in meta_html
     assert "预收账款周转天数" in meta_html and "未披露" in meta_html
     assert 'class="nest"' not in meta_html and "└" not in meta_html

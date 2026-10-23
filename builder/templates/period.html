@@ -119,10 +119,11 @@
     <span class="ev-meta">{{ fin_rows|length }} 项指标 · 同比 / 环比 · 变动原因与原文{% if history %} · 趋势图{% endif %}</span>
   </summary>
   <div class="ev-body">
+  <div class="fin-layout">
+  <div data-fin-panel="statements">
   <p class="layer-sub">每行一个指标：本季、同比、环比、相对一致预期，和一句话原因。点击行展开水平值、环比、同比三张图；有原文时同时展开驱动因素。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
   {% if drivers_pending %}<p class="pending-note">{{ drivers_pending }}</p>{% endif %}
-  <div class="fin-layout">
-  <div class="card rows" data-fin-panel="statements">
+  <div class="card rows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     {% for r in fin_rows %}
     <details class="mrow">
@@ -177,6 +178,7 @@
     <p class="placeholder">财务数据尚未生成。</p>
     {% endfor %}
   </div>
+  </div>
   <div class="card split-card" data-fin-panel="split" hidden>
     <div class="split-head">
       <span class="seg" role="group" aria-label="按业务或按地理">
@@ -184,53 +186,40 @@
         <button type="button" data-split="geo" aria-pressed="false">按地理</button>
       </span>
     </div>
-    <div data-split-panel="business">
-      {% if segments.business %}
-      <ul class="split-list">
-        {% for row in segments.business %}
-        <li>
-          <div class="split-row">
-            <span class="split-name">{{ row.name }}{% if row.share %}<small>{{ row.share }}</small>{% endif %}</span>
-            <b>{{ row.revenue }}</b>
-            <span class="split-chg">同比 <span class="c-{{ row.yoy.cls }}">{{ row.yoy.text }}</span>{% if row.qoq.text != '—' %} · 环比 <span class="c-{{ row.qoq.cls }}">{{ row.qoq.text }}</span>{% endif %}</span>
-          </div>
-          {% if row.extra %}<p class="split-extra">{{ row.extra }}</p>{% endif %}
-          {% if row.children %}
-          <ul class="split-list">
-            {% for child in row.children %}
-            <li class="split-child">
-              <div class="split-row">
-                <span class="split-name">{{ child.name }}{% if child.share %}<small>{{ child.share }}</small>{% endif %}</span>
-                <b>{{ child.revenue }}</b>
-                <span class="split-chg">同比 <span class="c-{{ child.yoy.cls }}">{{ child.yoy.text }}</span></span>
-              </div>
-            </li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-        </li>
+    {% macro split_table(rows, empty) %}
+    <div class="table-wrap">
+      <table class="data split-table">
+        <thead><tr><th>指标</th><th>金额</th><th>同比</th><th>环比</th><th>占比</th></tr></thead>
+        <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.revenue }}</td>
+            <td class="c-{{ row.yoy.cls }}">{{ row.yoy.text }}</td>
+            <td class="c-{{ row.qoq.cls }}">{{ row.qoq.text }}</td>
+            <td>{{ row.share or "—" }}</td>
+          </tr>
+          {% for child in row.children or [] %}
+          <tr class="split-child">
+            <td>{{ child.name }}</td>
+            <td>{{ child.revenue }}</td>
+            <td class="c-{{ child.yoy.cls }}">{{ child.yoy.text }}</td>
+            <td class="c-{{ child.qoq.cls }}">{{ child.qoq.text }}</td>
+            <td>{{ child.share or "—" }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td class="split-empty" colspan="5">{{ empty }}</td></tr>
         {% endfor %}
-      </ul>
-      {% if segments.note %}<p class="split-note">{{ segments.note }}</p>{% endif %}
-      {% else %}
-      <p class="muted">{{ segments.business_note }}</p>
-      {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% endmacro %}
+    <div data-split-panel="business">
+      {{ split_table(segments.business, segments.business_note) }}
     </div>
     <div data-split-panel="geo" hidden>
-      {% if segments.geo %}
-      <ul class="split-list">
-        {% for row in segments.geo %}
-        <li>
-          <div class="split-row">
-            <span class="split-name">{{ row.name }}</span>
-            <b>{{ row.revenue }}</b>
-          </div>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="muted">{{ segments.geo_note }}</p>
-      {% endif %}
+      {{ split_table(segments.geo, segments.geo_note) }}
     </div>
   </div>
   </div>
