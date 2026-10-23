@@ -3250,7 +3250,7 @@ def _score_lines(
 
 STATUS_SHORT = {"hold": "持仓", "wait": "等待", "watch": "观察"}
 # 类型筛选的习惯顺序。配置里还有别的类型时排在这些后面，按出现顺序。
-_KIND_ORDER = ("AI硬件", "软件", "平台", "消费")
+_KIND_ORDER = ("半导体", "软件与云", "金融", "消费")
 
 
 def _parse_dt(raw: str | None) -> datetime | None:
@@ -3562,12 +3562,19 @@ def _index_row(
     saved = _saved_quote(t)
     quote_ccy = price_currency(cfg)
     eps_ccy = eps_currency(cfg)
+    cols = saved.get("columns") or {}
+    fund = str(cols.get("fundamental_currency_code") or "").strip().upper()
     fx = None
     if quote_ccy != eps_ccy:
         from pipeline.sources.fx import rate_on
 
         fx = rate_on(_market_day(saved.get("fetched_at"), quote_ccy), attached=saved.get("fx"))
-    quote = _quote_view(saved.get("columns"), quote_ccy=quote_ccy, eps_ccy=eps_ccy, fx=fx)
+    # 扫描把 eps_estimate_ntm 标成股价币种（港股是港币）时直接相除。
+    # 先当成人民币再等 HKDCNY，缺当天汇率就会把本来同币种的倍数写成待核对。
+    if fund and fund == quote_ccy and fund != eps_ccy:
+        quote = _quote_view(cols, quote_ccy=quote_ccy, eps_ccy=fund, fx=None)
+    else:
+        quote = _quote_view(cols, quote_ccy=quote_ccy, eps_ccy=eps_ccy, fx=fx)
     shares, share_note = _stored_shares(t, period)
     cap = _market_cap_view(
         saved.get("columns"),
@@ -3715,6 +3722,134 @@ def _aligned_consensus(actual: float | None, consensus: float | None) -> float |
     return consensus
 
 
+def _positive_hkdcny(fx: dict[str, Any] | None) -> float | None:
+    """1 港币折合的人民币。日期、货币对或非正数都不认。"""
+    if not isinstance(fx, dict):
+        return None
+    if str(fx.get("pair") or "HKDCNY").upper() != "HKDCNY":
+        return None
+    if not str(fx.get("date") or "").strip():
+        return None
+    rate = _finite(fx.get("rate"))
+    if rate is None or rate <= 0:
+        return None
+    return rate
+
+
+def _quote_fx(ticker: str, cfg: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    """行情日当天的 HKDCNY。没有这一天的收盘就 None，不拿前后日顶上。"""
+    from pipeline.sources.fx import rate_on
+
+    if cfg is None:
+        try:
+            cfg = load_ticker_config(ticker)
+        except (FileNotFoundError, OSError):
+            cfg = {}
+    saved = _saved_quote(ticker)
+    return rate_on(_market_day(saved.get("fetched_at"), price_currency(cfg)), attached=saved.get("fx"))
+
+
+def _implied_cny_per_hkd(ticker: str, tv: dict[str, Any] | None) -> dict[str, float]:
+    """已披露季度的人民币营收 / TradingView 港币营收实际。
+
+    扫描按季把人民币换成港币，汇率不是常数。用营收而不是 EPS，避免把 GAAP 和非国际财务报告准则的差额当成汇率。
+    比例超出 0.5–1.5 就当口径对不上，这一季不采用。
+    """
+    used = (tv or {}).get("rows_used") if isinstance((tv or {}).get("rows_used"), dict) else {}
+    rows = used.get("revenues_fq_h") or []
+    if not ticker or not isinstance(rows, list):
+        return {}
+    docs = _load_docs(ticker)
+    found: dict[str, float] = {}
+    for item in rows:
+        if not isinstance(item, dict) or not item.get("IsReported"):
+            continue
+        period = _period_from_tv(item.get("FiscalPeriod"))
+        tv_actual = _finite(item.get("Actual"))
+        if not period or not tv_actual or tv_actual <= 0:
+            continue
+        cny = _finite((((docs.get(period) or {}).get("financials") or {}).get("revenue") or {}).get("value"))
+        if cny is None or cny <= 0:
+            continue
+        ratio = cny / tv_actual
+        if 0.5 <= ratio <= 1.5:
+            found[period] = ratio
+    return found
+
+
+def _tv_fx_context(
+    ticker: str,
+    cfg: dict[str, Any] | None = None,
+    tv: dict[str, Any] | None = None,
+    fx: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """把 TradingView 金额换到报表币种。
+
+    没写 fundamental_currency_code，或已经是报表币种：原样使用。
+    港币对人民币：已披露季用营收隐含汇率；还没有报表实际的季度用行情日 HKDCNY。
+    两种都没有就把这笔数字丢掉，不把港币当成人民币。
+    """
+    if tv is None and ticker:
+        tv = _tradingview(ticker) or {}
+    tv = tv or {}
+    if cfg is None and ticker:
+        try:
+            cfg = load_ticker_config(ticker)
+        except (FileNotFoundError, OSError):
+            cfg = {}
+    cfg = cfg or {}
+    src = str(((tv.get("quote") or {}).get("columns") or {}).get("fundamental_currency_code") or "").strip().upper()
+    dst = eps_currency(cfg)
+    if not src or src == dst:
+        return {"identity": True, "spot": 1.0, "by_period": {}}
+    if {src, dst} != {"HKD", "CNY"}:
+        return {"identity": False, "spot": None, "by_period": {}}
+    if fx is None and ticker:
+        fx = _quote_fx(ticker, cfg)
+    rate = _positive_hkdcny(fx)
+    if src == "HKD":
+        spot = rate
+    else:
+        spot = (1.0 / rate) if rate else None
+    by_period = _implied_cny_per_hkd(ticker, tv) if src == "HKD" and dst == "CNY" and ticker else {}
+    return {"identity": False, "spot": spot, "by_period": by_period}
+
+
+def _scale_tv_money(value: float | None, period: str | None, ctx: dict[str, Any]) -> float | None:
+    """同一币种不缩放。港币金额优先用该季隐含汇率，否则用行情日汇率。"""
+    if value is None:
+        return None
+    if ctx.get("identity"):
+        return value
+    factor = None
+    by_period = ctx.get("by_period") or {}
+    if period and period in by_period:
+        factor = by_period[period]
+    elif ctx.get("spot") is not None:
+        factor = ctx["spot"]
+    if factor is None:
+        return None
+    return float(value) * float(factor)
+
+
+def _apply_tv_scale(scale, period: str | None, value: float | None) -> float | None:
+    if value is None:
+        return None
+    if scale is None:
+        return value
+    return scale(period, value)
+
+
+def _tv_scaler(ticker: str, tv: dict[str, Any] | None = None, fx: dict[str, Any] | None = None):
+    """返回 (换算上下文, (period, value) -> 报表币种金额)。"""
+    ctx = _tv_fx_context(ticker, tv=tv, fx=fx) if ticker else {"identity": True, "spot": 1.0, "by_period": {}}
+
+    def scale(period: str | None, value: float | None) -> float | None:
+        return _scale_tv_money(value, period, ctx)
+
+    return ctx, scale
+
+
 def _saved_consensus(doc: dict[str, Any], metric: str, period: str, ticker: str, actual: float | None) -> float | None:
     consensus = _scorecard_consensus(doc, metric)
     if consensus is None and ticker:
@@ -3723,6 +3858,8 @@ def _saved_consensus(doc: dict[str, Any], metric: str, period: str, ticker: str,
             consensus = _tv_period_estimate(tv, ("earnings_fq_h_chart", "earnings_fq_h"), period)
         elif metric == "revenue":
             consensus = _tv_period_estimate(tv, ("revenues_fq_h",), period)
+        if consensus is not None:
+            consensus = _scale_tv_money(consensus, period, _tv_fx_context(ticker, tv=tv))
     return _aligned_consensus(actual, consensus)
 
 
@@ -3735,8 +3872,11 @@ def _eps_basis_label(doc: dict[str, Any]) -> str:
     return ""
 
 
-def _tv_reported_actuals(tv: dict[str, Any] | None, metric: str) -> dict[str, float]:
-    """扫描里已经公布的实际。只作同比基数或补季报里没写上的 EPS，不覆盖已有实际。"""
+def _tv_reported_actuals(tv: dict[str, Any] | None, metric: str, scale=None) -> dict[str, float]:
+    """扫描里已经公布的实际。只作同比基数或补季报里没写上的 EPS，不覆盖已有实际。
+
+    scale 把港币实际换到报表币种。换不了的季度丢掉，避免和人民币实际比数量级。
+    """
     used = (tv or {}).get("rows_used") if isinstance((tv or {}).get("rows_used"), dict) else {}
     if metric == "eps":
         groups = [used.get("earnings_fq_h_chart") or [], used.get("earnings_fq_h") or []]
@@ -3750,7 +3890,7 @@ def _tv_reported_actuals(tv: dict[str, Any] | None, metric: str) -> dict[str, fl
             if not isinstance(item, dict) or not item.get("IsReported"):
                 continue
             period = _period_from_tv(item.get("FiscalPeriod"))
-            actual = _finite(item.get("Actual"))
+            actual = _apply_tv_scale(scale, period, _finite(item.get("Actual")))
             if period and actual is not None and period not in found:
                 found[period] = actual
     return found
@@ -3924,10 +4064,11 @@ def _expect_beat_note(actual: float, consensus: float, *, money: bool) -> tuple[
     return f"不及预期 {shown}", "miss"
 
 
-def _tv_forward_rows(tv: dict[str, Any] | None, *, limit: int = 4) -> list[dict[str, Any]]:
+def _tv_forward_rows(tv: dict[str, Any] | None, *, limit: int = 4, scale=None) -> list[dict[str, Any]]:
     """扫描文件里尚未公布的季度。EPS 优先；营收只有扫描写了才带上。
 
     不读全年 scalar，也不把 Alpha Vantage 的财年行拆成季度。两边都空的行丢掉。
+    scale 为 None 时保持扫描原币。港币扫描要先换成报表币种，换不了的行丢掉。
     """
     if not isinstance(tv, dict):
         return []
@@ -3942,8 +4083,8 @@ def _tv_forward_rows(tv: dict[str, Any] | None, *, limit: int = 4) -> list[dict[
                 continue
             parsed.append({
                 "period": period,
-                "eps": _finite(row.get("eps_est")),
-                "revenue": _finite(row.get("rev_est")),
+                "eps": _apply_tv_scale(scale, period, _finite(row.get("eps_est"))),
+                "revenue": _apply_tv_scale(scale, period, _finite(row.get("rev_est"))),
             })
     if not parsed:
         used = tv.get("rows_used") if isinstance(tv.get("rows_used"), dict) else {}
@@ -3963,8 +4104,8 @@ def _tv_forward_rows(tv: dict[str, Any] | None, *, limit: int = 4) -> list[dict[
                 continue
             parsed.append({
                 "period": period,
-                "eps": _finite(item.get("Estimate")),
-                "revenue": revenues.get(period),
+                "eps": _apply_tv_scale(scale, period, _finite(item.get("Estimate"))),
+                "revenue": _apply_tv_scale(scale, period, revenues.get(period)),
             })
     parsed.sort(key=lambda row: row["period"])
     deduped: list[dict[str, Any]] = []
@@ -4026,9 +4167,11 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
     nxt = next_fiscal_period(period)
     guide_eps = _finite((_scorecard_row(doc, "next_q_eps_guidance") or {}).get("actual"))
     guide_rev = _finite((_scorecard_row(doc, "next_q_revenue_guidance") or {}).get("actual"))
+    tv = _tradingview(ticker) if ticker else None
+    _fx_ctx, scale_tv = _tv_scaler(ticker, tv)
     forward_rows: list[dict[str, Any]] = []
     if _page_is_latest(period, docs):
-        forward_rows = _forward_periods_for_page(period, _tv_forward_rows(_tradingview(ticker) if ticker else None))
+        forward_rows = _forward_periods_for_page(period, _tv_forward_rows(tv, scale=scale_tv))
     forward_by = {row["period"]: row for row in forward_rows}
 
     def metric_actual(item: dict[str, Any], metric: str) -> float | None:
@@ -4060,7 +4203,7 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
         if page_actual is not None:
             actuals.setdefault(period, page_actual)
         # 营收实际以季报为准。EPS 季报常缺 Q4（不做累计相减），扫描里同一数量级的已公布实际可以补。
-        scan_actuals = _tv_reported_actuals(_tradingview(ticker) if ticker else None, metric) if metric == "eps" else {}
+        scan_actuals = _tv_reported_actuals(tv, metric, scale_tv) if metric == "eps" else {}
         filled_scan: set[str] = set()
         for key in periods:
             if key in forward_by or key in actuals:
@@ -4157,10 +4300,9 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
             base = "缺一致预期。浅蓝柱是已保存的营收，灰柱留空。下一季若只有管理层指引，写在刻度下，不画成一致预期。"
         else:
             base = "缺一致预期。浅蓝柱是已保存的实际，灰柱留空。"
-        tv_doc = _tradingview(ticker) if ticker else None
         tv_fetched = ""
-        if isinstance(tv_doc, dict):
-            tv_fetched = str(((tv_doc.get("quote") or {}).get("fetched_at") or tv_doc.get("fetched_at") or ""))
+        if isinstance(tv, dict):
+            tv_fetched = str(((tv.get("quote") or {}).get("fetched_at") or tv.get("fetched_at") or ""))
         cut = _source_cutoff("TradingView scanner", tv_fetched) if tv_fetched else ""
         if cut and any(row.get("consensus") is not None for row in quarters):
             return f"{base} {cut}。"
@@ -4208,6 +4350,13 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
         payload["note"] = (
             f"{eps_note} 柱上是已保存的普通股新台币。新闻稿没有 US$ per ADR 时，不按平均汇率换算成美元。"
         )
+    if ticker and not _fx_ctx.get("identity") and (_fx_ctx.get("spot") is not None or _fx_ctx.get("by_period")):
+        fx_sentence = " TradingView 金额原为港币。已披露季按该季营收隐含汇率换回人民币，未披露季按行情日 HKDCNY。"
+        payload["note"] = f"{payload['note']}{fx_sentence}"
+        if _eps_basis_label(doc) == "GAAP":
+            payload["note"] += " 扫描里的 EPS 接近非国际财务报告准则，柱上实际仍是报表摊薄每股盈利。"
+        if payload.get("revenue"):
+            payload["revenue"]["note"] = f"{payload['revenue']['note']}{fx_sentence}"
     return payload
 
 
@@ -4223,7 +4372,9 @@ def _overlay_tv_forward_eps(
     page = _page_period(doc)
     if not ticker or not page:
         return quarters
-    forward = _forward_periods_for_page(page, _tv_forward_rows(_tradingview(ticker)))
+    tv = _tradingview(ticker)
+    _, scale_tv = _tv_scaler(ticker, tv)
+    forward = _forward_periods_for_page(page, _tv_forward_rows(tv, scale=scale_tv))
     if not forward:
         return quarters
     if docs is None:
@@ -4263,7 +4414,7 @@ def _overlay_tv_forward_eps(
             eps = _comparable_quarter_eps(value)
             if eps is not None:
                 saved.setdefault(key, eps)
-        return _scaled_scan_actual(prior, _tv_reported_actuals(_tradingview(ticker), "eps"), saved), True
+        return _scaled_scan_actual(prior, _tv_reported_actuals(tv, "eps", scale_tv), saved), True
 
     for row in forward:
         label = _fq_label(row["period"])
@@ -4980,8 +5131,12 @@ def _quarter_eps_cells(
     doc: dict[str, Any],
     docs: dict[str, dict[str, Any]] | None,
     tv: dict[str, Any] | None,
+    scale=None,
 ) -> dict[tuple[int, int], dict[str, Any]]:
-    """(财年, 季度) → 可比实际和一致预期。图表里的 Non-GAAP 实际优先于数据商 GAAP。"""
+    """(财年, 季度) → 可比实际和一致预期。图表里的 Non-GAAP 实际优先于数据商 GAAP。
+
+    图上已保存的共识视为报表币种，不缩放。扫描里的 Estimate 经 scale 换到报表币种；换不了就留空。
+    """
     cells: dict[tuple[int, int], dict[str, Any]] = {}
 
     def slot(year: int, quarter: int) -> dict[str, Any]:
@@ -5008,7 +5163,8 @@ def _quarter_eps_cells(
         if not parsed:
             continue
         cell = slot(*parsed)
-        consensus = _finite(quarter.get("Estimate"))
+        period = f"FY{parsed[0]}Q{parsed[1]}"
+        consensus = _apply_tv_scale(scale, period, _finite(quarter.get("Estimate")))
         if consensus is not None and cell["consensus"] is None:
             cell["consensus"] = consensus
 
@@ -5161,7 +5317,17 @@ def _forward_pe_view(
     if docs is None:
         docs = _load_docs(ticker)
     annual = _annual_consensus(ticker, fy_end)
-    cells = _quarter_eps_cells(doc, docs, _tradingview(ticker))
+    quote_ccy = price_currency(cfg)
+    eps_ccy = eps_currency(cfg)
+    tv = _tradingview(ticker)
+    fx = None
+    if quote_ccy != eps_ccy:
+        from pipeline.sources.fx import rate_on
+
+        attached = quote.get("fx") if isinstance(quote.get("fx"), dict) else None
+        fx = rate_on(str(quote.get("as_of") or ""), attached=attached)
+    fx_ctx, scale_tv = _tv_scaler(ticker, tv, fx=fx)
+    cells = _quarter_eps_cells(doc, docs, tv, scale=scale_tv)
     match = re.fullmatch(r"FY(\d{4})Q[1-4]", period or "")
     anchor = int(match.group(1)) if match else _current_fiscal_year(as_of, fy_end)
     fy_values: dict[int, float] = {}
@@ -5181,14 +5347,6 @@ def _forward_pe_view(
         weight = months / 12
         ntm = weight * fy_values[current] + (1 - weight) * fy_values[current + 1]
     ttm = _ttm_eps(doc, docs, annual, period)
-
-    quote_ccy = price_currency(cfg)
-    eps_ccy = eps_currency(cfg)
-    fx = None
-    if price is not None and quote_ccy != eps_ccy:
-        from pipeline.sources.fx import rate_on
-
-        fx = rate_on(str(quote.get("as_of") or ""), attached=quote.get("fx") if isinstance(quote.get("fx"), dict) else None)
 
     def row(label: str, kind: str, eps: float) -> dict[str, Any]:
         if price is None:
@@ -5235,6 +5393,11 @@ def _forward_pe_view(
             note += f" 股价按 {fx['pair']} {float(fx['rate']):.4f}（{fx['date']}{source}）换成人民币后，再除以人民币 EPS。"
         else:
             note += " 股价是港币、EPS 是人民币。缺少当日 HKDCNY 时，P/E 显示待核对。"
+    if not fx_ctx.get("identity"):
+        if fx_ctx.get("spot") is not None or fx_ctx.get("by_period"):
+            note += " TradingView 季度一致预期原为港币。已披露季按该季营收隐含汇率换回人民币，未披露季按行情日 HKDCNY，再与报表人民币实际相加。"
+        else:
+            note += " TradingView 季度一致预期是港币。缺少当日 HKDCNY，也没有能对齐的营收实际，这些预期不并进人民币 EPS。"
     if price is None:
         note = "股价未接入，P/E 显示待核对，不估算股价。" + note
     source_bits: list[str] = []
@@ -5333,13 +5496,14 @@ def _revenue_expect(
         docs = _load_docs(ticker)
     docs = docs or {}
     tv = _tradingview(ticker) if ticker else None
+    _, scale_tv = _tv_scaler(ticker, tv)
     page = _page_period(doc)
-    forward = _forward_periods_for_page(page, _tv_forward_rows(tv)) if _page_is_latest(page, docs) else []
+    forward = _forward_periods_for_page(page, _tv_forward_rows(tv, scale=scale_tv)) if _page_is_latest(page, docs) else []
     forward_rev = {row["period"]: row.get("revenue") for row in forward}
     consensus: dict[str, float] = {}
     for item in ((tv or {}).get("rows_used") or {}).get("revenues_fq_h") or []:
         period = _period_from_tv(item.get("FiscalPeriod"))
-        estimate = _finite(item.get("Estimate"))
+        estimate = _apply_tv_scale(scale_tv, period, _finite(item.get("Estimate")))
         if period and estimate is not None:
             consensus[period] = estimate
     if ticker:

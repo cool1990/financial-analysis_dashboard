@@ -106,6 +106,13 @@ def test_imported_period_json_and_homepage_stage(monkeypatch):
     row = _index_row("0700.HK", load_ticker_config("0700.HK"), "FY2026Q1", doc)
     assert row["ticker"] == "0700.HK"
     assert row["status_label"] == "持仓"
+    assert row["group"] == "软件与云" and row["kind"] == "软件与云"
+    # NTM 估计和股价都是港币，直接相除，不因缺少人民币汇率写成待核对。
+    assert row["forward_pe"] == "11.9×"
+    assert row["forward_pe_fx"] == ""
+    # 首页营收 / EPS 仍读记分卡。港股 Stage1 没有一致预期，verdict 是 unknown。
+    assert row["revenue"]["label"] == "待核对"
+    assert row["eps"]["label"] == "待核对"
     assert row["market_cap"].startswith("HK$") and row["market_cap"] != "—"
     q2_doc = load_period_json("0700.HK", "FY2026Q2")
     assert q2_doc is not None
@@ -295,6 +302,8 @@ def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
         "_price_quote",
         lambda *args, **kwargs: {"price": 400.0, "as_of": "2026-10-23", "origin": "tradingview", "currency": "HKD"},
     )
+    # 仓库里可能已有当天 HKDCNY。这一支要测「行情没带汇率、当天也查不到」仍待核对。
+    monkeypatch.setattr("pipeline.sources.fx.rate_on", lambda *args, **kwargs: None)
     missing = build._forward_pe_view("0700.HK", {"meta": {}}, "FY2026Q1", cfg, {}, True)
     assert missing["rows"][0]["pe"] == "待核对"
     assert missing["rows"][0]["fx"] == ""
@@ -395,4 +404,131 @@ def test_tencent_press_statement_matches_meta_charts():
     bare = _forward_pe_view("0700.HK", {"meta": {"ticker": "0700.HK", "fiscal_period": "FY2026Q1"}}, "FY2026Q1", load_ticker_config("0700.HK"), _load_docs("0700.HK"), True)
     cols = json.loads((ROOT / "data" / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))["quote"]["columns"]
     assert bare is not None and bare["price"] == f"HK${cols['close']:.2f}"
-    assert "待核对" in bare["note"]
+    assert bare["rows"]
+    assert all(row["eps"].startswith("¥") for row in bare["rows"])
+    assert all(row["pe"].endswith("×") and "待核对" not in row["pe"] for row in bare["rows"])
+    assert "HKDCNY" in bare["note"]
+    assert "待核对" not in bare["note"]
+    by_label = {row["label"]: row for row in bare["rows"]}
+    # 近四季只用报表人民币实际，不把港币估计加进去。
+    assert by_label["近 4 季（TTM）"]["eps"] == "¥25.36"
+    # 未换算时 FY26E 把 Q1 人民币实际和后三季港币估计加在一起，是 ¥30.95。
+    fy26 = float(by_label["FY26E"]["eps"].removeprefix("¥"))
+    assert by_label["FY26E"]["eps"] != "¥30.95"
+    assert 26 < fy26 < 29
+
+
+def test_pool_groups_cover_the_four_industries():
+    from builder.build import _KIND_ORDER, _kind_filters
+    from pipeline.config import list_tickers, load_ticker_config
+
+    expected = {
+        "NVDA": "半导体",
+        "TSM": "半导体",
+        "AVGO": "半导体",
+        "MU": "半导体",
+        "INTC": "半导体",
+        "SNDK": "半导体",
+        "MSFT": "软件与云",
+        "ORCL": "软件与云",
+        "META": "软件与云",
+        "GOOGL": "软件与云",
+        "0700.HK": "软件与云",
+        "AMZN": "软件与云",
+        "JPM": "金融",
+        "BAC": "金融",
+        "GS": "金融",
+        "SPGI": "金融",
+        "HOOD": "金融",
+        "CRCL": "金融",
+        "MCD": "消费",
+        "NKE": "消费",
+    }
+    assert set(list_tickers()) == set(expected)
+    for ticker, group in expected.items():
+        cfg = load_ticker_config(ticker)
+        assert cfg.get("分组") == group
+        assert not cfg.get("类型")
+    assert _KIND_ORDER == ("半导体", "软件与云", "金融", "消费")
+    shuffled = [{"kind": name} for name in ("消费", "金融", "软件与云", "半导体")]
+    assert _kind_filters(shuffled) == list(_KIND_ORDER)
+
+
+def test_tv_hkd_amounts_scale_by_period_then_spot():
+    import builder.build as build
+
+    ctx = {"identity": False, "spot": 0.85, "by_period": {"FY2026Q1": 0.88}}
+    assert build._scale_tv_money(10, "FY2026Q1", ctx) == pytest.approx(8.8)
+    assert build._scale_tv_money(10, "FY2026Q3", ctx) == pytest.approx(8.5)
+    assert build._scale_tv_money(10, "FY2026Q3", {"identity": False, "spot": None, "by_period": {}}) is None
+    assert build._scale_tv_money(10, "FY2026Q1", {"identity": True, "spot": 1.0, "by_period": {}}) == 10
+    assert build._scale_tv_money(None, "FY2026Q1", ctx) is None
+    assert build._tv_forward_rows(
+        {"future_quarters": [{"tv_label": "2026-Q3", "eps_est": 10, "rev_est": 100}]},
+        scale=lambda period, value: build._scale_tv_money(value, period, ctx),
+    ) == [{"period": "FY2026Q3", "eps": pytest.approx(8.5), "revenue": pytest.approx(85.0)}]
+    assert build._tv_forward_rows(
+        {"future_quarters": [{"tv_label": "2026-Q3", "eps_est": 10, "rev_est": 100}]},
+        scale=lambda period, value: None,
+    ) == []
+
+
+def test_tencent_reported_consensus_uses_implied_fx_not_raw_hkd(monkeypatch):
+    """已披露季用营收隐含汇率，未披露季用行情日 HKDCNY。没有汇率时未披露季丢掉，不把港币写成人民币。"""
+    import builder.build as build
+
+    tv = {
+        "quote": {"columns": {"fundamental_currency_code": "HKD", "close": 400}},
+        "rows_used": {
+            "revenues_fq_h": [
+                {"FiscalPeriod": "2026-Q1", "Actual": 200.0, "Estimate": 210.0, "IsReported": True},
+                {"FiscalPeriod": "2026-Q3", "Actual": None, "Estimate": 220.0, "IsReported": False},
+            ]
+        },
+    }
+    docs = {"FY2026Q1": {"financials": {"revenue": {"value": 176.0}}}}
+    fx = {"pair": "HKDCNY", "rate": 0.8, "date": "2026-10-23", "source": "yfinance:HKDCNY=X"}
+    monkeypatch.setattr(build, "_load_docs", lambda ticker: docs)
+    ctx = build._tv_fx_context("0700.HK", {"listing": "hk", "reporting_currency": "CNY"}, tv=tv, fx=fx)
+    assert ctx["identity"] is False
+    assert ctx["by_period"]["FY2026Q1"] == pytest.approx(0.88)
+    assert ctx["spot"] == pytest.approx(0.8)
+    assert build._scale_tv_money(210, "FY2026Q1", ctx) == pytest.approx(184.8)
+    assert build._scale_tv_money(220, "FY2026Q3", ctx) == pytest.approx(176.0)
+
+    usd = build._tv_fx_context("META", {"reporting_currency": "USD"}, tv={"quote": {"columns": {"fundamental_currency_code": "USD"}}})
+    assert usd["identity"] is True
+
+    monkeypatch.setattr(build, "_quote_fx", lambda *args, **kwargs: None)
+    dropped = build._tv_fx_context(
+        "0700.HK",
+        {"listing": "hk", "reporting_currency": "CNY"},
+        tv={"quote": {"columns": {"fundamental_currency_code": "HKD"}}, "rows_used": {}},
+        fx=None,
+    )
+    assert dropped["spot"] is None and dropped["by_period"] == {}
+    assert build._scale_tv_money(10, "FY2026Q3", dropped) is None
+
+
+def test_tencent_expect_chart_does_not_compare_hkd_consensus_to_cny_actual():
+    import json
+
+    from builder.build import _load_docs, _reported_expect_chart
+
+    doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q1.json").read_text(encoding="utf-8"))
+    chart = _reported_expect_chart(doc, _load_docs("0700.HK"))
+    assert chart is not None
+    revenue = {row["label"]: row for row in chart["revenue"]["quarters"]}
+    q1_rev = revenue["FQ1 2026"]
+    assert q1_rev["actual"] == pytest.approx(196.46, abs=0.01)
+    # 未换算的 TV 预期是 226.45（十亿港币）。换成该季人民币后应落在实际旁边，并仍是小幅不及预期。
+    assert 190 < q1_rev["consensus"] < 210
+    assert q1_rev["note_cls"] == "miss"
+    eps = {row["label"]: row for row in chart["quarters"]}
+    assert eps["FQ1 2026"]["actual"] == pytest.approx(6.3, abs=0.05)
+    # 港币预期约 8.26。按营收隐含汇率换回后接近非国际财务报告准则，不再贴着 8。
+    assert 7.0 < eps["FQ1 2026"]["consensus"] < 7.6
+    assert eps["FQ1 2026"]["note_cls"] == "miss"
+    # 未披露季没有报表实际，用行情日 HKDCNY，而不是原样留下 8.35。
+    assert eps["FQ3 2026"]["consensus"] == pytest.approx(7.10, abs=0.02)
+    assert "港币" in chart["note"]
