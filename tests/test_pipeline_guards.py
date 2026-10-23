@@ -485,7 +485,11 @@ def test_meta_quote_card_divides_tradingview_columns():
     assert by["股息率"]["value"] == f"{cols['dividends_yield']:.2f}%"
     assert by["RSI"]["value"] == f"{cols['RSI']:.1f}"
     shares = _diluted_shares("META", "FY2026Q3")
-    assert shares and by["市值"]["value"] == _fmt_cap(cols["close"] * shares)
+    assert shares
+    assert cols.get("market_cap_basic")
+    assert by["市值"]["value"] == _fmt_cap(cols["market_cap_basic"])
+    assert by["市值"]["sub"] == "TradingView"
+    assert "未接入" not in by["市值"]["value"] and "缺股价" not in by["市值"]["sub"]
     forward = _forward_pe_view("META", doc, "FY2026Q3", load_ticker_config("META"), active=True)
     assert forward["price"] == f"${cols['close']:.2f}"
     rows = {row["label"]: row for row in forward["rows"]}
@@ -498,6 +502,57 @@ def test_meta_quote_card_divides_tradingview_columns():
     # TV 未来季够拼出 FY28 时允许出现；没有也不强制
     assert "FY26E" in rows and "FY27E" in rows
     assert abs(rows["未来 12 个月（NTM）"]["eps_raw"] - cols["eps_estimate_ntm"]) < 1.5
+
+
+def test_market_cap_prefers_scan_then_stored_shares_and_does_not_invent(tmp_path, monkeypatch):
+    """有 market_cap_basic 就用它。没有时才用股价 × 已落盘股本。股本也没有就留空。"""
+    import builder.build as build
+
+    direct = build._market_cap_view(
+        {"market_cap_basic": 1_652_554_253_500, "currency": "USD", "close": 600},
+        price=600,
+        shares=2_500_000_000,
+        currency="USD",
+    )
+    assert direct["value"] == build._fmt_cap(1_652_554_253_500, "USD")
+    assert direct["sub"] == "TradingView"
+    assert direct["value"] != build._fmt_cap(600 * 2_500_000_000)
+
+    fallback = build._market_cap_view(
+        {},
+        price=400,
+        shares=9_000_000_000,
+        currency="HKD",
+        share_note="股价 × 稀释加权股本",
+    )
+    assert fallback["value"] == "HK$3600.0B"
+    assert fallback["sub"] == "股价 × 稀释加权股本"
+
+    empty = build._market_cap_view({"close": 10}, price=10, shares=None, currency="USD")
+    assert empty["value"] == "—" and empty["sub"] == ""
+    assert build._market_cap_view({"market_cap_basic": 0}, price=None, shares=None, currency="USD")["value"] == "—"
+
+    root = tmp_path / "data"
+    (root / "ZZZ" / "raw" / "FY2026Q1").mkdir(parents=True)
+    (root / "ZZZ" / "raw" / "FY2026Q1" / "extracted_financials.json").write_text(
+        json.dumps({"diluted_shares": {"raw": "2000", "unit": "million"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(build, "data_dir", lambda ticker=None: root if not ticker else root / str(ticker).upper())
+    monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {})
+    shares, note = build._stored_shares("ZZZ", "FY2026Q2")
+    assert shares == 2_000_000_000 and note == "股价 × 已披露股本"
+    priced = build._market_cap_view({}, price=50, shares=shares, currency="USD", share_note=note)
+    assert priced["value"] == "$100.0B"
+
+    monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {"shares_outstanding": 25})
+    (root / "ZZZ" / "raw" / "FY2026Q1" / "extracted_financials.json").unlink()
+    assert build._stored_shares("ZZZ", "FY2026Q2")[0] is None
+    assert build._market_cap_view({"close": 50}, price=50, shares=None, currency="USD")["value"] == "—"
+
+    monkeypatch.setattr(build, "load_ticker_config", lambda ticker: {"shares_outstanding": 1_000_000_000})
+    configured, configured_note = build._stored_shares("ZZZ", "FY2026Q2")
+    assert configured == 1_000_000_000 and configured_note == "股价 × 已披露股本"
 
 
 def test_header_eps_guidance_uses_only_management_nongaap():
@@ -1523,6 +1578,8 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     assert row["group"] == "—" and row["kind"] == ""
     assert row["target"] == "—" and row["triggered"]["text"] == "—"
     assert row["quote_price"] == "$100.00" and row["rsi"] == "47.4" and row["forward_pe"] == "20.0×"
+    meta_shares, _note = build._stored_shares("META", "FY2026Q3")
+    assert meta_shares and row["market_cap"] == build._fmt_cap(100 * meta_shares)
     assert row["change"]["text"] == "—"
     assert row["revenue"]["label"] == "beat 2.0%" and row["eps"]["label"] == "beat 13.1%"
     assert row["guide"]["label"] == "—"
@@ -1549,6 +1606,7 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     assert mu_row["eps"]["label"] == "beat 3.0%"
     assert mu_row["guide"]["label"] == "beat 11.1%"
     assert mu_row["quote_price"] == "—" and mu_row["forward_pe"] == "—" and mu_row["rsi"] == "—"
+    assert mu_row["market_cap"] == "—"
     assert mu_row["reported"]["text"] == "2026-09-30"
     assert mu_row["quarter"]["eps"] == "$1.25" and mu_row["quarter"]["analysts"] == "6"
     assert mu_row["quarter"]["revisions"] == "1 / 0"
@@ -1601,6 +1659,8 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert "$1.50" in html and "$0.10" not in html and "2 / 0" in html
     assert 'title="旧 2020-01-01T00:00:00+00:00"' in html
     assert "当前季EPS (30日%)" in html and "覆盖人数" in html and "上修 / 下修" in html and ">评价</th>" in html
+    assert ">市值</th>" in html
+    assert "缺股价或股本" not in html
     assert "Yahoo 0q" not in html and "第一个未公布" not in html
     head = html.split("</thead>", 1)[0]
     assert head.index(">是否触发</th>") < head.index(">评价</th>") < head.index(">最近财报</th>")

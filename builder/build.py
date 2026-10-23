@@ -3912,10 +3912,10 @@ def _pool_source_note(tickers: list[str], index_rows: list[dict[str, Any]]) -> s
     if tv_stamps:
         latest_tv = max(tv_stamps)
         parts.append(
-            _source_cutoff("股价 / 涨跌 / RSI / 四季 EPS·营收一致预期：TradingView scanner", latest_tv)
+            _source_cutoff("股价 / 涨跌 / 市值 / RSI / 四季 EPS·营收一致预期：TradingView scanner", latest_tv)
         )
     else:
-        parts.append("股价 / 涨跌 / RSI / 四季一致预期：TradingView scanner（尚未写入 tradingview_scan.json）")
+        parts.append("股价 / 涨跌 / 市值 / RSI / 四季一致预期：TradingView scanner（尚未写入 tradingview_scan.json）")
     if av_stamps:
         latest_av = max(av_stamps)
         parts.append(
@@ -4026,6 +4026,14 @@ def _index_row(
 
         fx = rate_on(_market_day(saved.get("fetched_at"), quote_ccy), attached=saved.get("fx"))
     quote = _quote_view(saved.get("columns"), quote_ccy=quote_ccy, eps_ccy=eps_ccy, fx=fx)
+    shares, share_note = _stored_shares(t, period)
+    cap = _market_cap_view(
+        saved.get("columns"),
+        price=_finite((saved.get("columns") or {}).get("close")),
+        shares=shares,
+        currency=quote_ccy,
+        share_note=share_note,
+    )
     status_key = (pos or {}).get("stage") or ""
     timing = "盘后" if (cfg.get("release_timing") or "amc") == "amc" else "盘前"
     when = _next_earnings(t)
@@ -4044,6 +4052,7 @@ def _index_row(
         # 下季指引只看 EPS 对一致预期，不用营收区间
         "guide": _surprise_cell(sc.get("next_q_eps_guidance")),
         "quote_price": quote["price"],
+        "market_cap": cap["value"],
         "change": quote["change"],
         "rsi": quote["rsi"],
         "forward_pe": quote["pe"],
@@ -5208,6 +5217,82 @@ def _diluted_shares(ticker: str, period: str) -> float | None:
     return count
 
 
+def _stored_shares(ticker: str, period: str | None = None) -> tuple[float | None, str]:
+    """已经落盘的股本。当前季新闻稿优先，其次更早季、XBRL、股票配置。没有就不编。"""
+    if period:
+        current = _diluted_shares(ticker, period)
+        if current:
+            return current, "股价 × 稀释加权股本"
+    root = data_dir(ticker) / "raw"
+    if root.is_dir():
+        names = sorted(
+            (
+                path.name
+                for path in root.iterdir()
+                if path.is_dir()
+                and path.name != period
+                and (path / "extracted_financials.json").is_file()
+            ),
+            reverse=True,
+        )
+        for name in names:
+            older = _diluted_shares(ticker, name)
+            if older:
+                return older, "股价 × 已披露股本"
+    activity = _read_json(data_dir(ticker) / "xbrl_activity.json") or {}
+    rows = [
+        row
+        for row in (activity.get("diluted_shares") or [])
+        if isinstance(row, dict) and _finite(row.get("value"))
+    ]
+    if rows:
+        rows.sort(key=lambda row: str(row.get("end") or ""))
+        value = _finite(rows[-1].get("value"))
+        if value:
+            return value, "股价 × 已披露股本"
+    try:
+        cfg = load_ticker_config(ticker)
+    except (FileNotFoundError, OSError):
+        cfg = {}
+    for key in ("shares_outstanding", "diluted_shares", "shares"):
+        value = _finite(cfg.get(key))
+        if value and value >= 100_000:
+            return value, "股价 × 已披露股本"
+    return None, ""
+
+
+_CAP_KEYS = ("market_cap_basic", "market_cap_calc", "market_cap")
+
+
+def _market_cap_view(
+    columns: dict[str, Any] | None,
+    *,
+    price: float | None,
+    shares: float | None,
+    currency: str,
+    share_note: str = "股价 × 稀释加权股本",
+) -> dict[str, Any]:
+    """市值。扫描里的 market_cap_basic 优先；否则用股价乘已有股本。两边都没有就留空。"""
+    columns = columns or {}
+    cap = None
+    for key in _CAP_KEYS:
+        candidate = _finite(columns.get(key))
+        if candidate is not None and candidate > 0:
+            cap = candidate
+            break
+    ccy = str(columns.get("currency") or "").strip().upper()
+    if ccy not in {"USD", "HKD", "CNY", "RMB"}:
+        ccy = (currency or "USD").upper()
+    if cap is not None:
+        return {"value": _fmt_cap(cap, ccy), "sub": "TradingView", "vendor": "TradingView"}
+    if price is not None and shares:
+        return {
+            "value": _fmt_cap(price * shares, currency or "USD"),
+            "sub": share_note or "股价 × 已披露股本",
+        }
+    return {"value": "—", "sub": ""}
+
+
 def _guidance_sub(cell: dict[str, Any]) -> str:
     parts = ["管理层 Non-GAAP"]
     for name in cell.get("sources") or []:
@@ -5811,11 +5896,18 @@ def _header_quotes(ticker: str, doc: dict[str, Any], period: str, is_latest: boo
         })
     else:
         items.append({"label": "股价", "value": "未接入", "sub": "行情未接入"})
-    shares = _diluted_shares(ticker, period)
-    if price is not None and shares:
-        items.append({"label": "市值", "value": _fmt_cap(price * shares, quote_ccy), "sub": "股价 × 稀释加权股本"})
-    else:
-        items.append({"label": "市值", "value": "未接入", "sub": "缺股价或股本"})
+    shares, share_note = _stored_shares(ticker, period)
+    cap = _market_cap_view(
+        columns,
+        price=price if isinstance(price, (int, float)) else None,
+        shares=shares,
+        currency=quote_ccy,
+        share_note=share_note,
+    )
+    cap_item = {"label": "市值", "value": cap["value"], "sub": cap["sub"]}
+    if cap.get("vendor"):
+        cap_item["vendor"] = cap["vendor"]
+    items.append(cap_item)
     rsi = _finite(columns.get("RSI"))
     if rsi is not None:
         items.append({"label": "RSI", "value": f"{rsi:.1f}", "sub": "TradingView", "vendor": "TradingView"})

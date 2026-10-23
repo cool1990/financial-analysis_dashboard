@@ -35,6 +35,7 @@
             <th scope="col" class="mid">分组</th>
             <th scope="col" class="mid">状态</th>
             <th scope="col" class="num">股价</th>
+            <th scope="col" class="num">市值</th>
             <th scope="col" class="num">涨跌</th>
             <th scope="col" class="num">RSI</th>
             <th scope="col" class="num">Forward PE</th>
@@ -60,6 +61,7 @@
             <td class="mid{{ ' muted' if r.group == '—' else '' }}">{{ r.group }}</td>
             <td class="mid">{% if r.status_key %}<span class="stage-badge s-{{ r.status_key }}">{{ r.status_label }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
             <td class="num{% if r.quote_price == '—' %} muted{% endif %}">{{ r.quote_price }}</td>
+            <td class="num{% if r.market_cap == '—' %} muted{% endif %}">{{ r.market_cap }}</td>
             <td class="num c-{{ r.change.cls }}">{{ r.change.text }}</td>
             <td class="num{% if r.rsi == '—' %} muted{% endif %}">{{ r.rsi }}</td>
             <td class="num{% if r.forward_pe == '—' %} muted{% endif %}">{% if r.forward_pe == '待核对' %}<b class="v-unknown">待核对</b>{% else %}{{ r.forward_pe }}{% endif %}{% if r.forward_pe_fx %} <span class="muted">{{ r.forward_pe_fx }}</span>{% endif %}</td>

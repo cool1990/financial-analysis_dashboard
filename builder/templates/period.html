@@ -22,7 +22,7 @@
     {% for q in quotes["items"] %}
     <div class="m"{% if q.record %} data-basis="{{ q.record.basis }}" data-provided="{{ 1 if q.record.provided else 0 }}" data-source-kind="{{ q.record.source or '' }}" data-guidance-origin="{{ q.record.guidance_origin or '' }}" data-source-period="{{ q.record.period or '' }}" data-metric-key="{{ q.record.metric_key or '' }}"{% endif %}>
       <div class="k">{{ q.label }}</div>
-      <div class="v{% if q.value in ['无', '未接入'] %} is-empty{% endif %}">{{ q.value }}</div>
+      <div class="v{% if q.value in ['无', '未接入', '—'] %} is-empty{% endif %}">{{ q.value }}</div>
       {% if q.sub %}<div class="s">{{ q.sub }}</div>{% endif %}
     </div>
     {% endfor %}

@@ -105,6 +105,7 @@ def test_imported_period_json_and_homepage_stage(monkeypatch):
     row = _index_row("0700.HK", load_ticker_config("0700.HK"), "FY2026Q1", doc)
     assert row["ticker"] == "0700.HK"
     assert row["status_label"] == "持仓"
+    assert row["market_cap"].startswith("HK$") and row["market_cap"] != "—"
     assert not (ROOT / "data" / "0700.HK" / "FY2026Q2.json").exists()
     manifest = (ROOT / "data" / "0700.HK" / "raw" / "FY2026Q2" / "import_manifest.json").read_text(encoding="utf-8")
     assert "skipped" in manifest
@@ -268,9 +269,13 @@ def test_hk_quote_and_forward_pe_show_hkd_and_fx(monkeypatch):
     assert missing["rows"][0]["fx"] == ""
 
     header = build._header_quotes("0700.HK", {"meta": {}}, "FY2026Q1", True)
-    shown = {item["label"]: item["value"] for item in header["items"]}
-    assert shown["股价"] == "HK$400.00"
-    assert shown["市值"] == "HK$3600.0B"
+    shown = {item["label"]: item for item in header["items"]}
+    assert shown["股价"]["value"] == "HK$400.00"
+    cap_cols = build._tv_columns("0700.HK")
+    assert cap_cols.get("market_cap_basic") and cap_cols.get("currency") == "HKD"
+    assert shown["市值"]["value"] == build._fmt_cap(cap_cols["market_cap_basic"], "HKD")
+    assert shown["市值"]["value"].startswith("HK$")
+    assert "未接入" not in shown["市值"]["value"]
 
 
 def test_tencent_press_statement_matches_meta_charts():
