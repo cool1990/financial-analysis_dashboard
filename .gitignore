@@ -9,8 +9,11 @@ venv/
 .ruff_cache/
 cache/
 logs/
-# 电话会文字稿不入库；SEC 新闻稿 HTML 与 API 原始响应需提交
+# 电话会文字稿默认不入库。0700.HK 的 local_import 文字稿入库，Actions Stage2 才能读到。
+# SEC 新闻稿 HTML 与 API 原始响应需提交。
 data/*/raw/*/transcript*
+!data/0700.HK/raw/*/transcript.txt
+!data/0700.HK/raw/*/transcript_meta.json
 # hkex-poll --download 落盘的公告 PDF，体积大且有版权，不入库
 data/*/raw/hkex/
 *.html.bak

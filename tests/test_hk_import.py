@@ -110,6 +110,30 @@ def test_imported_period_json_and_homepage_stage(monkeypatch):
     assert "skipped" in manifest
 
 
+def test_committed_local_import_transcripts_load():
+    """Actions checkout 后 Stage2 要能读到已入库的 local_import 文字稿。"""
+    import json
+
+    from pipeline.sources.transcripts import load_manual_transcript
+
+    raw_root = ROOT / "data" / "0700.HK" / "raw"
+    periods = sorted(path.name for path in raw_root.glob("FY*") if path.is_dir())
+    assert periods[0] == "FY2017Q1"
+    assert "FY2026Q1" in periods and "FY2026Q2" in periods
+    for period in periods:
+        text = load_manual_transcript(raw_root / period)
+        assert text and text.strip(), period
+        meta = json.loads((raw_root / period / "transcript_meta.json").read_text(encoding="utf-8"))
+        assert meta["source"] == "local_import"
+        assert meta["chars"] == len(text)
+    q1 = load_manual_transcript(raw_root / "FY2026Q1")
+    assert "2026Q1" in q1
+    q2 = json.loads((raw_root / "FY2026Q2" / "import_manifest.json").read_text(encoding="utf-8"))
+    assert q2["transcript"]["filename"] == "Tencent_2026_Q2.md"
+    assert q2["transcript_source"] == "local_import"
+    assert q2["stage1"] == "skipped"
+
+
 def test_hk_paths_do_not_call_sec(monkeypatch):
     from pipeline.commands import backfill_cmd, init_cmd, poll_cmd, run_cmd
     from pipeline.sources.sec_edgar import SecEdgarClient
