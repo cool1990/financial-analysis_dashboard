@@ -1476,6 +1476,8 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
 
 
 def test_watchlist_homepage_html(tmp_path, monkeypatch):
+    import builder.build as build
+
     out, _pages = _render_fixture_site(monkeypatch, tmp_path)
     html = (out / "index.html").read_text(encoding="utf-8")
     assert "<h1>观察池</h1>" in html
@@ -1496,8 +1498,11 @@ def test_watchlist_homepage_html(tmp_path, monkeypatch):
     assert "下季度" not in html and "温和上修" not in html and "温和下修" not in html
     assert "ALPHAVANTAGE_API_KEY" not in html
     assert 'class="pool-name"' in html
+    # 夹具公司名是英文，首页链接用 _display_name 的「代码 (代码)」。持仓 AAA 排在观察 FIX 前面。
+    aaa = build._display_name({"name": "Alpha Hold"}, "AAA")
+    fix = build._display_name({"name": "Fixture Co"}, "FIX")
     body = html.split("<tbody>", 1)[1]
-    assert body.index(">AAA<") < body.index(">FIX<")
+    assert body.index(f">{aaa}<") < body.index(f">{fix}<")
     kind_bar = html.split('aria-label="按类型筛选"', 1)[1].split("</div>", 1)[0]
     assert kind_bar.count("<button") == 1
 
