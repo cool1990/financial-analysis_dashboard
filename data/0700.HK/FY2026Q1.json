@@ -33,9 +33,8 @@
       "listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期",
       "电话会已导入（local_import）。其中的美元口径未写入财务字段；Stage2 解读需另跑 run --stage 2。",
       "电话会与新闻稿数值指引不一致：企业服务收入（2026年第一季度）新闻稿中值 20.0 vs 电话会 40.0",
-      "Stage2 drivers 失败: LLM 输出被 max_tokens=4096 截断（completion_tokens=4096，content 12354 字符）",
-      "Stage2 drivers 失败: listing 只能是 domestic 或 adr，收到 'hk'",
-      "Stage2 drivers 失败: listing 只能是 domestic 或 adr，收到 'hk'"
+      "电话会指引抽取失败: LLM 输出被 max_tokens=4096 截断（completion_tokens=4096，content 12479 字符）",
+      "driver quote 未匹配: 6 条引文未在原文中找到，已标为推测（revenue、operating_margin_gaap、eps_gaap×2、eps_nongaap、kpis.vas_revenue）"
     ]
   },
   "scorecard": [
@@ -455,15 +454,26 @@
     "stage": 2,
     "metrics": [
       {
-        "metric": "gross_margin",
-        "summary": "毛利率同比提升0.8个百分点，主要因自研游戏收入贡献上升带动增值服务毛利率提高3个百分点。",
+        "metric": "revenue",
+        "summary": "收入同比增长9%，主因营销服务、金融科技及企业服务增长，但春节错期压低游戏收入确认，同口径增速为11%。",
         "drivers": [
           {
-            "type": "产品或客户结构",
+            "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "自研游戏收入贡献上升，带动增值服务毛利率提高3个百分点，是整体毛利率提升的主因。",
-            "evidence_quote": "增值服务毛利率 63%，提高 3 个百分点，主要因自研游戏收入贡献上升",
+            "description": "营销服务收入同比增长20%，金融科技及企业服务收入同比增长9%，带动整体收入增长。",
+            "evidence_quote": "营销服务收入 380 亿元，同比增长 20%；金融科技及企业服务收入 600 亿元，同比增长 9%",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "",
+            "quote_unverified": true
+          },
+          {
+            "type": "一次性项目",
+            "direction": "-",
+            "is_primary": false,
+            "description": "春节较晚导致部分游戏收入确认后移，压制增值服务收入增速。",
+            "evidence_quote": "春节时间较去年更晚，使更多游戏相关收入推迟至未来期间确认；按同口径调整后，总收入同比增长 11%",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -474,14 +484,25 @@
       },
       {
         "metric": "gross_margin_gaap",
-        "summary": "毛利率同比提升0.8个百分点，主要因自研游戏收入贡献上升带动增值服务毛利率提高3个百分点。",
+        "summary": "毛利率同比提升0.8个百分点至57%，主因自研游戏收入贡献上升，部分被AI投资相关成本抵消。",
         "drivers": [
           {
             "type": "产品或客户结构",
             "direction": "+",
             "is_primary": true,
-            "description": "自研游戏收入贡献上升，带动增值服务毛利率提高3个百分点，是整体毛利率提升的主因。",
+            "description": "增值服务毛利率提高3个百分点，主要因自研游戏收入贡献上升。",
             "evidence_quote": "增值服务毛利率 63%，提高 3 个百分点，主要因自研游戏收入贡献上升",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "营销服务毛利率下降0.5个百分点，反映AI投资带来的设备折旧和运营成本增加。",
+            "evidence_quote": "营销服务毛利率 55%，下降 0.5 个百分点，反映为增强未来内容推荐而加大 AI 投资所产生的设备折旧和运营成本",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -492,14 +513,14 @@
       },
       {
         "metric": "operating_margin_gaap",
-        "summary": "经营利润率同比提升2.3个百分点，主要因毛利率提升及一般行政费用下降，但部分被销售推广和研发费用增加抵消。",
+        "summary": "经营利润率同比提升2.3个百分点，主因毛利率改善及一般行政费用下降，部分被销售推广和研发费用增加抵消。",
         "drivers": [
           {
-            "type": "单位成本",
+            "type": "费用投入",
             "direction": "+",
             "is_primary": true,
-            "description": "毛利率提升带动经营利润率改善，是经营利润率同比提升的主因。",
-            "evidence_quote": "整体毛利率 57%，同比提高 1 个百分点",
+            "description": "剔除研发的一般及行政费用下降24%，因上年同期包含一次性股份薪酬高基数。",
+            "evidence_quote": "剔除研发的一般及行政费用下降 24% 至 113 亿元，因上年同期包含海外子公司重组既有商业安排相关的一次性股份薪酬高基数",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -509,36 +530,25 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": false,
-            "description": "销售及市场推广费用同比增长44%，研发费用同比增长19%，部分抵消了毛利率提升的正面影响。",
-            "evidence_quote": "销售及市场推广费用 113 亿元，同比增长 44%，反映对 AI 原生应用及新游戏的推广增加。研发费用 226 亿元，同比增长 19%",
+            "description": "销售及市场推广费用同比增长44%，研发费用同比增长19%，部分抵消利润率提升。",
+            "evidence_quote": "销售及市场推广费用 113 亿元，同比增长 44%；研发费用 226 亿元，同比增长 19%",
             "source": "prepared_remarks",
-            "is_inference": false,
+            "is_inference": true,
             "reasoning": "",
-            "quote_unverified": false
-          },
-          {
-            "type": "一次性项目",
-            "direction": "+",
-            "is_primary": false,
-            "description": "上年同期包含海外子公司重组相关一次性股份薪酬高基数，导致本期一般行政费用同比下降24%。",
-            "evidence_quote": "剔除研发的一般及行政费用下降 24% 至 113 亿元，因上年同期包含海外子公司重组既有商业安排相关的一次性股份薪酬高基数",
-            "source": "prepared_remarks",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
+            "quote_unverified": true
           }
         ],
         "conflicts": []
       },
       {
         "metric": "operating_margin_nongaap",
-        "summary": "非IFRS经营利润率同比基本持平，因AI投资推高成本费用，但被毛利率提升和一次性高基数效应抵消。",
+        "summary": "非IFRS经营利润率同比基本持平，AI投资推高成本，但剔除新AI产品后利润率升至43%。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "-",
             "is_primary": true,
-            "description": "AI投资增加带来设备折旧、运营成本及人员成本上升，推高研发费用，是利润率未提升的主因。",
+            "description": "AI投资增加带来设备折旧、运营成本及人员成本上升，压制利润率。",
             "evidence_quote": "研发费用 226 亿元，同比增长 19%，主要因 AI 投资增加带来设备折旧、运营成本及人员成本上升",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -546,11 +556,11 @@
             "quote_unverified": false
           },
           {
-            "type": "单位成本",
+            "type": "产品或客户结构",
             "direction": "+",
             "is_primary": false,
-            "description": "毛利率同比提升1个百分点，对利润率形成支撑。",
-            "evidence_quote": "整体毛利率 57%，同比提高 1 个百分点",
+            "description": "增值服务毛利率提高3个百分点，部分抵消AI投资影响。",
+            "evidence_quote": "增值服务毛利率 63%，提高 3 个百分点，主要因自研游戏收入贡献上升",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -561,13 +571,13 @@
       },
       {
         "metric": "eps_gaap",
-        "summary": "摊薄每股盈利同比增长22.9%，主要因期内盈利同比增长19.4%，叠加回购减少股数。",
+        "summary": "摊薄每股盈利同比增长23%，主因净利润增长19%及回购减少股数。",
         "drivers": [
           {
-            "type": "其他",
+            "type": "一次性项目",
             "direction": "+",
             "is_primary": true,
-            "description": "期内盈利同比增长19.4%，是每股盈利增长的主要驱动。",
+            "description": "净利润同比增长19%，推动每股盈利增长。",
             "evidence_quote": "期内盈利 59,392 49,725 59,089",
             "source": "press_release",
             "is_inference": true,
@@ -578,7 +588,7 @@
             "type": "其他",
             "direction": "+",
             "is_primary": false,
-            "description": "回购减少股数，使每股盈利增速快于净利润增速。",
+            "description": "回购减少股数，使摊薄每股盈利增速快于净利润增速。",
             "evidence_quote": "摊薄每股收益 7.364 元，同比增长 12%，因回购减少股数而快于净利润增速",
             "source": "prepared_remarks",
             "is_inference": true,
@@ -590,42 +600,42 @@
       },
       {
         "metric": "eps_nongaap",
-        "summary": "非IFRS摊薄每股盈利同比增长12%，主要因非IFRS归母净利润增长11%，叠加回购减少股数。",
+        "summary": "非IFRS摊薄每股盈利同比增长12%，主因净利润增长11%及回购减少股数。",
         "drivers": [
           {
             "type": "其他",
             "direction": "+",
             "is_primary": true,
-            "description": "非IFRS归母净利润同比增长11%，是每股盈利增长的主要驱动。",
-            "evidence_quote": "非 IFRS 归属于权益持有人的净利润 680 亿元，同比增长 11%",
-            "source": "prepared_remarks",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          },
-          {
-            "type": "其他",
-            "direction": "+",
-            "is_primary": false,
-            "description": "回购减少股数，使每股盈利增速快于净利润增速。",
+            "description": "回购减少股数，使摊薄每股盈利增速快于净利润增速。",
             "evidence_quote": "摊薄每股收益 7.364 元，同比增长 12%，因回购减少股数而快于净利润增速",
             "source": "prepared_remarks",
             "is_inference": true,
             "reasoning": "",
             "quote_unverified": true
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "非IFRS归母净利润同比增长11%，支撑每股盈利增长。",
+            "evidence_quote": "非 IFRS 归属于权益持有人的净利润 680 亿元，同比增长 11%",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
           }
         ],
         "conflicts": []
       },
       {
         "metric": "capex",
-        "summary": "资本开支同比增16.2%，环比增62.7%，主要因加速投资服务器基础设施，尤其为AI算力。",
+        "summary": "资本开支同比增16%、环比增63%，主因加速投资服务器基础设施以支持AI需求。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "+",
             "is_primary": true,
-            "description": "加速投资服务器基础设施，是资本开支增长的主因。",
+            "description": "加速投资服务器基础设施，推动资本开支大幅增长。",
             "evidence_quote": "经营性资本开支 312 亿元，同比增长 18%、环比增长 84%，因为加速投资服务器基础设施",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -637,25 +647,25 @@
       },
       {
         "metric": "kpis.vas_revenue",
-        "summary": "增值服务收入同比增长4%，主要受本土游戏收入增长6%和国际游戏增长13%推动，但春节错期压低收入确认。",
+        "summary": "增值服务收入同比增长4%，主因本土游戏流水增长但春节错期压低收入确认，国际游戏收入增长13%。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "本土游戏流水同比增长十几个百分点，国际游戏收入增长13%，是增值服务收入增长的主因。",
-            "evidence_quote": "本土游戏流水同比增长十几个百分点，主要受《三角洲行动》《和平精英》《王者荣耀》和《无畏契约手游》推动；但收入仅增长 6%，因为春节较晚使部分收入延至 2026 年后续期间确认。国际游戏收入增长 13%",
+            "description": "本土游戏流水同比增长十几个百分点，国际游戏收入增长13%，推动增值服务收入增长。",
+            "evidence_quote": "本土游戏流水同比增长十几个百分点；国际游戏收入增长 13%",
             "source": "prepared_remarks",
-            "is_inference": false,
+            "is_inference": true,
             "reasoning": "",
-            "quote_unverified": false
+            "quote_unverified": true
           },
           {
             "type": "一次性项目",
             "direction": "-",
             "is_primary": false,
-            "description": "春节较晚导致部分游戏收入延后确认，压低本期增值服务收入增速。",
-            "evidence_quote": "春节时间较去年更晚，使更多游戏相关收入推迟至未来期间确认",
+            "description": "春节较晚导致中国应用内游戏道具销售的报告收入减少。",
+            "evidence_quote": "社交网络收入同比下降 2% 至 320 亿元，原因是春节较晚导致中国应用内游戏道具销售的报告收入减少",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -666,13 +676,13 @@
       },
       {
         "metric": "kpis.advertising_revenue",
-        "summary": "营销服务收入同比增长20%，主要受视频号库存增加、AI推荐升级及电商合作深化推动。",
+        "summary": "营销服务收入同比增长20%，主因AI推荐升级、电商合作深化及视频号库存增加。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "视频号广告曝光随总使用时长、观看量和广告负载增加而快速增长，是收入增长的主因。",
+            "description": "视频号广告曝光随总使用时长、观看量和广告负载增加而快速增长。",
             "evidence_quote": "视频号广告曝光随总使用时长、观看量和广告负载增加而快速增长",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -680,11 +690,11 @@
             "quote_unverified": false
           },
           {
-            "type": "其他",
+            "type": "价",
             "direction": "+",
             "is_primary": false,
-            "description": "AI推荐模型升级为统一Transformer架构，提升广告定向和点击率，推动需求回升。",
-            "evidence_quote": "我们将在线广告推荐模型升级为统一 Transformer 架构，在兼顾系统效率的同时更深入理解用户语境和意图",
+            "description": "与电商平台深化合作及视频号库存增加带来需求回升。",
+            "evidence_quote": "增速由四季度的 17% 提升，得益于与电商平台深化合作及视频号库存增加带来的需求回升",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -695,13 +705,13 @@
       },
       {
         "metric": "kpis.fintech_biz_revenue",
-        "summary": "金融科技及企业服务收入同比增长9%，主要受企业服务收入增长20%和金融科技商业支付及财富管理增长推动。",
+        "summary": "金融科技及企业服务收入同比增长9%，主因企业服务增长20%及商业支付量增长。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "企业服务收入增长20%，是板块收入增长的主因。",
+            "description": "企业服务收入增长20%，受云服务需求增加、定价环境改善及小店电商技术服务费上升推动。",
             "evidence_quote": "企业服务一季度收入增长 20%，受云服务需求增加、定价环境改善以及小店电商技术服务费上升推动",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -712,8 +722,8 @@
             "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "金融科技增长主要由商业支付量和财富管理推动。",
-            "evidence_quote": "金融科技增长主要由商业支付量和财富管理推动",
+            "description": "商业支付同比增速快于去年四季度，交易笔数持续增加。",
+            "evidence_quote": "商业支付同比增速快于去年四季度，交易笔数持续增加，零售、餐饮等类别客单价也提高",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -724,13 +734,13 @@
       },
       {
         "metric": "kpis.selling_expense",
-        "summary": "销售及市场推广费用同比增长44%，主要因AI原生应用及新游戏推广增加。",
+        "summary": "销售及市场推广开支同比增长44%，主因对AI原生应用及新游戏的推广增加。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "+",
             "is_primary": true,
-            "description": "AI原生应用及新游戏推广增加，是销售费用增长的主因。",
+            "description": "对AI原生应用及新游戏的推广增加，推高销售费用。",
             "evidence_quote": "销售及市场推广费用 113 亿元，同比增长 44%，反映对 AI 原生应用及新游戏的推广增加",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -742,13 +752,13 @@
       },
       {
         "metric": "kpis.ga_expense",
-        "summary": "一般及行政费用同比基本持平，因上年同期包含一次性股份薪酬高基数，抵消了本期部分增长。",
+        "summary": "一般及行政开支同比基本持平，主因上年同期一次性股份薪酬高基数效应消退。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "-",
             "is_primary": true,
-            "description": "上年同期包含海外子公司重组相关一次性股份薪酬高基数，导致本期一般行政费用同比下降24%。",
+            "description": "上年同期包含海外子公司重组相关的一次性股份薪酬高基数，导致本期同比基本持平。",
             "evidence_quote": "剔除研发的一般及行政费用下降 24% 至 113 亿元，因上年同期包含海外子公司重组既有商业安排相关的一次性股份薪酬高基数",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -760,13 +770,13 @@
       },
       {
         "metric": "kpis.non_ifrs_operating_profit",
-        "summary": "非IFRS经营利润同比增长9%，主要受收入增长和毛利率提升推动，但被AI投资相关费用增加部分抵消。",
+        "summary": "非IFRS经营利润同比增长9%，主因收入增长和毛利率改善，但AI投资增加部分抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入同比增长9%，是经营利润增长的主要驱动。",
+            "description": "收入同比增长9%，带动经营利润增长。",
             "evidence_quote": "一季度总收入 1,960 亿元，同比增长 9%",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -777,7 +787,7 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": false,
-            "description": "AI投资增加带来设备折旧、运营成本及人员成本上升，部分抵消了收入增长。",
+            "description": "AI投资增加带来设备折旧、运营成本及人员成本上升，压制利润增速。",
             "evidence_quote": "研发费用 226 亿元，同比增长 19%，主要因 AI 投资增加带来设备折旧、运营成本及人员成本上升",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -789,13 +799,13 @@
       },
       {
         "metric": "kpis.free_cash_flow",
-        "summary": "自由现金流同比增长20%，主要因游戏流水和广告开票增长，但部分被服务器基础设施及算力支出抵消。",
+        "summary": "自由现金流同比增长20%，主因游戏流水和广告开票增长，部分被服务器基础设施支出抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "游戏流水和广告开票增长，是自由现金流增长的主因。",
+            "description": "游戏流水和广告开票增长推动自由现金流增加。",
             "evidence_quote": "自由现金流 567 亿元，同比增长 20%，游戏流水和广告开票增长部分被更高的服务器基础设施及算力支出抵消",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -806,8 +816,8 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": false,
-            "description": "服务器基础设施及算力支出增加，部分抵消了现金流增长。",
-            "evidence_quote": "部分被更高的服务器基础设施及算力支出抵消",
+            "description": "更高的服务器基础设施及算力支出部分抵消自由现金流增长。",
+            "evidence_quote": "游戏流水和广告开票增长部分被更高的服务器基础设施及算力支出抵消",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -818,13 +828,13 @@
       },
       {
         "metric": "gross_profit_gaap",
-        "summary": "毛利同比增长10.7%，主要受收入增长9%和毛利率提升0.8个百分点共同推动。",
+        "summary": "毛利同比增长11%，主因收入增长及毛利率提升，自研游戏收入贡献上升。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入同比增长9%，是毛利增长的主要驱动。",
+            "description": "收入同比增长9%，带动毛利增长。",
             "evidence_quote": "一季度总收入 1,960 亿元，同比增长 9%",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -835,7 +845,7 @@
             "type": "产品或客户结构",
             "direction": "+",
             "is_primary": false,
-            "description": "自研游戏收入贡献上升，带动增值服务毛利率提高3个百分点。",
+            "description": "自研游戏收入贡献上升，提升增值服务毛利率。",
             "evidence_quote": "增值服务毛利率 63%，提高 3 个百分点，主要因自研游戏收入贡献上升",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -847,36 +857,25 @@
       },
       {
         "metric": "operating_income_gaap",
-        "summary": "经营盈利同比增长17%，主要受毛利增长和一般行政费用下降推动，但部分被销售推广和研发费用增加抵消。",
+        "summary": "经营盈利同比增长17%，主因毛利增长及一般行政费用下降，部分被销售和研发费用增加抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "毛利同比增长10.7%，是经营盈利增长的主要驱动。",
-            "evidence_quote": "毛利 111,265 100,493 108,289",
-            "source": "press_release",
-            "is_inference": true,
-            "reasoning": "",
-            "quote_unverified": true
-          },
-          {
-            "type": "一次性项目",
-            "direction": "+",
-            "is_primary": false,
-            "description": "上年同期包含一次性股份薪酬高基数，导致本期一般行政费用同比下降24%。",
-            "evidence_quote": "剔除研发的一般及行政费用下降 24% 至 113 亿元，因上年同期包含海外子公司重组既有商业安排相关的一次性股份薪酬高基数",
+            "description": "毛利同比增长11%，推动经营盈利增长。",
+            "evidence_quote": "毛利润 1,113 亿元，同比增长 11%",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "费用投入",
-            "direction": "-",
+            "type": "一次性项目",
+            "direction": "+",
             "is_primary": false,
-            "description": "销售及市场推广费用同比增长44%，研发费用同比增长19%，部分抵消了经营盈利增长。",
-            "evidence_quote": "销售及市场推广费用 113 亿元，同比增长 44%，反映对 AI 原生应用及新游戏的推广增加。研发费用 226 亿元，同比增长 19%",
+            "description": "一般及行政费用同比下降，因上年同期包含一次性股份薪酬高基数。",
+            "evidence_quote": "剔除研发的一般及行政费用下降 24% 至 113 亿元，因上年同期包含海外子公司重组既有商业安排相关的一次性股份薪酬高基数",
             "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
@@ -887,13 +886,13 @@
       },
       {
         "metric": "operating_income_nongaap",
-        "summary": "非IFRS经营盈利同比增长9%，主要受收入增长和毛利率提升推动，但被AI投资相关费用增加部分抵消。",
+        "summary": "非IFRS经营盈利同比增长9%，主因收入增长，但AI投资增加部分抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入同比增长9%，是经营盈利增长的主要驱动。",
+            "description": "收入同比增长9%，带动经营盈利增长。",
             "evidence_quote": "一季度总收入 1,960 亿元，同比增长 9%",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -904,7 +903,7 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": false,
-            "description": "AI投资增加带来设备折旧、运营成本及人员成本上升，部分抵消了收入增长。",
+            "description": "AI投资增加带来设备折旧、运营成本及人员成本上升，压制利润增速。",
             "evidence_quote": "研发费用 226 亿元，同比增长 19%，主要因 AI 投资增加带来设备折旧、运营成本及人员成本上升",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -916,13 +915,13 @@
       },
       {
         "metric": "net_income_gaap",
-        "summary": "期内盈利同比增长19.4%，主要受经营盈利增长17%和财务成本下降推动。",
+        "summary": "期内盈利同比增长19%，主因经营盈利增长17%及财务成本下降。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "经营盈利同比增长17%，是期内盈利增长的主要驱动。",
+            "description": "经营利润同比增长17%，推动净利润增长。",
             "evidence_quote": "经营利润 674 亿元，同比增长 17%",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -933,7 +932,7 @@
             "type": "其他",
             "direction": "+",
             "is_primary": false,
-            "description": "财务成本同比下降，主要因汇兑收益增加及平均利率下降。",
+            "description": "财务成本下降，主要因汇兑收益增加及平均利率下降。",
             "evidence_quote": "财务成本 30 亿元，去年同期为 39 亿元，主要因汇兑收益增加及平均利率下降",
             "source": "prepared_remarks",
             "is_inference": false,
@@ -1523,12 +1522,17 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Pony 认为，AI 正从聊天机器人进入智能体阶段，这是继聊天机器人之后的下一个突破性场景。Martin 进一步解释，AI 与互联网不同：互联网传递既有信息，边际成本很低，可以近乎无限扩张；AI 交付的是智能，每一次服务都有显著可变成本。因此，AI 很可能不是赢家通吃，而是多个参与者各自拥有用户和订阅份额。",
+            "text": "Pony 认为，AI 正从聊天机器人进入智能体阶段，这是继聊天机器人之后的下一个突破性场景。Martin 进一步解释，更强模型、支持模型调用工具的基础设施，以及便于用户管理智能体的界面，共同促成了这一突破。腾讯把智能体视为可以扩散到各行业的能力，而不是只追求 DAU 的互联网式扩张。",
             "items": []
           },
           {
             "type": "p",
-            "text": "在芯片供应上，John 指出中国 GPU 瓶颈更突出，原因是部分海外设计 GPU 受政策限制，国产 GPU 又面临国内晶圆制造产能有限。现在国产 ASIC 正从中国及邻近地区晶圆厂获得更多供应，问题逐步缓解。CPU 和网络芯片没有这种额外人为限制，供应充足。",
+            "text": "Martin 强调，AI 与互联网有本质区别：AI 交付的是智能，每一次服务都有显著可变成本；互联网主要传递既有信息，边际成本很低，可以近乎无限扩张。因此，行业必须寻找用户愿意付费的高价值场景，至少与获取大量 DAU 和使用时长同等重要。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在芯片供应上，John 指出中国 GPU 瓶颈更突出，原因是部分海外设计 GPU 受政策限制，以及国产 GPU 面临国内晶圆制造产能有限。现在国产 ASIC 正从中国及邻近地区晶圆厂获得更多供应，问题逐步缓解。CPU 和网络芯片没有这种额外人为限制，供应充足。",
             "items": []
           }
         ]
@@ -1538,17 +1542,17 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Pony 表示，内部产品和外部模型用户对 AI 服务的需求都在增加，因此对今年资本开支高于去年更为肯定和自信。Martin 补充，混元 3 整合进元宝、QQ、WorkBuddy 等产品后，token 总用量至少是混元 2 的 10 倍，证明设计有效。",
+            "text": "Pony 表示，内部产品和外部模型用户对 AI 服务的需求都在增加。Martin 补充，混元 3 整合进元宝、QQ、WorkBuddy 等产品后，token 总用量至少是混元 2 的 10 倍，证明模型设计有效，也说明用户对 AI 智能体服务的需求在快速上升。",
             "items": []
           },
           {
             "type": "p",
-            "text": "James 提到，生产力 AI 的拐点不是发生在前几个季度甚至前几个月，而是最近几周。全球范围内，智能体 AI 在一季度末后才在代码生成和生产率提升上取得突破，因此一季度企业服务增长并非由相关 token 消耗推动，token 用量增长发生在一季度之后。",
+            "text": "James 指出，生产力 AI 的拐点不是发生在前几个季度甚至前几个月，而是最近几周。全球范围内，智能体 AI 在一季度末后才在代码生成和生产率提升上取得突破，因此一季度企业服务增长并非由相关 token 消耗推动，token 用量增长发生在一季度之后。",
             "items": []
           },
           {
             "type": "p",
-            "text": "在消费者端，Martin 认为中国消费者订阅市场不会特别大，因为西方付费服务渗透率和生活水平更高，但音乐、视频等订阅价格仍是中国同类服务数倍，付费渗透率可能也只是个位数。不过订阅仍有必要，因为 AI 每个用户都会产生可变成本。",
+            "text": "在消费者端，Martin 认为中国消费者订阅市场不会特别大，因为西方付费服务渗透率和生活水平更高，但音乐、视频等订阅价格仍是中国同类服务数倍，中国付费渗透率可能也只是个位数。不过订阅仍有必要，因为 AI 每个用户都会产生可变成本，必须付费支撑服务。",
             "items": []
           }
         ]
@@ -1558,12 +1562,12 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Pony 表示，随着中国设计的 ASIC 在年内逐月增加供应，资本开支将大幅增长，尤其集中在下半年。John 补充，国产 ASIC 正从中国及邻近地区晶圆厂获得更多供应，GPU 供应问题逐步缓解；CPU 和网络芯片供应充足，腾讯与 Intel、AMD 等供应商保持多年长期关系。",
+            "text": "Pony 表示，随着中国设计的 ASIC 在年内逐月增加供应，腾讯的资本开支将大幅增长，尤其集中在下半年。John 补充，国产 ASIC 正从中国及邻近地区晶圆厂获得更多供应，GPU 供应问题正逐步缓解；CPU 和网络芯片供应充足，腾讯与 Intel、AMD 等供应商保持多年长期合作关系。",
             "items": []
           },
           {
             "type": "p",
-            "text": "James 说明，腾讯在算力供应紧张下已作出取舍并承担代价：优先满足多项内部服务，而非腾讯云。其他超大规模云公司通常只有一个大量消耗 GPU 的旗舰内部场景，腾讯则同时有混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy。之所以能同时支持，是因为没有积极出租腾讯云 GPU 容量。今年余下时间，随着国产 GPU 供应逐步提升，会向腾讯云提供更多容量并提高其扩张速度。",
+            "text": "James 说明，腾讯在算力供应紧张下已作出取舍并承担代价：优先满足多项内部服务，而非腾讯云。其他超大规模云公司通常只有一个大量消耗 GPU 的旗舰内部场景，腾讯则同时有混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy。之所以能同时支持，是因为腾讯没有积极出租腾讯云 GPU 容量。今年余下时间，随着国产 GPU 供应逐步提升，腾讯会向腾讯云提供更多容量并提高其扩张速度。",
             "items": []
           }
         ]
@@ -1573,17 +1577,17 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Martin 认为，AI 很可能不是赢家通吃，而是多个参与者各自拥有用户和订阅份额，因为 AI 交付智能，每次服务都有显著可变成本，必须付费支撑服务。",
+            "text": "Martin 认为，AI 很可能不是赢家通吃，而是多个参与者各自拥有用户和订阅份额。因为 AI 每个用户都会产生可变成本，必须付费支撑服务，这限制了单一玩家无限扩张的可能。",
             "items": []
           },
           {
             "type": "p",
-            "text": "针对操作系统级智能体的潜在威胁，Martin 区分了真正的 iOS、Android 操作系统和试图扮演操作系统的应用。真正的操作系统需保护、治理生态，在赋予应用能力时保持平衡，系统智能体提供服务仍需各应用授权，否则相当于牺牲应用。操作系统的原则是中立，为所有应用及未来智能体提供公平环境。若另一个应用试图变成类似操作系统的服务并侵入其他应用，那是真正的竞争，任何应用都不会允许，操作系统本身也应阻止。",
+            "text": "在操作系统级智能体的问题上，Martin 区分了真正的 iOS、Android 操作系统和试图扮演操作系统的应用。真正的操作系统需保护、治理生态，在赋予应用能力时保持平衡，系统智能体提供服务仍需各应用授权。成功的操作系统会保持公正并维护健康生态。若另一个应用试图变成类似操作系统的服务并侵入其他应用，那是真正的竞争，任何应用都不会允许，操作系统本身也应阻止。",
             "items": []
           },
           {
             "type": "p",
-            "text": "在广告方面，James 认为 AI 智能体加强比价对电商公司的潜在影响大于腾讯。用户主动希望在短视频、音乐、内容和社交上花时间，而使用电商通常是为寻找最低价，并非享受过程。若 AI 智能体加强比价，用户可能减少在电商网站停留和广告曝光；智能体可扫描无限商品，也不像注意力有限的人类那样受广告影响。不过历史上已有多轮比价服务和搜索引擎，大型电商仍然繁荣，因此现在断言影响为时尚早，不认为这是腾讯的主要风险。",
+            "text": "James 表示，广告变化对电商公司的潜在影响大于腾讯。用户主动希望在短视频、音乐、内容和社交上花时间，而使用电商通常是为寻找最低价，并非享受过程。若 AI 智能体加强比价，用户可能减少在电商网站停留和广告曝光，但历史上已有多轮比价服务和搜索引擎，大型电商仍然繁荣，因此现在断言影响为时尚早，腾讯不认为这是自己的主要风险。",
             "items": []
           }
         ]
@@ -1593,17 +1597,17 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Martin 表示，消费者端变现并不容易，中国消费者订阅市场不会特别大，但订阅仍有必要，因为 AI 每个用户都会产生可变成本。电商和广告变现方面，即便美国 eCPM 更高，领先企业也尚未建立成熟稳健的广告模式；这将是长期补充，可能仍以订阅为主。因此，应把有限算力用于高价值场景以获取最佳回报。",
+            "text": "Martin 表示，消费者端变现并不容易，但订阅仍有必要，因为 AI 每个用户都会产生可变成本。由此推演，中国消费者订阅市场不会特别大，但订阅会是主要变现方式之一。电商和广告变现方面，即便美国 eCPM 更高，领先企业也尚未建立成熟稳健的广告模式，这将是长期补充，可能仍以订阅为主。",
             "items": []
           },
           {
             "type": "p",
-            "text": "在 AI 投资回报上，Martin 区分了不同类型算力的回报框架：模型训练是未来投资，短期可能没有回报，但能力会积累并解锁不同商业机会；元宝、WorkBuddy、CodeBuddy 等产品会先提供免费服务，再逐渐产生收入，且企业端收入可能快于消费者端；PaaS 或算力租赁等云业务具有清晰 ROI，在折旧成本之上加一定利润率出租；广告投资通常也有良好回报。",
+            "text": "在企业端，Martin 指出元宝、WorkBuddy、CodeBuddy 等产品会先提供免费服务，再逐渐产生收入，且企业端收入可能快于消费者端。PaaS 或算力租赁等云业务具有清晰 ROI：折旧成本之上加一定利润率出租；广告投资通常也有良好回报。不同类型的算力应采用不同回报框架。",
             "items": []
           },
           {
             "type": "p",
-            "text": "James 补充，腾讯按组合管理投资，并按产品完整生命周期而非单季或 12 个月管理。AI 同时包含短周期和长周期投资：GPU 用于广告技术，能较快改善定向、点击率、收入和利润，属于短周期；用于混元基础模型则关乎腾讯长期业务根基。",
+            "text": "James 强调，当前重点不是达到特定金额的 ARR，而是拥有正确产品：模型层面的混元 3 已具备优秀智能体能力，今年稍晚的下一代会显著更好；产品层面的 CodeBuddy、尤其 WorkBuddy，要成为用户调用和提取基础模型智能的正确界面。产品能力优先于短期 ARR 目标。",
             "items": []
           }
         ]
@@ -1620,24 +1624,23 @@
             "type": "ol",
             "text": "",
             "items": [
-              "重组基础模型团队：以新加入、深谙大语言模型的顶尖 AI 研究员和工程师为核心，新团队年轻、有活力且高度凝聚，以便在快速变化的 AI 时代迅速推进。",
-              "重建训练与基础设施：从零重建预训练和强化学习系统与流程，重构基础设施，以提高预训练、数据和强化学习环节的稳健性、可扩展性和效率。",
-              "扩充并聚焦数据：显著扩充数据集，强化数据收集、清洗与合成能力，并聚焦质量。",
-              "升级训练与评估：升级预训练和监督微调流程并扩大强化学习；不再追逐容易被刷分的公开基准，而是通过最新考试、人类测试、产品反馈和内部任务，检验模型在真实世界的表现。",
+              "重组基础模型团队：以新加入、深谙大语言模型的顶尖 AI 研究员和工程师为核心，新团队年轻、有活力且高度凝聚，使腾讯能在快速变化的 AI 时代迅速推进。",
+              "从零重建预训练和强化学习系统与流程：重构基础设施，以提高预训练、数据和强化学习环节的稳健性、可扩展性和效率；显著扩充数据集，强化数据收集、清洗与合成能力，并聚焦质量。",
+              "改变评估方式：不再追逐容易被刷分的公开基准，而是通过最新考试、人类测试、产品反馈和内部任务，检验模型在真实世界的表现。",
               "推出混元 3 Preview：目标是为多种应用构建成本高效、扎实可靠的模型，并降低向更大模型扩展的风险；核心设计原则是兼顾综合智能和成本效率，面向真实部署优化。",
-              "内部部署验证：将混元 3 Preview 部署至包括元宝、QQ 和 WorkBuddy 在内的 131 个广泛使用的产品，为设计迭代提供宝贵反馈。",
-              "研发更大参数模型：利用混元 3 的基础设施和经验，汇聚更大、更优的数据集并扩大强化学习，以增强上下文理解、编程等智能体能力和通用智能。",
-              "发展智能体生态：用户可通过微信、企业微信、QQ、元宝、QQ 浏览器及第三方应用等入口控制智能体；未来智能体可访问小程序生态，并把小程序代码作为 AI 技能。"
+              "把智能体作为突破场景：从 CodeBuddy 辅助程序员写代码，扩展至更广泛的工作负载和职业场景，如 Claws 和 WorkBuddy；利用微信、企业微信、QQ、元宝、QQ 浏览器等入口部署智能体。",
+              "把小程序生态转化为智能体技能：未来智能体可访问小程序生态，并把小程序代码作为 AI 技能，给小程序企业带来更多用户及智能体流量。",
+              "优先满足内部 AI 需求，延后云变现：在算力供应紧张下，优先支持混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy 等多项内部服务，而非积极出租腾讯云 GPU 容量；今年余下时间随着国产 GPU 供应提升，再向腾讯云提供更多容量。"
             ]
           },
           {
             "type": "p",
-            "text": "在算力分配上，James 表示腾讯有意延后通过云变现 AI，以同时支持多项内部 AI 计划。今年余下时间，随着国产 GPU 供应逐步提升，会向腾讯云提供更多容量并提高其扩张速度。",
+            "text": "在游戏业务上，James 表示生成式 AI 让游戏更快生产更多内容，有些提升整体体验，有些如虚拟服装则直接变现。现阶段目标是加快内容生产和创造增量收入，而非刻意扩张利润率。若收入提升且员工数保持相对稳定，长期利润率自然可能上升，但这是结果而非首要目的。",
             "items": []
           },
           {
             "type": "p",
-            "text": "在游戏业务上，James 表示现阶段目标是加快内容生产和创造增量收入，而非刻意扩张利润率。若收入提升且员工数保持相对稳定，长期利润率自然可能上升，但这是结果而非首要目的。",
+            "text": "在广告业务上，James 指出视频号广告负载目前仍是行业最低，仅 4% 至 5%，因此有很大提升空间。但腾讯还有其他收入驱动：游戏递延收入增长为未来三个季度报告收入提供顺风；下半年增加 GPU 可促进云收入增长；金融科技过去量增价跌，如今量仍增长、价格趋于中性。公司会按广泛业务组合管理，不会仅靠广告。",
             "items": []
           }
         ]
@@ -1675,7 +1678,7 @@
         "firm": "花旗",
         "topic": "产品结构",
         "is_new_topic": false,
-        "question_summary": "混元 3 整合进元宝、QQ、WorkBuddy 等产品后，这些工作流取得了哪些可观察的性能提升？混元 3 更广泛融入微信工作流的路线图是什么？小程序和企业能否利用智能体工作流提高生产力并实现未来变现？",
+        "question_summary": "混元 3 整合进元宝、QQ、WorkBuddy 等产品后，工作流取得了哪些可观察的性能提升？混元 3 更广泛融入微信工作流的路线图是什么？小程序和企业能否利用智能体工作流提高生产力并实现未来变现？",
         "answer_summary": "Chi Ping（总裁）：混元 3 虽然模型较小，但智能程度和推理能力很强，相比混元 2 的智能体能力显著提升。整合后，各产品从用户端观察到明显改善，token 总用量至少是混元 2 的 10 倍，证明设计有效。它还与元宝、WorkBuddy 等主要产品协同设计，因此产品接受度很好。\n融入微信工作流会循序渐进。微信一直在部分产品中使用混元 2，目前已升级至混元 3；某些场景会比较不同模型，为用户选择最佳模型。混元 3 持续改善后，采用范围会扩大。企业一方面可通过 CodeBuddy、WorkBuddy 等混元产品提高内部生产力；另一方面，未来当小程序成为智能体可调用的技能和工具时，会给小程序企业带来更多用户及智能体流量。",
         "new_numbers": [
           {
@@ -1686,14 +1689,14 @@
         "directness": "direct",
         "evasion_note": "",
         "tone": "positive",
-        "answer_quote": "token 总用量至少是混元 2 的 10 倍",
+        "answer_quote": "The total token usage is at least 10 times that of Hunyuan 2, which proves the design is effective.",
         "review_flags": []
       },
       {
         "exchange_id": "1",
         "analyst": "Alicia Yap",
         "firm": "花旗",
-        "topic": "广告与变现",
+        "topic": "竞争格局",
         "is_new_topic": false,
         "question_summary": "若智能体逐渐替代网页和 App 的传统点击，未来广告定价、广告主预算和用户参与度将受何影响？腾讯如何调整广告格式以适应支出迁移？",
         "answer_summary": "James（首席战略官）：广告变化对电商公司的潜在影响大于腾讯。用户主动希望在短视频、音乐、内容和社交上花时间，而使用电商通常是为寻找最低价，并非享受过程。若 AI 智能体加强比价，用户可能减少在电商网站停留和广告曝光；智能体可扫描无限商品，也不像注意力有限的人类那样受广告影响。不过，历史上已有多轮比价服务和搜索引擎，大型电商仍然繁荣，因此现在断言影响为时尚早。我们不认为这是腾讯的主要风险。",
@@ -1701,7 +1704,7 @@
         "directness": "direct",
         "evasion_note": "",
         "tone": "neutral",
-        "answer_quote": "我们不认为这是腾讯的主要风险。",
+        "answer_quote": "We don't think this is a major risk for Tencent.",
         "review_flags": []
       },
       {
@@ -1710,13 +1713,13 @@
         "firm": "瑞银",
         "topic": "产能与资本开支",
         "is_new_topic": false,
-        "question_summary": "管理层能否量化今年 AI 资本开支指引，以及用什么 KPI 评估 AI 投资的价值创造与回报？",
-        "answer_summary": "Huateng（CEO）：\n我们看到内部产品和外部模型用户对 AI 服务的需求都在增加。此前已指引今年资本开支高于去年，现在对此更为肯定和有信心。随着中国设计的 ASIC 在年内逐月增加供应，资本开支将大幅增长，尤其集中在下半年。\n\nKPI 因产品和业务而异：广告和游戏等现有业务侧重收入与利润；新 AI 产品侧重能力和使用量，例如基础模型智能程度及 WorkBuddy token 消耗；腾讯云此前因 GPU 不足无法满足外部需求，未来将侧重收入和市场份额。",
+        "question_summary": "管理层能否量化今年 AI 资本开支指引，并用哪些 KPI 评估价值创造与回报？",
+        "answer_summary": "Huateng（CEO）：公司看到内部产品和外部模型用户对 AI 服务的需求都在增加，因此对今年资本开支高于去年的指引更有信心。随着中国设计的 ASIC 在年内逐月增加供应，资本开支会大幅增长，尤其集中在下半年。\nHuateng（CEO）：评估回报的 KPI 因业务而异：广告和游戏等现有业务侧重收入和利润；新 AI 产品侧重能力和使用量，比如基础模型智能程度和 WorkBuddy token 消耗；腾讯云此前因 GPU 不足无法满足外部需求，未来会侧重收入和市场份额。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未给出今年 AI 资本开支的具体量化金额或占经营现金流比例，只表示会大幅增长且集中在下半年。",
+        "evasion_note": "没有给出今年 AI 资本开支的具体量化数字，只确认会大幅增长且集中在下半年。",
         "tone": "positive",
-        "answer_quote": "We see increasing demand for AI services from both our internal products and external model users. We previously guided that capital expenditure this year would be higher than last year, and we are now more certain and confident about that. As the supply of China-designed ASICs increases month by month during the year, capital expenditure will grow significantly, especially concentrated in the second half.",
+        "answer_quote": "We see increasing demand for AI services from both our internal products and external model users. We previously guided that this year's capex would be higher than last year, and we are now more certain and confident about that. As the supply of China-designed ASICs increases month by month this year, capex will grow significantly, especially concentrated in the second half.",
         "review_flags": []
       },
       {
@@ -1726,7 +1729,7 @@
         "topic": "产能与资本开支",
         "is_new_topic": false,
         "question_summary": "腾讯内部如何评估 AI 基础设施支出，采用什么 ROI 框架、回收期和时间跨度，由什么预算承担 AI CapEx，多久能把握新的商业机会。",
-        "answer_summary": "Shek Hon（CFO）：部分产品采取严格财务方法，另一些更重视其长期对公司业务根基的价值。\nJames（CSO）：腾讯过去二十多年持续保持较高 ROE，但不是靠要求每个新产品、服务达到短期量化 ROI，而是按组合管理投资，并按产品完整生命周期而非单季或 12 个月管理。游戏扩张、微信上线和支付业务都经历过漫长、没有投资回报的孵化期，但相信其业务根基价值，随后进入更长收获期，带来健康回报。AI 同时包含短周期和长周期投资：GPU 用于广告技术，能较快改善定向、点击率、收入和利润，属于短周期；用于混元基础模型则关乎腾讯长期业务根基。不会按季度管理每个产品，而是按组合和完整生命周期管理。\nChi Ping（总裁）：模型训练是未来投资，短期可能没有回报，但能力会积累并解锁不同商业机会。元宝、WorkBuddy、CodeBuddy 等产品会先提供免费服务，再逐渐产生收入，且企业端收入可能快于消费者端。PaaS 或算力租赁等云业务具有清晰 ROI：折旧成本之上加一定利润率出租；广告投资通常也有良好回报。不同类型的算力应采用不同回报框架。",
+        "answer_summary": "Shek Hon（CFO）：部分产品采取严格财务方法，另一些更重视其长期对公司业务根基的价值。\nJames（CSO）：腾讯过去二十多年持续保持较高 ROE，但不是靠要求每个新产品、服务达到短期量化 ROI，而是按组合管理投资，并按产品完整生命周期而非单季或 12 个月管理。游戏扩张、微信上线和支付业务都经历过漫长、没有投资回报的孵化期，但我们相信其业务根基价值，随后它们进入更长收获期，带来健康回报。AI 同时包含短周期和长周期投资：GPU 用于广告技术，能较快改善定向、点击率、收入和利润，属于短周期；用于混元基础模型则关乎腾讯长期业务根基。我们不会按季度管理每个产品，而是按组合和完整生命周期管理。\nChi Ping（总裁）：模型训练是未来投资，短期可能没有回报，但能力会积累并解锁不同商业机会。元宝、WorkBuddy、CodeBuddy 等产品会先提供免费服务，再逐渐产生收入，且企业端收入可能快于消费者端。PaaS 或算力租赁等云业务具有清晰 ROI：折旧成本之上加一定利润率出租；广告投资通常也有良好回报。不同类型的算力应采用不同回报框架。",
         "new_numbers": [],
         "directness": "direct",
         "evasion_note": "",
@@ -1740,13 +1743,13 @@
         "firm": "法国巴黎银行",
         "topic": "产品结构",
         "is_new_topic": false,
-        "question_summary": "生成式 AI 是否已通过加快游戏内容周期带来增量变现，还是收益尚待释放？目前是否已有成本效率和利润率改善，还是前期投入限制收益？",
+        "question_summary": "生成式 AI 是否已通过加快游戏内容周期带来增量变现，还是收益尚待释放？目前是否已有成本效率和利润率改善，还是前期投入限制了收益？",
         "answer_summary": "James（首席战略官）：生成式 AI 让游戏能更快生产更多内容，其中一些提升整体体验，另一些如虚拟服装则直接变现。腾讯正在实现这些效果，并认为自己在中国乃至全球都处于部署能力和获取收益的领先位置。现阶段目标是加快内容生产和创造增量收入，而不是刻意扩张利润率。如果收入提升且员工数保持相对稳定，长期利润率自然可能上升，但这是结果而非首要目的。",
         "new_numbers": [],
         "directness": "direct",
         "evasion_note": "",
         "tone": "positive",
-        "answer_quote": "Generative AI is enabling games to produce more content faster; some of it improves the overall experience, and some of it, like virtual clothing, directly monetizes.",
+        "answer_quote": "Generative AI is enabling games to produce more content faster; some of that improves the overall experience, and some of it, like virtual clothing, is directly monetizable.",
         "review_flags": []
       },
       {
@@ -1761,7 +1764,7 @@
         "directness": "direct",
         "evasion_note": "",
         "tone": "positive",
-        "answer_quote": "We are accelerating some investment monetization to support continued buybacks for the rest of the year. Management believes the current share price is somewhat mispriced and is a particularly good time for buybacks.",
+        "answer_quote": "We are accelerating some investment monetization to support continued buybacks for the rest of the year. Management believes the current share price is somewhat misaligned and is a particularly good time for buybacks.",
         "review_flags": []
       },
       {
@@ -1770,8 +1773,8 @@
         "firm": "Bernstein",
         "topic": "产品结构",
         "is_new_topic": false,
-        "question_summary": "混元 3 是否已进入可持续的迭代轨道，以及 AI 产品应追求大规模 DAU 还是高价值、高付费意愿的用户？",
-        "answer_summary": "Chi Ping（总裁）：我们重组了团队、生产流程、基础设施以及数据管线、预训练、后训练、强化学习和评估等主要模块，并刻意用较小模型验证各环节。集成后的混元 3 Preview 在其规模下非常有竞争力，各模块仍有大量提升空间。结果和完成速度令人满意，甚至超出预期；它不仅基准分数高，在产品、开发者和用户的实际使用中也获得认可，且真实场景表现大幅好于预期，为扩展到下一层级奠定坚实基础。\nAI 扩散仍很早，产品形态会继续涌现：先是聊天机器人，随后是高价值的编程，现在智能体能力正扩散到各行业。AI 世界必须寻找高价值用例，而不能只追求 DAU。它与互联网不同：AI 交付的是智能，每一次服务都有显著可变成本；互联网主要传递既有信息，边际带宽和终端计算成本很低，可以近乎无限扩张。因此，找到用户愿意为之付费的高价值场景，至少与获取大量 DAU 和使用时长同等重要。这会影响产品部署以及产品与模型的协同设计。",
+        "question_summary": "混元 3 是否已进入可持续的迭代轨道，以及 AI 产品应追求大规模 DAU 还是高价值、高付费意愿的用户。",
+        "answer_summary": "Chi Ping（总裁）：我们重组了团队、生产流程、基础设施和数据管线等模块，并用较小模型验证各环节。混元 3 Preview 在其规模下很有竞争力，真实场景表现大幅好于预期，为扩展到下一层级奠定基础。\nAI 扩散仍很早，产品形态会继续涌现。AI 交付的是智能，每次服务都有显著可变成本，与互联网传递既有信息不同，因此必须寻找高价值用例，不能只追求 DAU。找到用户愿意付费的高价值场景，至少与获取大量 DAU 和使用时长同等重要。",
         "new_numbers": [],
         "directness": "direct",
         "evasion_note": "",
@@ -1785,13 +1788,13 @@
         "firm": "美国银行证券",
         "topic": "产品结构",
         "is_new_topic": false,
-        "question_summary": "腾讯智能体可访问小程序生态并把小程序代码用作技能，这一能力何时落地？在算力供应紧张下，如何平衡推出更多 AI 功能和现有计算容量？",
-        "answer_summary": "Chi Ping（总裁）：小程序技能一定会到来，但需要确定最佳呈现方式，以及如何让小程序所有者主动参与。公司有时间表，但设计事项较多，暂不能给出明确日期。长期看，生态资源可以转化为智能体技能，智能体也会拥有身份并在部分服务中取得账户。这是腾讯独特的生态优势，会逐步提供。\nJames（首席战略官）：我们已作出取舍并承担代价：优先满足多项内部服务，而非腾讯云。其他超大规模云公司通常只有一个大量消耗 GPU 的旗舰内部场景，腾讯则同时有混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy。之所以能同时支持，是因为我们没有积极出租腾讯云 GPU 容量。今年余下时间，随着国产 GPU 供应逐步提升，我们会纠正这一状况，向腾讯云提供更多容量并提高其扩张速度。腾讯有意延后通过云变现 AI，以同时支持多项内部 AI 计划。",
+        "question_summary": "腾讯智能体接入小程序生态、把小程序代码用作技能的能力何时落地？在算力供应紧张下，如何平衡推出更多 AI 功能和现有计算容量？",
+        "answer_summary": "Chi Ping（总裁）：小程序技能一定会推出，但公司需要先确定最佳呈现方式，并让小程序所有者愿意主动参与。目前已有时间表，但设计事项较多，暂时不能给出明确日期。长期看，腾讯的生态资源可以转化为智能体技能，智能体也会拥有身份并在部分服务中取得账户，这是腾讯独特的生态优势，会逐步提供。\nJames（首席战略官）：公司已经做出取舍并承担代价，优先满足多项内部服务，而不是腾讯云。其他超大规模云公司通常只有一个大量消耗 GPU 的旗舰内部场景，腾讯则同时有混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy。之所以能同时支持，是因为没有积极出租腾讯云 GPU 容量。今年余下时间，随着国产 GPU 供应逐步提升，公司会纠正这一状况，向腾讯云提供更多容量并提高其扩张速度。腾讯有意延后通过云变现 AI，以同时支持多项内部 AI 计划。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未给出小程序技能落地的明确日期",
+        "evasion_note": "未给出小程序技能落地的明确日期，只说明有时间表但设计事项较多。",
         "tone": "neutral",
-        "answer_quote": "We have made trade-offs and borne the cost: we prioritize multiple internal services over Tencent Cloud. Other hyperscale cloud companies typically have only one flagship internal scenario that consumes a lot of GPU, while Tencent has Hunyuan, WeChat Agent, Yuanbao, advertising, games, WorkBuddy and CodeBuddy at the same time.",
+        "answer_quote": "The mini program skills will definitely come, but we need to determine the best way to present them and how to get mini program owners to actively participate. We have a timeline, but there are many design matters, so we cannot give a clear date yet.",
         "review_flags": []
       },
       {
@@ -1801,7 +1804,7 @@
         "topic": "需求与出货",
         "is_new_topic": false,
         "question_summary": "中国消费者 AI 订阅市场有多大？除订阅外，广告和小程序电商是否为主要变现途径，潜在空间多大？",
-        "answer_summary": "Chi Ping（总裁）：中国消费者 AI 订阅市场不会特别大。西方付费服务渗透率和生活水平更高，但音乐、视频等订阅价格仍是中国同类服务数倍，付费渗透率可能也只是个位数。由此推演，中国消费者订阅市场不会特别大，但订阅仍有必要，因为 AI 每个用户都会产生可变成本，必须付费支撑服务。这也意味着 AI 很可能不是赢家通吃，而是多个参与者各自拥有用户和订阅份额。电商和广告变现方面，即便美国 eCPM 更高，领先企业也尚未建立成熟稳健的广告模式；这将是长期补充，可能仍以订阅为主。因此，应把有限算力用于高价值场景以获取最佳回报。",
+        "answer_summary": "Chi Ping（总裁）：中国消费者订阅市场不会特别大，但订阅仍有必要，因为 AI 每个用户都会产生可变成本，必须付费支撑服务。这也意味着 AI 很可能不是赢家通吃，而是多个参与者各自拥有用户和订阅份额。电商和广告变现方面，即便美国 eCPM 更高，领先企业也尚未建立成熟稳健的广告模式；这将是长期补充，可能仍以订阅为主。因此，应把有限算力用于高价值场景以获取最佳回报。",
         "new_numbers": [],
         "directness": "direct",
         "evasion_note": "",
@@ -1821,10 +1824,8 @@
         "directness": "direct",
         "evasion_note": "",
         "tone": "neutral",
-        "answer_quote": "The procurement challenge remains mainly in GPUs, and that is being resolved; CPU and networking chip supply is sufficient.",
-        "review_flags": [
-          "发言人归属错误：GPU 瓶颈及国产 ASIC 供应缓解部分由首席财务官 Shek Hon Lo 回答，不是总裁 Chi Ping Lau。"
-        ]
+        "answer_quote": "The procurement challenge remains mainly in GPUs, and that is being resolved; CPU and networking chip supply is ample.",
+        "review_flags": []
       },
       {
         "exchange_id": "8",
@@ -1833,12 +1834,12 @@
         "topic": "竞争格局",
         "is_new_topic": false,
         "question_summary": "操作系统级智能体对微信 App 层智能体会带来什么长期潜力或颠覆风险？",
-        "answer_summary": "Chi Ping（总裁）：需要区分真正的 iOS、Android 操作系统和试图扮演操作系统的应用。真正的操作系统需要保护并治理生态，在赋予应用能力时保持平衡。系统智能体要提供服务仍需各应用授权，否则相当于牺牲应用，不利于系统管理。操作系统的原则是中立，为所有应用及未来智能体提供公平环境。\n\n如果另一个应用试图变成类似操作系统的服务并侵入其他应用，那是真正的竞争，任何应用都不会允许，操作系统本身也应阻止。成功的操作系统会保持公正并维护健康生态。",
+        "answer_summary": "Chi Ping Lau（总裁）：需要区分真正的 iOS、Android 操作系统和试图扮演操作系统的应用。真正的操作系统需要保护并治理生态，在赋予应用能力时保持平衡。系统智能体要提供服务，仍需各应用授权，否则相当于牺牲应用，不利于系统管理。操作系统的原则是中立，为所有应用及未来智能体提供公平环境。如果另一个应用试图变成类似操作系统的服务并侵入其他应用，那是真正的竞争，任何应用都不会允许，操作系统本身也应阻止。成功的操作系统会保持公正并维护健康生态。",
         "new_numbers": [],
         "directness": "direct",
         "evasion_note": "",
         "tone": "neutral",
-        "answer_quote": "成功的操作系统会保持公正并维护健康生态。",
+        "answer_quote": "The principle of an operating system is neutrality, providing a fair environment for all applications and future agents.",
         "review_flags": []
       },
       {
@@ -1848,7 +1849,7 @@
         "topic": "广告负载",
         "is_new_topic": false,
         "question_summary": "腾讯广告负载低于同业，能否进一步提高负载、加速广告利润并为 AI 再投资？",
-        "answer_summary": "James（首席战略官）：视频号广告负载目前仍是行业最低，仅 4% 至 5%，因此有很大提升空间。但腾讯还有其他收入驱动：游戏递延收入增长为未来三个季度报告收入提供顺风；下半年增加 GPU 可促进云收入增长；金融科技过去量增价跌，如今量仍增长、价格趋于中性。\n\n公司会按广泛业务组合管理，不会仅靠广告；视频号广告负载的调整既要支持整体业务指标，也要支持产品使用时长和参与度增长。",
+        "answer_summary": "James Mitchell（首席战略官）：视频号广告负载目前仍是行业最低，仅 4% 至 5%，因此有很大提升空间。但腾讯还有其他收入驱动：游戏递延收入增长为未来三个季度报告收入提供顺风；下半年增加 GPU 可促进云收入增长；金融科技过去量增价跌，如今量仍增长、价格趋于中性。公司会按广泛业务组合管理，不会仅靠广告；视频号广告负载的调整既要支持整体业务指标，也要支持产品使用时长和参与度增长。",
         "new_numbers": [
           {
             "number": "4% 至 5%",
@@ -1858,22 +1859,22 @@
         "directness": "direct",
         "evasion_note": "",
         "tone": "positive",
-        "answer_quote": "视频号广告负载目前仍是行业最低，仅 4% 至 5%，因此有很大提升空间。",
+        "answer_quote": "Video account ad load is still the lowest in the industry at only 4% to 5%, so there is significant room for improvement.",
         "review_flags": []
       },
       {
         "exchange_id": "9",
         "analyst": "Ellie Jiang",
         "firm": "麦格理",
-        "topic": "产品结构",
+        "topic": "指引与展望",
         "is_new_topic": false,
-        "question_summary": "WorkBuddy 在生产力智能体领域取得早期领先，一季度企业服务增长 20% 中，多少来自 MaaS、SaaS 等经常性智能体收入，多少来自传统云和其他收入？2026 财年末及未来两三年是否有内部 ARR 目标？",
-        "answer_summary": "James（首席战略官）：生产力 AI 的拐点不是发生在前几个季度甚至前几个月，而是最近几周。全球范围内，智能体 AI 在一季度末后才在代码生成和生产率提升上取得突破，因此一季度企业服务增长并非由相关 token 消耗推动，token 用量增长发生在一季度之后。\n变化速度太快，今天设定目标，12 个月后可能向任一方向偏差一个数量级。当前重点不是达到特定金额的 ARR，而是拥有正确产品：模型层面的混元 3 已具备优秀智能体能力，今年稍晚的下一代会显著更好；产品层面的 CodeBuddy、尤其 WorkBuddy，要成为用户调用和提取基础模型智能的正确界面。产品能力优先于短期 ARR 目标。",
+        "question_summary": "WorkBuddy 在一季度企业服务 20% 增长中，经常性智能体收入与传统云收入各占多少？公司对 2026 财年末及未来两三年是否有内部 ARR 目标？",
+        "answer_summary": "James（首席战略官）：生产力 AI 的拐点不是发生在过去几个季度或几个月，而是最近几周才出现。全球范围内，智能体 AI 在一季度末之后才在代码生成和生产率提升上取得突破，所以一季度企业服务增长并不是由相关 token 消耗推动的，token 用量增长发生在一季度之后。\nJames（首席战略官）：变化速度太快，今天设定目标，12 个月后可能向任一方向偏差一个数量级。当前重点不是达到特定金额的 ARR，而是拥有正确产品：模型层面混元 3 已具备优秀智能体能力，今年稍晚的下一代会显著更好；产品层面 CodeBuddy、尤其 WorkBuddy，要成为用户调用和提取基础模型智能的正确界面。产品能力优先于短期 ARR 目标。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未直接回答一季度企业服务增长中经常性智能体收入与传统云收入的具体占比，也未给出具体 ARR 目标数字。",
+        "evasion_note": "未回答一季度企业服务增长中经常性智能体收入与传统云收入的具体占比，也未给出内部 ARR 目标数字。",
         "tone": "neutral",
-        "answer_quote": "The inflection point for productivity AI is not in the last few quarters or even months, but in the last few weeks. Globally, agentic AI only broke through in code generation and productivity gains after the end of Q1. Therefore, Q1 enterprise services growth was not driven by related token consumption; token usage growth occurred after Q1.",
+        "answer_quote": "The inflection in productivity AI is not something that happened in prior quarters or even prior months, it's really happened in the last few weeks. Globally, agentic AI breakthroughs in code generation and productivity gains only occurred after the end of Q1.",
         "review_flags": []
       },
       {
@@ -1888,7 +1889,7 @@
         "directness": "partial",
         "evasion_note": "未明确回答是否会出现 AI 爆款剧，也未给出内容成本和商业模式的具体变化。",
         "tone": "neutral",
-        "answer_quote": "AI 能使其更快、更便宜、更好地生产内容，并把原先局限于小说或游戏的更多 IP 转化为线性视频，扩大内容漏斗和受众。",
+        "answer_quote": "AI 格局变化极快，腾讯自身最近数周、数月的状态也改变很大，因此难以下定论。所谓内容创作冲击可能更多指短视频、短剧，而非腾讯视频传统强项长剧。",
         "review_flags": []
       },
       {
@@ -1901,28 +1902,28 @@
         "answer_summary": "James（首席战略官）：金融服务占全球 GDP 和腾讯收入的重要部分，且天然数据密集，因此会从 AI 中获得生产率提升。它与编程、广告有相似特征，很可能在不久后受益。以贷款为例，信用评分过去更像艺术而非科学：可用数据很多，但模型只有效利用很小子集；Transformer 模型可利用更完整的数据，识别预测因素，并凭借预测能力改善信贷投放。许多公司会投入大量时间和精力，腾讯也会参与这一方向。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未给出网络贷款和财富管理业务的具体前景预测或量化影响。",
+        "evasion_note": "未给出网络贷款和财富管理的具体前景预测或量化影响。",
         "tone": "positive",
         "answer_quote": "金融服务占全球 GDP 和腾讯收入的重要部分，且天然数据密集，因此会从 AI 中获得生产率提升。",
         "review_flags": []
       }
     ],
     "topic_stats": {
-      "产品结构": 6,
-      "广告与变现": 1,
+      "产品结构": 5,
+      "竞争格局": 2,
       "产能与资本开支": 3,
       "费用与运营": 1,
       "需求与出货": 1,
-      "竞争格局": 1,
       "广告负载": 1,
+      "指引与展望": 1,
       "其他": 1
     },
     "new_topics": [
       "产品结构",
       "产能与资本开支",
       "其他",
-      "广告与变现",
       "广告负载",
+      "指引与展望",
       "竞争格局",
       "费用与运营",
       "需求与出货"
@@ -1931,7 +1932,7 @@
     "hot_topics": [
       "产品结构",
       "产能与资本开支",
-      "广告与变现"
+      "竞争格局"
     ],
     "evasive_list": [
       {
@@ -1940,13 +1941,13 @@
         "firm": "瑞银",
         "topic": "产能与资本开支",
         "is_new_topic": false,
-        "question_summary": "管理层能否量化今年 AI 资本开支指引，以及用什么 KPI 评估 AI 投资的价值创造与回报？",
-        "answer_summary": "Huateng（CEO）：\n我们看到内部产品和外部模型用户对 AI 服务的需求都在增加。此前已指引今年资本开支高于去年，现在对此更为肯定和有信心。随着中国设计的 ASIC 在年内逐月增加供应，资本开支将大幅增长，尤其集中在下半年。\n\nKPI 因产品和业务而异：广告和游戏等现有业务侧重收入与利润；新 AI 产品侧重能力和使用量，例如基础模型智能程度及 WorkBuddy token 消耗；腾讯云此前因 GPU 不足无法满足外部需求，未来将侧重收入和市场份额。",
+        "question_summary": "管理层能否量化今年 AI 资本开支指引，并用哪些 KPI 评估价值创造与回报？",
+        "answer_summary": "Huateng（CEO）：公司看到内部产品和外部模型用户对 AI 服务的需求都在增加，因此对今年资本开支高于去年的指引更有信心。随着中国设计的 ASIC 在年内逐月增加供应，资本开支会大幅增长，尤其集中在下半年。\nHuateng（CEO）：评估回报的 KPI 因业务而异：广告和游戏等现有业务侧重收入和利润；新 AI 产品侧重能力和使用量，比如基础模型智能程度和 WorkBuddy token 消耗；腾讯云此前因 GPU 不足无法满足外部需求，未来会侧重收入和市场份额。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未给出今年 AI 资本开支的具体量化金额或占经营现金流比例，只表示会大幅增长且集中在下半年。",
+        "evasion_note": "没有给出今年 AI 资本开支的具体量化数字，只确认会大幅增长且集中在下半年。",
         "tone": "positive",
-        "answer_quote": "We see increasing demand for AI services from both our internal products and external model users. We previously guided that capital expenditure this year would be higher than last year, and we are now more certain and confident about that. As the supply of China-designed ASICs increases month by month during the year, capital expenditure will grow significantly, especially concentrated in the second half.",
+        "answer_quote": "We see increasing demand for AI services from both our internal products and external model users. We previously guided that this year's capex would be higher than last year, and we are now more certain and confident about that. As the supply of China-designed ASICs increases month by month this year, capex will grow significantly, especially concentrated in the second half.",
         "review_flags": []
       },
       {
@@ -1955,28 +1956,28 @@
         "firm": "美国银行证券",
         "topic": "产品结构",
         "is_new_topic": false,
-        "question_summary": "腾讯智能体可访问小程序生态并把小程序代码用作技能，这一能力何时落地？在算力供应紧张下，如何平衡推出更多 AI 功能和现有计算容量？",
-        "answer_summary": "Chi Ping（总裁）：小程序技能一定会到来，但需要确定最佳呈现方式，以及如何让小程序所有者主动参与。公司有时间表，但设计事项较多，暂不能给出明确日期。长期看，生态资源可以转化为智能体技能，智能体也会拥有身份并在部分服务中取得账户。这是腾讯独特的生态优势，会逐步提供。\nJames（首席战略官）：我们已作出取舍并承担代价：优先满足多项内部服务，而非腾讯云。其他超大规模云公司通常只有一个大量消耗 GPU 的旗舰内部场景，腾讯则同时有混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy。之所以能同时支持，是因为我们没有积极出租腾讯云 GPU 容量。今年余下时间，随着国产 GPU 供应逐步提升，我们会纠正这一状况，向腾讯云提供更多容量并提高其扩张速度。腾讯有意延后通过云变现 AI，以同时支持多项内部 AI 计划。",
+        "question_summary": "腾讯智能体接入小程序生态、把小程序代码用作技能的能力何时落地？在算力供应紧张下，如何平衡推出更多 AI 功能和现有计算容量？",
+        "answer_summary": "Chi Ping（总裁）：小程序技能一定会推出，但公司需要先确定最佳呈现方式，并让小程序所有者愿意主动参与。目前已有时间表，但设计事项较多，暂时不能给出明确日期。长期看，腾讯的生态资源可以转化为智能体技能，智能体也会拥有身份并在部分服务中取得账户，这是腾讯独特的生态优势，会逐步提供。\nJames（首席战略官）：公司已经做出取舍并承担代价，优先满足多项内部服务，而不是腾讯云。其他超大规模云公司通常只有一个大量消耗 GPU 的旗舰内部场景，腾讯则同时有混元、微信智能体、元宝、广告、游戏、WorkBuddy 和 CodeBuddy。之所以能同时支持，是因为没有积极出租腾讯云 GPU 容量。今年余下时间，随着国产 GPU 供应逐步提升，公司会纠正这一状况，向腾讯云提供更多容量并提高其扩张速度。腾讯有意延后通过云变现 AI，以同时支持多项内部 AI 计划。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未给出小程序技能落地的明确日期",
+        "evasion_note": "未给出小程序技能落地的明确日期，只说明有时间表但设计事项较多。",
         "tone": "neutral",
-        "answer_quote": "We have made trade-offs and borne the cost: we prioritize multiple internal services over Tencent Cloud. Other hyperscale cloud companies typically have only one flagship internal scenario that consumes a lot of GPU, while Tencent has Hunyuan, WeChat Agent, Yuanbao, advertising, games, WorkBuddy and CodeBuddy at the same time.",
+        "answer_quote": "The mini program skills will definitely come, but we need to determine the best way to present them and how to get mini program owners to actively participate. We have a timeline, but there are many design matters, so we cannot give a clear date yet.",
         "review_flags": []
       },
       {
         "exchange_id": "9",
         "analyst": "Ellie Jiang",
         "firm": "麦格理",
-        "topic": "产品结构",
+        "topic": "指引与展望",
         "is_new_topic": false,
-        "question_summary": "WorkBuddy 在生产力智能体领域取得早期领先，一季度企业服务增长 20% 中，多少来自 MaaS、SaaS 等经常性智能体收入，多少来自传统云和其他收入？2026 财年末及未来两三年是否有内部 ARR 目标？",
-        "answer_summary": "James（首席战略官）：生产力 AI 的拐点不是发生在前几个季度甚至前几个月，而是最近几周。全球范围内，智能体 AI 在一季度末后才在代码生成和生产率提升上取得突破，因此一季度企业服务增长并非由相关 token 消耗推动，token 用量增长发生在一季度之后。\n变化速度太快，今天设定目标，12 个月后可能向任一方向偏差一个数量级。当前重点不是达到特定金额的 ARR，而是拥有正确产品：模型层面的混元 3 已具备优秀智能体能力，今年稍晚的下一代会显著更好；产品层面的 CodeBuddy、尤其 WorkBuddy，要成为用户调用和提取基础模型智能的正确界面。产品能力优先于短期 ARR 目标。",
+        "question_summary": "WorkBuddy 在一季度企业服务 20% 增长中，经常性智能体收入与传统云收入各占多少？公司对 2026 财年末及未来两三年是否有内部 ARR 目标？",
+        "answer_summary": "James（首席战略官）：生产力 AI 的拐点不是发生在过去几个季度或几个月，而是最近几周才出现。全球范围内，智能体 AI 在一季度末之后才在代码生成和生产率提升上取得突破，所以一季度企业服务增长并不是由相关 token 消耗推动的，token 用量增长发生在一季度之后。\nJames（首席战略官）：变化速度太快，今天设定目标，12 个月后可能向任一方向偏差一个数量级。当前重点不是达到特定金额的 ARR，而是拥有正确产品：模型层面混元 3 已具备优秀智能体能力，今年稍晚的下一代会显著更好；产品层面 CodeBuddy、尤其 WorkBuddy，要成为用户调用和提取基础模型智能的正确界面。产品能力优先于短期 ARR 目标。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未直接回答一季度企业服务增长中经常性智能体收入与传统云收入的具体占比，也未给出具体 ARR 目标数字。",
+        "evasion_note": "未回答一季度企业服务增长中经常性智能体收入与传统云收入的具体占比，也未给出内部 ARR 目标数字。",
         "tone": "neutral",
-        "answer_quote": "The inflection point for productivity AI is not in the last few quarters or even months, but in the last few weeks. Globally, agentic AI only broke through in code generation and productivity gains after the end of Q1. Therefore, Q1 enterprise services growth was not driven by related token consumption; token usage growth occurred after Q1.",
+        "answer_quote": "The inflection in productivity AI is not something that happened in prior quarters or even prior months, it's really happened in the last few weeks. Globally, agentic AI breakthroughs in code generation and productivity gains only occurred after the end of Q1.",
         "review_flags": []
       },
       {
@@ -1991,7 +1992,7 @@
         "directness": "partial",
         "evasion_note": "未明确回答是否会出现 AI 爆款剧，也未给出内容成本和商业模式的具体变化。",
         "tone": "neutral",
-        "answer_quote": "AI 能使其更快、更便宜、更好地生产内容，并把原先局限于小说或游戏的更多 IP 转化为线性视频，扩大内容漏斗和受众。",
+        "answer_quote": "AI 格局变化极快，腾讯自身最近数周、数月的状态也改变很大，因此难以下定论。所谓内容创作冲击可能更多指短视频、短剧，而非腾讯视频传统强项长剧。",
         "review_flags": []
       },
       {
@@ -2004,7 +2005,7 @@
         "answer_summary": "James（首席战略官）：金融服务占全球 GDP 和腾讯收入的重要部分，且天然数据密集，因此会从 AI 中获得生产率提升。它与编程、广告有相似特征，很可能在不久后受益。以贷款为例，信用评分过去更像艺术而非科学：可用数据很多，但模型只有效利用很小子集；Transformer 模型可利用更完整的数据，识别预测因素，并凭借预测能力改善信贷投放。许多公司会投入大量时间和精力，腾讯也会参与这一方向。",
         "new_numbers": [],
         "directness": "partial",
-        "evasion_note": "未给出网络贷款和财富管理业务的具体前景预测或量化影响。",
+        "evasion_note": "未给出网络贷款和财富管理的具体前景预测或量化影响。",
         "tone": "positive",
         "answer_quote": "金融服务占全球 GDP 和腾讯收入的重要部分，且天然数据密集，因此会从 AI 中获得生产率提升。",
         "review_flags": []
@@ -2012,52 +2013,47 @@
     ]
   },
   "summary": {
-    "headline": "收入稳健增长但AI投入激增，利润率承压与资本开支扩张成核心矛盾",
+    "headline": "收入增速受春节错期压制，AI投资推高资本开支并侵蚀利润率",
     "key_findings": [
       {
-        "finding": "资本开支环比暴增62.7%至319亿元，AI算力投资加速但回报周期未明",
-        "evidence": "capex、Q&A 2"
+        "finding": "资本开支环比大增63%，AI服务器投资加速，管理层确认全年资本开支将高于去年且集中在下半年。",
+        "evidence": "capex"
       },
       {
-        "finding": "非IFRS经营利润率同比持平于38.5%，AI投资推高研发费用抵消毛利率改善",
-        "evidence": "operating_margin_nongaap、研发费用"
+        "finding": "非IFRS经营利润率同比基本持平，剔除新AI产品后为43%，显示AI投入对利润率的压制显著。",
+        "evidence": "operating_margin_nongaap"
       },
       {
-        "finding": "营销服务收入同比增长20%，视频号广告负载仅4%-5%，变现空间大但节奏存不确定性",
-        "evidence": "advertising_revenue、Q&A 8"
+        "finding": "营销服务收入同比增长20%，AI推荐升级和视频号库存增加驱动广告增长，但视频号广告负载仍仅4%至5%。",
+        "evidence": "kpis.advertising_revenue"
       }
     ],
     "prior_watchlist_review": [],
     "next_watchlist": [
       {
-        "question": "FQ2 Non-IFRS经营利润率是否因AI投入继续承压，低于38.5%？",
-        "metric_key": "operating_margin_nongaap",
-        "verification_condition": "FQ2 Non-IFRS经营利润率",
-        "threshold": "<38.5%"
-      },
-      {
-        "question": "FQ2资本开支是否环比继续增长，验证下半年集中扩张指引？",
         "metric_key": "capex",
-        "verification_condition": "FQ2资本开支环比增速",
-        "threshold": ">0%"
+        "condition": "验证管理层“资本开支将大幅增长且集中在下半年”的指引",
+        "threshold": "FQ2 资本开支是否环比继续增长且同比增速超过16%"
       },
       {
-        "question": "FQ2营销服务收入同比增速是否维持20%以上，验证视频号广告变现能力？",
-        "metric_key": "advertising_revenue",
-        "verification_condition": "FQ2营销服务收入同比增速",
-        "threshold": ">=20%"
+        "metric_key": "operating_margin_nongaap",
+        "condition": "验证AI投资对利润率的持续影响",
+        "threshold": "FQ2 非IFRS经营利润率是否维持在38.5%以上，或剔除新AI产品后是否达到43%"
       },
       {
-        "question": "FQ2企业服务收入同比增速是否因AI token消耗提升而加速至20%以上？",
-        "metric_key": "fintech_biz_revenue",
-        "verification_condition": "FQ2企业服务收入同比增速",
-        "threshold": ">20%"
+        "metric_key": "kpis.advertising_revenue",
+        "condition": "验证视频号广告负载提升和AI推荐对广告收入的拉动",
+        "threshold": "FQ2 营销服务收入同比增速是否保持在20%以上"
       },
       {
-        "question": "FQ2自由现金流是否因资本开支增加而同比增速降至20%以下？",
-        "metric_key": "free_cash_flow",
-        "verification_condition": "FQ2自由现金流同比增速",
-        "threshold": "<20%"
+        "metric_key": "kpis.vas_revenue",
+        "condition": "验证春节错期影响消退后游戏收入确认的恢复",
+        "threshold": "FQ2 增值服务收入同比增速是否回升至10%以上"
+      },
+      {
+        "metric_key": "kpis.fintech_biz_revenue",
+        "condition": "验证企业服务增长和云业务恢复情况",
+        "threshold": "FQ2 金融科技及企业服务收入同比增速是否保持在9%以上，且企业服务收入增速是否维持20%"
       }
     ]
   },
@@ -2068,7 +2064,7 @@
         "index": 0,
         "status": "strengthened",
         "evidence": "营销服务收入380亿元同比增长20%，金融科技及企业服务收入600亿元同比增长9%，增值服务收入同比增长4%，三项主业均保持正增长。",
-        "quote": "营销服务收入 380 亿元，同比增长 20%。",
+        "quote": "营销服务收入 380 亿元，同比增长 20%；金融科技及企业服务收入 600 亿元，同比增长 9%",
         "source": "prepared_remarks",
         "falsified": false,
         "quote_unverified": false
@@ -2076,9 +2072,9 @@
       {
         "index": 1,
         "status": "unchanged",
-        "evidence": "本季材料未出现将六个月累计数误写为单季数据的情形，但也没有提供新的证据强化该论点。",
+        "evidence": "本季材料未提供按人民币单季三个月口径与历史季对齐的明确验证信息。",
         "quote": null,
-        "source": "press_release",
+        "source": "prepared_remarks",
         "falsified": false,
         "quote_unverified": false
       }
@@ -2087,8 +2083,8 @@
       {
         "index": 0,
         "answered": true,
-        "answer": "本季本土游戏流水同比增长十几个百分点，但收入仅增长6%，因春节较晚使部分收入递延至后续期间确认，增值服务收入仍落后于流水。",
-        "quote": "本土游戏流水同比增长十几个百分点，主要受《三角洲行动》《和平精英》《王者荣耀》和《无畏契约手游》推动；但收入仅增长 6%，因为春节较晚使部分收入延至 2026 年后续期间确认。",
+        "answer": "本季本土游戏流水同比增长十几个百分点，但春节错期使部分游戏收入递延确认，增值服务收入同比增长4%，落后于流水。",
+        "quote": "本土游戏流水同比增长十几个百分点；国际游戏收入增长 13%",
         "source": "prepared_remarks",
         "quote_unverified": false
       }
@@ -2097,7 +2093,7 @@
       {
         "name": "加仓",
         "state": "triggered",
-        "reason": "三项主业收入同比均为正，且非IFRS经营利润率38.5%同比持平，不低于上一季。"
+        "reason": "三项主业收入同比均为正，且非国际财务报告准则经营利润率为38.5%，同比持平，不低于上一季。"
       },
       {
         "name": "卖出",
@@ -2109,21 +2105,21 @@
       {
         "concern": "AI资本开支大幅增长且集中在下半年，可能进一步压制利润率和自由现金流。",
         "raised_by": "Kenneth Fong，瑞银",
-        "why": "管理层确认今年资本开支高于去年且下半年大幅增长，而AI投资已使非IFRS经营利润率同比持平，需跟踪其对后续利润率的持续影响。"
+        "why": "资本开支环比增长84%，管理层确认今年资本开支高于去年且下半年大幅增长，对利润率的影响需持续跟踪。"
       },
       {
-        "concern": "腾讯云因GPU供应不足无法满足外部需求，可能错失AI云市场份额。",
+        "concern": "腾讯云因GPU供应不足无法满足外部需求，可能错失云业务增长窗口。",
         "raised_by": "Alex Liu，美国银行证券",
-        "why": "管理层承认优先满足内部AI需求而牺牲腾讯云GPU容量，若国产GPU供应改善不及预期，云业务扩张可能持续受限。"
+        "why": "管理层承认优先满足内部AI需求而延后云变现，若国产GPU供应不及预期，云收入增长可能受限。"
       },
       {
-        "concern": "中国消费者AI订阅市场空间有限，AI产品变现路径尚不清晰。",
-        "raised_by": "Charlene Liu，汇丰",
-        "why": "管理层认为中国消费者订阅市场不会特别大，且广告变现模式尚未成熟，AI投入的长期回报存在不确定性。"
+        "concern": "AI智能体替代传统点击对广告定价和预算的影响存在不确定性。",
+        "raised_by": "Alicia Yap，花旗",
+        "why": "管理层认为对腾讯影响小于电商公司，但广告模式变化可能影响营销服务收入增长。"
       }
     ],
-    "fingerprint": "89b76bb73c21e9cb",
-    "reviewed_at": "2026-10-23T12:11:48+00:00",
+    "fingerprint": "ec85c6755050b295",
+    "reviewed_at": "2026-10-23T15:04:12+00:00",
     "model": "deepseek/deepseek-v4-pro-0813"
   }
 }
