@@ -31,21 +31,21 @@
       <table class="data pool-table">
         <thead>
           <tr>
-            <th scope="col" class="name">名称</th>
-            <th scope="col">分组</th>
-            <th scope="col">状态</th>
+            <th scope="col" class="mid name">名称</th>
+            <th scope="col" class="mid">分组</th>
+            <th scope="col" class="mid">状态</th>
             <th scope="col" class="num">股价</th>
             <th scope="col" class="num">涨跌</th>
             <th scope="col" class="num">RSI</th>
             <th scope="col" class="num">Forward PE</th>
             <th scope="col" class="num">目标估值</th>
-            <th scope="col">是否触发</th>
-            <th scope="col">评价</th>
-            <th scope="col">最近财报</th>
+            <th scope="col" class="mid">是否触发</th>
+            <th scope="col" class="mid">评价</th>
+            <th scope="col" class="mid">最近财报</th>
             <th scope="col" class="num">营收</th>
             <th scope="col" class="num">EPS</th>
             <th scope="col" class="num">下季指引</th>
-            <th scope="col">下次财报</th>
+            <th scope="col" class="mid">下次财报</th>
             <th scope="col" class="num">覆盖人数</th>
             <th scope="col" class="num">当前季EPS (30日%)</th>
             <th scope="col" class="num">上修 / 下修</th>
@@ -54,23 +54,23 @@
         <tbody>
           {% for r in rows %}
           <tr data-status="{{ r.status_key }}" data-kind="{{ r.kind }}">
-            <td class="name">
+            <td class="mid name">
               <a class="pool-name" href="{{ r.href }}" title="{{ r.name }}">{{ r.ticker }}</a>
             </td>
-            <td class="{{ 'muted' if r.group == '—' else '' }}">{{ r.group }}</td>
-            <td>{% if r.status_key %}<span class="stage-badge s-{{ r.status_key }}">{{ r.status_label }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="mid{{ ' muted' if r.group == '—' else '' }}">{{ r.group }}</td>
+            <td class="mid">{% if r.status_key %}<span class="stage-badge s-{{ r.status_key }}">{{ r.status_label }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
             <td class="num{% if r.quote_price == '—' %} muted{% endif %}">{{ r.quote_price }}</td>
             <td class="num c-{{ r.change.cls }}">{{ r.change.text }}</td>
             <td class="num{% if r.rsi == '—' %} muted{% endif %}">{{ r.rsi }}</td>
             <td class="num{% if r.forward_pe == '—' %} muted{% endif %}">{{ r.forward_pe }}</td>
             <td class="num{% if r.target == '—' %} muted{% endif %}">{{ r.target }}</td>
-            <td class="trig-cell t-{{ r.triggered.cls }}">{{ r.triggered.text }}</td>
-            <td class="sig c-{{ r.quarter.signal_cls }}">{{ r.quarter.signal }}</td>
-            <td class="when{% if r.reported.text == '—' %} muted{% endif %}"{% if r.reported.title %} title="{{ r.reported.title }}"{% endif %}>{{ r.reported.text }}</td>
+            <td class="mid trig-cell t-{{ r.triggered.cls }}">{{ r.triggered.text }}</td>
+            <td class="mid sig c-{{ r.quarter.signal_cls }}">{{ r.quarter.signal }}</td>
+            <td class="mid when{% if r.reported.text == '—' %} muted{% endif %}"{% if r.reported.title %} title="{{ r.reported.title }}"{% endif %}>{{ r.reported.text }}</td>
             <td class="num">{% if r.revenue.verdict %}<b class="v-{{ r.revenue.verdict }}">{{ r.revenue.label }}</b>{% else %}<span class="muted">{{ r.revenue.label }}</span>{% endif %}</td>
             <td class="num">{% if r.eps.verdict %}<b class="v-{{ r.eps.verdict }}">{{ r.eps.label }}</b>{% else %}<span class="muted">{{ r.eps.label }}</span>{% endif %}</td>
             <td class="num">{% if r.guide.verdict %}<b class="v-{{ r.guide.verdict }}">{{ r.guide.label }}</b>{% else %}<span class="muted">{{ r.guide.label }}</span>{% endif %}</td>
-            <td class="when{% if r.next_text == '下次财报日待定' %} muted{% endif %}">{{ r.next_text }}</td>
+            <td class="mid when{% if r.next_text == '下次财报日待定' %} muted{% endif %}">{{ r.next_text }}</td>
             <td class="num{% if r.quarter.analysts == '—' %} muted{% endif %}">{{ r.quarter.analysts }}</td>
             <td class="num{% if r.quarter.eps == '—' %} muted{% endif %}">{% if r.quarter.eps == '—' %}—{% else %}{{ r.quarter.eps }} <span class="c-{{ r.quarter.chg.cls }}">({{ r.quarter.chg.text }})</span>{% endif %}</td>
             <td class="num{% if r.quarter.revisions == '—' %} muted{% endif %}">{{ r.quarter.revisions }}</td>

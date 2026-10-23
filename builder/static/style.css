@@ -305,12 +305,12 @@ body.pool-page footer { max-width: 1960px; }
 .pool-name { color: inherit; font-weight: 600; white-space: nowrap; }
 .pool-name:hover { text-decoration: none; }
 .pool-table .stage-badge { font-size: 11.5px; padding: 1px 7px; }
-.pool-table .when { text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pool-table .when { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pool-table .trig-cell { text-align: center; }
 .pool-table .t-yes { font-weight: 600; }
 .pool-table .t-no { color: var(--ink-2); }
 .pool-table tr[hidden] { display: none; }
-.pool-table .sig { text-align: left; white-space: nowrap; }
+.pool-table .sig { white-space: nowrap; }
 .pool-empty { margin: 0; padding: 14px 12px 8px; color: var(--muted); }
 .pool-note { margin: 0; padding: 4px 12px 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
 @media (max-width: 720px) {
@@ -345,6 +345,11 @@ table.data { width: 100%; border-collapse: collapse; font-size: 13px; margin-top
 table.data th, table.data td { padding: 7px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; vertical-align: top; }
 table.data th { font-size: 12px; font-weight: 500; color: var(--muted); }
 table.data th:first-child, table.data td:first-child { text-align: left; }
+/* 观察池的标签、日期、状态在格子中间。数字列仍靠右。写在 table.data 后面，避免被右对齐盖掉。 */
+.pool-page table.pool-table th.mid,
+.pool-page table.pool-table td.mid { text-align: center; }
+.pool-page table.pool-table th.num,
+.pool-page table.pool-table td.num { text-align: right; }
 table.data td.wrap { white-space: normal; text-align: left; min-width: 16em; }
 table.data tr:last-child td { border-bottom: 0; }
 table.data .sub-line { display: block; font-size: 12px; color: var(--muted); white-space: normal; max-width: 34em; margin-top: 2px;
