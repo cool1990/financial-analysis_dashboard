@@ -54,6 +54,7 @@ python -m pipeline build
 | `python -m pipeline init-missing` | 给缺 CIK 的股票自动初始化（daily 自动跑，无 LLM） |
 | `python -m pipeline comparatives` | 用新闻稿对比列补算同比 / 环比（无 LLM、不联网） |
 | `python -m pipeline validate --ticker MU --period FY2026Q4` | 查看状态 |
+| `python -m pipeline hkex-poll --ticker 0700.HK` | 披露易业绩公布试跑，默认只列链接 |
 
 ## Secrets
 
@@ -75,7 +76,7 @@ LLM 相关命令（`run` Stage1/2、`backfill`、`llm-ping`、`eval`）请用 Ac
 - 增长质量 = 通用层（`settings.yaml` 的 `quality.defaults`，会计质量类）+ 公司层（股票配置 `quality_checks`，同 key 覆盖通用阈值）。
 - 次日涨跌同时计算相对对照指数（股票配置 `benchmark`，默认 SPY）的超额涨跌。
 - 新增股票：加 `config/tickers/{TICKER}.yaml` 和仓位档案即可，daily 会自动补 CIK（`init-missing`）。
-- 上市地：`listing: domestic`（默认）走 **8-K Item 2.02** + EX-99。`listing: adr` 走 **6-K / 6-K/A**，用 `sec.earnings_6k` 的 exhibit 描述过滤（Press release / earnings），并排除月报、合并报表、股息、董事会。不要用 Item 2.02 滤 6-K，也不要把 TWSE / 港交所 / 巨潮接成 poll。第二只 ADR 只加一份 yaml，不要为单票写死文件名。
+- 上市地：`listing: domestic`（默认）走 **8-K Item 2.02** + EX-99。`listing: adr` 走 **6-K / 6-K/A**，用 `sec.earnings_6k` 的 exhibit 描述过滤（Press release / earnings），并排除月报、合并报表、股息、董事会。不要用 Item 2.02 滤 6-K，也不要把 TWSE / 港交所 / 巨潮接成每天的 poll。港股试跑命令 `hkex-poll` 是单独入口，不在 poll cron 里。第二只 ADR 只加一份 yaml，不要为单票写死文件名。
 - ADR 另写 `reporting_currency`（TSM 为 USD）和 `accounting_basis`（备注，不参与 FY 计算）。稿里的 NT$ / TWD 不能当成美元。历史回补走 6-K 新闻稿：`python -m pipeline backfill --ticker TSM --limit 4`。`backfill --xbrl-only` 会拒绝 ADR。过滤器回放：`python -m pipeline replay-filings --ticker TSM`（不调用 LLM）。确认回放命中 Press release、排除 monthend / revenue / fsx / dividend / board 之后，这只 ADR 才随 poll 自动检查近期 6-K。
 
 ## LLM 成本护栏
@@ -123,5 +124,36 @@ python -m pipeline run --ticker 0700.HK --period FY2026Q1 --stage 1
 # Stage2 问答和变动原因需要 OPENROUTER_API_KEY，且 raw/FY2026Q1/transcript.txt 还在
 python -m pipeline run --ticker 0700.HK --period FY2026Q1 --stage 2
 ```
+
+#### 披露易试跑 `hkex-poll`
+
+只找腾讯（`0700.HK` / 主板代号 `00700`）的业绩公布：季度业绩、中期业绩、全年业绩（披露易类别叫末期业绩）。默认 dry-run，只打印 JSON。加 `--download` 才把 PDF 写到 `data/0700.HK/raw/hkex/`。这个目录已 gitignore，不要把 PDF 提交进仓库。不做上市以来的历史回补，窗口最长 3 年，默认是香港今天往前 18 个月。
+
+```bash
+python -m pipeline hkex-poll --ticker 0700.HK
+python -m pipeline hkex-poll --ticker 0700.HK --since 2026-01-01 --until 2026-10-23
+python -m pipeline hkex-poll --ticker 0700.HK --download
+```
+
+每条输出有 `title`、`published_at`（香港时间）、`doc_type`（`quarterly_results` / `interim_results` / `annual_results`）、`url`。只有下载过的才有 `sha256` 和 `path`。
+
+用了三个官方入口，都在 `www1.hkexnews.hk`：
+
+1. 代号：`GET /search/prefix.do?callback=callback&lang=ZH&type=A&name=00700&market=SEHK`。这是 JSONP，腾讯的 `stockId` 从这里来，代码不写死。2026-10-23 返回的是 `7609`。
+2. 公告列表：`GET /search/titleSearchServlet.do`，查询方式和标题搜索页 `https://www1.hkexnews.hk/search/titlesearch.xhtml?lang=zh` 一样。`market=SEHK`，`lang=zh`，`searchType=1`，`fromDate` / `toDate` 为 `YYYYMMDD`，`t1code=10000`（公告及通告），`t2Gcode=3`（財務資料），`t2code=-2`，`rowRange` 从 100 起，最多再取 200 和 300。响应是 JSON，`result` 字段本身又是一段 JSON 字符串。类别中文名来自 `/ncms/script/eds/tierone_c.json` 和 `tiertwo_c.json`。
+3. PDF：`https://www1.hkexnews.hk` 加上返回里的 `FILE_LINK`，例如 `/listedco/listconews/sehk/2026/0513/2026051300335_c.pdf`（2026 年一季业绩公布）。
+
+財務資料这一组里还有董事会召开日期和股息表格。命令会留下标题是业绩公布的季度 / 中期 / 末期业绩，丢掉董事会日期、股息公告表格、年报、中期报告、回购、延迟发表、修订和附属公司业绩。全年业绩当天通常另有一份「末期股息」表格，不要拿去导入。
+
+反爬：披露易会下发 Akamai 的 `bm_s` / `bm_so` cookie；`/robots.txt` 目前不是规则文件，而是一段搬迁页。User-Agent 标明本仓库，请求串行，默认间隔 1.2 秒。403 / 429 / 5xx 最多 3 次，中间指数退避。失败时 stdout 是 `ok: false`，带上 HTTP 状态、最终 URL 和正文片段，这样能把「被拦」和「窗口里没有业绩」分开。不要并发，也不要改成伪装浏览器后连续重刷。这个命令没有接进 `.github/workflows/poll.yml`。
+
+和 `import-period` 的衔接：下载文件放在 `data/0700.HK/raw/hkex/{日期}_{doc_type}_{news_id}.pdf`，不会写成 `raw/FY…/press_release.pdf`，所以 `run --stage 1` 不会自动读它。人看过标题后指定财季再导入，例如 2026-05-13 那份一季业绩：
+
+```bash
+python -m pipeline import-period --ticker 0700.HK --period FY2026Q1 \
+  --pdf data/0700.HK/raw/hkex/2026-05-13_quarterly_results_12157227.pdf
+```
+
+中期公告标题同时有「三个月及六个月」。导入器会拒绝把纯六个月写成单季；`hkex-poll` 自己不猜 `FY2026Q2` 还是半年度。
 - 单季 JSON 经 `PeriodDoc`（`schema_version: 1`）校验后写入。
 - 需求细节见项目内开发文档。
