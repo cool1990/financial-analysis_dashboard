@@ -20,7 +20,13 @@
     "needs_review": false,
     "warnings": [
       "新闻稿含 NT$/TWD。reporting_currency=USD，未标明美元的金额不能当成 USD。",
-      "eps_gaap_diluted 采用新闻稿 US$4.31 per ADR，优先于 NT$ 普通股 EPS，不做汇率换算"
+      "eps_gaap_diluted 采用新闻稿 US$4.31 per ADR，优先于 NT$ 普通股 EPS，不做汇率换算",
+      "net_income_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
+      "gross_profit_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
+      "operating_income_gaap 只有 NT$、没有美元对照，已清空以免当成 USD",
+      "晶圆收入占比按新闻稿的制程节点百分比记入，不作为美元金额",
+      "kpis.advanced_node_revenue 不是美元金额，已移出金额科目",
+      "kpis.hpc_revenue 空壳已移除"
     ]
   },
   "scorecard": [
@@ -52,7 +58,7 @@
     },
     {
       "metric": "gross_margin",
-      "actual": 21.400771144278607,
+      "actual": 0.677,
       "benchmark": {
         "value": null,
         "source": "none",
@@ -65,7 +71,7 @@
     },
     {
       "metric": "operating_margin",
-      "actual": 19.069726368159206,
+      "actual": 0.603,
       "benchmark": {
         "value": null,
         "source": "none",
@@ -139,11 +145,11 @@
       "source_quote": "In US dollars, second quarter revenue was $40.20 billion"
     },
     "gross_margin_gaap": {
-      "value": 21.400771144278607,
+      "value": 0.677,
       "yoy_pct": null,
       "qoq_pct": null,
-      "yoy_pp": null,
-      "qoq_pp": null,
+      "yoy_pp": 0.091,
+      "qoq_pp": 0.015,
       "benchmark": {
         "value": null,
         "source": "none",
@@ -151,7 +157,7 @@
         "diff_pct": null,
         "diff_pp": null
       },
-      "source_quote": null
+      "source_quote": "Gross margin for the quarter was 67.7%, operating margin was 60.3%, and net profit margin was 55.6%"
     },
     "gross_margin_nongaap": {
       "value": null,
@@ -169,11 +175,11 @@
       "source_quote": null
     },
     "operating_margin_gaap": {
-      "value": 19.069726368159206,
+      "value": 0.603,
       "yoy_pct": null,
       "qoq_pct": null,
-      "yoy_pp": null,
-      "qoq_pp": null,
+      "yoy_pp": 0.107,
+      "qoq_pp": 0.022,
       "benchmark": {
         "value": null,
         "source": "none",
@@ -181,7 +187,7 @@
         "diff_pct": null,
         "diff_pp": null
       },
-      "source_quote": null
+      "source_quote": "Gross margin for the quarter was 67.7%, operating margin was 60.3%, and net profit margin was 55.6%"
     },
     "operating_margin_nongaap": {
       "value": null,
@@ -274,21 +280,56 @@
       "source_quote": null
     },
     "kpis": {
-      "advanced_node_revenue": {
-        "raw": "77",
-        "unit": "percent",
-        "source_quote": "Advanced technologies, defined as 7-nanometer and more advanced technologies, accounted for 77% of total wafer revenue."
-      },
-      "hpc_revenue": {
-        "raw": null,
-        "unit": null,
-        "source_quote": ""
+      "wafer_revenue_mix": {
+        "kind": "share",
+        "denominator": "wafer revenue",
+        "lines": [
+          {
+            "key": "2nm",
+            "name": "2纳米晶圆收入占比",
+            "value": 0.03,
+            "source_quote": "2-nanometer accounted for 3%"
+          },
+          {
+            "key": "3nm",
+            "name": "3纳米晶圆收入占比",
+            "value": 0.3,
+            "source_quote": "3-nanometer accounted for 30%",
+            "yoy_pp": 0.06,
+            "qoq_pp": 0.05
+          },
+          {
+            "key": "5nm",
+            "name": "5纳米晶圆收入占比",
+            "value": 0.33,
+            "source_quote": "5-nanometer accounted for 33%",
+            "yoy_pp": -0.03,
+            "qoq_pp": -0.03
+          },
+          {
+            "key": "7nm",
+            "name": "7纳米晶圆收入占比",
+            "value": 0.11,
+            "source_quote": "7-nanometer accounted for 11%",
+            "yoy_pp": -0.03,
+            "qoq_pp": -0.02
+          },
+          {
+            "key": "advanced",
+            "name": "先进制程（7纳米及更先进）",
+            "value": 0.77,
+            "source_quote": "Advanced technologies, defined as 7-nanometer and more advanced technologies, accounted for 77% of total wafer revenue",
+            "yoy_pp": 0.03,
+            "qoq_pp": 0.03
+          }
+        ],
+        "source_quote": "Advanced technologies, defined as 7-nanometer and more advanced technologies, accounted for 77% of total wafer revenue"
       }
     },
     "net_income_gaap": {
-      "value": 706562000000.0,
-      "yoy_pct": null,
-      "qoq_pct": null,
+      "value": null,
+      "yoy_pct": 0.774,
+      "qoq_pct": 0.234,
       "yoy_pp": null,
       "qoq_pp": null,
       "benchmark": {
@@ -298,7 +339,7 @@
         "diff_pct": null,
         "diff_pp": null
       },
-      "source_quote": "Net income 706,562"
+      "source_quote": "net income of NT$706.56 billion"
     }
   },
   "drivers": {
@@ -389,7 +430,7 @@
       },
       {
         "metric": "net_income_gaap",
-        "summary": "净收入同比增长77.4%，主要受收入增长和经营利润率提升驱动。",
+        "summary": "新闻稿未披露美元净利，仅有新台币口径，故不记入美元金额。净利同比增长 77.4%，环比增长 23.4%。主要受收入增长和经营利润率提升驱动。",
         "drivers": [
           {
             "type": "量",
@@ -417,7 +458,7 @@
         "conflicts": []
       },
       {
-        "metric": "kpis.advanced_node_revenue",
+        "metric": "wafer_revenue_mix.advanced",
         "summary": "先进制程收入占比77%，其中3纳米占30%，5纳米占33%，7纳米占11%，2纳米占3%。",
         "drivers": [
           {

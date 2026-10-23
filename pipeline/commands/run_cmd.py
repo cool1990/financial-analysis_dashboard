@@ -20,7 +20,15 @@ from pipeline.compute.periods import (
 from pipeline.compute.scorecard import build_scorecard
 from pipeline.config import load_guidance_keys, load_settings, load_ticker_config
 from pipeline.earnings_config import earnings_filter_fingerprint, resolve_earnings_spec
-from pipeline.extract.currency_guard import apply_currency_guard, currency_prompt_note
+from pipeline.extract.currency_guard import (
+    align_adr_drivers,
+    annotate_wafer_mix_changes,
+    apply_currency_guard,
+    currency_prompt_note,
+    margin_or_stated,
+    stated_margin_ratios,
+    stated_net_income_changes,
+)
 from pipeline.extract.numbers import ParsedAmount
 from pipeline.extract.press_release import load_press_release
 from pipeline.llm import LLMClient
@@ -405,11 +413,14 @@ def _run_stage1_filing(
         next_rev = nr.get("avg") if nr else None
         next_eps = ne.get("avg") if ne else None
 
-    # margins
-    gm_gaap = ratio(gp_gaap.value, revenue.value)
+    # margins。台币利润被清空后，用新闻稿写明的利润率，不用 NT$ 利润 / 美元营收。
+    press_text = parsed.get("combined") or ""
+    stated_margins = stated_margin_ratios(press_text) if spec.listing == "adr" else {}
+    gm_gaap = margin_or_stated(ratio(gp_gaap.value, revenue.value), stated_margins.get("gross"))
     gm_ng = ratio(gp_ng.value, revenue.value)
-    om_gaap = ratio(oi_gaap.value, revenue.value)
+    om_gaap = margin_or_stated(ratio(oi_gaap.value, revenue.value), stated_margins.get("operating"))
     om_ng = ratio(oi_ng.value, revenue.value)
+    margin_quote = stated_margins.get("quote") if spec.listing == "adr" else None
     primary_gm = gm_ng if basis == "non_gaap" and gm_ng is not None else gm_gaap
     primary_om = om_ng if basis == "non_gaap" and om_ng is not None else om_gaap
 
@@ -451,9 +462,21 @@ def _run_stage1_filing(
             benchmark_source="consensus" if rev_est is not None else "none",
             source_quote=(extracted.get("revenue") or {}).get("source_quote"),
         ),
-        "gross_margin_gaap": build_metric_block(gm_gaap, yoy_base=hist("gross_margin_gaap", yoy_doc), qoq_base=hist("gross_margin_gaap", qoq_doc), is_ratio=True),
+        "gross_margin_gaap": build_metric_block(
+            gm_gaap,
+            yoy_base=hist("gross_margin_gaap", yoy_doc),
+            qoq_base=hist("gross_margin_gaap", qoq_doc),
+            is_ratio=True,
+            source_quote=margin_quote if gp_gaap.value is None else None,
+        ),
         "gross_margin_nongaap": build_metric_block(gm_ng, yoy_base=hist("gross_margin_nongaap", yoy_doc), qoq_base=hist("gross_margin_nongaap", qoq_doc), is_ratio=True),
-        "operating_margin_gaap": build_metric_block(om_gaap, yoy_base=hist("operating_margin_gaap", yoy_doc), qoq_base=hist("operating_margin_gaap", qoq_doc), is_ratio=True),
+        "operating_margin_gaap": build_metric_block(
+            om_gaap,
+            yoy_base=hist("operating_margin_gaap", yoy_doc),
+            qoq_base=hist("operating_margin_gaap", qoq_doc),
+            is_ratio=True,
+            source_quote=margin_quote if oi_gaap.value is None else None,
+        ),
         "operating_margin_nongaap": build_metric_block(om_ng, yoy_base=hist("operating_margin_nongaap", yoy_doc), qoq_base=hist("operating_margin_nongaap", qoq_doc), is_ratio=True),
         "eps_gaap": build_metric_block(eps_gaap.value, yoy_base=hist("eps_gaap", yoy_doc), qoq_base=hist("eps_gaap", qoq_doc), benchmark=eps_est if basis == "gaap" else None, benchmark_source="consensus" if basis == "gaap" else "none", source_quote=(extracted.get("eps_gaap_diluted") or {}).get("source_quote")),
         "eps_nongaap": build_metric_block(eps_ng.value, yoy_base=hist("eps_nongaap", yoy_doc), qoq_base=hist("eps_nongaap", qoq_doc), benchmark=eps_est if basis == "non_gaap" else None, benchmark_source="consensus" if basis == "non_gaap" else "none", source_quote=(extracted.get("eps_nongaap_diluted") or {}).get("source_quote")),
@@ -467,6 +490,15 @@ def _run_stage1_filing(
         ),
         "kpis": extracted.get("kpis") or {},
     }
+    if spec.listing == "adr" and (financials.get("net_income_gaap") or {}).get("value") is None:
+        changes = stated_net_income_changes(press_text)
+        block = financials["net_income_gaap"]
+        if changes.get("yoy") is not None:
+            block["yoy_pct"] = changes["yoy"]
+        if changes.get("qoq") is not None:
+            block["qoq_pct"] = changes["qoq"]
+    if spec.listing == "adr":
+        annotate_wafer_mix_changes(financials.get("kpis"), yoy_doc, qoq_doc)
 
     # 没有历史季度 JSON 时，用新闻稿表格里的上季 / 去年同季列补同比、环比（不调用 LLM）
     apply_press_comparatives(financials, extracted, capex_definition=capex_def)
@@ -551,6 +583,8 @@ def _run_stage1_filing(
         try:
             drivers = analyze_drivers(financials, parsed["combined"], stage=1)
             doc["drivers"] = {"stage": 1, "metrics": drivers.get("metrics", [])}
+            if spec.listing == "adr":
+                align_adr_drivers(doc["drivers"], financials)
             doc["status"]["warnings"].extend(drivers.get("warnings") or [])
         except Exception as e:
             doc["status"]["warnings"].append(f"Stage1 drivers 跳过: {e}")
@@ -707,6 +741,8 @@ def run_stage2(ticker: str, fiscal_period: str, *, force: bool = False) -> dict[
             stage=2,
         )
         doc["drivers"] = {"stage": 2, "metrics": drivers.get("metrics", [])}
+        if resolve_earnings_spec(cfg).listing == "adr":
+            align_adr_drivers(doc["drivers"], doc.get("financials") or {})
         doc["status"]["warnings"] = strip_driver_warnings(doc["status"]["warnings"]) + (drivers.get("warnings") or [])
     except Exception as e:
         doc["status"]["warnings"].append(f"Stage2 drivers 失败: {e}")
