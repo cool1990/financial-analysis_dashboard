@@ -4118,6 +4118,13 @@ def _fq_label(period: str) -> str:
     return f"FQ{quarter} {year}"
 
 
+def _label_to_period(label: str | None) -> str | None:
+    match = re.fullmatch(r"FQ([1-4]) (\d{4})", str(label or "").strip())
+    if not match:
+        return None
+    return f"FY{match.group(2)}Q{match.group(1)}"
+
+
 def _scorecard_row(doc: dict[str, Any], metric: str) -> dict[str, Any] | None:
     for row in doc.get("scorecard") or []:
         if row.get("metric") == metric:
@@ -4292,9 +4299,91 @@ def _expect_beat_note(actual: float, consensus: float, *, money: bool) -> tuple[
     return f"不及预期 {shown}", "miss"
 
 
+def _tv_forward_rows(tv: dict[str, Any] | None, *, limit: int = 4) -> list[dict[str, Any]]:
+    """扫描文件里尚未公布的季度。EPS 优先；营收只有扫描写了才带上。
+
+    不读全年 scalar，也不把 Alpha Vantage 的财年行拆成季度。两边都空的行丢掉。
+    """
+    if not isinstance(tv, dict):
+        return []
+    parsed: list[dict[str, Any]] = []
+    rows = tv.get("future_quarters")
+    if isinstance(rows, list):
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            period = _period_from_tv(row.get("tv_label"))
+            if not period:
+                continue
+            parsed.append({
+                "period": period,
+                "eps": _finite(row.get("eps_est")),
+                "revenue": _finite(row.get("rev_est")),
+            })
+    if not parsed:
+        used = tv.get("rows_used") if isinstance(tv.get("rows_used"), dict) else {}
+        earnings = used.get("earnings_fq_h_chart") or used.get("earnings_fq_h") or []
+        revenues: dict[str, float | None] = {}
+        for item in used.get("revenues_fq_h") or []:
+            if not isinstance(item, dict):
+                continue
+            period = _period_from_tv(item.get("FiscalPeriod"))
+            if period:
+                revenues[period] = _finite(item.get("Estimate"))
+        for item in earnings:
+            if not isinstance(item, dict) or item.get("IsReported"):
+                continue
+            period = _period_from_tv(item.get("FiscalPeriod"))
+            if not period:
+                continue
+            parsed.append({
+                "period": period,
+                "eps": _finite(item.get("Estimate")),
+                "revenue": revenues.get(period),
+            })
+    parsed.sort(key=lambda row: row["period"])
+    deduped: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in parsed:
+        if row["period"] in seen:
+            continue
+        seen.add(row["period"])
+        if row["eps"] is None and row["revenue"] is None:
+            continue
+        deduped.append(row)
+        if len(deduped) >= limit:
+            break
+    return deduped
+
+
+def _page_is_latest(page: str, docs: dict[str, Any] | None) -> bool:
+    periods = [key for key in (docs or {}) if _parse_year_quarter(key)]
+    if not periods:
+        return True
+    return page == max(periods)
+
+
+def _forward_periods_for_page(page: str, forward: list[dict[str, Any]], *, limit: int = 4) -> list[dict[str, Any]]:
+    """本页之后、扫描里已经写明的未来季，最多 4 季。
+
+    中间缺一季就跳过，不拿更远的季去填那个空位，也不用全年数字补。
+    """
+    if not page or not _parse_year_quarter(page):
+        return []
+    chosen: list[dict[str, Any]] = []
+    for row in forward:
+        if row["period"] <= page:
+            continue
+        chosen.append(row)
+        if len(chosen) >= limit:
+            break
+    return chosen
+
+
 def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None) -> dict[str, Any] | None:
     """没有 eps_surprise_chart 时，用已保存的实际和记分卡 / TradingView 共识画同一套柱图。
 
+    本页之后的未来四季 EPS / 营收只取 tradingview_scan.json。缺的字段留空。
     共识对不上数量级就留空，并在说明里写缺一致预期。管理层指引只写在刻度下，不画成灰柱。
     """
     ticker = str((doc.get("meta") or {}).get("ticker") or "").upper()
@@ -4312,6 +4401,10 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
     nxt = next_fiscal_period(period)
     guide_eps = _finite((_scorecard_row(doc, "next_q_eps_guidance") or {}).get("actual"))
     guide_rev = _finite((_scorecard_row(doc, "next_q_revenue_guidance") or {}).get("actual"))
+    forward_rows: list[dict[str, Any]] = []
+    if _page_is_latest(period, docs):
+        forward_rows = _forward_periods_for_page(period, _tv_forward_rows(_tradingview(ticker) if ticker else None))
+    forward_by = {row["period"]: row for row in forward_rows}
 
     def metric_actual(item: dict[str, Any], metric: str) -> float | None:
         if metric == "eps":
@@ -4329,6 +4422,9 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
         next_actual = metric_actual(next_doc, metric) if nxt in docs else None
         if nxt not in periods and (next_actual is not None or guide is not None):
             periods.append(nxt)
+        for row in forward_rows:
+            if row["period"] not in periods:
+                periods.append(row["period"])
         quarters = []
         actuals: dict[str, float] = {}
         for key, item in docs.items():
@@ -4341,10 +4437,14 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
         for key in periods:
             item = docs.get(key) or (doc if key == period else {})
             actual = actuals.get(key)
-            consensus = _saved_consensus(item, metric, key, ticker, actual)
-            if key == nxt and actual is None and consensus is None:
-                guide_metric = "next_q_eps_guidance" if metric == "eps" else "next_q_revenue_guidance"
-                consensus = _aligned_consensus(guide, _scorecard_consensus(doc, guide_metric))
+            if key in forward_by:
+                field = "eps" if metric == "eps" else "revenue"
+                consensus = _aligned_consensus(actual, forward_by[key].get(field))
+            else:
+                consensus = _saved_consensus(item, metric, key, ticker, actual)
+                if key == nxt and actual is None and consensus is None:
+                    guide_metric = "next_q_eps_guidance" if metric == "eps" else "next_q_revenue_guidance"
+                    consensus = _aligned_consensus(guide, _scorecard_consensus(doc, guide_metric))
             yoy = None
             if metric == "eps":
                 yoy = _stored_eps_yoy(item)
@@ -4354,15 +4454,25 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
                 base = actuals.get(yoy_fiscal_period(key))
                 if base:
                     yoy = actual / abs(base) - 1
-            guidance_only = actual is None and key == nxt and guide is not None
+            elif yoy is None and consensus is not None and key in forward_by:
+                base = actuals.get(yoy_fiscal_period(key))
+                if base:
+                    yoy = consensus / abs(base) - 1
+            guidance_only = actual is None and key == nxt and guide is not None and consensus is None
+            forward_point = key in forward_by and actual is None
             if actual is not None and consensus is not None:
                 note, note_cls = _expect_beat_note(actual, consensus, money=metric == "revenue")
-            elif guidance_only:
-                fmt = "eps" if metric == "eps" else "revenue"
-                note, note_cls = f"指引中值 {_fmt_value(guide, fmt)}", "muted"
             elif yoy is not None and actual is not None:
                 change = _change(yoy)
                 note, note_cls = f"同比 {change['text']}", "beat" if yoy > 0 else "miss" if yoy < 0 else "muted"
+            elif forward_point and yoy is not None:
+                change = _change(yoy)
+                note, note_cls = f"同比 {change['text']}", "beat" if yoy > 0 else "miss" if yoy < 0 else "muted"
+            elif guidance_only:
+                fmt = "eps" if metric == "eps" else "revenue"
+                note, note_cls = f"指引中值 {_fmt_value(guide, fmt)}", "muted"
+            elif forward_point and consensus is not None:
+                note, note_cls = "一致预期", "muted"
             else:
                 note, note_cls = "缺一致预期", "muted"
             shown_actual = actual
@@ -4453,8 +4563,88 @@ def _reported_expect_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] 
     return payload
 
 
+def _overlay_tv_forward_eps(
+    doc: dict[str, Any],
+    quarters: list[dict[str, Any]],
+    docs: dict[str, dict[str, Any]] | None,
+) -> list[dict[str, Any]]:
+    """已保存的 eps_surprise_chart 只留实际口径。未来四季的一致预期改读当前扫描。"""
+    from pipeline.compute.metrics import round_eps
+
+    ticker = str((doc.get("meta") or {}).get("ticker") or "").upper()
+    page = _page_period(doc)
+    if not ticker or not page:
+        return quarters
+    forward = _forward_periods_for_page(page, _tv_forward_rows(_tradingview(ticker)))
+    if not forward:
+        return quarters
+    if docs is None:
+        docs = _load_docs(ticker)
+    docs = docs or {}
+    if not _page_is_latest(page, docs):
+        return quarters
+    wanted = {row["period"] for row in forward}
+    kept: list[dict[str, Any]] = []
+    for quarter in quarters:
+        period = _label_to_period(quarter.get("label"))
+        if quarter.get("actual") is None and period and period > page and period not in wanted:
+            continue
+        kept.append(quarter)
+    quarters = kept
+    by_label = {quarter["label"]: quarter for quarter in quarters}
+
+    def base_for(period: str) -> float | None:
+        prior = yoy_fiscal_period(period)
+        prev = by_label.get(_fq_label(prior))
+        if prev and prev.get("actual") is not None:
+            return float(prev["actual"])
+        item = docs.get(prior) or {}
+        return _comparable_quarter_eps(item) if item else None
+
+    for row in forward:
+        label = _fq_label(row["period"])
+        eps = row.get("eps")
+        shown = round_eps(eps) if eps is not None else None
+        target = by_label.get(label)
+        if target is not None and target.get("actual") is not None:
+            continue
+        if target is None:
+            target = {
+                "label": label,
+                "consensus": shown,
+                "actual": None,
+                "yoy_pct": None,
+                "note": "",
+                "note_cls": "muted",
+                "basis": "",
+            }
+            quarters.append(target)
+            by_label[label] = target
+        else:
+            target["consensus"] = shown
+        base = base_for(row["period"])
+        if eps is not None and base:
+            yoy = eps / abs(base) - 1
+            target["yoy_pct"] = yoy * 100
+            change = _change(yoy)
+            target["note"] = f"同比 {change['text']}"
+            target["note_cls"] = "beat" if yoy > 0 else "miss" if yoy < 0 else "muted"
+            target["basis"] = target.get("basis") or "一致预期"
+        elif eps is None:
+            target["yoy_pct"] = None
+            target["note"] = "缺一致预期"
+            target["note_cls"] = "muted"
+            target["basis"] = ""
+        else:
+            target["yoy_pct"] = None
+            target["note"] = "一致预期"
+            target["note_cls"] = "muted"
+            target["basis"] = target.get("basis") or "一致预期"
+    return quarters
+
+
 def _eps_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> dict[str, Any] | None:
-    """有 street 预期图时沿用那份季度；没有时用已保存实际画同一套 EPS / 营收柱图。"""
+    """有 street 预期图时沿用那份季度的实际数；未来四季 EPS 改读 TradingView 扫描。没有预期图时用已保存实际画同一套柱图。"""
     from pipeline.compute.metrics import round_eps
 
     raw = (doc.get("meta") or {}).get("eps_surprise_chart") or None
@@ -4489,6 +4679,7 @@ def _eps_chart(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = Non
                 "basis": q.get("basis_label") or "",
             }
         )
+    quarters = _overlay_tv_forward_eps(doc, quarters, docs)
     def chip(g: dict[str, Any], *, strip_basis: bool = False) -> dict[str, str]:
         label = _chip_subject(g["label"]) if strip_basis else g["label"]
         text = f"{label} {g['detail']}" if g.get("detail") else label
@@ -5393,7 +5584,7 @@ def _revenue_expect(
     docs: dict[str, dict[str, Any]] | None,
     eps_sides: list[dict[str, str]],
 ) -> dict[str, Any] | None:
-    """和 EPS 图同一排季度的营收。一致预期只用已保存的 TradingView / 记分卡，不改 EPS 的配对。"""
+    """和 EPS 图同一排季度的营收。未来四季只取扫描里的营收预期，没有就留空。"""
     raw_quarters = ((doc.get("meta") or {}).get("eps_surprise_chart") or {}).get("quarters") or []
     if not raw_quarters:
         return None
@@ -5402,6 +5593,9 @@ def _revenue_expect(
         docs = _load_docs(ticker)
     docs = docs or {}
     tv = _tradingview(ticker) if ticker else None
+    page = _page_period(doc)
+    forward = _forward_periods_for_page(page, _tv_forward_rows(tv)) if _page_is_latest(page, docs) else []
+    forward_rev = {row["period"]: row.get("revenue") for row in forward}
     consensus: dict[str, float] = {}
     for item in ((tv or {}).get("rows_used") or {}).get("revenues_fq_h") or []:
         period = _period_from_tv(item.get("FiscalPeriod"))
@@ -5429,20 +5623,10 @@ def _revenue_expect(
             if bench.get("source") == "consensus" and value is not None:
                 consensus.setdefault(period, value)
     quarters = []
-    for quarter in raw_quarters:
-        period = _period_from_tv(quarter.get("fiscal_period"))
-        if not period:
-            continue
-        actual = actuals.get(period)
-        estimate = consensus.get(period)
-        if actual is None and estimate is None:
-            continue
-        yoy = yoys.get(period)
-        if yoy is None and estimate is not None:
-            base = actuals.get(yoy_fiscal_period(period))
-            if base:
-                yoy = estimate / abs(base) - 1
-        if actual is not None and estimate is not None and quarter.get("reported"):
+    seen: set[str] = set()
+
+    def revenue_row(label: str, actual: float | None, estimate: float | None, yoy: float | None, *, reported: bool, forward: bool) -> dict[str, Any]:
+        if actual is not None and estimate is not None and reported:
             diff = actual - estimate
             if diff >= 0:
                 note, note_cls = f"超预期 {_fmt_money(diff)}", "beat"
@@ -5451,19 +5635,72 @@ def _revenue_expect(
         elif yoy is not None:
             note = f"同比 {_change(yoy)['text']}"
             note_cls = "beat" if yoy > 0 else "miss" if yoy < 0 else "muted"
+        elif forward and estimate is not None:
+            note, note_cls = "一致预期", "muted"
         else:
             note, note_cls = "缺一致预期", "muted"
-        quarters.append(
-            {
-                "label": quarter.get("label") or period,
-                "consensus": None if estimate is None else round(estimate / 1_000_000_000, 2),
-                "actual": None if actual is None else round(actual / 1_000_000_000, 2),
-                "yoy_pct": None if yoy is None else yoy * 100,
-                "note": note,
-                "note_cls": note_cls,
-                "basis": "营收",
-            }
-        )
+        return {
+            "label": label,
+            "consensus": None if estimate is None else round(estimate / 1_000_000_000, 2),
+            "actual": None if actual is None else round(actual / 1_000_000_000, 2),
+            "yoy_pct": None if yoy is None else yoy * 100,
+            "note": note,
+            "note_cls": note_cls,
+            "basis": "营收" if actual is not None else "",
+        }
+
+    for quarter in raw_quarters:
+        period = _period_from_tv(quarter.get("fiscal_period"))
+        if not period:
+            continue
+        actual = actuals.get(period)
+        if period in forward_rev:
+            estimate = forward_rev[period]
+        else:
+            estimate = consensus.get(period)
+        if actual is None and estimate is None and period not in forward_rev:
+            continue
+        yoy = yoys.get(period)
+        if yoy is None and estimate is not None:
+            base = actuals.get(yoy_fiscal_period(period))
+            if base:
+                yoy = estimate / abs(base) - 1
+        elif yoy is None and actual is not None:
+            base = actuals.get(yoy_fiscal_period(period))
+            if base:
+                yoy = actual / abs(base) - 1
+        quarters.append(revenue_row(
+            quarter.get("label") or _fq_label(period),
+            actual,
+            estimate,
+            yoy,
+            reported=bool(quarter.get("reported")),
+            forward=period in forward_rev,
+        ))
+        seen.add(period)
+    for row in forward:
+        period_key = row["period"]
+        if period_key in seen:
+            continue
+        estimate = row.get("revenue")
+        actual = actuals.get(period_key)
+        yoy = yoys.get(period_key)
+        if yoy is None and estimate is not None:
+            base = actuals.get(yoy_fiscal_period(period_key))
+            if base:
+                yoy = estimate / abs(base) - 1
+        elif yoy is None and actual is not None:
+            base = actuals.get(yoy_fiscal_period(period_key))
+            if base:
+                yoy = actual / abs(base) - 1
+        quarters.append(revenue_row(
+            _fq_label(period_key),
+            actual,
+            estimate,
+            yoy,
+            reported=actual is not None,
+            forward=True,
+        ))
     if not quarters:
         return None
     horizons = _revenue_horizons(ticker, doc, docs, actuals, consensus) if ticker else []

@@ -934,8 +934,17 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     derived = (15848 + (2400 + 1180) * (1 - 0.16)) / 2566
     assert q2["actual"] == round(derived, 2) == 7.35
     assert q2["note"] == "超预期 $0.16" and q2["basis"] == "Non-GAAP"
-    assert by_q["FQ4 2026"]["actual"] is None and by_q["FQ4 2026"]["consensus"] == 8.29
-    assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((7.867106 / 7.35 - 1) * 100)
+    scan = json.loads((ROOT / "data" / "META" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
+    forward = scan["future_quarters"]
+    assert [item["tv_label"] for item in forward] == ["2026-Q4", "2027-Q1", "2027-Q2", "2027-Q3"]
+    from pipeline.compute.metrics import round_eps
+
+    for item in forward:
+        label = f"FQ{item['tv_label'][-1]} {item['tv_label'][:4]}"
+        assert by_q[label]["actual"] is None
+        assert by_q[label]["consensus"] == round_eps(item["eps_est"])
+    assert by_q["FQ4 2026"]["consensus"] == round_eps(8.366721) == 8.37
+    assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((forward[2]["eps_est"] / 7.35 - 1) * 100)
     assert all(q["actual"] != 3.83 for q in chart["quarters"])
     assert all(q["basis"] == "Non-GAAP" for q in chart["quarters"] if q["actual"] is not None)
 
@@ -962,15 +971,116 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
     rev_q3 = next(q for q in revenue["quarters"] if q["label"] == "FQ3 2026")
     assert rev_q3["actual"] == 64.6 and rev_q3["consensus"] == 63.34
     assert rev_q3["note"] == "超预期 $1.26B" and rev_q3["basis"] == "营收"
-    rev_q4 = next(q for q in revenue["quarters"] if q["label"] == "FQ4 2026")
-    assert rev_q4["actual"] is None and rev_q4["consensus"] is not None
-    rev_nq = next(q for q in revenue["quarters"] if q["label"] == "FQ1 2027")
-    assert rev_nq["actual"] is None and rev_nq["consensus"] is not None
+    rev_by = {q["label"]: q for q in revenue["quarters"]}
+    for item in forward:
+        label = f"FQ{item['tv_label'][-1]} {item['tv_label'][:4]}"
+        assert rev_by[label]["actual"] is None
+        assert rev_by[label]["consensus"] == round(item["rev_est"] / 1_000_000_000, 2)
+    rev_q4 = rev_by["FQ4 2026"]
+    assert rev_q4["consensus"] == round(74882505478.0 / 1_000_000_000, 2)
+    rev_nq = rev_by["FQ1 2027"]
+    assert rev_nq["consensus"] is not None
     horizons = {item["label"]: item["value"] for item in revenue["horizons"]}
     assert horizons["近 4 季（TTM）"] == "$241.61B"
     assert "未来 12 个月（NTM）" in horizons and "FY26E" in horizons and "FY27E" in horizons
     assert all(q["actual"] != 3.83 for q in revenue["quarters"])
     assert any("EPS" in s["text"] for s in revenue["sides"])
+
+
+def test_amzn_expect_chart_shows_next_four_tv_quarters():
+    """没有手写 eps_surprise_chart 时，盈利预期仍画出扫描里的未来四季。"""
+    from builder.build import _eps_chart, _fq_label, _load_docs
+    from pipeline.compute.metrics import round_eps
+
+    docs = _load_docs("AMZN")
+    latest = sorted(docs)[-1]
+    chart = _eps_chart(docs[latest], docs)
+    assert chart is not None and chart["revenue"]
+    scan = json.loads((ROOT / "data" / "AMZN" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
+    forward = scan["future_quarters"]
+    assert len(forward) == 4
+    by_eps = {row["label"]: row for row in chart["quarters"]}
+    by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
+    for item in forward:
+        year, quarter = item["tv_label"].split("-Q")
+        label = _fq_label(f"FY{year}Q{quarter}")
+        eps = by_eps[label]
+        rev = by_rev[label]
+        assert eps["actual"] is None
+        assert eps["consensus"] == round_eps(item["eps_est"])
+        assert rev["actual"] is None
+        if item.get("rev_est") is None:
+            assert rev["consensus"] is None
+        else:
+            assert rev["consensus"] == round(float(item["rev_est"]) / 1_000_000_000, 2)
+
+
+def test_expect_chart_leaves_missing_scan_fields_empty(monkeypatch):
+    """未来季只取扫描已披露的 EPS / 营收。缺营收留空，不用全年 scalar 或更远的行补。"""
+    from builder.build import _eps_chart
+
+    tv = {
+        "fetched_at": "2026-10-23T12:00:00Z",
+        "quote": {"fetched_at": "2026-10-23T12:00:00Z"},
+        "scalars": {
+            "earnings_per_share_forecast_next_fy": 50.0,
+            "revenue_forecast_next_fy": 800_000_000_000.0,
+        },
+        "future_quarters": [
+            {"tv_label": "2026-Q4", "eps_est": 8.366721, "rev_est": 74_882_505_478.0},
+            {"tv_label": "2027-Q1", "eps_est": 7.558111, "rev_est": None},
+            {"tv_label": "2027-Q2", "eps_est": 7.811894, "rev_est": 73_784_201_435.0},
+            {"tv_label": "2027-Q3", "eps_est": 8.355748, "rev_est": 78_152_843_573.0},
+        ],
+        "rows_used": {
+            "earnings_fq_h": [
+                {"FiscalPeriod": "2028-Q1", "Estimate": 99.0, "IsReported": False},
+            ],
+            "revenues_fq_h": [
+                {"FiscalPeriod": "2028-Q1", "Estimate": 900_000_000_000.0, "IsReported": False},
+            ],
+        },
+    }
+    monkeypatch.setattr("builder.build._tradingview", lambda ticker: tv)
+    doc = {
+        "meta": {"ticker": "ZZZ", "fiscal_period": "FY2026Q3"},
+        "financials": {
+            "revenue": {"value": 64_601_000_000.0, "yoy_pct": 0.2},
+            "eps_nongaap": {"value": 7.4},
+        },
+        "scorecard": [
+            {"metric": "eps", "actual": 7.4, "basis": "non_gaap", "benchmark": {"source": "consensus", "value": 6.54}},
+        ],
+    }
+    chart = _eps_chart(doc, {"FY2026Q3": doc})
+    assert chart is not None and chart["revenue"]
+    assert [row["label"] for row in chart["quarters"]] == [
+        "FQ3 2026", "FQ4 2026", "FQ1 2027", "FQ2 2027", "FQ3 2027",
+    ]
+    by_eps = {row["label"]: row for row in chart["quarters"]}
+    by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
+    assert by_eps["FQ4 2026"]["consensus"] == 8.37
+    assert by_eps["FQ1 2027"]["consensus"] == 7.56
+    assert by_rev["FQ1 2027"]["consensus"] is None
+    assert by_rev["FQ1 2027"]["actual"] is None
+    assert by_rev["FQ4 2026"]["consensus"] == round(74_882_505_478.0 / 1_000_000_000, 2)
+    assert all(row["consensus"] not in {50.0, 99.0, 800.0, 900.0} for row in chart["quarters"])
+    assert all(row["consensus"] not in {50.0, 99.0, 800.0, 900.0} for row in chart["revenue"]["quarters"])
+    assert "FQ1 2028" not in by_eps and "FQ1 2028" not in by_rev
+
+    gap = {
+        **tv,
+        "future_quarters": [
+            {"tv_label": "2027-Q1", "eps_est": 7.5, "rev_est": 60_000_000_000.0},
+            {"tv_label": "2027-Q2", "eps_est": 7.8, "rev_est": 70_000_000_000.0},
+        ],
+    }
+    monkeypatch.setattr("builder.build._tradingview", lambda ticker: gap)
+    gapped = _eps_chart(doc, {"FY2026Q3": doc})
+    assert gapped is not None
+    assert [row["label"] for row in gapped["quarters"]] == ["FQ3 2026", "FQ1 2027", "FQ2 2027"]
+    assert "FQ4 2026" not in {row["label"] for row in gapped["quarters"]}
+    assert {row["label"]: row["consensus"] for row in gapped["quarters"]}["FQ1 2027"] == 7.5
 
 
 def test_fin_rows_pair_margins_with_absolute_profit():
