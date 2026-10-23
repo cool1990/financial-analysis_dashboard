@@ -3,6 +3,7 @@
 收入、营业利润、净利润优先用 80–100 天的单季事实。
 现金流量表通常只有「财年起点至今」，单季用同一起点的相邻累计值相减。
 第四季如果没有单季事实，流量科目用全年减去前一段累计（一般是前九个月）。
+两段结束日必须相距 80–100 天，否则不产出，避免只用半年累计倒挤成单季。
 稀释每股收益不做这种相减：加权股本不是可加的，倒挤会偏出一美分以上。
 """
 
@@ -73,7 +74,11 @@ def _direct_quarter(spans: list[Span], end: date) -> Span | None:
 
 
 def _residual(spans: list[Span], end: date) -> tuple[float, str] | None:
-    """没有单季事实时，用同一起点的两段累计相减。"""
+    """没有单季事实时，用同一起点的两段累计相减。
+
+    相减区间必须像一个季度：80 <= (chosen.end - prior.end).days <= 100。
+    最近的前一段若是半年而不是前九个月，跨度大约 180 天，这里直接不产出。
+    """
     longs = [s for s in spans if s.end == end and s.days > 100]
     if not longs:
         return None
@@ -82,6 +87,8 @@ def _residual(spans: list[Span], end: date) -> tuple[float, str] | None:
     if not priors:
         return None
     prior_end = max(s.end for s in priors)
+    if not 80 <= (chosen.end - prior_end).days <= 100:
+        return None
     prior_cands = [s for s in priors if s.end == prior_end]
     prior = max(prior_cands, key=lambda s: s.filed)
     note = f"xbrl:{chosen.tag} ({prior.end.isoformat()}→{chosen.end.isoformat()} 累计相减)"

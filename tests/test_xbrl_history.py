@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from builder.build import _history
 from pipeline.sources.xbrl_history import quarterly_statements
@@ -102,6 +102,62 @@ def test_latest_filing_wins_same_span():
     }
     series = quarterly_statements(facts)
     assert series[date(2016, 3, 31)]["revenue"]["value"] == 100
+
+
+def _revenue_ending(annual_end: date, prior_end: date, annual: float = 500, prior: float = 330):
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "Revenues": {
+                    "units": {
+                        "USD": [
+                            _row("2016-01-01", annual_end.isoformat(), annual),
+                            _row("2016-01-01", prior_end.isoformat(), prior),
+                        ]
+                    }
+                }
+            }
+        }
+    }
+    return quarterly_statements(facts).get(annual_end)
+
+
+def test_residual_rejects_span_wider_than_a_quarter_and_accepts_a_normal_one():
+    """单季残差只接受结束日相距 80–100 天。半年累计不能倒挤成第四季。"""
+    annual_end = date(2016, 12, 31)
+    nine_month = _revenue_ending(annual_end, date(2016, 9, 30), prior=330)
+    assert nine_month is not None
+    assert nine_month["revenue"]["value"] == 170
+    assert nine_month["revenue"]["derived"] is True
+    assert (annual_end - date(2016, 9, 30)).days == 92
+
+    # 全年 − 上半年 = 184 天。不产出，也不把 500 − 180 写成单季。
+    assert (annual_end - date(2016, 6, 30)).days == 184
+    assert _revenue_ending(annual_end, date(2016, 6, 30), prior=180) is None
+
+    # 九个月和半年都在时，用相距一个季度的那条，而不是更早的半年。
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "Revenues": {
+                    "units": {
+                        "USD": [
+                            _row("2016-01-01", "2016-12-31", 500),
+                            _row("2016-01-01", "2016-09-30", 330),
+                            _row("2016-01-01", "2016-06-30", 180),
+                        ]
+                    }
+                }
+            }
+        }
+    }
+    both = quarterly_statements(facts)[annual_end]["revenue"]
+    assert both["value"] == 170 and both["derived"] is True
+
+    assert _revenue_ending(annual_end, annual_end - timedelta(days=80)) is not None
+    assert _revenue_ending(annual_end, annual_end - timedelta(days=100)) is not None
+    assert _revenue_ending(annual_end, annual_end - timedelta(days=79)) is None
+    assert _revenue_ending(annual_end, annual_end - timedelta(days=101)) is None
 
 
 def test_history_fills_missing_qoq_from_neighbor():

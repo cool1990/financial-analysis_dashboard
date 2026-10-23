@@ -65,6 +65,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p_build = sub.add_parser("build", help="生成静态页面到 site/")
     p_build.add_argument("--ticker", default=None)
+    p_build.add_argument("--out", default=None, help="输出目录。缺省写到 site/")
 
     p_av = sub.add_parser("av-estimates", help="用 EARNINGS_ESTIMATES 写入 data/{TICKER}/consensus/av_estimates.json")
     p_av.add_argument("--ticker", default=None, help="一只，或逗号分隔。缺省则全部股票")
@@ -167,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "build":
             from builder.build import build_site
 
-            paths = build_site(args.ticker)
+            paths = build_site(args.ticker, out_dir=args.out)
             print(json.dumps({"pages": [str(p) for p in paths]}, ensure_ascii=False, indent=2))
             return 0
         if args.cmd == "av-estimates":
