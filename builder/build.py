@@ -1675,33 +1675,53 @@ def _meta_family_stack(keys: list[str]) -> bool:
     return bool(keys) and set(keys) <= {"ads", "other", "rl"} and "ads" in keys
 
 
-def _segment_mix(ticker: str, period: str) -> dict[str, Any]:
-    """历史分部占比。没有 segment_history.json 的公司返回空，页面只留本季五列表。"""
-    empty: dict[str, Any] = {
-        "quarters": [],
-        "years": [],
-        "note": "",
-        "default_period": "",
-        "selected": None,
-    }
-    path = data_dir(ticker) / "segment_history.json"
-    if not path.exists():
-        return empty
+# 构建期只读缓存。键带文件戳，数据文件变了会重算；同一轮建站里按股票命中。
+_MEMO: dict[tuple, Any] = {}
+
+
+def _file_stamp(path: Path) -> tuple[str, int | None, int | None]:
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return empty
-    quarters = _mix_points(raw.get("quarters") or [], "quarter")
-    years = _mix_points(raw.get("years") or [], "year")
-    if not quarters and not years:
-        return empty
-    present = [row["period"] for row in quarters if not row["gap"]]
-    default = period if period in present else (present[-1] if present else "")
-    selected = next((row for row in quarters if row["period"] == default), None)
+        stat = path.stat()
+    except OSError:
+        return (str(path), None, None)
+    return (str(path), stat.st_mtime_ns, stat.st_size)
+
+
+def _memo(kind: str, ident: str, stamp: tuple, factory):
+    key = (kind, ident, stamp)
+    if key not in _MEMO:
+        _MEMO[key] = factory()
+    return _MEMO[key]
+
+
+def _cached_json(path: Path) -> dict[str, Any] | None:
+    """同一路径、同一 mtime 只解析一次。文件不存在时记空，不反复 stat 失败。"""
+    stamp = _file_stamp(path)
+
+    def load() -> dict[str, Any] | None:
+        if stamp[1] is None:
+            return None
+        return _read_json(path)
+
+    return _memo("json", str(path), stamp, load)
+
+
+def _series_inputs(ticker: str) -> tuple:
+    """图表和营业成本会读到的文件。戳不变就复用已经算好的序列。"""
+    folder = data_dir(ticker)
+    paths = [folder / "statement_history.json", folder / "segment_history.json"]
+    paths.extend(sorted(folder.glob("FY*.json")))
+    raw = folder / "raw"
+    if raw.is_dir():
+        paths.extend(sorted(raw.glob("*/extracted_financials.json")))
+    return tuple(_file_stamp(path) for path in paths)
+
+
+def _segment_note(raw: dict[str, Any], quarters: list[dict[str, Any]]) -> str:
+    """分部注释与财季无关。META 那套堆叠保留原句，其他公司用文件里的来源。"""
     gaps = [row["period"] for row in quarters if row["gap"]]
     methods = {row.get("method") for row in (raw.get("quarters") or [])}
-    stack_keys = _raw_stack_keys(raw)
-    if _meta_family_stack(stack_keys):
+    if _meta_family_stack(_raw_stack_keys(raw)):
         note_bits = ["占比按披露的分部收入。柱是广告、其他、Reality Labs；有母项时母项不重复计入。"]
         if quarters:
             note_bits.append(f"最早一期是 {quarters[0]['period']}。")
@@ -1723,10 +1743,47 @@ def _segment_mix(ticker: str, period: str) -> dict[str, Any]:
         source = str(raw.get("source") or "").strip()
         if source:
             note_bits.append(source)
+    return "".join(note_bits)
+
+
+def _segment_base(ticker: str) -> dict[str, Any]:
+    """分部占比序列与财季无关。本季选中的柱在 _segment_mix 里填。"""
+    empty = {"quarters": [], "years": [], "note": ""}
+    path = data_dir(ticker) / "segment_history.json"
+
+    def build() -> dict[str, Any]:
+        raw = _cached_json(path) or {}
+        if not raw:
+            return dict(empty)
+        quarters = _mix_points(raw.get("quarters") or [], "quarter")
+        years = _mix_points(raw.get("years") or [], "year")
+        if not quarters and not years:
+            return dict(empty)
+        return {"quarters": quarters, "years": years, "note": _segment_note(raw, quarters)}
+
+    return _memo("segment", str(path), _file_stamp(path), build)
+
+
+def _segment_mix(ticker: str, period: str) -> dict[str, Any]:
+    """历史分部占比。没有 segment_history.json 的公司返回空，页面只留本季五列表。"""
+    base = _segment_base(ticker)
+    quarters = base["quarters"]
+    years = base["years"]
+    if not quarters and not years:
+        return {
+            "quarters": [],
+            "years": [],
+            "note": "",
+            "default_period": "",
+            "selected": None,
+        }
+    present = [row["period"] for row in quarters if not row["gap"]]
+    default = period if period in present else (present[-1] if present else "")
+    selected = next((row for row in quarters if row["period"] == default), None)
     return {
         "quarters": quarters,
         "years": years,
-        "note": "".join(note_bits),
+        "note": base["note"],
         "default_period": default,
         "selected": selected,
     }
@@ -1891,13 +1948,7 @@ def _fin_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None
 
 
 def _load_statement(ticker: str) -> dict[str, Any]:
-    path = data_dir(ticker) / "statement_history.json"
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    return _cached_json(data_dir(ticker) / "statement_history.json") or {}
 
 
 def _with_opex_row(rows: list[dict[str, Any]], ticker: str, period: str) -> list[dict[str, Any]]:
@@ -2043,6 +2094,11 @@ def _derived_cost_quarters(ticker: str) -> list[dict[str, Any]]:
 
 def _cost_series(ticker: str) -> tuple[list[dict[str, Any]], str]:
     """营业成本序列。优先 XBRL / statement_history，其次新闻稿，最后才用毛利倒算。"""
+    ident = str(data_dir(ticker))
+    return _memo("cost", ident, _series_inputs(ticker), lambda: _cost_series_compute(ticker))
+
+
+def _cost_series_compute(ticker: str) -> tuple[list[dict[str, Any]], str]:
     statement = _statement_cost_quarters(ticker)
     if statement:
         methods = {
@@ -2413,8 +2469,52 @@ def _stacked_point_keys(points: list[dict[str, Any]]) -> list[str]:
     return keys
 
 
+def _share_focus(chart: dict[str, Any], period: str) -> str:
+    """占比图只有 focus 跟本季走，柱的序列不跟。"""
+    labels = [str(label) for label in (chart.get("labels") or [])]
+    if period in labels:
+        return period
+    present = [str(point["period"]) for point in (chart.get("points") or []) if not point.get("gap")]
+    if present:
+        return present[-1]
+    return labels[-1] if labels else ""
+
+
+def _fin_series(ticker: str) -> dict[str, Any]:
+    """金额、同比、占比的序列按股票算一次。币种变了金额文字会变，所以戳里带上。"""
+    ident = str(data_dir(ticker)) + "\0" + _REPORTING_CCY.get()
+    stamp = (_REPORTING_CCY.get(), _series_inputs(ticker))
+    return _memo("fin", ident, stamp, lambda: _build_fin_series(ticker))
+
+
 def _fin_view(ticker: str, period: str) -> dict[str, Any]:
+    """点指标后要画的图。序列来自缓存，这里只改占比图指向的季度。"""
+    base = _fin_series(ticker)
+    by_key: dict[str, Any] = {}
+    changed = False
+    for key, spec in (base.get("by_key") or {}).items():
+        charts = []
+        spec_changed = False
+        for chart in spec.get("charts") or []:
+            if chart.get("kind") == "share":
+                focus = _share_focus(chart, period)
+                if chart.get("focus") != focus:
+                    chart = {**chart, "focus": focus}
+                    spec_changed = True
+            charts.append(chart)
+        if spec_changed:
+            by_key[key] = {**spec, "charts": charts}
+            changed = True
+        else:
+            by_key[key] = spec
+    if not changed:
+        return base
+    return {"by_key": by_key}
+
+
+def _build_fin_series(ticker: str) -> dict[str, Any]:
     """点指标后要画的图。没有历史文件的科目走原来的水平值 / 环比 / 同比。"""
+    period = ""
     by_key: dict[str, dict[str, Any]] = {}
     money_sub, _eps_unit = _chart_units(_reporting_currency(ticker))
     statement = _load_statement(ticker)
@@ -4818,19 +4918,21 @@ def _fmt_cap(value: float, currency: str = "USD") -> str:
 
 
 def _latest_snapshot(ticker: str) -> dict[str, Any] | None:
+    """最新快照。文件名是 UTC 日期，同日再写一份会加上 T 和时间。只解析名字最新、且能读的那一份。"""
     folder = data_dir(ticker) / "snapshots"
-    if not folder.exists():
+    if folder.is_dir():
+        names = tuple(sorted(path.name for path in folder.glob("*.json")))
+    else:
+        names = ()
+
+    def load() -> dict[str, Any] | None:
+        for name in reversed(names):
+            data = _read_json(folder / name)
+            if data:
+                return data
         return None
-    best: dict[str, Any] | None = None
-    best_ts = ""
-    for path in folder.glob("*.json"):
-        data = _read_json(path)
-        if not data:
-            continue
-        stamp = str(data.get("snapshot_at") or "")
-        if best is None or stamp > best_ts:
-            best, best_ts = data, stamp
-    return best
+
+    return _memo("snapshot", str(folder), names, load)
 
 
 def _price_quote(ticker: str, doc: dict[str, Any]) -> dict[str, Any]:
@@ -5528,7 +5630,38 @@ def _copy_static(out_dir: Path) -> None:
 
 def _load_docs(ticker: str) -> dict[str, dict[str, Any]]:
     folder = data_dir(ticker)
-    return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("FY*.json"))}
+    paths = tuple(sorted(folder.glob("FY*.json")))
+    stamp = tuple(_file_stamp(path) for path in paths)
+
+    def load() -> dict[str, dict[str, Any]]:
+        loaded: dict[str, dict[str, Any]] = {}
+        for path in paths:
+            loaded[path.stem] = json.loads(path.read_text(encoding="utf-8"))
+        return loaded
+
+    return _memo("docs", str(folder), stamp, load)
+
+
+def _preload_ticker(ticker: str) -> None:
+    """报表、分部和图表序列与财季无关，整只股票只算一次。快照只解析最新一份。"""
+    _load_statement(ticker)
+    _fin_series(ticker)
+    _latest_snapshot(ticker)
+
+
+def _write_history_files(stock_dir: Path, history: list[dict[str, Any]]) -> None:
+    """全历史一份 JSON 给 fetch。history.js 内容相同，file:// 用 script src 读取。"""
+    payload = json.dumps(history, ensure_ascii=False, sort_keys=True)
+    (stock_dir / "history.json").write_text(payload + "\n", encoding="utf-8")
+    script = payload.replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+    (stock_dir / "history.js").write_text("window.STOCK_HISTORY=" + script + ";\n", encoding="utf-8")
+
+
+def _clear_history_files(stock_dir: Path) -> None:
+    for name in ("history.json", "history.js"):
+        path = stock_dir / name
+        if path.is_file():
+            path.unlink()
 
 
 def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[Path]:
@@ -5568,6 +5701,7 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
         stock_dir = out_dir / "stocks" / t
         stock_dir.mkdir(parents=True, exist_ok=True)
         if not periods:
+            _clear_history_files(stock_dir)
             html = env.get_template("placeholder.html").render(
                 ticker=t, company=cfg.get("name"), nav=nav, active=t, root="../../",
                 thesis=_position_view(t, {}, today),
@@ -5578,7 +5712,12 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
             (stock_dir / "index.html").write_text(html, encoding="utf-8")
             pages.append(stock_dir / "index.html")
             continue
+        _preload_ticker(t)
         history = _history(docs)
+        if len(history) >= 2:
+            _write_history_files(stock_dir, history)
+        else:
+            _clear_history_files(stock_dir)
         for period in periods:
             doc = docs[period]
             prior = docs.get(prior_fiscal_period(period)) or {}
