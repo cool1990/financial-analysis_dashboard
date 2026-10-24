@@ -96,7 +96,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>10</b></a>
     <a href="#notes">数据来源<b>1</b></a>
   </div>
 </nav>
@@ -121,11 +121,11 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">12 项指标 · 点指标看图</span>
+    <span class="ev-meta">11 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">营业收入</span>
@@ -133,7 +133,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-0.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+3.3%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">收入288.22亿美元，同比降0.9%，环比增3.3%。Sheryl（COO）称第二季总收入288亿美元、同比下降1%，固定汇率则增长3%。Dave（CFO）称若汇率与去年第二季相同，总收入大约高出13亿美元。家庭应用广告收入282亿美元，同比下降1%或固定汇率增长3%；展示量增15%，平均单价降14%。摘要金额、同比和环比采用指标表。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -161,7 +161,42 @@
       </div>
       <p class="small muted mix-note" data-fin-note>营收、营业成本、研发、销售、管理费用来自 SEC companyfacts 的单季 us-gaap。毛利为营收减营业成本，申报没有单独的毛利科目，也没有把营业成本再拆开。地区收入来自 10-Q/10-K XBRL 的地区轴。第四季没有单季事实时用全年减前九个月；地区口径对不上时留空。 2016 年地区是美国与美国以外，2017 起改为美国和加拿大、欧洲、亚太、世界其他地区。 FY2019Q4、FY2020Q4 没有完整的业务分部，柱上留空。 业务柱只计广告、其他和 Reality Labs；应用家族是母项，不重复计入。</p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>广告平均单价同比下降14%，抵消了展示量15%的增长，是报表收入同比下降的主因。降价来自广告主需求减弱、展示转向变现更低的版面和地区，以及外汇贬值。</p>
+<blockquote>The year-over-year decline in pricing was driven by a reduction in advertiser demand, the mix shift in ad impressions towards lower monetizing surfaces and regions, and foreign currency depreciation.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>全站广告展示量同比增长15%，增量来自亚太和世界其他地区，部分对冲了单价下降。</p>
+<blockquote>In Q2, the total number of ad impressions served across our services increased 15% and the average price per ad decreased 14%.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>外汇把收入从固定汇率的增长拉成报表下降。Dave称若汇率与去年第二季相同，总收入大约高出13亿美元；Sheryl称固定汇率收入增长3%，欧元对美元贬值影响尤其大。</p>
+<blockquote>Had foreign exchange rates remained constant with Q2 of last year, total revenue would have been approximately $1.3 billion higher.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>Reels变现仍低于信息流和Stories。Mark说它增长越快，近期越会挤占更高变现的版面。Dave在问答里说这是业务逆风，但没有量化，并说2022年还不会转成收入顺风。</p>
+<blockquote>Reels doesn&#39;t yet monetize at the same rate as feed or stories, so in the near term, the faster that Reels grows, the more revenue that actually displaces from higher-monetizing surfaces.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>按用户所在地，亚太和世界其他地区广告收入分别增长13%和11%，两地都明显受益于点击即消息广告。北美下降4%，欧洲下降12%。</p>
+<blockquote>On a user geography basis, year-over-year ad revenue growth was strongest in Asia-Pacific and Rest of World at 13% and 11%, respectively, with both regions benefiting meaningfully from strong growth in click-to-messaging ads. North America and Europe declined 4% and 12%, respectively.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>Reality Labs收入4.52亿美元，同比增48%，主因Quest 2销售；家庭应用其他收入2.18亿美元，同比增14%，来自WhatsApp商业接口。两者体量小，对合并收入是正向但不改变广告走弱的方向。</p>
+<blockquote>Within our Reality Labs segment, Q2 revenue was $452 million, up 48%, driven primarily by Quest 2 sales.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>苹果iOS带来的定向和衡量逆风仍在，Dave认为这是整个数字广告行业的增长挑战，但不是第二季收入减速的原因。</p>
+<blockquote>While it wasn’t a factor contributing to the deceleration in Q2, we’re also continuing to face targeting and measurement headwinds such as Apple’s iOS changes, which we believe are contributing to the growth challenges across the digital advertising industry.</blockquote>        </div>
+<p class="conflict">冲突：电话会称第二季总收入288亿美元、同比下降1%，固定汇率增长3%；指标表收入288.22亿美元、同比降0.9%、环比增3.3%。口头288亿美元是取整。摘要金额、同比和环比采用指标表。；Dave回答Ross时说Reels目前对收入是顺风；Mark在准备发言中说Reels增长会挤占更高变现的信息流和Stories，Dave回答Justin时也说Reels对业务是逆风，且2022年还不会变成收入顺风。摘要采用准备发言和此前问答里的逆风表述。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -188,7 +223,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+0.6pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+3.5pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP毛利率82.0%，同比升0.6个百分点，环比升3.5个百分点。电话会没有单列毛利率。Dave（CFO）称营业成本下降4%，核心基础设施投入和内容相关成本上升，但被Reality Labs损失准备减少所抵消，原因是Quest 2宣布提价。收入同比只降0.9%，成本降幅更大，毛利率因此略升。摘要采用指标表。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -201,7 +236,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营业成本下降4%，主因Quest 2提价后Reality Labs损失准备减少，并且降幅超过基础设施和内容成本的上升。这是毛利率升至82.0%、同比升0.6个百分点的主因。</p>
+<blockquote>Cost of revenue decreased 4%, as growth in core infrastructure investments and content-related costs were more than offset by a reduction in Reality Labs loss reserves as a result of the announced price increase of Quest 2.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>核心基础设施投入和内容相关成本仍在增长，限制了毛利率的升幅，只是被损失准备减少盖过。</p>
+<blockquote>Cost of revenue decreased 4%, as growth in core infrastructure investments and content-related costs were more than offset by a reduction in Reality Labs loss reserves as a result of the announced price increase of Quest 2.</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
       <span class="m-name">营业费用</span>
@@ -228,7 +273,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-13.5pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-1.5pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP营业利润率29.0%，同比降13.5个百分点，环比降1.5个百分点。Dave（CFO）称营业利润84亿美元、利润率29%，总费用205亿美元、同比增22%。收入同比下降而费用大幅上升，利润率因此收缩。家庭应用营业利润率39%，Reality Labs营业亏损28亿美元，拉低合并利润率。摘要采用指标表。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -241,70 +286,32 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（GAAP）</span>
-      <span class="m-val num">$8.36B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-down">-32.4%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-1.9%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>总费用205亿美元、同比增22%，远快于收入同比降0.9%，是营业利润率同比降13.5个百分点的主因。研发增43%，营销与销售增10%，管理费用增53%。</p>
+<blockquote>Q2 total expenses were $20.5 billion, up 22% compared to last year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>第二季净增员工超过5700人，季末全职员工超过83500人、同比增32%。人头增长推高研发、销售和管理费用。</p>
+<blockquote>We ended the quarter with over 83,500 full-time employees, up 32% compared to last year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>Reality Labs营业亏损28亿美元。该分部费用33亿美元、同比增19%，员工和研发费用上升，只被损失准备减少部分抵消。家庭应用营业利润112亿美元、利润率39%，合并利润率被现实实验室亏损拉开。</p>
+<blockquote>Reality Labs operating loss was $2.8 billion in the second quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>报表收入同比下降，广告单价降14%，分母走弱，放大了费用上升对利润率的压力。固定汇率收入仍增3%，报表降幅里有汇率。</p>
+<blockquote>Q2 total revenue was $28.8 billion, down 1% or up 3% on a constant currency basis.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营业成本下降4%，损失准备减少抬高了毛利率，但不足以抵消费用增22%对营业利润率的拖累。</p>
+<blockquote>Cost of revenue decreased 4%, as growth in core infrastructure investments and content-related costs were more than offset by a reduction in Reality Labs loss reserves as a result of the announced price increase of Quest 2.</blockquote>        </div>
       </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
-      <span class="m-name">净利润率（GAAP）</span>
-      <span class="m-val num">23.2%</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-down">-12.5pp</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-3.5pp</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
-      <span class="m-name">净利润（GAAP）</span>
-      <span class="m-val num">$6.69B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-down">-35.7%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-10.4%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
@@ -312,7 +319,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-31.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-9.6%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP稀释每股收益2.46美元，同比降31.9%，环比降9.6%。电话会称每股2.46美元，与指标表一致。同比降幅小于净利润的35.7%。第二季回购A类普通股51亿美元，但电话会没有给出稀释股份数，不把回购写成主因。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -325,7 +332,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>净利润同比降35.7%，每股收益同比降31.9%。费用同比增22%带来的利润下降，是每股收益同比下降的主因。</p>
+<blockquote>Net income was $6.7 billion or $2.46 per share.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>每股收益同比降31.9%，降幅小于净利润的35.7%。第二季回购51亿美元，但电话会没有披露稀释股份，回购只是可能缓和每股收益降幅的因素，不是已证实的主因。</p>
+<p class="small muted">依据：指标表稀释每股收益2.46美元，同比降31.9%、环比降9.6%；净利润同比降35.7%。每股收益降幅更小，说明稀释股份有所下降。电话会只说回购A类普通股51亿美元，没有给出股份数，因此这是推断，不作为主因。</p>        </div>
+<p class="conflict">冲突：电话会称净利润67亿美元或每股2.46美元。指标表稀释每股收益2.46美元与电话会一致，同比降31.9%、环比降9.6%。净利润口头67亿美元相对指标表66.87亿美元是取整。摘要每股收益使用指标表。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
@@ -333,7 +350,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-7.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-13.4%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">经营现金流121.96亿美元，同比降7.9%，环比降13.4%。电话会没有单列经营现金流，也没有解释增减原因。降幅小于净利润同比降35.7%。摘要采用指标表，不从口头自由现金流和资本开支回填。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -346,7 +363,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会没有披露经营现金流。指标表同比降7.9%，方向与利润下降一致，但降幅小于净利润，会上没有做现金转换的拆解。</p>
+<p class="small muted">依据：指标表经营现金流121.96亿美元，同比降7.9%，环比降13.4%。电话会全文没有单独报经营现金流。净利润同比降35.7%，方向与经营现金流下降一致，但会上没有说明营运资本或应计项目，不把具体科目写成原因，也不把口头自由现金流45亿美元与含融资租赁本金的资本开支77亿美元相加后回填。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
@@ -354,7 +376,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+63.2%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+39.2%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表资本开支75.72亿美元，同比增63.2%，环比增39.2%。电话会称含融资租赁本金的资本开支为77亿美元，投向服务器、数据中心和网络基础设施。Dave说同比和环比的跳升与服务器支出有关，包括人工智能基础设施。摘要的金额、同比和环比使用指标表。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -367,7 +389,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>资本开支同比和环比跳升，主因服务器支出，包括人工智能基础设施，并投向数据中心和网络。指标表同比增63.2%。口头口径还包含融资租赁本金。</p>
+<blockquote>The big step up in capex both year over-year and sequentially related to server spend, including for our AI infrastructure.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>电话会把含融资租赁本金的77亿美元资本开支归因于服务器、数据中心和网络。这是支出构成。指标表75.72亿美元不含这句里的融资租赁本金。</p>
+<blockquote>Capital expenditures, including principal payments on finance leases, were $7.7 billion, driven by investments in servers, data centers and network infrastructure.</blockquote>        </div>
+<p class="conflict">冲突：电话会称含融资租赁本金的资本开支为77亿美元；指标表资本开支75.72亿美元，同比增63.2%、环比增39.2%。两者口径不同，口头金额更高。摘要和同比、环比使用指标表。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
       <span class="m-name">自由现金流</span>
@@ -375,7 +407,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-46.3%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-46.5%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">自由现金流46.24亿美元，同比降46.3%，环比降46.5%。电话会称自由现金流45亿美元。摘要使用指标表。口头自由现金流更低，与电话会资本开支含融资租赁本金、高于指标表75.72亿美元的购建口径一致。同比下降，是因为指标表资本开支同比增63.2%，同时经营现金流同比降7.9%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -388,39 +420,371 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>资本开支大幅上升是自由现金流同比降46.3%的主因。指标表资本开支75.72亿美元、同比增63.2%，经营现金流同比只降7.9%。电话会把资本开支跳升归因于服务器支出，包括人工智能基础设施。</p>
+<blockquote>The big step up in capex both year over-year and sequentially related to server spend, including for our AI infrastructure.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>经营现金流同比降7.9%，也减少了自由现金流，但幅度小于资本开支上升。电话会没有单列经营现金流。</p>
+<p class="small muted">依据：指标表自由现金流46.24亿美元，同比降46.3%、环比降46.5%。经营现金流同比降7.9%，资本开支同比增63.2%。自由现金流等于经营现金流减资本开支，资本开支的上升是更大的拖累。电话会只说自由现金流为45亿美元，没有按指标表口径解释。</p>        </div>
+<p class="conflict">冲突：电话会称自由现金流45亿美元；指标表为46.24亿美元，同比降46.3%、环比降46.5%。口头自由现金流更低，与电话会资本开支含融资租赁本金、高于指标表75.72亿美元的购建口径一致。摘要使用指标表。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">营业利润（GAAP）</span>
+      <span class="m-val num">$8.36B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-down">-32.4%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-1.9%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">GAAP营业利润83.58亿美元，同比降32.4%，环比降1.9%。电话会称营业利润84亿美元。总费用同比增22%至205亿美元，收入同比下降，利润降幅因此远大于收入。家庭应用营业利润112亿美元，Reality Labs营业亏损28亿美元。摘要采用指标表。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>总费用同比增22%，而收入同比下降，是营业利润同比降32.4%的主因。研发增43%，主因支持家庭应用和Reality Labs的招聘。</p>
+<blockquote>R&amp;D increased 43%, mainly driven by hiring to support Family of Apps and Reality Labs.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>管理费用增53%，主因法律相关和员工相关成本；营销与销售增10%，主因招聘和市场费用。</p>
+<blockquote>Lastly, G&amp;A increased 53%, mainly driven by legal-related and employee-related costs.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>广告需求在季内走软，报表收入同比下降，单价降14%，压低营业利润。</p>
+<blockquote>Advertising revenue growth slowed throughout the second quarter as advertiser demand softened.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>Reality Labs营业亏损28亿美元，直接减少合并营业利润。家庭应用营业利润为112亿美元。</p>
+<blockquote>Family of Apps operating income was $11.2 billion, representing a 39% operating margin.</blockquote>        </div>
+<p class="conflict">冲突：电话会称第二季营业利润84亿美元；指标表为83.58亿美元，同比降32.4%、环比降1.9%。口头84亿美元是取整。摘要使用指标表。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
+      <span class="m-name">净利润（GAAP）</span>
+      <span class="m-val num">$6.69B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-down">-35.7%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-10.4%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">GAAP净利润66.87亿美元，同比降35.7%，环比降10.4%。电话会称净利润67亿美元。税率18%。利息及其他费用录得亏损1.72亿美元，主因股权投资未实现亏损。利润降幅大于营业利润，除费用上升外还有这笔投资亏损。摘要采用指标表。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>营业费用同比增22%、营业利润同比降32.4%，是净利润同比降35.7%的主因。</p>
+<blockquote>Q2 total expenses were $20.5 billion, up 22% compared to last year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>利息及其他费用录得亏损1.72亿美元，主因股权投资未实现亏损，使净利润降幅大于营业利润。</p>
+<blockquote>We recorded a loss of $172 million under interest and other expenses, driven mainly by unrealized losses on equity investments.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span>管理层发言</span>          </div>
+          <p>当季税率18%。电话会没有给出去年同期税率，因此不把税率当成净利润同比下降的原因。</p>
+<blockquote>Our tax rate was 18%.</blockquote>        </div>
+<p class="conflict">冲突：电话会称净利润67亿美元；指标表为66.87亿美元，同比降35.7%、环比降10.4%。口头67亿美元是取整。摘要使用指标表。</p>      </div>
     </div>
   </div>
   </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 2 项 · 行业展望 6 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
-      <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>营收<small class="basis">下季</small></td>
+            <td>$26.00B – $28.50B</td>
+            <td class="c-down">-5.5%</td>
+            <td class="c-down">-6.1%</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr>
+            <td>资本开支<small class="basis">FY2022全年</small></td>
+            <td>$30.00B – $34.00B</td>
+            <td class="c-na"></td>
+            <td class="c-up">+71.2%</td>
+            <td class="c-na"></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境（宏观、汇率与区域）</h4>
+          <div class="outlook-copy">
+            <p>Sheryl（COO）说第二季总收入288亿美元、同比下降1%，固定汇率则增长3%，外汇影响显著，尤其是欧元对美元贬值。Dave（CFO）补充，若汇率与去年第二季相同，总收入大约会高出13亿美元。按用户所在地，亚太和世界其他地区广告收入分别增长13%和11%，北美下降4%，欧洲下降12%，欧洲和亚太的汇率逆风最大。Sheryl把收入压力分成延续因素和新因素：乌克兰战争仍在影响，疫情后电商从高点回落，同时出现通胀上升和衰退担忧。Dave说广告需求在第二季内持续走软，减速覆盖多个行业，企业因经济不确定性下调广告支出。他同时说苹果iOS带来的定向和衡量逆风仍在，但不是第二季减速的因素，而是整个数字广告行业增长挑战的一部分。公司还在关注跨大西洋数据传输是否还能继续，以及这会对欧洲业务造成什么影响。Mark（CEO）认为这轮经济下行对数字广告的影响比上一季看到的更差，深度和时长都难以预测。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化</h4>
+          <div class="outlook-copy">
+            <p>Mark说全家桶应用月度触达超过36亿人，Facebook日活仍在增长，包括美国，但月活因乌克兰战争相关的网络封锁出现预期中的下降；Facebook参与趋势总体强于公司原先的预期。Dave按6月口径估计，每天约29亿人、每月约36亿人至少使用一个应用。Facebook日活19.7亿，同比增3%或增加6000万；月活29.3亿，日活约占67%；月活同比增加3900万、增1%。欧洲日活和月活环比下降，受俄罗斯和乌克兰用户流失拖累。广告侧，展示量增15%，增量来自亚太和世界其他地区，平均单价降14%。单价下降来自广告主需求减弱、展示转向变现更低的版面和地区，以及外汇贬值。短视频在改参与结构。Mark说上一季Reels已占Instagram使用时长的20%，本季Facebook和Instagram上Reels参与时长环比增加超过30%，口径是各季最后一个月的平均值；上线新的大型推荐模型后，仅Facebook的Reels播放器观看时长就增加15%。Instagram私信里被转发的内容，超过一半是Reels。目前Facebook信息流里约15%的内容、Instagram略高，来自用户未关注的人、群组或账号的人工智能推荐，他预期到明年年底这些比例将增加一倍以上。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化</h4>
+          <div class="outlook-copy">
+            <p>供给端的变化主要在算力和人手，不在传统产线。Dave说资本开支的同比和环比跳升都来自服务器支出，包括人工智能基础设施，同时投向数据中心和网络。指标表资本开支75.72亿美元、同比增63.2%，电话会按含融资租赁本金的口径报77亿美元。第二季净增员工超过5700人，多数在技术岗位，季末全职员工超过83500人、同比增32%。Mark说今年早些时候招了很多人，所以未来几个季度报表上的人头同比增速仍会很高，但会随时间下降；计划是在未来一年稳步压低人头增速，不少团队会缩小，把精力转到优先事项。Dave说今年余下时间会因招聘计划下调而放慢人头增速。费用结构上，家庭应用费用172亿美元、同比增23%，主因员工、法律和基础设施；Reality Labs费用33亿美元、同比增19%，员工和研发费用上升，部分被损失准备减少抵消。营业成本同比下降4%，是因为Quest 2提价后Reality Labs损失准备下降，抵消了核心基础设施和内容成本的增长。广告库存本身仍在增加，展示量同比增15%，供给增长快于广告主出价，所以单价下降。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>Sheryl被问到是否看到预算流向TikTok或更低的千次展示费用时，没有点名对手，只说广告市场竞争激烈，线上线下选择几乎无限，公司必须靠投资回报率和可衡量的结果去赢得份额。Dave认为各家受苹果iOS逆风的程度不同，行业结构和疫情封锁的影响也不一样，因此不宜把第二季的相对表现直接读成永久性落后。Mark把发现引擎和只做单一内容形态的对手分开：公司的推荐要同时处理视频、文字、链接、图片、群组和评论，用高维嵌入表示帖子语义，他认为这会做出不同的体验，用户也不会只接受一种格式。Reels广告年化收入运行率已超过10亿美元，且高于Stories在上线后相同时点的运行率，但变现仍低于信息流。Dave说Stories从2018年认真铺开，到今年才在发达市场按使用时长做到与信息流相近的变现，Reels仍处在这条多年路径的早期。当天联邦贸易委员会起诉阻止收购Within。Dave说并购仍是战略的一部分，并认为收购Within有利于竞争、能扩大虚拟现实生态并吸引新用户，明确不同意监管机构的立场。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>广告仍是收入主体。家庭应用总收入284亿美元、同比下降1%；其中广告收入282亿美元，同比下降1%或固定汇率增长3%。家庭应用其他收入2.18亿美元、同比增14%，来自WhatsApp商业接口。Reality Labs收入4.52亿美元、同比增48%，主因Quest 2销售。合并后家庭应用营业利润112亿美元、营业利润率39%，Reality Labs营业亏损28亿美元。变现结构的近忧是Reels：它的变现速率还不如信息流或Stories，增长越快，近期越会挤占高变现版面。Mark认为长期仍应推进，因为参与会增加，变现最终会靠近信息流；广告变现效率的进展快于预期。商业消息是另一条产品线。Mark说已有40%的广告主使用点击即消息。Sheryl估计每周有10亿用户在WhatsApp、Messenger和Instagram上与商家发消息，点击即消息已是数十亿美元业务，同比仍是两位数增长，在巴西、墨西哥等新兴市场的中小商家里尤其受欢迎，不少新广告主只投这一种形式。她举RoamHowl Creative的例子，点击即消息广告带来的合格线索是其网站转化广告的2.3倍，单条线索成本低57%。隐私侧继续投Conversions API，并以Private Lift与大型广告主做测试，目标是少处理个人信息仍能展示相关广告并衡量效果。人工智能广告产品Advantage详细定向和Advantage类似受众，会在可能改善效果时扩大受众。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略</h4>
+          <div class="outlook-copy">
+            <p>Mark把当前业务分成两道技术浪潮：今天拉动业务的是人工智能，更长期的是元宇宙。人工智能既用于推荐，也用于在更少数据下做个性化广告和自动创意，相关投入大量落在人工智能算力的资本开支上。元宇宙方面，他更强烈地认为自建平台长期能解锁数千亿美元甚至数万亿美元，但未来数年会很贵。近期里程碑包括今年晚些时候推出可在所有平台使用的Horizon网页版、继续扩大虚拟形象商店和服装选择，以及发布面向专业用户和工作场景、带高分辨率彩色混合现实的Project Cambria。费用上，公司因近期收入轨迹转弱，放慢了按2021年高增长启动的多年项目，把一部分原定未来一两年的费用推到更长的时间，同时仍把资源放在发现引擎、Reels、新广告基础设施和元宇宙。他要求用更少资源做成更多事，并提高一批项目的目标。领导层同步换届：这是Sheryl最后一次参加财报电话会，她将继续留在董事会；Dave将转任首席战略官，负责战略和公司发展；Susan Li将在今年晚些时候出任首席财务官，Dave说交接在11月。资本返还上，第二季回购A类普通股51亿美元，季末现金及有价证券405亿美元。Dave说回购计划里仍有相当余额，资本配置里会继续包含回购，姿态没有变化。</p>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">16 轮 · 部分回答 / 回避 10</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>16</b> 轮</span>
+<span>热门话题：<b>AI 产品与模型、费用与运营、宏观与汇率</b></span><span>新出现：<b>客户与订单</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 10</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">更多使用Reels的用户，总使用时长有没有增长？这些人工智能和Reels改动是增量参与，还是只从其他版面搬过来？</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说Reels对使用时长是增量，但同时也有蚕食。一部分参与从信息流和Stories挪到Reels，这是公司有意把Reels推到更多用户面前的策略。净影响仍然是正的，对使用时长有增量好处。</p>
+<blockquote>Reels is additive to time spent. But obviously, it does have a cannibalistic impact as well but the net impact is positive.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">下半年人头增速会放缓。按Mark说的，某个时点会看到人头下降。2023年应不应该理解成公司员工人数下降的一年？</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说还没有为2023年设任何标尺。公司正在降低人头增速，并计划在进入2023年时对人头增长保持更多纪律。等到更接近预算制定时，会给出更明确的指引。他没有回答2023年人数会不会绝对下降。</p>
+<p class="small">未回答的部分：没有回答2023年员工人数会不会下降，只说会降低增速、进入2023年时更有纪律，并表示更明确的指引要等到预算制定时。</p><blockquote>And then on headcount growth, we&#39;re not putting any markers yet out for 2023.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Justin Post<small>Bank of America</small></span>
+        <span class="qa-q">逆风里没有提到TikTok。是否看到广告预算或广告主流向那边以换取更低的千次展示费用？竞争逆风怎么看？</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span><span class="pill alert">回避</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sheryl（COO）：她说公司处在竞争激烈的广告市场，广告主在线上和线下都有很宽的选择，选项几乎无限。公司知道必须自己赢得份额，持续交付好的投资回报率并能够衡量结果。因此焦点是这些电话会上一直在讲的产品改进，以后也会继续做。</p>
+<p class="small">未回答的部分：没有回答是否看到预算或广告主流向TikTok，也没有讨论更低的千次展示费用。回答只停留在市场竞争激烈、必须靠投资回报率赢得份额。</p><blockquote>We exist in a really competitive advertising market where advertisers have broad opportunities to advertise both offline and online and there are almost endless options.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Justin Post<small>Bank of America</small></span>
+        <span class="qa-q">第三季指引里，有没有把Reels使用增加对收入造成的压力，相对第二季算进去？</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说Reels广告运行率已跨过10亿美元，公司对此感到兴奋，但由于参与转向Reels，它对业务总体是逆风。公司没有单独量化这个逆风。长期看这会变成收入顺风，但2022年不会发生。第三季看到的压力压倒性地来自宏观，大多数行业都出现广泛走弱。</p>
+<blockquote>But in general, the pressure that we&#39;re seeing on Q3 is overwhelmingly a macro one, where we&#39;re seeing sort of broad-based weakness across most of the verticals.</blockquote>        <p class="small">新数字：10亿美元（Reels广告年化收入运行率已经跨过的水平，Dave同时说参与转向Reels对业务仍是逆风）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Eric Sheridan<small>Goldman Sachs</small></span>
+        <span class="qa-q">公司在收紧投资、重看成本时，Reality Labs和家庭应用的投入组合会怎么变？两段的相对亏损或利润率结构会受什么影响？</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说投资聚焦是全公司范围的，资源集中到关键优先事项。元宇宙和Reality Labs明确仍是优先事项之一，这块投入还会增加。与此同时，公司计划在整个经营姿态上保持纪律。他没有给出两段费用的新比例，也没有给各段利润率的变化幅度。</p>
+<p class="small">未回答的部分：确认Reality Labs投入还会增加、全公司会更有纪律，但没有给出两段费用组合或各自利润率、亏损会怎么变。</p><blockquote>So it remains an area in which we are going to be increasing investment. But we do plan to have discipline across the entire operating posture of the company.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Eric Sheridan<small>Goldman Sachs</small></span>
+        <span class="qa-q">第三季会跨过苹果广告标识变化带来的更容易的基数，但隐含增速仍比第二季更弱。能否把第三季相对第二季的宏观逆风和其他顺风拆开？</span>
+        <span class="qa-tags">
+<span class="pill">宏观与汇率</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他同意这个观察。进入下半年，同比增速会受益于跨过去年第三、四季已基本完成的苹果iOS推广，信号逆风的基数更有利。但这被宏观环境和相应挑战抵消。还有几层叠在一起的因素：市场反映的整体经济不确定性，以及公司正在跨过电商等重要行业仍享受疫情红利的时期。信号逆风在二阶上也可能影响一部分支出。至少在一阶上，他认为主要是宏观环境抵消了跨过iOS 14推广本来会有的好处。</p>
+<blockquote>But at least on the first order, we think it&#39;s largely a macro environment that is offsetting the benefit that we would otherwise be getting from lapping the iOS 14 rollout last year.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Mark Shmulik<small>Bernstein</small></span>
+        <span class="qa-q">发现引擎是很大的转向。除了转发形成的飞轮，Facebook和Instagram的发现平台相对其他平台靠什么区分？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：他说熟人社交内容会继续很重要，关注本身仍是重要信号。十年前，除了直接关注，人工智能还判断不好兴趣；现在它可以找出用户没关注的账号甚至整个话题。社交部分会保留，并且是差异化的一块。发现引擎上，公司的做法和部分对手不同，因为内容形态很多：不只是视频，更不只是短视频，还包括文字、链接、照片、群组内容和评论讨论。研究里说的嵌入，是把帖子的含义放进高维空间，而且能跨内容类型工作。他认为这会让Facebook和Instagram的体验不同于只做一种内容格式的对手。业务上的挑战是把Reels变现做好：方向在轨道上，但今天仍低于信息流其余部分，公司乐观地认为能做到。这样参与上升之后，也会变成业务顺风。</p>
+<blockquote>And being able to do that well, I think will end up producing a different experience on Facebook and Instagram compared to some of our other competitors that are just focused on one content format.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Doug Anmuth<small>JPMorgan</small></span>
+        <span class="qa-q">用更少数据重建广告系统，现在走到哪一局？以后还能不能回到平台政策变化之前的定向和衡量水平？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sheryl（COO）：她说自己给不出精确的局数，但认为还相当早。公司过去用数据、并以隐私安全的方式做出可衡量的结果和个性化定向，而且曾经领先。现在进入新时代，要用更少数据做同样的定向和衡量。她认为这项能力仍处早期。做法包括自己投入、投入人工智能和机器学习、推出少共享数据的衡量产品，也要和行业一起做，因为这不是公司独有的挑战，而是在苹果iOS上运行的参与者共同面对的问题。</p>
+<p class="small">未回答的部分：明确说还早，但没有回答以后能否回到政策变化前的定向和衡量水平，也没有给完成时间。</p><blockquote>And I think it&#39;s pretty early days in our ability to do that.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Doug Anmuth<small>JPMorgan</small></span>
+        <span class="qa-q">如果宏观明年甚至更久继续放慢，或收入增速因其他原因走平，公司是否准备把费用增速降到相近水平，以保住利润率？</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他先处理问题的前提。宏观挑战历史上常与周期有关，加息等信号也指向这个方向，因此他认为当前有周期成分。广告尤其容易受周期压力。长期看，广告里的数字部分仍有很好的前景，公司有信心在市场改善后回到不错的增长。同时，公司已经表明，规划费用和资本基础时会把市场环境考虑进去，进入以后的预算和规划周期时会继续观察。</p>
+<p class="small">未回答的部分：没有承诺在收入走平时把费用增速降到同一水平以保住利润率，只说规划费用和资本时会考虑市场环境，并强调长期仍能回到增长。</p><blockquote>But we also, I think, have demonstrated that we&#39;re willing to take into account the market environment as we plan our overall expense and capital base.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Michael Nathanson<small>MoffettNathanson</small></span>
+        <span class="qa-q">Reels广告跑到10亿美元的速度比Stories更快，但公司又说它更难变现。为什么采用更快？和广告主谈时，他们要解决什么才会更快把预算移到Reels？</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sheryl（COO）：她说公司有一套打法，先做出消费者喜欢的产品，再做出能嵌进体验的广告形式。Stories让公司学会这件事，Reels广告采用更快，部分是因为公司更擅长卖下一个产品：让广告主容易做出内容、提供广告形式和可衡量的工具。挑战仍在。视频比静态图片难，小企业更擅长静态图片。这是要帮他们学会的新格式。已有一些工具在起作用，还有一些在开发，目标是让企业很容易做出Reels广告并测试迭代。她认为前景好，但前面还有艰苦工作。</p>
+<blockquote>But as you do say, there are still some challenges. Video is harder than photos, than static photos.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Michael Nathanson<small>MoffettNathanson</small></span>
+        <span class="qa-q">过去的护城河可以说是数十亿人的社交图谱。现在用人工智能和其他内容做的东西，是不是比以前那个已经很高的进入壁垒更好的护城河、更好的生意？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：他说手机通讯录在十多年前就能拿到社交关系，他不认为那一直是公司的关键。公司是一家认真做技术的公司，大量投入基础设施，文化上专注于比别人更快地行动和学习，这些才是可持续优势。正在建设的人工智能技术基础设施可以复利，并好于行业里的其他人，从而让产品随时间变好。归根结底，他推动公司学得更快、迭代得比过去和比同行更快。一旦停止这样做就会落后，因为领域竞争很激烈。Facebook、Instagram和其他社交应用的结果，来自持续改进。人工智能也会按同样原则做。推荐系统如果做得更好，会让Facebook、Instagram和广告都更好，所以他把人工智能称为正在乘坐的主要技术浪潮之一。内部已有多年路线图，而且已经看到一批好的结果，但仍要执行好。</p>
+<blockquote>And so certainly, I think that the AI technology infrastructure that we’re building, I think it can compound and be better than others in the industry and that will be an advantage and make the products better over time.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Youssef Squali<small>Truist Securities</small></span>
+        <span class="qa-q">Reels变现现在落后Instagram Stories多少？达到与信息流持平要几个季度还是几年？Stories在2018年之后用了多久才追上动态消息？</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说Stories大约在2018年才认真铺开，至少在发达市场，直到今年才按使用时长做到与信息流相近的变现，是多年的过程。Reels仍处在这条多年路径的很早阶段。运行率上的进展值得骄傲，但变现轨迹仍很早。Stories当年把差距补上了，每种格式又有独特之处，类比不会完全准确。公司乐观地认为至少能在缩小差距的路上走出相当一段。他没有给出还要几个季度或几年。</p>
+<p class="small">未回答的部分：用Stories从2018年到今年才在发达市场接近信息流来说明是多年过程，并说Reels仍很早，但没有回答还要几个季度或几年才能持平。</p><blockquote>I think we&#39;re still very early in that multiyear journey with Reels.</blockquote>        <p class="small">新数字：2018年（Dave说Stories开始认真铺开的年份）；今年（发达市场的Stories按使用时长做到与信息流相近变现的时间）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Youssef Squali<small>Truist Securities</small></span>
+        <span class="qa-q">并购对实现元宇宙愿景有多重要？监管机构当天宣布起诉，要阻止收购看起来不大的虚拟现实健身应用Within。</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说并购肯定是战略的一个组成部分，以后会继续看收购。关于联邦贸易委员会试图阻止Within收购的具体消息，他请大家看公司新闻室的声明。公司认为收购Within有利于竞争，能扩大虚拟现实生态、吸引新用户，并让这个空间对新的和现有的开发者更有成效。公司明确不同意联邦贸易委员会的立场。</p>
+<p class="small">未回答的部分：说明并购仍是战略的一部分，并反驳了阻止Within交易的理由，但没有说明并购对元宇宙愿景的重要程度，也没有讲这笔交易若被阻止会怎样改变路线图。</p><blockquote>In terms of M&amp;A, there&#39;s -- M&amp;A is definitely a component of our strategy, and we&#39;ll continue to look at acquisitions going forward.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brent Thill<small>Jefferies</small></span>
+        <span class="qa-q">和过去的下行相比，这一轮是更浅，还是持续时间更长？对当前大家看到的下行时长有没有判断？</span>
+        <span class="qa-tags">
+<span class="pill">宏观与汇率</span><span class="pill alert">回避</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Dave（CFO）：他说当前有很多独特因素。公司正在对比疫情期间线上广告非常强的时期，下行正好叠上行为回到线下，从而放大了这轮由金融条件驱动的周期影响。线上生态里的困难基数，会加剧周期效应，不只是公司，其他公司也经历了这一点。至于周期本身会持续多久，他留给比他更好的经济学家。持续困难的环境已经反映在第三季指引里。</p>
+<p class="small">未回答的部分：没有判断这轮下行比过去更浅还是更长，明确把时长留给经济学家，只说困难环境已经体现在第三季指引中。</p><blockquote>I think in terms of prognosticating on the cycle itself and the duration, I&#39;ll leave that for better economists than I to understand how that may play out.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Mark Mahaney<small>Evercore ISI</small></span>
+        <span class="qa-q">人工智能在处理内容审核上进展如何？是否已经有一些突破？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark（CEO）：他说今天大部分内容审核是通过人工智能完成的。公司每个季度发布社区标准执法报告，核心指标是有害内容里有多大比例在有人举报之前就被系统识别并处理。这些指标大体朝正确方向走，世界上的事件有时会使它们波动。过去几年进展很大。公司在这里投入了很多人工智能工作。更新的努力仍会继续审核，但很多新工作集中在内容推荐，以及用更大的稀疏模型，在数据更稀疏时把内容和广告推荐做得更好。他对整体感到乐观。</p>
+<p class="small">未回答的部分：说明多数审核已由人工智能完成、执法报告指标大体向好，但没有给出识别比例，也没有宣布具体突破的幅度。</p><blockquote>Yes, on content moderation, most of this is done through AI today.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Mark Mahaney<small>Evercore ISI</small></span>
+        <span class="qa-q">点击即消息已经是数十亿美元、在拉美和世界其他地区特别强。北美和西欧的机会怎么看？是文化不同，还是有办法做到和其他市场一样强？</span>
+        <span class="qa-tags">
+<span class="pill">客户与订单</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sheryl（COO）：她说点击即消息是增长最快的广告形式之一，已经是数十亿美元业务，并保持两位数增长。打法仍是先有消费者参与，再让企业加入。消息在全球增长都很快，公司有多个使用广泛的消息平台。这种行为确实先在世界其他地方出现得更多，但北美和欧洲也已经看得到，她相信会在全球继续增长。在公司试图用更少数据做事的环境里，这种广告把人从发现带到与企业的直接关系，投资回报率更容易衡量，所以公司在重投入。入口很多：可以从Facebook和Instagram信息流、Stories进入WhatsApp、Messenger和Instagram私信。她最后举RoamHowl Creative，一家小型商业咨询公司用点击即消息做线索，相对其推动网站转化的普通广告，合格线索多2.3倍，单条线索成本低57%，而且更容易归因。她确信这件事在世界各地已经有效，并且会继续有效。</p>
+<p class="small">未回答的部分：确认北美和欧洲已经出现同样行为，并相信会在全球增长，但没有给出这两个地区的收入规模，也没有说明是文化差异还是产品动作决定了与新兴市场的差距。</p><blockquote>But we are seeing that behavior in North America and Europe as well.</blockquote>        <p class="small">新数字：2.3倍（RoamHowl Creative的点击即消息广告相对其网站转化广告带来的合格线索倍数）；低57%（同一案例里单条线索成本相对普通广告的降幅）</p>
+      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 1 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：— · 文件编号 — · 文字稿：—</p>
+    <p>新闻稿：— · 文件编号 — · 文字稿：company_ir</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。</li></ul>  </div>
 </details>
