@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "company_ir",
+    "eps_basis": "gaap",
+    "transcript_url": "https://s21.q4cdn.com/399680738/files/doc_financials/2021/q3/FB-Q3-2021-Earnings-Call-Transcript.pdf",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -177,12 +183,663 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "总收入290.1亿美元，同比增35.1%，环比降0.2%。电话会称总收入290亿美元，同比增35%，按固定汇率增34%。广告收入283亿美元，同比增33%，固定汇率增32%；展示量增9%，平均单价增22%。展示增长主要来自发展中市场，尤其是亚太。价格上升来自广告主需求，以及跨过去年第三季度与疫情相关的低价格，同时被苹果应用追踪透明度、线上商务降速和供应链、东南亚疫情这三条拖住。若汇兑保持去年第三季度的水平，总收入会少2.59亿美元，汇兑是顺风。按用户地区，广告收入增速最高的是世界其他地区50%，欧洲、北美、亚太分别为35%、31%、28%。其他收入7.34亿美元，增195%，来自Quest 2。Sheryl说，若没有苹果iOS14的变化，收入本可以环比正增长。",
+        "drivers": [
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": true,
+            "description": "平均广告单价同比增22%，是广告收入同比增33%、总收入同比增35.1%的主因，贡献大于展示量增9%。",
+            "evidence_quote": "In Q3, the total number of ad impressions served across our services increased 9% and the average price per ad increased 22%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "广告展示量同比增9%，增长主要来自发展中市场，尤其是亚太。",
+            "evidence_quote": "Impression growth was driven primarily by developing markets, especially in Asia-Pacific.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "+",
+            "is_primary": false,
+            "description": "汇兑是顺风。若汇兑保持与去年第三季度相同，总收入会少2.59亿美元。电话会称同比增35%，固定汇率增34%。",
+            "evidence_quote": "We benefited from a currency tailwind and had foreign exchange rates remained constant with Q3 of last year, total revenue would have been $259 million lower.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "苹果iOS14是把环比增长压掉的最大外部因素。若没有这项变化，收入本可以环比正增长。指标表环比降0.2%。",
+            "evidence_quote": "Overall, if it wasn’t for Apple’s iOS14 changes, we would have seen positive quarter-over-quarter revenue growth.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "广告支出还受到苹果应用追踪透明度带来的效果和衡量逆风。",
+            "evidence_quote": "First, advertising spend was negatively impacted by performance and measurement headwinds related to Apple’s ATT changes.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "线上商务从疫情高位放缓，企业同时面临供应链中断，广告需求被压低。",
+            "evidence_quote": "Second, we are seeing some macro headwinds as growth in online commerce has moderated from the elevated levels experienced earlier in the pandemic and businesses face supply chain disruptions.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "东南亚疫情再起带来额外封锁，经济活动收缩，进一步拖累广告。",
+            "evidence_quote": "Third, Covid resurgences in Southeast Asia have led to additional lockdowns and a curtailment of economic activity.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "其他收入7.34亿美元、增195%，由Quest 2销售带动，使总收入增速高于广告收入。",
+            "evidence_quote": "Other revenue was $734 million, up 195%, driven by strong Quest 2 sales.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第三季度总收入290亿美元，同比增35%，按固定汇率增34%。指标表为290.1亿美元，同比增35.1%，环比降0.2%。口头的290亿美元和35%相对指标表是四舍五入。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率80.1%，同比降0.36个百分点，环比降1.33个百分点。电话会没有单列毛利率。营业成本增38%，快于收入同比35.1%，主要来自消费硬件成本、核心基础设施投入和向合作伙伴付款。其他收入因Quest 2增195%，硬件占比上升与毛利率受压同向。电话会没有解释环比下降。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": true,
+            "description": "营业成本增38%，快于收入同比35.1%，毛利率同比降0.36个百分点。增幅主要来自消费硬件成本、核心基础设施和向合作伙伴付款。",
+            "evidence_quote": "Cost of revenue increased 38%, driven mostly by consumer hardware costs, core infrastructure investments, and payments to partners.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "Quest 2带动其他收入增195%，硬件销售占比上升，与营业成本里的消费硬件成本一起压低毛利率。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "Dave说其他收入7.34亿美元、增195%，由Quest 2带动，并把消费硬件成本列为营业成本增38%的首要原因之一。硬件收入的成本率高于广告。指标表毛利率80.1%，同比只降0.36个百分点，环比降1.33个百分点。电话会没有直接讲解毛利率，也没有解释环比下降。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "营业利润率35.9%，同比降1.52个百分点，环比降6.60个百分点。电话会称营业利润率36%。总费用186亿美元，同比增38%，快于收入同比35.1%。营业成本增38%，研发增33%，市场与销售增32%，管理费用增65%。第三季度净增员工超过4700人，季末全职员工超过68100人，同比增20%。电话会没有解释环比下降。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "总费用186亿美元、同比增38%，快于收入同比35.1%，是营业利润率同比降1.52个百分点的主因。",
+            "evidence_quote": "Q3 total expenses were $18.6 billion, up 38% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": false,
+            "description": "营业成本增38%，消费硬件、核心基础设施和合作伙伴付款抬高了成本，同时压低营业利润率。",
+            "evidence_quote": "Cost of revenue increased 38%, driven mostly by consumer hardware costs, core infrastructure investments, and payments to partners.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发增33%，主要因为为核心产品和消费硬件招人。",
+            "evidence_quote": "R&D increased 33%, driven primarily by hiring to support our core products and consumer hardware efforts.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "市场与销售增32%，主要来自市场花费和招聘。",
+            "evidence_quote": "Marketing & Sales increased 32%, mainly driven by marketing spend and hiring.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "管理费用增65%，主要来自更高的法律相关成本和员工相关成本。",
+            "evidence_quote": "Lastly, G&A expenses increased 65%, driven primarily by higher legal-related costs and employee-related costs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "第三季度净增员工超过4700人，主要在技术职能；季末全职员工超过68100人，同比增20%。",
+            "evidence_quote": "We added over 4,700 net new hires in Q3, primarily in technical functions. We ended the quarter with over 68,100 full-time employees, up 20% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "营业利润率环比降6.60个百分点，降幅大于同比。电话会给出了费用的同比拆分，但没有解释环比。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表营业利润率35.9%，环比降6.60个百分点，同比降1.52个百分点。Dave只讲费用同比增38%以及研发、市场与销售、管理费用的同比增速，没有对应到环比利润率。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第三季度营业利润率36%。指标表为35.9%，同比降1.52个百分点，环比降6.60个百分点。口头的36%是四舍五入。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "营业利润104.23亿美元，同比增29.6%，环比降15.7%。电话会称营业利润104亿美元、利润率36%。利润同比仍增，是因为收入增35.1%；增幅低于收入，是因为总费用增38%。应用家族和Reality Labs从下一季度起才分开披露，本季没有分部营业利润。",
+        "drivers": [
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": true,
+            "description": "广告单价增22%、总收入同比增35.1%，把营业利润拉到同比增29.6%。电话会口径的总收入同比增35%。",
+            "evidence_quote": "Q3 total revenue was $29.0 billion, up 35% or 34% on a constant currency basis.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "总费用同比增38%至186亿美元，快于收入，使营业利润增速低于收入，并造成环比下降15.7%。",
+            "evidence_quote": "Q3 total expenses were $18.6 billion, up 38% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称第三季度营业利润104亿美元。指标表为104.23亿美元，同比增29.6%，环比降15.7%。口头的104亿美元是四舍五入。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "稀释每股收益3.22美元，同比增18.8%，环比降10.8%，与电话会的3.22美元一致。净利润指标表91.94亿美元，同比增17.2%，环比降11.5%；电话会称92亿美元。税率13%。当季回购A类普通股144亿美元。每股收益增速低于收入同比35.1%，因为费用增38%更快。",
+        "drivers": [
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": true,
+            "description": "广告单价和总收入增长是每股收益同比增18.8%的主因。电话会称净利润92亿美元或每股3.22美元。",
+            "evidence_quote": "Net income was $9.2 billion or $3.22 per share.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "总费用同比增38%，快于收入，使每股收益增速低于收入增速，并与环比降10.8%同向。",
+            "evidence_quote": "Q3 total expenses were $18.6 billion, up 38% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "每股收益环比降10.8%。电话会给出了3.22美元和13%的税率，但没有解释环比下降。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表稀释每股收益环比降10.8%，净利润环比降11.5%，与营业利润环比降15.7%同向。Dave只报出当季税率13%和每股3.22美元，没有讲环比。回购144亿美元发生在当季，电话会没有把它量化成对每股收益的影响。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称净利润92亿美元或每股3.22美元。指标表净利润91.94亿美元，同比增17.2%，环比降11.5%；稀释每股收益3.22美元，与电话会一致。净利润口头数字是四舍五入。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "capex",
+        "summary": "指标表资本开支43.46亿美元，同比增17.8%，环比降6.4%。电话会称含融资租赁的资本开支45亿美元，投向数据中心、服务器、网络基础设施和办公设施。摘要使用指标表，不把45亿美元回填到指标里。全年口头指引约190亿美元，是另一口径上的展望，不替代本季指标。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "本季资本开支投向数据中心、服务器、网络基础设施和办公设施。指标表同比增17.8%至43.46亿美元。电话会含融资租赁的数字是45亿美元。",
+            "evidence_quote": "Capital expenditures including finance leases were $4.5 billion, driven by investments in data centers, servers, network infrastructure and office facilities.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称含融资租赁的资本开支为45亿美元。指标表为43.46亿美元，同比增17.8%，环比降6.4%，口径是购建固定资产。摘要使用指标表，不把45亿美元回填。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "指标表经营现金流140.9亿美元，同比增43.4%，环比增6.4%。电话会没有单独报出经营现金流，只报了自由现金流和季末现金。摘要使用指标表，不从电话会的自由现金流或资本开支口头数字回填。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营现金流同比增43.4%。电话会没有拆开经营现金流，增长与净利润上升同向，但构成没有被说明。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表经营现金流140.9亿美元，同比增43.4%，环比增6.4%。净利润指标表91.94亿美元、同比增17.2%。Dave只报自由现金流95亿美元和季末现金及有价证券581亿美元，没有讲经营现金流。因此不把电话会数字回填进这个指标。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "fcf",
+        "summary": "指标表自由现金流97.44亿美元，同比增58.7%，环比增13.2%。电话会称自由现金流95亿美元，季末现金及有价证券581亿美元。差额与资本开支是否计入融资租赁有关。摘要使用指标表，不从电话会回填。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "自由现金流同比增58.7%。电话会报出的是95亿美元这一水平，没有解释同比增幅；指标表口径高于口头数字。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表自由现金流97.44亿美元，等于经营现金流140.9亿美元减去资本开支43.46亿美元，同比增58.7%，环比增13.2%。电话会称自由现金流95亿美元。Dave没有解释增幅来自利润、营运资本还是资本开支口径。摘要保留指标表。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称自由现金流95亿美元。指标表为97.44亿美元，同比增58.7%，环比增13.2%。两者差额与资本开支是否计入融资租赁有关。摘要使用指标表，不从电话会回填。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "总收入",
+        "period": "FY2021Q4",
+        "type": "numeric",
+        "low_raw": "$31.5 billion",
+        "high_raw": "$34 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "合并报表",
+        "direction": null,
+        "statement": "公司预计2021年第四季度总收入为315亿至340亿美元。展望反映苹果iOS14变化，以及宏观和疫情相关因素带来的显著不确定性。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect fourth quarter 2021 total revenue to be in the range of $31.5 billion to $34 billion. Our outlook reflects the significant uncertainty we face in the fourth quarter in light of continued headwinds from Apple’s iOS14 changes, and macroeconomic and Covid-related factors.",
+        "low": 31500000000,
+        "mid": 32750000000,
+        "high": 34000000000
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "非广告收入",
+        "period": "FY2021Q4",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "口头展望",
+        "direction": "down",
+        "statement": "公司预计第四季度非广告收入同比下降，因为要跨过去年节日季Quest 2上市时的高基数。",
+        "source": "prepared_remarks",
+        "source_quote": "In addition, we expect non-ads revenue to be down year-over-year in the fourth quarter as we lap the strong launch of Quest 2 during last year's holiday shopping season.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "全年总费用",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "$70 billion",
+        "high_raw": "$71 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "合并报表",
+        "direction": null,
+        "statement": "公司把2021年总费用指引更新为700亿至710亿美元，此前为700亿至730亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect 2021 total expenses to be in the range of $70-71 billion, updated from our prior outlook of $70-73 billion.",
+        "low": 70000000000,
+        "mid": 70500000000,
+        "high": 71000000000
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "全年总费用",
+        "period": "FY2022",
+        "type": "numeric",
+        "low_raw": "$91 billion",
+        "high_raw": "$97 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "合并报表",
+        "direction": null,
+        "statement": "公司初步预计2022年总费用为910亿至970亿美元，由技术和产品人才以及基础设施相关成本带动。2022年预算尚未定稿。",
+        "source": "prepared_remarks",
+        "source_quote": "We anticipate our full-year 2022 total expenses will be in the range of $91-97 billion, driven by investments in technical and product talent and infrastructure-related costs.",
+        "low": 91000000000,
+        "mid": 94000000000,
+        "high": 97000000000
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "全年资本开支",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$19 billion",
+        "plus_minus_raw": null,
+        "basis": "合并报表",
+        "direction": null,
+        "statement": "公司把2021年资本开支更新为约190亿美元，此前估计为190亿至210亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect 2021 capital expenditures to be approximately $19 billion, updated from our prior estimate of $19-21 billion.",
+        "low": 19000000000,
+        "mid": 19000000000,
+        "high": 19000000000
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "全年资本开支",
+        "period": "FY2022",
+        "type": "numeric",
+        "low_raw": "$29 billion",
+        "high_raw": "$34 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "合并报表",
+        "direction": null,
+        "statement": "公司初步预计2022年资本开支为290亿至340亿美元，投向数据中心、服务器、网络基础设施和办公设施。增加的很大一块是人工智能和机器学习，用于排序、推荐和广告效果。2022年预算尚未定稿。",
+        "source": "prepared_remarks",
+        "source_quote": "For 2022, we expect capital expenditures to be in the range of $29-34 billion, driven by our investments in data centers, servers, network infrastructure, and office facilities.",
+        "low": 29000000000,
+        "mid": 31500000000,
+        "high": 34000000000
+      },
+      {
+        "metric_key": "tax_rate",
+        "metric_label": "税率",
+        "period": "FY2021Q4",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "税率",
+        "direction": null,
+        "statement": "公司预计2021年第四季度税率处在十几的高位。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect our Q4 2021 tax rate to be in the high-teens.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "tax_rate",
+        "metric_label": "税率",
+        "period": "FY2022",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "税率",
+        "direction": null,
+        "statement": "若美国税法没有变化，公司预计2022年全年税率与2021年全年相近。此为初步估计，预算尚未定稿。",
+        "source": "prepared_remarks",
+        "source_quote": "Absent any changes to U.S. tax law, we would expect our full year tax rate in 2022 to be similar to the full year 2021 rate.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Reality Labs对营业利润的影响",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$10 billion",
+        "plus_minus_raw": null,
+        "basis": "经营利润",
+        "direction": "down",
+        "statement": "2021年Facebook Reality Labs相关投入预计使公司整体营业利润减少约100亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "In 2021, we expect these investments to reduce our overall operating profit by approximately $10 billion",
+        "low": 10000000000,
+        "mid": 10000000000,
+        "high": 10000000000
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Reality Labs后续投入",
+        "period": "未来数年",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "口头展望",
+        "direction": "up",
+        "statement": "Reality Labs的这项投入预计在未来数年继续增加。",
+        "source": "prepared_remarks",
+        "source_quote": "I expect this investment to grow even further for each of the next several years.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "分部披露",
+        "period": "FY2021Q4",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "披露口径",
+        "direction": null,
+        "statement": "从下一季度起，公司将单独披露Facebook Reality Labs的收入和营业利润，与应用家族分开。",
+        "source": "prepared_remarks",
+        "source_quote": "Starting next quarter, we'll begin disclosing financial metrics for Facebook Reality Labs separately from our Family of Apps.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "营收增长",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "口头展望",
+        "direction": "down",
+        "statement": "公司不提供2022年具体收入数字。展示量和价格仍有增长机会，但营收增长预计从2021年全年的增速放缓，且不预期达到费用增速所对应的三成以上。",
+        "source": "qa",
+        "source_quote": "We're not at this point providing a specific revenue outlook for 2022. We continue to see opportunities to grow both impressions and price next year, but we're obviously coming off an incredibly strong year of revenue growth in 2021. So we do expect deceleration in growth in 2022 from the full year 2021 rate.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "operating_margin",
+        "metric_label": "利润率",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "口头展望",
+        "direction": "down",
+        "statement": "公司预计2022年利润率低于2021年。",
+        "source": "qa",
+        "source_quote": "So we would expect 2022 margins to be lower than 2021.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "员工人数增速",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "人数",
+        "direction": "up",
+        "statement": "2022年费用的首要驱动是人数增长加快，增速将高于本季的20%。更多员工回到办公室后，办公运营和差旅费用也会上升。此刻不按分部拆费用。",
+        "source": "qa",
+        "source_quote": "The primary driver is going to be accelerating headcount growth in 2022. So that's going to be something you'll see headcount coming in above 20%, obviously, that we had this quarter. And we also expect to have higher expenses from office operations and travel once larger parts of the workforce are returning to the office in 2022. We're not providing a specific breakdown at this point for segment expense.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "股票回购授权",
+        "period": "回购授权",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$50 billion",
+        "plus_minus_raw": null,
+        "basis": "回购授权",
+        "direction": null,
+        "statement": "公司宣布把股票回购授权增加500亿美元。第三季度已回购144亿美元，截至9月30日原授权还剩80亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Today we announced a $50 billion increase in our stock repurchase authorization.",
+        "low": 50000000000,
+        "mid": 50000000000,
+        "high": 50000000000
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "安全与诚信支出",
+        "period": "FY2021",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "口头展望",
+        "direction": "up",
+        "statement": "公司预计2021年安全和诚信支出超过50亿美元，相关人员超过4万。",
+        "source": "prepared_remarks",
+        "source_quote": "we are on track to spend more than $5 billion on safety and security in 2021.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "转化少报修复",
+        "period": "2021年末",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "口头展望",
+        "direction": "up",
+        "statement": "公司认为到今年年底能够处理超过一半的iOS网页转化少报，并在2022年继续推进。",
+        "source": "prepared_remarks",
+        "source_quote": "We think we’ll be able to address more than half of the underreporting by the end of this year.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -192,6 +849,68 @@
       "t_plus_7": {},
       "gap_closure": null
     },
+    "industry_outlook": [
+      {
+        "title": "外部环境（平台政策、宏观与疫情）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Sheryl（COO）把第三季度的收入放进几件同时发生的外部变化里。最大的一项是苹果iOS14。她说消费者侧的采用在6月下旬加快，到第三季度达到临界规模，所以影响在这一季集中显现。结果有两层：广告定向的准确性下降，广告主为了拿到转化要付更高的成本；同时结果更难衡量。公司认为iOS网页转化被少报，真实的销售和应用安装高于报表，小广告主尤其明显。她的判断是，若没有苹果iOS14的变化，收入本可以环比正增长。指标表收入环比降0.2%，和没有正的环比增长一致。Dave（CFO）把广告增长受到的拖累分成三条。第一条是苹果应用追踪透明度带来的效果和衡量问题。第二条是线上商务从疫情期间的高位放缓，企业还面临供应链中断，拉动需求的意愿下降。第三条是东南亚疫情再起，封锁使经济活动收缩。汇兑的方向相反，是顺风。他表示，若汇兑保持在去年第三季度，总收入会少2.59亿美元。电话会口径的总收入同比增35%，按固定汇率为34%。欧洲、亚太和世界其他地区的广告收入都受益于汇兑顺风，但程度小于上一季。他还说公司继续关注跨大西洋数据传输是否还能做，以及对欧洲业务的潜在影响。第四季度总收入指引放在315亿至340亿美元，他把区间放宽解释为这些因素还没有走完。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "指标表总收入290.1亿美元，同比增35.1%，环比降0.2%。Sheryl（COO）在电话会上说总收入290亿美元、同比增35%，各地区都有增长，用户基数也在扩大。Dave（CFO）把广告收入报为283亿美元，同比增33%，按固定汇率为32%。量价拆开是展示量增9%、平均单价增22%。展示增长主要来自发展中市场，尤其是亚太。价格上升来自广告主需求，以及跨过去年第三季度与疫情相关的价格低点，但前面三条逆风把增速往下压。其他收入7.34亿美元，同比增195%，由Quest 2销售带动，所以总收入增速快于广告收入。用户侧，9月约有28亿人每天至少使用一项服务，约36亿人每月至少使用一项。Facebook日活19.3亿，同比增6%，即增加1.1亿，约占29.1亿月活的66%；月活增加1.7亿，同样增6%。这是在跨过去年第三季度疫情抬高的用户基数之后仍然增长。需求结构上，Sheryl说电商并没有停，企业仍在上网，但速度已经不是疫情高峰。很多地方重新开放后，人们更多到店购买。供应链和劳动力短缺让不少消费品企业库存更少，它们用来拉动需求的广告预算因此收缩，各地区、多个行业都看得到。问答里Dave说，广告主在第三季度已经感到供应链问题，并预期会带到第四季度，而且很难和iOS14的定向、衡量问题拆开。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化（广告库存与基础设施）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "广告库存还在增加，但这一季不是靠大量新增展示去换价格。展示只增9%，单价增22%。Dave（CFO）把价格归因于需求和基数，而不是库存变紧。视频是新增的供给形态。Sheryl（COO）说，视频收入里已经有超过60%来自移动优先的视频，也就是竖拍或短于15秒的片子。每月有超过20亿人观看可以挂插播广告的视频。Reels广告正在用自动版位和新的创意形式，向更多Instagram广告主开放。Mark（CEO）说Reels已经是Instagram参与增长的主引擎，他预期还会继续长，并在未来一年明显调整Instagram和Facebook，让视频和Reels更靠近体验中心。问答里Dave承认，新体验上线时人们的时间会从旧版面挪过来，Stories和Facebook Watch当年也是这样，但他认为Reels给Instagram和Facebook带来的是增量参与，所以值得投。成本侧，营业成本同比增38%，快于收入的35.1%。Dave点名消费硬件成本、核心基础设施投入和向合作伙伴付款。指标表毛利率80.1%，同比降0.36个百分点，环比降1.33个百分点，电话会没有单独讲毛利率。资本开支是另一条供给。指标表单季43.46亿美元，同比增17.8%，环比降6.4%。电话会按含融资租赁报45亿美元，投向数据中心、服务器、网络基础设施和办公设施。全年他更新为约190亿美元，此前是190亿至210亿美元。2022年资本开支指引290亿至340亿美元，增加的很大一块是人工智能和机器学习，用来改进信息流和视频的排序与推荐，并提高广告效果和相关性。问答里他对Brent说，这笔投入也用来弥补平台政策变化丢掉的信号。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "这一季被管理层反复讲到的竞争，来自平台规则和年轻用户的时间。Mark（CEO）说苹果的改动不只压到本公司，也压到数百万小企业，而且发生在经济已经困难的时候。他同时说，年轻用户这一侧的竞争明显更激烈，尤其是苹果iMessage的普及，以及TikTok。他把TikTok称为公司面对过的最有效竞争者之一。因此各团队的目标改成服务18至29岁的年轻人，而不是去优化使用人数更多的年长用户。这会带来产品上的取舍，社区其余部分的增长可能慢于原本的路径，而且要用数年而不是数月才能做完。Dave（CFO）在问答里补充，产品在青少年里用得很广，但TikTok和Snapchat的竞争很硬，所以公司用Reels去吸引并留住年轻用户。Reels自去年8月在Instagram推出后已经覆盖100多个国家。Facebook上的Reels还更早，广告刚开始在Instagram铺开，Facebook上的Reels还没有到变现的时点。Sheryl（COO）认为，定向能力相对那些自己握有直接数据的平台会更吃亏，但在很多比较里，公司给广告主的投资回报仍然好。眼前的冲击是真实的，重建要很多年。Dave确认，苹果平台变化是第三季度逆风里最大的一项。若不是它，公司本预期从第二季度到第三季度会出现环比增长。由于iOS14已经广泛采用，他不预期第四季度再出现同样幅度的台阶式加重。他还说，公司还没有经历过带着这些变化的节日季。节日期间价格更高，定向和衡量的困难会怎样与更高的价格叠在一起，仍是第四季度区间里的不确定性。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "收入的主体仍是广告。Dave（CFO）报广告收入283亿美元，其他收入7.34亿美元。Sheryl（COO）认为Facebook和Instagram仍是人们联系、建立社区、以及商家起步和增长的地方，也仍是广告主触达用户并拿到可衡量结果的平台。视频变现的比重在上升，移动优先的视频已占视频收入的六成以上。线索产品是另一条尽量在站内完成的路径。4月公司推出转化线索的优化目标，广告主也可以用转化接口把客户关系管理系统接进来。她说在测试里，两样一起用时，从线索到成交的转化率平均提高20%。商业工具被她和Mark（CEO）看成苹果变化之后的对策。网页上的电商和获客变差时，商家更有理由在应用里开店。广告可以按效果，在商家自己的网站和站内商店之间动态指向。商店还在完善。节日季会和投入最多的商家一起找拉新办法，2022年再铺开。Marketplace已经有规模。供应链让新品更难买到的时候，更多人靠它。问答里Sheryl给出一个存量：她相信广告业务今天带动了数千亿美元的站外电商商品交易总额。商业工具是叠在这上面的，用来触达更多新客户、做出更多增量销售。把东西在站内卖出去这一层，她认为还在追赶其他移动和网页购物体验。让消费者愿意在这里买，也还有空间。硬件是第二条收入。Quest 2把其他收入拉高195%，但Dave预计第四季度非广告收入同比下降，因为要跨过去年节日季Quest 2上市的高基数。从下一季度起，应用家族和Facebook Reality Labs会分开报收入和营业利润。Mark说，2021年这些投入预计使整体营业利润减少约100亿美元，而且未来数年还会继续加。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark（CEO）把产品优先级收成三件事：创作者、商业，以及下一代计算平台。创作者这边的抓手是Reels。他预期Reels还会继续增长，并认为它对产品的重要性会接近Stories今天的位置。年轻用户被写成各应用的长期方向，年龄是18至29岁，执行周期是数年。商业被他说成多年的旅程，不是一个季度的功能。更长的赌注是元宇宙。他把在线社交的终点定义成临场感，也就是人虽然不在一处，仍然觉得就在对方身边。他预期未来十年，新平台会放出他创办Facebook之前就想做的社交体验，创作者经济和数字商品也会大一截。公司的目标，是在这个十年帮助元宇宙触达十亿人，并支撑数千亿美元的数字商业。参与塑造下一代平台，也可以少依赖竞争对手来分发自己的服务。硬件上，公司刚用128GB的Quest 2换下64GB机型，售价299美元。与EssilorLuxottica合作的第一款智能眼镜开局也不错。他强调这不是做一款眼镜就结束，而是同时做多代虚拟现实和增强现实、新的操作系统和开发模型、数字商业平台、内容工作室，以及社交平台。问答里他把未来一到三年定义成把这些基础件铺好，并明确说近期不会赚钱。他点了虚拟现实产品线、增强现实产品线、操作系统、和家庭应用的商业打通，以及Horizon这套社交平台。本十年偏后，他才预期这会更像一笔真正的业务。若到这个十年结束时能碰到十亿用户和数千亿美元的数字商业，他认为这会是一笔划算的长期投资。财务披露从下一季度拆开，是为了让投资者看见增强现实和虚拟现实花了多少钱。Dave（CFO）给出的费用和资本开支路径和这个赌注连在一起。2021年总费用更新为700亿至710亿美元，此前是700亿至730亿美元。2022年初步是910亿至970亿美元，主因是技术和产品人才以及基础设施相关成本，预算还没有定稿。2022年资本开支为290亿至340亿美元。人数增速会高于本季的20%。更多员工回到办公室以后，办公运营和差旅费用也会上去。他不给2022年的具体收入数字，但预期增速会从2021年全年放缓，利润率低于2021年，并且不预期收入增速达到费用增速所对应的三成以上。安全和诚信方面，Mark说相关人员超过4万，2021年支出有望超过50亿美元，并认为即使按规模调整也高于其他科技公司。他接受对大公司的审查，但认为眼下用泄露文件做选择性描述是一次有组织的行动，并再次提出由监管把那些社会价值上的取舍说清楚。",
+            "items": []
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -217,18 +936,567 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "Reels现在的用户采用、参与和人群结构如何？它被说成长期采用的重要部分，希望听到更多现状。",
+        "answer_summary": "Dave（CFO）：Reels是Instagram上的亮点，全球多个市场都有不错的增长，公司对Instagram上的进展满意。Facebook上的上线还更早。变现也刚开始，广告才开始在Instagram铺开，Facebook上的Reels还没有到变现时点。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出Reels的用户规模、使用时长或年龄结构，只说Instagram上增长好，Facebook和变现都还早。",
+        "tone": "cautious",
+        "answer_quote": "On Reels, that's been a bright spot for Instagram. And currently, we're seeing good growth globally -- strength in a number of different markets, but we've been making a lot of progress on Reels and have been happy with it on Instagram.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "针对苹果应用追踪透明度，投入至今哪些地方进展最大，哪些地方仍然更难、还要继续投？",
+        "answer_summary": "Sheryl（COO）：她先把个性化广告定义成对用户和商家、尤其是小商家更好，并且可以以保护隐私的方式投放。iOS变化带来定向和衡量两个问题。衡量上，公司认为到年底能处理超过一半的少报，以后几年继续推进。公司估计iOS网页转化被少报，真实的销售和应用安装更高，所以要帮客户把结果测准。定向是更长期的问题。直效产品建立在用户级转化上，现在看不到同样的转化数据，广告系统要在更少数据下重建，这是多年工作。公司在做隐私增强技术，尽量少碰个人信息，更多用汇总或匿名数据，同时仍展示相关广告并衡量效果。要让所有商家受益，还需要跨行业协作和更多商业工具，那些也是更长期的事。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有指出至今进展最大的具体产品环节，也没有列出仍然最难的投放场景，只把问题分成衡量可在年内补上大部分、定向则要多年重建。",
+        "tone": "cautious",
+        "answer_quote": "On measurement, we think we can address more than half of that underreporting by the end of the year and make more progress in the years ahead.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "2022年的费用和资本开支里，核心应用与Reality Labs如何区分？哪些支出是长期留下的，哪些是阶段性的？",
+        "answer_summary": "Dave（CFO）：现在给2022年费用区间还早，但公司通常在第三季度给初步展望。优先事项既包括应用家族，也包括增强和虚拟现实、广告、人工智能、商业和隐私。合在一起，明年的开支计划相当重。首要驱动是人数增长加快，增速会高于本季的20%。更多员工回到办公室后，办公运营和差旅费用也会上升。此刻不提供分部费用拆分。",
+        "new_numbers": [
+          {
+            "number": "高于20%",
+            "meaning": "Dave说2022年人数增速将高于本季约20%的增速"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有区分核心应用与Reality Labs各自的费用和资本开支，也没有说明哪些是永久性、哪些是阶段性，并明确此刻不提供分部费用。",
+        "tone": "cautious",
+        "answer_quote": "The primary driver is going to be accelerating headcount growth in 2022. So that's going to be something you'll see headcount coming in above 20%, obviously, that we had this quarter. And we also expect to have higher expenses from office operations and travel once larger parts of the workforce are returning to the office in 2022. We're not providing a specific breakdown at this point for segment expense.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "元宇宙",
+        "is_new_topic": true,
+        "question_summary": "元宇宙和Reality Labs的投入已经很大，能否按大约1年、3年和5年复述产品上的目标？",
+        "answer_summary": "Mark（CEO）：他只讲元宇宙和Reality Labs这一段。未来1到3年，外界会看到公司把基础件铺上去。这不是近期就会赚钱的投入。他认为元宇宙会接替移动互联网，让人无论身在何处都能感到和在意的人真的在一起，并放出比今天大得多的数字和实体商品创作经济，让数百万人靠喜欢的工作为生，成为未来十年业务的另一根支柱。这1到3年他不强调经营结果，而强调新产品和基础设施：虚拟现实产品线、增强现实产品线、操作系统和开发模型、与应用家族商业打通的部分，以及Horizon社交平台。这些会在未来几年逐步搭起来并成熟一些。若做得好，本十年偏后才会更像一笔真正的业务。近端要看的是体验是否让人觉得前所未有。他在开场讲过的经营北极星，是到这个十年结束时帮助十亿人使用元宇宙，并支撑数千亿美元的数字商业。做到这一点，长期看会是一笔好投资。",
+        "new_numbers": [
+          {
+            "number": "十亿人",
+            "meaning": "Mark希望到这个十年结束时，元宇宙触达十亿人"
+          },
+          {
+            "number": "数千亿美元",
+            "meaning": "同一时间点上希望支撑的数字商业规模"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有按1年、3年、5年列出具体产品清单，而是把近三年并成打基础，并把经营结果放到本十年偏后。",
+        "tone": "confident",
+        "answer_quote": "This is not an investment that is going to be profitable for us anytime in the near future. But we basically believe that the metaverse is going to be the successor of the mobile Internet, that it's going to enable social experiences that are the ultimate expression of what we try to build, which is allowing people to feel really present with the people they care about no matter where they actually are.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "2022年费用增速大约在29%到38%，有没有配套的收入增长说法？",
+        "answer_summary": "Dave（CFO）：此刻不提供2022年的具体收入展望。公司仍然看到明年展示量和价格都有增长机会，但2021年的收入增速非常高，所以预期2022年的增速会从2021年全年放缓。第四季度收入区间里的不确定性，同样适用于2022年。因素包括广告主消化苹果平台变化，以及艰难的宏观环境。节日季走完会更清楚这些因素如何叠在一起。按已给出的费用增速，也就是三成以上，他不预期收入增速达到那个水平，因此预期2022年利润率低于2021年。",
+        "new_numbers": [
+          {
+            "number": "三成以上",
+            "meaning": "Dave说费用增速隐含在30%以上，不预期2022年收入增速达到该水平"
+          },
+          {
+            "number": "低于2021年",
+            "meaning": "他预期2022年利润率低于2021年"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "拒绝给出2022年具体收入数字，只给了增速放缓、利润率下降和低于费用增速的方向。",
+        "tone": "cautious",
+        "answer_quote": "north of 30% we don't expect revenue growth at that level. So we would expect 2022 margins to be lower than 2021.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America Merrill Lynch",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "18至29岁用户并不好争取。公司准备用哪些办法在多个季度里取得进展？",
+        "answer_summary": "Dave（CFO）：年轻成年人已经广泛使用公司的产品。公司继续把产品做相关，Reels是其中很大一块。自去年8月推出以来，Reels已经覆盖100多个国家，公司还在继续投资并做产品改进。\nMark（CEO）：他认为Reels会明显改变人们使用很多互联网产品的方式。隔一段时间就会出现一种能承载新内容的格式，动态消息和Stories都是这样。以他看到的情况，Reels有机会达到那种规模，不同应用里会有不同味道，但作为一种格式可以很根本。公司还更靠近这段路的起点，一些初始测试和体验刚铺开，Facebook上也刚铺开，Instagram上覆盖的国家仍在快速增长。未来一两年，他看好它长成今天Stories在产品里的那种位置。",
+        "new_numbers": [
+          {
+            "number": "100多个国家",
+            "meaning": "Dave说Reels自去年8月推出后已在100多个国家铺开"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "被问到争取18至29岁用户的多项办法，回答主要落到Reels，没有展开其他产品动作或给出该年龄段的进展指标。",
+        "tone": "cautious",
+        "answer_quote": "we've got that rolled out in over 100 countries since launching in August of last year, and we're continuing to invest in that experience and make ongoing product enhancements.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America Merrill Lynch",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "第四季度指引里，苹果广告标识变化的影响是和第三季度差不多、因衡量改进而减轻，还是逆风更大？",
+        "answer_summary": "Dave（CFO）：大部分iOS14更新在进入第三季度时已经完成，所以影响从第二季度到第三季度上了一个台阶。既然iOS14已经广泛采用，他不预期第四季度再出现同样的台阶。但公司还没有在这些变化下走过节日季，节日期间因为需求强、价格更高。价格会怎样和定向、衡量上的困难叠在一起，并不确定，这种不确定性已经反映在第四季度的指引区间里。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "Since iOS 14 is now widely adopted, we don’t expect a similar step up in Q4. But importantly, we haven’t gone through a holiday season with these changes and prices are higher during the holidays, given strong demand.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "元宇宙",
+        "is_new_topic": true,
+        "question_summary": "Horizon这款可以一起创建游戏和体验的社交应用，何时离开已经大约两年的封闭测试？",
+        "answer_summary": "Mark（CEO）：周四的Connect会更具体地讲元宇宙愿景，以及公司准备怎样参与建设，其中会讲Horizon如何嵌进去。公司一直在做，并让更多创作者和用户进来，世界也在不断增加。他同意这是平台里关键的一块，最近还发布了Workrooms，他对这个体验怎么成形感到兴奋。他并不认为最终只是一个虚拟现实社交网络。最好的临场感在虚拟现实或增强现实里，人成为全息影像，但它仍然要在全家桶、网页、手机和电脑上都能用。不管叫不叫测试版，现实是还有大量基础架构要建，这和前面讲的一年或三年的问题是同一类。公司用分部报告表达的是：这件事会做，投入会很大，希望透明，同时认为机会很大。他请大家周四再听细节。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有给出Horizon离开封闭测试的时间，转到周四的Connect和仍需建设的基础架构。",
+        "tone": "cautious",
+        "answer_quote": "And whether we call it beta or not, I think the reality is we're going to be -- this is kind of similar to the question before about where we're going to be in a year or 3 years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "公司说以后会更关注18至29岁。Facebook和Instagram上，千禧一代和更年轻用户的参与最近实际怎么走？",
+        "answer_summary": "Dave（CFO）：产品在青少年中用得很广，但公司面对TikTok和Snapchat的激烈竞争。因此会继续创新，推出Reels这类产品，吸引并留住更年轻的用户，这也是相关领域继续建设和投入的原因。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有提供Facebook或Instagram在年轻用户中的参与趋势，只说竞争激烈并会继续做Reels。",
+        "tone": "cautious",
+        "answer_quote": "our products are widely used by teens, but we are facing tough competition from the likes of TikTok particularly and Snapchat.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "苹果系统变化是否构成第三季度已经看到、以及第四季度预期会看到的大部分逆风？",
+        "answer_summary": "Dave（CFO）：是的，苹果平台变化是第三季度逆风里最大的因素。这一季是新的应用追踪透明度政策第一次完整计入的季度，前面只是iOS更新在消费者侧加快采用。若不是它，公司本预期从第二季度到第三季度会有环比增长。所以它是当季最大的逆风。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "明确苹果变化是第三季度最大逆风，但没有直接说它也会占第四季度逆风的大部分。",
+        "tone": "cautious",
+        "answer_quote": "the Apple platform changes were the largest factor in terms of Q3 headwinds. I mean it was really the first full quarter impact of those new ATT policy changes following just the increased consumer adoption ramp of the iOS updates. And if it really weren't for that, we would have expected sequential growth Q2 to Q3.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "用人工智能发现并处理Facebook和Instagram上的不当内容，走到哪一步了？多年投入之后，是否已经证明有效？",
+        "answer_summary": "Mark（CEO）：他认为影响已经很大。公司按季发布透明度报告，并认为这在定义和披露深度上都领先行业，方便外界追问。报告衡量的是，被处理的内容里有多少是人工智能或内部系统自己发现的，而不是等用户举报。早年社区诚信主要是回应举报。公司后来决定提前发现。现在大多数类别里，被采取行动的内容有90%以上是系统识别的，类别之间有差别。裸体这类更容易训练，比例很高。仇恨言论更难，因为公司大约在150种语言里运营，还有文化上的暗示，既要拦住煽动，又不能误伤谴责种族主义的表达。头几年主动发现的比例还只有大约10%到15%。近年进步很大，即使是仇恨言论，现在被采取行动的内容里也有90%以上是主动发现的。他知道外界审查很多，他为做这件事的团队感到骄傲，认为公司在行业里做得最好。审查应该有，但诚实的描述也要承认已经取得并且还会继续取得大量进展。",
+        "new_numbers": [
+          {
+            "number": "90%以上",
+            "meaning": "多数类别里，被处理内容中由系统主动发现的比例"
+          },
+          {
+            "number": "约10%到15%",
+            "meaning": "头几年仇恨言论等内容里，人工智能主动处理的比例"
+          },
+          {
+            "number": "约150种语言",
+            "meaning": "Mark说内容审核系统要覆盖的语言规模"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "defensive",
+        "answer_quote": "We're now above 90% of the content that we take an action on there, is also proactive even with hate speech.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "第四季度收入指引上沿的两年复合增速其实在加快，环比看起来也正常。增长来自哪里，这一季算不算强？",
+        "answer_summary": "Dave（CFO）：公司给的是第四季度的定量收入指引。从第三季度到第四季度，按季节性看的环比增速低于历史常见水平。他认为这反映了外界的不确定性，包括iOS14、应用追踪透明度和广告标识在节日高价格里如何影响定价，以及供应链这类宏观因素。区间本身就是这种不确定性。季节性的环比增速低于过去，区间也体现了这一点。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答第四季度算不算强，也没有解释两年复合增速为何在区间上沿加快，只说季节性环比增速低于历史。",
+        "tone": "cautious",
+        "answer_quote": "the seasonal sequential growth is lower than we've seen in the past.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "John Blackledge",
+        "firm": "Cowen",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "供应链问题是已经影响第四季度广告收入，还是要到季度后段才更明显？",
+        "answer_summary": "Dave（CFO）：公司不是宏观经济的权威。广告主告诉公司，他们看得到供应链问题。第三季度已经如此，并且产生了影响，公司预期会延续到第四季度。这还会和iOS14的定向、衡量逆风叠在一起。平台问题和宏观因素会怎样写进第四季度，很难拆开，但这两项是指引区间里最主要的两个因素。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "what we're hearing from advertisers is they are seeing supply chain issues. That was true in Q3 and had an impact there as well as we expect that to continue to carry over into Q4.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "John Blackledge",
+        "firm": "Cowen",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "Reels起来之后，有没有抢走Instagram其他服务上的参与？",
+        "answer_summary": "Dave（CFO）：每次推出新体验都会有一部分时间和注意力转过去，Stories当年如此，Facebook Watch当年也如此。公司认为这会让整体体验更好，并且随着时间让整体更有参与度。Reels能够为Instagram和Facebook带来增量参与，所以公司才会投资去做。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "confident",
+        "answer_quote": "we're able to with Reels drive incremental engagement with Instagram and Facebook.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Mark Shmulik",
+        "firm": "AllianceBernstein",
+        "topic": "站内商业",
+        "is_new_topic": true,
+        "question_summary": "站内商业这一转，商家和用户的采用有没有新的活动数据？用户是否真的在用？",
+        "answer_summary": "Sheryl（COO）：平台上已经有大量商业活动。人们通过信息流和Stories广告发现很多商品。这是最大的广告行业，疫情确实加快了它，而且按五年看也是增长最快的行业之一。她相信广告业务今天带动了数千亿美元的站外电商商品交易总额。商业工具会叠在上面，帮助商家触达更多新客户并带来更多增量销售。相关工作分三块：继续做最好的广告场所，让站内销售更容易，以及改善消费者体验。第一块上，公司仍是找到客户的好地方，投资回报很强，也仍然有竞争力。第二块，让商家在平台上卖东西，公司还在追赶其他移动和网页购物体验，还有工作要做。第三块，改善消费者体验、鼓励人们购物，也在进步，但还有增长空间。",
+        "new_numbers": [
+          {
+            "number": "数千亿美元",
+            "meaning": "Sheryl相信广告业务目前带动的站外电商商品交易总额"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出商家数量或用户采用指标，改为说明站外商品交易总额和三块工作的进度。",
+        "tone": "cautious",
+        "answer_quote": "We believe we drive hundreds of billions of dollars of off-site e-commerce gross merchandise volume today through our ads business.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Brent Thill",
+        "firm": "Jefferies",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "2022年资本开支中点增幅超过70%，这波增加主要投向哪里？",
+        "answer_summary": "Dave（CFO）：2022年的展望反映人工智能和机器学习计划投入的显著增加。很大一部分会用来改进排序和推荐，支撑信息流以及Reels这类新体验上的产品。另一部分会投向广告，用机器学习和人工智能提高相关性，弥补平台变化造成的信号损失。公司认为因此可以把广告做得更有效，自身的位置也使得这件事做得成。这就是明年资本开支预算大幅增加的逻辑。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "confident",
+        "answer_quote": "our 2022 outlook really reflects a significant increase in our planned investment in areas like AI and machine learning. And a lot of that will be dedicated to investing in areas where we can use machine learning to improve ranking and recommendations to power experiences across our products in areas like Feed and in emerging areas like Reels.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "产品结构": 3,
+      "竞争格局": 3,
+      "费用与运营": 1,
+      "元宇宙": 2,
+      "指引与展望": 3,
+      "AI 产品与模型": 1,
+      "宏观与汇率": 1,
+      "站内商业": 1,
+      "产能与资本开支": 1
+    },
+    "new_topics": [
+      "产能与资本开支",
+      "元宇宙",
+      "站内商业"
+    ],
+    "dropped_topics": [
+      "定价与 ASP",
+      "需求与出货"
+    ],
+    "hot_topics": [
+      "竞争格局",
+      "元宇宙",
+      "指引与展望"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "Reels现在的用户采用、参与和人群结构如何？它被说成长期采用的重要部分，希望听到更多现状。",
+        "answer_summary": "Dave（CFO）：Reels是Instagram上的亮点，全球多个市场都有不错的增长，公司对Instagram上的进展满意。Facebook上的上线还更早。变现也刚开始，广告才开始在Instagram铺开，Facebook上的Reels还没有到变现时点。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出Reels的用户规模、使用时长或年龄结构，只说Instagram上增长好，Facebook和变现都还早。",
+        "tone": "cautious",
+        "answer_quote": "On Reels, that's been a bright spot for Instagram. And currently, we're seeing good growth globally -- strength in a number of different markets, but we've been making a lot of progress on Reels and have been happy with it on Instagram.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "针对苹果应用追踪透明度，投入至今哪些地方进展最大，哪些地方仍然更难、还要继续投？",
+        "answer_summary": "Sheryl（COO）：她先把个性化广告定义成对用户和商家、尤其是小商家更好，并且可以以保护隐私的方式投放。iOS变化带来定向和衡量两个问题。衡量上，公司认为到年底能处理超过一半的少报，以后几年继续推进。公司估计iOS网页转化被少报，真实的销售和应用安装更高，所以要帮客户把结果测准。定向是更长期的问题。直效产品建立在用户级转化上，现在看不到同样的转化数据，广告系统要在更少数据下重建，这是多年工作。公司在做隐私增强技术，尽量少碰个人信息，更多用汇总或匿名数据，同时仍展示相关广告并衡量效果。要让所有商家受益，还需要跨行业协作和更多商业工具，那些也是更长期的事。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有指出至今进展最大的具体产品环节，也没有列出仍然最难的投放场景，只把问题分成衡量可在年内补上大部分、定向则要多年重建。",
+        "tone": "cautious",
+        "answer_quote": "On measurement, we think we can address more than half of that underreporting by the end of the year and make more progress in the years ahead.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "2022年的费用和资本开支里，核心应用与Reality Labs如何区分？哪些支出是长期留下的，哪些是阶段性的？",
+        "answer_summary": "Dave（CFO）：现在给2022年费用区间还早，但公司通常在第三季度给初步展望。优先事项既包括应用家族，也包括增强和虚拟现实、广告、人工智能、商业和隐私。合在一起，明年的开支计划相当重。首要驱动是人数增长加快，增速会高于本季的20%。更多员工回到办公室后，办公运营和差旅费用也会上升。此刻不提供分部费用拆分。",
+        "new_numbers": [
+          {
+            "number": "高于20%",
+            "meaning": "Dave说2022年人数增速将高于本季约20%的增速"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有区分核心应用与Reality Labs各自的费用和资本开支，也没有说明哪些是永久性、哪些是阶段性，并明确此刻不提供分部费用。",
+        "tone": "cautious",
+        "answer_quote": "The primary driver is going to be accelerating headcount growth in 2022. So that's going to be something you'll see headcount coming in above 20%, obviously, that we had this quarter. And we also expect to have higher expenses from office operations and travel once larger parts of the workforce are returning to the office in 2022. We're not providing a specific breakdown at this point for segment expense.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "元宇宙",
+        "is_new_topic": true,
+        "question_summary": "元宇宙和Reality Labs的投入已经很大，能否按大约1年、3年和5年复述产品上的目标？",
+        "answer_summary": "Mark（CEO）：他只讲元宇宙和Reality Labs这一段。未来1到3年，外界会看到公司把基础件铺上去。这不是近期就会赚钱的投入。他认为元宇宙会接替移动互联网，让人无论身在何处都能感到和在意的人真的在一起，并放出比今天大得多的数字和实体商品创作经济，让数百万人靠喜欢的工作为生，成为未来十年业务的另一根支柱。这1到3年他不强调经营结果，而强调新产品和基础设施：虚拟现实产品线、增强现实产品线、操作系统和开发模型、与应用家族商业打通的部分，以及Horizon社交平台。这些会在未来几年逐步搭起来并成熟一些。若做得好，本十年偏后才会更像一笔真正的业务。近端要看的是体验是否让人觉得前所未有。他在开场讲过的经营北极星，是到这个十年结束时帮助十亿人使用元宇宙，并支撑数千亿美元的数字商业。做到这一点，长期看会是一笔好投资。",
+        "new_numbers": [
+          {
+            "number": "十亿人",
+            "meaning": "Mark希望到这个十年结束时，元宇宙触达十亿人"
+          },
+          {
+            "number": "数千亿美元",
+            "meaning": "同一时间点上希望支撑的数字商业规模"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有按1年、3年、5年列出具体产品清单，而是把近三年并成打基础，并把经营结果放到本十年偏后。",
+        "tone": "confident",
+        "answer_quote": "This is not an investment that is going to be profitable for us anytime in the near future. But we basically believe that the metaverse is going to be the successor of the mobile Internet, that it's going to enable social experiences that are the ultimate expression of what we try to build, which is allowing people to feel really present with the people they care about no matter where they actually are.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "2022年费用增速大约在29%到38%，有没有配套的收入增长说法？",
+        "answer_summary": "Dave（CFO）：此刻不提供2022年的具体收入展望。公司仍然看到明年展示量和价格都有增长机会，但2021年的收入增速非常高，所以预期2022年的增速会从2021年全年放缓。第四季度收入区间里的不确定性，同样适用于2022年。因素包括广告主消化苹果平台变化，以及艰难的宏观环境。节日季走完会更清楚这些因素如何叠在一起。按已给出的费用增速，也就是三成以上，他不预期收入增速达到那个水平，因此预期2022年利润率低于2021年。",
+        "new_numbers": [
+          {
+            "number": "三成以上",
+            "meaning": "Dave说费用增速隐含在30%以上，不预期2022年收入增速达到该水平"
+          },
+          {
+            "number": "低于2021年",
+            "meaning": "他预期2022年利润率低于2021年"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "拒绝给出2022年具体收入数字，只给了增速放缓、利润率下降和低于费用增速的方向。",
+        "tone": "cautious",
+        "answer_quote": "north of 30% we don't expect revenue growth at that level. So we would expect 2022 margins to be lower than 2021.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America Merrill Lynch",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "18至29岁用户并不好争取。公司准备用哪些办法在多个季度里取得进展？",
+        "answer_summary": "Dave（CFO）：年轻成年人已经广泛使用公司的产品。公司继续把产品做相关，Reels是其中很大一块。自去年8月推出以来，Reels已经覆盖100多个国家，公司还在继续投资并做产品改进。\nMark（CEO）：他认为Reels会明显改变人们使用很多互联网产品的方式。隔一段时间就会出现一种能承载新内容的格式，动态消息和Stories都是这样。以他看到的情况，Reels有机会达到那种规模，不同应用里会有不同味道，但作为一种格式可以很根本。公司还更靠近这段路的起点，一些初始测试和体验刚铺开，Facebook上也刚铺开，Instagram上覆盖的国家仍在快速增长。未来一两年，他看好它长成今天Stories在产品里的那种位置。",
+        "new_numbers": [
+          {
+            "number": "100多个国家",
+            "meaning": "Dave说Reels自去年8月推出后已在100多个国家铺开"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "被问到争取18至29岁用户的多项办法，回答主要落到Reels，没有展开其他产品动作或给出该年龄段的进展指标。",
+        "tone": "cautious",
+        "answer_quote": "we've got that rolled out in over 100 countries since launching in August of last year, and we're continuing to invest in that experience and make ongoing product enhancements.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "元宇宙",
+        "is_new_topic": true,
+        "question_summary": "Horizon这款可以一起创建游戏和体验的社交应用，何时离开已经大约两年的封闭测试？",
+        "answer_summary": "Mark（CEO）：周四的Connect会更具体地讲元宇宙愿景，以及公司准备怎样参与建设，其中会讲Horizon如何嵌进去。公司一直在做，并让更多创作者和用户进来，世界也在不断增加。他同意这是平台里关键的一块，最近还发布了Workrooms，他对这个体验怎么成形感到兴奋。他并不认为最终只是一个虚拟现实社交网络。最好的临场感在虚拟现实或增强现实里，人成为全息影像，但它仍然要在全家桶、网页、手机和电脑上都能用。不管叫不叫测试版，现实是还有大量基础架构要建，这和前面讲的一年或三年的问题是同一类。公司用分部报告表达的是：这件事会做，投入会很大，希望透明，同时认为机会很大。他请大家周四再听细节。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有给出Horizon离开封闭测试的时间，转到周四的Connect和仍需建设的基础架构。",
+        "tone": "cautious",
+        "answer_quote": "And whether we call it beta or not, I think the reality is we're going to be -- this is kind of similar to the question before about where we're going to be in a year or 3 years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "公司说以后会更关注18至29岁。Facebook和Instagram上，千禧一代和更年轻用户的参与最近实际怎么走？",
+        "answer_summary": "Dave（CFO）：产品在青少年中用得很广，但公司面对TikTok和Snapchat的激烈竞争。因此会继续创新，推出Reels这类产品，吸引并留住更年轻的用户，这也是相关领域继续建设和投入的原因。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "没有提供Facebook或Instagram在年轻用户中的参与趋势，只说竞争激烈并会继续做Reels。",
+        "tone": "cautious",
+        "answer_quote": "our products are widely used by teens, but we are facing tough competition from the likes of TikTok particularly and Snapchat.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "苹果系统变化是否构成第三季度已经看到、以及第四季度预期会看到的大部分逆风？",
+        "answer_summary": "Dave（CFO）：是的，苹果平台变化是第三季度逆风里最大的因素。这一季是新的应用追踪透明度政策第一次完整计入的季度，前面只是iOS更新在消费者侧加快采用。若不是它，公司本预期从第二季度到第三季度会有环比增长。所以它是当季最大的逆风。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "明确苹果变化是第三季度最大逆风，但没有直接说它也会占第四季度逆风的大部分。",
+        "tone": "cautious",
+        "answer_quote": "the Apple platform changes were the largest factor in terms of Q3 headwinds. I mean it was really the first full quarter impact of those new ATT policy changes following just the increased consumer adoption ramp of the iOS updates. And if it really weren't for that, we would have expected sequential growth Q2 to Q3.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "第四季度收入指引上沿的两年复合增速其实在加快，环比看起来也正常。增长来自哪里，这一季算不算强？",
+        "answer_summary": "Dave（CFO）：公司给的是第四季度的定量收入指引。从第三季度到第四季度，按季节性看的环比增速低于历史常见水平。他认为这反映了外界的不确定性，包括iOS14、应用追踪透明度和广告标识在节日高价格里如何影响定价，以及供应链这类宏观因素。区间本身就是这种不确定性。季节性的环比增速低于过去，区间也体现了这一点。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答第四季度算不算强，也没有解释两年复合增速为何在区间上沿加快，只说季节性环比增速低于历史。",
+        "tone": "cautious",
+        "answer_quote": "the seasonal sequential growth is lower than we've seen in the past.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Mark Shmulik",
+        "firm": "AllianceBernstein",
+        "topic": "站内商业",
+        "is_new_topic": true,
+        "question_summary": "站内商业这一转，商家和用户的采用有没有新的活动数据？用户是否真的在用？",
+        "answer_summary": "Sheryl（COO）：平台上已经有大量商业活动。人们通过信息流和Stories广告发现很多商品。这是最大的广告行业，疫情确实加快了它，而且按五年看也是增长最快的行业之一。她相信广告业务今天带动了数千亿美元的站外电商商品交易总额。商业工具会叠在上面，帮助商家触达更多新客户并带来更多增量销售。相关工作分三块：继续做最好的广告场所，让站内销售更容易，以及改善消费者体验。第一块上，公司仍是找到客户的好地方，投资回报很强，也仍然有竞争力。第二块，让商家在平台上卖东西，公司还在追赶其他移动和网页购物体验，还有工作要做。第三块，改善消费者体验、鼓励人们购物，也在进步，但还有增长空间。",
+        "new_numbers": [
+          {
+            "number": "数千亿美元",
+            "meaning": "Sheryl相信广告业务目前带动的站外电商商品交易总额"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出商家数量或用户采用指标，改为说明站外商品交易总额和三块工作的进度。",
+        "tone": "cautious",
+        "answer_quote": "We believe we drive hundreds of billions of dollars of off-site e-commerce gross merchandise volume today through our ads business.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "第三季营收290.1亿美元，同比增35.1%但利润率下滑",
+    "key_findings": [
+      {
+        "finding": "总收入290.1亿美元，同比增35.1%、环比降0.2%；广告单价增22%、展示量增9%，若无苹果iOS14变化，收入本可环比正增长。",
+        "text": "总收入290.1亿美元，同比增35.1%、环比降0.2%；广告单价增22%、展示量增9%，若无苹果iOS14变化，收入本可环比正增长。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "营业利润率35.9%，同比降1.52个百分点、环比降6.60个百分点；总费用186亿美元、同比增38%，快于收入。",
+        "text": "营业利润率35.9%，同比降1.52个百分点、环比降6.60个百分点；总费用186亿美元、同比增38%，快于收入。",
+        "evidence": "operating_margin_gaap"
+      },
+      {
+        "finding": "第四季度收入指引315亿至340亿美元；2022年费用910亿至970亿美元、资本开支290亿至340亿美元，Reality Labs在2021年预计压低营业利润约100亿美元。",
+        "text": "第四季度收入指引315亿至340亿美元；2022年费用910亿至970亿美元、资本开支290亿至340亿美元，Reality Labs在2021年预计压低营业利润约100亿美元。",
+        "evidence": "capex"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2021Q4总收入是否落在315亿至340亿美元",
+        "threshold": "315亿至340亿美元"
+      },
+      {
+        "metric_key": "opex_gaap",
+        "condition": "2021年全年总费用是否落在700亿至710亿美元",
+        "threshold": "700亿至710亿美元"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "电话会所述2021年资本开支是否约为190亿美元",
+        "threshold": "约190亿美元"
+      },
+      {
+        "metric_key": "tax_rate",
+        "condition": "FY2021Q4税率是否处于十几的高位",
+        "threshold": "高十几"
+      },
+      {
+        "metric_key": "other",
+        "condition": "FY2021Q4非广告收入同比是否下降",
+        "threshold": "同比为负"
+      }
+    ]
   },
   "thesis_review": {}
 }

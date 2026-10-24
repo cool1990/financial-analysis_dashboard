@@ -1002,7 +1002,7 @@ def test_guidance_history_meta_open_guide_and_tsm_printed_actuals():
     meta_rows = {row["label"]: row for row in meta["rows"]}
     revenue = meta_rows["营收"]["track"]
     periods = [point["period"] for point in revenue["points"]]
-    assert periods[0] == "FY2022Q2"
+    assert periods[0] == "FY2021Q4"
     assert periods[-1] == "FY2026Q4"
     assert revenue["points"][-1]["actual"] == "尚未披露"
     assert revenue["points"][-1]["guide"] == "$73.00B – $76.00B"
@@ -1013,7 +1013,7 @@ def test_guidance_history_meta_open_guide_and_tsm_printed_actuals():
     assert revenue["plot"]["labels"][-1] == "2026Q3"
     capex = meta_rows["资本开支"]["track"]
     capex_labels = [point["label"] for point in capex["points"]]
-    assert capex_labels[0] == "FY2022全年"
+    assert capex_labels[0] == "FY2020全年"
     assert capex_labels[-1] == "FY2026全年"
     assert capex["points"][-1]["actual"] == "尚未披露"
     # 全年指引已有更早兑现点时图可有柱；未披露的最后一期不单独要求空图
@@ -1022,7 +1022,7 @@ def test_guidance_history_meta_open_guide_and_tsm_printed_actuals():
     latest = {row["family"]: row for row in _guide_section(docs["FY2026Q3"], docs)["rows"]}
     series = {point["period"]: point for point in latest["revenue"]["track"]["points"]}
     periods = list(series)
-    assert periods[0] == "FY2022Q2"
+    assert periods[0] == "FY2020Q4"
     assert periods[-1] == "FY2026Q4"
     for need in (
         "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4",
@@ -1063,7 +1063,7 @@ def test_guidance_history_meta_open_guide_and_tsm_printed_actuals():
 
     prior = {row["family"]: row for row in _guide_section(docs["FY2025Q4"], docs)["rows"]}
     prior_periods = [point["period"] for point in prior["revenue"]["track"]["points"]]
-    assert prior_periods[0] == "FY2022Q2"
+    assert prior_periods[0] == "FY2020Q4"
     assert prior_periods[-1] == "FY2026Q1"
     for need in ("FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1"):
         assert need in prior_periods

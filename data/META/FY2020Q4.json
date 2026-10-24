@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "company_ir",
+    "eps_basis": "gaap",
+    "transcript_url": "https://s21.q4cdn.com/399680738/files/doc_financials/2021/q1/FB-Q4-2020-Earnings-Call-Transcript.pdf",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -162,12 +168,393 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "总收入280.72亿美元，同比增33.2%，环比增30.7%。Sheryl（COO）称四季度收入281亿美元、同比增33%，为两年多来最快增速。Dave（CFO）称固定汇率同比增32%；当季受益于汇兑顺风，若汇率与去年四季度相同，总收入将低3.39亿美元。广告收入272亿美元、同比增31%或固定汇率30%，增长主要来自零售假日季线上化。广告展示量增25%，平均单价增5%；展示增长来自Facebook与Instagram，单价改善主要来自Facebook移动信息流和Instagram Stories。其他收入8.85亿美元、同比增156%，因Quest 2假日销售强劲。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "广告展示量同比增长25%，是收入同比增33.2%的主因；展示增长由Facebook与Instagram共同带动。",
+            "evidence_quote": "In Q4, the total number of ad impressions served across our services increased 25% and the average price per ad increased 5%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "平均广告单价同比增5%，主要由Facebook移动信息流以及Instagram Stories定价改善带动。",
+            "evidence_quote": "The increase in average price per ad was driven primarily by FB mobile feed as well as pricing improvement in Instagram Stories.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "零售假日线上购物强劲，推动广告收入增长；疫情加速的线上商务延续到假日季。",
+            "evidence_quote": "The growth in advertising revenue was largely driven by a strong holiday shopping season for retail, which benefited from the ongoing shift to online commerce.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "+",
+            "is_primary": false,
+            "description": "当季汇兑为顺风；若汇率与去年四季度相同，总收入将低3.39亿美元。",
+            "evidence_quote": "We benefited from a currency tailwind and had foreign exchange rates remained constant with Q4 of last year, total revenue would have been $339 million lower.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Quest 2假日销售推动其他收入同比增156%至8.85亿美元，对总收入有增量贡献。",
+            "evidence_quote": "Other revenue was $885 million, up 156%, due to strong Quest 2 holiday sales.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称四季度总收入281亿美元、同比增33%。指标表为280.72亿美元，同比33.2%，环比增30.7%。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "GAAP毛利率81.4%，同比降2.0个百分点，环比升1.0个百分点。电话会未单列毛利率。营业成本同比增49%，快于收入增速，主要因Quest 2硬件成本、核心基础设施投入和向合作伙伴付款。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": true,
+            "description": "营业成本同比增49%，主要由Quest 2硬件成本、核心基础设施投入和向合作伙伴付款带动，毛利率同比降2.0个百分点。",
+            "evidence_quote": "Cost of revenue increased 49%, driven primarily by hardware costs related to Quest 2 sales, core infrastructure investments, and payments to partners.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "GAAP营业利润率45.5%，同比升3.5个百分点，环比升8.1个百分点。电话会称营业利润率46%。总费用153亿美元、同比增25%；研发增34%，市场与销售增8%，管理费用因2019年BIPA和解费用基数同比降13%。全年净增员工1.36万人，季末全职员工超5.86万人、同比增30%。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "总费用153亿美元、同比增25%，增速低于收入同比33.2%，营业利润率同比升3.5个百分点。",
+            "evidence_quote": "Q4 total expenses were $15.3 billion, up 25% compared to last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发同比增34%，主要由招聘及核心产品与消费硬件投入带动。",
+            "evidence_quote": "R&D increased 34%, driven primarily by hiring and investments in core products as well as our consumer hardware efforts.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "管理费用同比降13%，因上年四季度计入BIPA法律和解费用，基数较高。",
+            "evidence_quote": "Lastly, G&A expenses decreased 13% as we lapped charges related to the BIPA legal settlement recorded in the fourth quarter of 2019.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称四季度营业利润率46%。指标表GAAP营业利润率45.5%，同比升3.5个百分点，环比升8.1个百分点。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "GAAP营业利润127.75亿美元，同比增44.2%，环比增58.9%。电话会称营业利润128亿美元、利润率46%。利润增长因收入增速快于总费用增速25%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "收入同比增33.2%而总费用只增25%，营业利润同比增44.2%。",
+            "evidence_quote": "Q4 total revenue was $28.1 billion, up 33% or 32% on a constant currency basis.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称四季度营业利润128亿美元。指标表为127.75亿美元，同比增44.2%，环比增58.9%。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "GAAP净利润112.19亿美元，同比增52.7%，环比增43.0%。电话会称净利润112亿美元、税率14%。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "营业利润同比大幅增长，净利润同比增52.7%至112.19亿美元。",
+            "evidence_quote": "Fourth quarter operating income was $12.8 billion, representing a 46% operating margin.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称净利润112亿美元。指标表为112.19亿美元，同比增52.7%，环比增43.0%。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "指标表未单列单季稀释每股收益。电话会称每股收益3.88美元、税率14%。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "电话会披露每股收益3.88美元，指标表无单季GAAP每股收益可比数据。",
+            "evidence_quote": "Net income was $11.2 billion or $3.88 per share.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表eps_gaap为null，未从全年减前九个月倒挤。电话会口述每股收益3.88美元。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "经营现金流140.40亿美元，同比增54.6%，环比增42.8%。电话会未单列经营现金流。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营现金流同比增54.6%至140.40亿美元，电话会未解释变动原因。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表经营现金流同比大幅上升，电话会只披露自由现金流92亿美元与资本开支48亿美元，未单列经营现金流或解释同比变动。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "指标表资本开支46.61亿美元，同比增13.7%，环比增26.3%。电话会称资本开支48亿美元，投向数据中心、服务器、办公设施和网络基础设施。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "资本开支同比增13.7%，电话会称48亿美元，投向数据中心、服务器、办公设施和网络。",
+            "evidence_quote": "Capital expenditures were $4.8 billion, driven by investments in data centers, servers, office facilities and network infrastructure.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称资本开支48亿美元。指标表为46.61亿美元，同比增13.7%，环比增26.3%。摘要使用指标表。"
+        ]
+      },
+      {
+        "metric": "fcf",
+        "summary": "自由现金流93.79亿美元，同比增88.2%，环比增52.8%。电话会称自由现金流92亿美元；季末现金及有价证券620亿美元。全年回购A类股63亿美元，并新增250亿美元回购授权。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营现金流同比增54.6%，资本开支增幅较小，自由现金流同比增88.2%至93.79亿美元。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "指标表经营现金流140.40亿美元同比增54.6%，资本开支46.61亿美元同比增13.7%，自由现金流93.79亿美元同比增88.2%。电话会口述92亿美元，未解释同比变动。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "资本开支是自由现金流的主要扣减项；电话会称当季资本开支48亿美元。",
+            "evidence_quote": "Free cash flow was $9.2 billion and we ended the quarter with $62.0 billion in cash and marketable securities.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "电话会称自由现金流92亿美元。指标表为93.79亿美元，同比增88.2%，环比增52.8%。摘要使用指标表。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "other",
+        "metric_label": "上半年总收入同比增速",
+        "period": "FY2021H1",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比",
+        "direction": "up",
+        "statement": "Dave（CFO）预计2021年第一、二季度总收入同比增速将环比持平或温和加速，因上半年将对比疫情初期广告需求受压的基数。",
+        "source": "prepared_remarks",
+        "source_quote": "As a result, we expect year-over-year growth rates in total revenue to remain stable or modestly accelerate sequentially in the first and second quarters of 2021.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "下半年总收入同比增速",
+        "period": "FY2021H2",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比",
+        "direction": "down",
+        "statement": "下半年将对比2020年越来越强的增长，同比收入增速将明显承压。",
+        "source": "prepared_remarks",
+        "source_quote": "In the second half of the year we will lap periods of increasingly strong growth which will significantly pressure year-over-year growth rates.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "广告定向逆风",
+        "period": "FY2021",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "down",
+        "statement": "公司预计2021年面临更显著的广告定向逆风，包括iOS14等平台变化及监管环境演变。",
+        "source": "prepared_remarks",
+        "source_quote": "We also expect to face more significant ad targeting headwinds in 2021. This includes the impact of platform changes, notably iOS14, as well as the evolving regulatory landscape.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "iOS14影响时点",
+        "period": "FY2021Q1",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "down",
+        "statement": "iOS14变化时间仍不确定，但预计影响将从2021年第一季度末开始显现。",
+        "source": "prepared_remarks",
+        "source_quote": "While the timing of the iOS14 changes remains uncertain, we would expect to see an impact beginning late in the first quarter.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "全年总费用",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "$68 billion",
+        "high_raw": "$73 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司预计2021年总费用680亿至730亿美元，与先前展望不变，投向技术与产品人才及基础设施成本。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect 2021 total expenses to be in the range of $68-73 billion, unchanged from our prior outlook.",
+        "low": 68000000000,
+        "mid": 70500000000,
+        "high": 73000000000
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "全年资本开支",
+        "period": "FY2021",
+        "type": "numeric",
+        "low_raw": "$21 billion",
+        "high_raw": "$23 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司维持2021年资本开支210亿至230亿美元指引，投向数据中心、服务器、网络与办公设施，并包含因疫情推迟的2020年支出。",
+        "source": "prepared_remarks",
+        "source_quote": "We continue to expect 2021 capital expenditures to be in the range of $21-23 billion, driven by data centers, servers, network infrastructure and office facilities.",
+        "low": 21000000000,
+        "mid": 22000000000,
+        "high": 23000000000
+      },
+      {
+        "metric_key": "tax_rate",
+        "metric_label": "全年税率",
+        "period": "FY2021",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "high-teens",
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "公司维持2021年全年税率处于十几岁高段的预期。",
+        "source": "prepared_remarks",
+        "source_quote": "We continue to expect our full-year 2021 tax rate to be in the high-teens.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -177,6 +564,68 @@
       "t_plus_7": {},
       "gap_closure": null
     },
+    "industry_outlook": [
+      {
+        "title": "外部环境（疫情、汇兑与监管）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Dave（CFO）称2020年下半年广告需求从疫情初期低谷回升，四季度零售假日线上化延续，全年收入同比增22%至860亿美元。当季汇兑为顺风，若汇率与去年四季度相同，总收入将低3.39亿美元；欧洲广告收入增35%也受益于汇兑，世界其他地区仍受汇兑逆风显著影响。展望2021年，公司认为线上商务向产品消费倾斜等疫情相关趋势若缓和或逆转，可能压制广告增长；同时跨大西洋数据传输前景不确定，公司正密切评估对欧洲业务的潜在影响。Mark（CEO）在监管上主张由政府给出更清晰规则，而非由私营公司独自平衡言论自由与安全等社会目标。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Sheryl（COO）称四季度是两年多来收入增速最快的一季，假日零售强于预期，广告主投放早于黑五并延续到网一之后，各地区与品牌广告均改善。美国全国零售联合会数据显示11至12月零售同比增8%、线上增24%。Dave（CFO）按地区拆分：欧洲广告收入增35%，美加增31%，亚太增29%，世界其他地区增至25%但仍受汇兑拖累。广告展示量增25%、单价增5%，展示由Facebook与Instagram带动，单价改善来自移动信息流与Instagram Stories。Brian Nowak问及商品相对服务的消费结构，Dave引用美国经济数据称商品支出在第三季度升至约十五年高位，公司业务相对更偏商品品类，2021年预计仍保持类似倾斜，并继续投资旅游等服务垂类。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化（库存与基础设施）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "广告侧供给继续扩张：展示量同比增25%，但增速从三季度的35%放缓，部分因对比2019年四季度Instagram产品优化基数，以及Facebook互动回归常态。Dave（CFO）预期展示与定价的动态会延续到2021年一季度，并持续迭代以提升Stories等版面的效果广告表现；Stories与信息流仍有价差，但进展令其满意。硬件与其他收入侧，Quest 2十月上市后假日销售强劲，其他收入同比增156%；营业成本增49%中Quest 2硬件成本是重要因素。资本开支电话会报48亿美元、指标表46.61亿美元，全年指引维持210亿至230亿美元，包含疫情推迟的施工支出。全年净增员工1.36万人，研发增34%，基础设施与人才投入并行。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark（CEO）在准备好的发言中把Apple视为最大竞争对手之一：iMessage预装并享有私有接口优势，Apple越来越依赖在应用与服务上从我们与其他开发者处夺份额，并以iOS14变化等方式干扰第三方应用，许多小企业将无法再用定向广告触达客户。Doug Anmuth问及IDFA观点是否变化，Dave（CFO）称对iOS14展望无重大变化，仍将构成广告业务逆风；无论是否使用IDFA，都需要弹窗征求第三方数据用于个性化广告，预计高比例退出并已纳入展望，影响或从2021年一季度末开始并在年内随iOS14普及而加大。Audience Network在iOS上受冲击显著，但对核心iOS广告业务的拖累更大。Justin Post问及除IDFA外与Apple的竞争，Mark（CEO）称在私信、小商业工具与下一代计算平台三领域与Apple重叠显著。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "收入仍几乎全靠广告：四季度广告收入272亿美元，其他收入8.85亿美元主要来自Quest 2。Sheryl（COO）强调免费与付费工具帮助中小企业线上化，Stories广告对直效广告主更有效，并举例墨西哥花店通过Instagram定向广告获得24倍广告支出回报、2020年收入增至三倍。Commerce方面，Mark（CEO）称商家可一次开店同时在Facebook与Instagram销售，美国Checkout已面向全部商家开放；超1.75亿人每天向WhatsApp商业账号发消息，购物车功能让下单以消息形式发送。Sheryl在问答中称Instagram Shopping仍处早期但体验良好，Reels已推广至50多个国家，变现将沿用先做好消费者产品再推广告的路径。Dave（CFO）称政治广告即使在活跃选举季也仅占收入低个位数百分点，削减政治内容推荐并非2021收入展望因素。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mark（CEO）提出2021年四大主题：社区、私密消息、小商业Commerce与下一代计算平台。社区侧超6亿人加入对其有意义的Facebook群组，长期不再推荐美国公民与政治群组并考虑降低信息流政治内容占比。私密消息强调端到端加密与互操作，并批评Apple隐私标签误导。计算平台侧，Facebook Reality Labs推出Quest 2，称正成为首款主流VR头显，超60名Oculus开发者年收入达百万美元级；将与Luxottica合作推出Ray-Ban智能眼镜初版。Eric Sheridan问及VR投资，Mark（CEO）称将持续出货内容与能力、新硬件向前兼容以扩大装机，并并行投资AR基础技术；战略上也希望更多掌控自有操作系统。Youssef Squali问及230条款，Mark（CEO）支持国会更新230、权衡大平台与初创的合规能力，并愿在儿童安全与透明度上合作。公司维持2021年费用680亿至730亿美元与资本开支210亿至230亿美元指引，并新增250亿美元回购授权。",
+            "items": []
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -202,18 +651,345 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "Instagram Shopping有哪些可量化的积极信号？广告主结构里还缺哪些垂类、如何扩大？",
+        "answer_summary": "Sheryl（COO）：四季度上线Instagram Shop标签，仍处Commerce整体努力的早期，商家与用户体验都不错，会优先保证终端用户体验。\n\nDave（CFO）：美国数据显示第三季度商品消费支出创新高而服务仍同比下滑，公司业务相对更偏商品；2021年预计仍保持类似倾斜，并继续投资旅游等服务垂类广告产品。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出Instagram Shopping的具体转化或GMV数字；广告主数量与缺口也未量化。",
+        "tone": "cautious",
+        "answer_quote": "But we are very interested in taking people all the way down that funnel from discovery to purchase, to finding products and services to checking out as well.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "商品相对服务的消费结构若逆转，对下半年增长有何影响？",
+        "answer_summary": "Dave（CFO）：美国第三季度商品支出创约十五年新高，服务仍同比下滑；公司业务相对GDP更偏商品，2021年预计保持类似结构，并继续提升服务类广告相关性。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "If you look at the balance of our of our business, it tends to skew more towards products relative to the overall GDP -- or the overall consumer spend in, for instance, the US.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "对IDFA的看法是否变化？能否通过受限登录模式、新API与转化工具抵消影响？对Audience Network与核心产品影响如何？",
+        "answer_summary": "Dave（CFO）：对iOS14展望无重大变化，仍将构成广告逆风；需弹窗征求第三方数据用于个性化广告，预计高退出率并已纳入展望，或于2021年一季度末 rollout，时间仍不确定。平台级变化会部分缓和影响；长期希望通过Shops与点击消息等站内转化帮助商家。Audience Network在iOS上冲击大，但核心iOS广告业务受影响更广。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "I don't think our outlook has changed in any significant way on iOS 14. We continue to believe that will be a headwind in the ads business.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "UBS",
+        "topic": "AI 产品与模型",
+        "is_new_topic": true,
+        "question_summary": "假日Quest成功后，硬件与内容应用还需哪些投资？",
+        "answer_summary": "Mark（CEO）：VR会先落地，与AR同属沉浸式计算生态；将持续发布内容与能力、新硬件向前兼容以扩大装机，并投资AR基础技术。这是长期投入，对愿景与掌控操作系统战略都重要，对进展保持乐观。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I do believe that Quest 2 is the first mainstream virtual reality product that is doing quite well, and I'm really proud of what we've been able to do there.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "UBS",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "能否量化2021年下半年更难的同比基数及各类逆风严重程度？",
+        "answer_summary": "Dave（CFO）：四季度极强，部分因疫情推动的线上商务与商品消费；下半年将对比今年强劲表现而基数更难，若消费回流服务也会加压；叠加隐私相关逆风，其中iOS14最大。仍预期增长，但下半年同比会更难。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出下半年增速区间或逆风量化幅度，仅定性描述基数与隐私影响。",
+        "tone": "cautious",
+        "answer_quote": "So as you look out in 2021, I think we're just going to be facing tougher comps in the back half of the year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "除IDFA外，与Apple的竞争是否在加深？",
+        "answer_summary": "Mark（CEO）：除社区外，私信、小商业工具与下一代计算平台三方向与Apple竞争重叠显著；iMessage在美国最流行因预装与权限优势；iOS14变化尤其伤害小企业；长期构建新计算平台时也会与Apple正面竞争。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "发言在技术故障后未完整展开所有竞争细节，但已明确三大重叠领域。",
+        "tone": "cautious",
+        "answer_quote": "In messaging, certainly, iMessage is the most popular service in the U.S.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "FTC反垄断诉讼有何评论？",
+        "answer_summary": "Dave（CFO）：目前无特别评论。\n\nMark（CEO）：案件本身不评论；总体上更清晰的内容、选举与隐私规则有助于互联网行业。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "明确拒绝评论FTC案件细节，仅谈宏观监管原则。",
+        "tone": "neutral",
+        "answer_quote": "I don't think we have anything we necessarily are commenting on at this point.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "定价与 ASP",
+        "is_new_topic": false,
+        "question_summary": "本季广告单价同比转正，Stories直效广告进展如何？",
+        "answer_summary": "Dave（CFO）：拍卖机制下定价与展示量相关；本季展示增速放缓至25%（三季度为35%），部分因对比2019年四季度Instagram优化及Facebook互动正常化，预计延续到2021年一季度；Instagram Stories直效改进是提价因素之一，Stories与信息流仍有价差但进展满意。",
+        "new_numbers": [
+          {
+            "number": "展示量同比增25%",
+            "meaning": "较三季度的35%放缓"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "we saw impression growth slowed this quarter to 25 percent from the Q3 rate of 35 percent.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "Messenger与WhatsApp长期如何差异化？Reels表现与变现路径？",
+        "answer_summary": "Mark（CEO）：Messenger绑定Facebook身份图谱，即使互操作与隐私一致，体验仍会与更简约实用的WhatsApp不同。\n\nSheryl（COO）：Reels消费数据令人鼓舞，已推广至50多国；变现将先推品牌内容标签与购物，广告时间待定，沿用Stories先产品后广告的节奏。",
+        "new_numbers": [
+          {
+            "number": "50多个国家",
+            "meaning": "Reels已推广的国家数量"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We've now rolled out the product into over 50 countries.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Youssef Squali",
+        "firm": "Truist Securities",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "公民与政治内容占比多大？降低推荐是否构成2021逆风？230条款若收紧如何应对？",
+        "answer_summary": "Mark（CEO）：公民与政治内容是少数，用户希望保持如此；将平衡言论自由与减少政治推荐，但不认为这是Dave展望中的逆风因素。\n\nDave（CFO）：政治内容不影响2021展望；广告端政治收入即使在选举季也仅低个位数百分点。\n\nMark（CEO）谈230：支持国会更新230，变更需兼顾大平台与初创，并愿在儿童安全与透明度上合作。",
+        "new_numbers": [
+          {
+            "number": "低个位数百分点",
+            "meaning": "活跃政治季政治广告占收入比例"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "And certainly, on the ads front as well, political is extremely small. It's low single- digit revenue even in an active political quarter like we had.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "John Blackledge",
+        "firm": "Cowen",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "Facebook群组新服务 uptake 如何？社区能否成为重要变现驱动？广告主对IDFA变化的准备程度？",
+        "answer_summary": "Mark（CEO）：社区与朋友家人内容共同驱动信息流价值，已是重要商业驱动；正建设更机构化的群组工具（消息、视频、网站与筹款等）。\n\nSheryl（COO）：小企业依赖隐私安全的个性化广告；若个性化广告消失，小企业网站销售或降60%，IDFA变化令他们担忧；并非所有小企业已意识到挑战。",
+        "new_numbers": [
+          {
+            "number": "60%",
+            "meaning": "Sheryl称若所有个性化广告消失，小企业网站销售可能降幅"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "未量化群组新工具采用率；未区分大与小广告主对IDFA准备度的定量差异。",
+        "tone": "cautious",
+        "answer_quote": "If all personalized ads went away, small businesses would see a 60 percent cut in website sales.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "客户与订单": 2,
+      "宏观与汇率": 1,
+      "竞争格局": 2,
+      "AI 产品与模型": 1,
+      "指引与展望": 1,
+      "其他": 2,
+      "定价与 ASP": 1,
+      "产品结构": 1
+    },
+    "new_topics": [
+      "定价与 ASP"
+    ],
+    "dropped_topics": [
+      "费用与运营",
+      "需求与出货"
+    ],
+    "hot_topics": [
+      "客户与订单",
+      "竞争格局",
+      "定价与 ASP"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "Instagram Shopping有哪些可量化的积极信号？广告主结构里还缺哪些垂类、如何扩大？",
+        "answer_summary": "Sheryl（COO）：四季度上线Instagram Shop标签，仍处Commerce整体努力的早期，商家与用户体验都不错，会优先保证终端用户体验。\n\nDave（CFO）：美国数据显示第三季度商品消费支出创新高而服务仍同比下滑，公司业务相对更偏商品；2021年预计仍保持类似倾斜，并继续投资旅游等服务垂类广告产品。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出Instagram Shopping的具体转化或GMV数字；广告主数量与缺口也未量化。",
+        "tone": "cautious",
+        "answer_quote": "But we are very interested in taking people all the way down that funnel from discovery to purchase, to finding products and services to checking out as well.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "UBS",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "能否量化2021年下半年更难的同比基数及各类逆风严重程度？",
+        "answer_summary": "Dave（CFO）：四季度极强，部分因疫情推动的线上商务与商品消费；下半年将对比今年强劲表现而基数更难，若消费回流服务也会加压；叠加隐私相关逆风，其中iOS14最大。仍预期增长，但下半年同比会更难。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出下半年增速区间或逆风量化幅度，仅定性描述基数与隐私影响。",
+        "tone": "cautious",
+        "answer_quote": "So as you look out in 2021, I think we're just going to be facing tougher comps in the back half of the year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "除IDFA外，与Apple的竞争是否在加深？",
+        "answer_summary": "Mark（CEO）：除社区外，私信、小商业工具与下一代计算平台三方向与Apple竞争重叠显著；iMessage在美国最流行因预装与权限优势；iOS14变化尤其伤害小企业；长期构建新计算平台时也会与Apple正面竞争。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "发言在技术故障后未完整展开所有竞争细节，但已明确三大重叠领域。",
+        "tone": "cautious",
+        "answer_quote": "In messaging, certainly, iMessage is the most popular service in the U.S.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "FTC反垄断诉讼有何评论？",
+        "answer_summary": "Dave（CFO）：目前无特别评论。\n\nMark（CEO）：案件本身不评论；总体上更清晰的内容、选举与隐私规则有助于互联网行业。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "明确拒绝评论FTC案件细节，仅谈宏观监管原则。",
+        "tone": "neutral",
+        "answer_quote": "I don't think we have anything we necessarily are commenting on at this point.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "John Blackledge",
+        "firm": "Cowen",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "Facebook群组新服务 uptake 如何？社区能否成为重要变现驱动？广告主对IDFA变化的准备程度？",
+        "answer_summary": "Mark（CEO）：社区与朋友家人内容共同驱动信息流价值，已是重要商业驱动；正建设更机构化的群组工具（消息、视频、网站与筹款等）。\n\nSheryl（COO）：小企业依赖隐私安全的个性化广告；若个性化广告消失，小企业网站销售或降60%，IDFA变化令他们担忧；并非所有小企业已意识到挑战。",
+        "new_numbers": [
+          {
+            "number": "60%",
+            "meaning": "Sheryl称若所有个性化广告消失，小企业网站销售可能降幅"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "未量化群组新工具采用率；未区分大与小广告主对IDFA准备度的定量差异。",
+        "tone": "cautious",
+        "answer_quote": "If all personalized ads went away, small businesses would see a 60 percent cut in website sales.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "第四季营收280.72亿美元，同比增33.2%",
+    "key_findings": [
+      {
+        "finding": "总收入280.72亿美元，同比增33.2%、环比增30.7%；广告展示量增25%，平均单价增5%。",
+        "text": "总收入280.72亿美元，同比增33.2%、环比增30.7%；广告展示量增25%，平均单价增5%。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "GAAP营业利润率45.5%，同比升3.5个百分点；营业利润127.75亿美元，同比增44.2%。",
+        "text": "GAAP营业利润率45.5%，同比升3.5个百分点；营业利润127.75亿美元，同比增44.2%。",
+        "evidence": "operating_margin_gaap"
+      },
+      {
+        "finding": "自由现金流93.79亿美元，同比增88.2%；2021年费用指引680亿至730亿美元不变。",
+        "text": "自由现金流93.79亿美元，同比增88.2%；2021年费用指引680亿至730亿美元不变。",
+        "evidence": "fcf"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2021Q1总收入同比增速是否较FY2020Q4环比持平或温和加速",
+        "threshold": "同比增速环比持平或上升"
+      },
+      {
+        "metric_key": "opex_gaap",
+        "condition": "FY2021全年总费用实际是否落在680亿至730亿美元",
+        "threshold": "680亿至730亿美元"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "FY2021全年资本开支是否落在210亿至230亿美元",
+        "threshold": "210亿至230亿美元"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "FY2021Q1的GAAP营业利润率是否仍高于40%",
+        "threshold": "营业利润率高于40%"
+      },
+      {
+        "metric_key": "other",
+        "condition": "2021年一季度末起iOS14相关变化是否在收入增速中显现",
+        "threshold": "收入同比增速较上半年指引放缓"
+      }
+    ]
   },
   "thesis_review": {}
 }
