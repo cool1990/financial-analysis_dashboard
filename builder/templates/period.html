@@ -185,17 +185,55 @@
     <section class="guide-part">
       <h3>业绩指引</h3>
       {% if guidance.rows %}
+      <p class="layer-sub">点一行看历史指引和后来的实际，再点同一行收起。</p>
       <div class="table-wrap">
       <table class="data guide-table">
         <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
-        <tbody>
+        <tbody id="guideRows">
         {% for row in guidance.rows %}
-          <tr>
+          <tr class="guide-hit" data-guide-key="{{ row.family }}" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-{{ row.family }}">
             <td>{{ row.label }}{% if row.period %}<small class="basis">{{ row.period }}</small>{% endif %}</td>
             <td>{{ row.value }}</td>
             <td class="c-{{ row.qoq.cls }}">{{ row.qoq.text }}</td>
             <td class="c-{{ row.yoy.cls }}">{{ row.yoy.text }}</td>
             <td class="c-{{ row.vs.cls }}">{{ row.vs.text }}</td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-{{ row.family }}" data-guide-panel="{{ row.family }}" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+                {% if row.track.note %}<p class="layer-sub">{{ row.track.note }}</p>
+                {% endif %}
+                {% if row.track.empty %}<p class="guide-empty">{{ row.track.empty }}</p>
+                {% endif %}
+                {% if row.track.plot %}
+                <div class="card chart guide-chart">
+                  <h3>{{ row.track.chart_title }}</h3>
+                  <p class="c-sub">{{ row.track.chart_sub }}</p>
+                  <div class="c-body"><canvas data-guide-chart='{{ row.track.plot|tojson }}' aria-label="{{ row.track.chart_title }}"></canvas></div>
+                </div>
+                {% elif row.track.pending_note %}<p class="guide-empty">{{ row.track.pending_note }}</p>
+                {% endif %}
+                {% if row.track.points %}
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                  {% for pt in row.track.points %}
+                    <tr>
+                      <td>{{ pt.label }}{% if pt.issued %}<small class="basis">{{ pt.issued }}给出</small>{% endif %}</td>
+                      <td>{{ pt.guide }}</td>
+                      <td>{{ pt.mid }}</td>
+                      <td>{{ pt.actual }}</td>
+                      <td class="c-{{ pt.beat.cls }}">{{ pt.beat.text }}</td>
+                      <td class="c-{{ pt.slot.cls }}">{{ pt.slot.text }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+                </div>
+                {% endif %}
+              </div>
+            </td>
           </tr>
         {% endfor %}
         </tbody>
@@ -332,7 +370,11 @@ function openFromHash() {
 window.addEventListener('hashchange', openFromHash);
 openFromHash();
 </script>
-{% if history or fin_view.charts or eps_chart %}
+{% set guide_ns = namespace(chart=false) %}
+{% for row in guidance.rows %}
+  {% if row.track.plot %}{% set guide_ns.chart = true %}{% endif %}
+{% endfor %}
+{% if history or fin_view.charts or eps_chart or guide_ns.chart %}
 <script src="{{ root }}static/vendor/chart.umd.min.js"></script>
 <script>
 window.PAGE_CHARTS = {
@@ -346,4 +388,52 @@ window.PAGE_CHARTS = {
 </script>
 <script src="{{ root }}static/charts.js"></script>
 {% endif %}
+<script>
+(function () {
+  var body = document.getElementById('guideRows');
+  if (!body) return;
+  function hits() { return body.querySelectorAll('[data-guide-key]'); }
+  function closeAll() {
+    body.querySelectorAll('[data-guide-panel]').forEach(function (row) { row.hidden = true; });
+    hits().forEach(function (row) { row.setAttribute('aria-expanded', 'false'); });
+  }
+  function open(key) {
+    closeAll();
+    var hit = body.querySelector('[data-guide-key="' + key + '"]');
+    var panel = body.querySelector('[data-guide-panel="' + key + '"]');
+    if (!hit || !panel) return;
+    hit.setAttribute('aria-expanded', 'true');
+    panel.hidden = false;
+    if (typeof window.drawGuideCharts === 'function') {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { window.drawGuideCharts(panel); });
+      });
+    }
+  }
+  function toggleFrom(hit) {
+    var key = hit.getAttribute('data-guide-key');
+    if (hit.getAttribute('aria-expanded') === 'true') closeAll();
+    else open(key);
+  }
+  body.addEventListener('click', function (event) {
+    if (event.target.closest('[data-guide-panel]')) return;
+    var hit = event.target.closest('[data-guide-key]');
+    if (!hit || !body.contains(hit)) return;
+    toggleFrom(hit);
+  });
+  body.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var hit = event.target.closest('[data-guide-key]');
+    if (!hit || event.target !== hit) return;
+    event.preventDefault();
+    toggleFrom(hit);
+  });
+  var box = document.getElementById('guide');
+  if (box) box.addEventListener('toggle', function () {
+    if (!box.open || typeof window.drawGuideCharts !== 'function') return;
+    var panel = body.querySelector('[data-guide-panel]:not([hidden])');
+    if (panel) requestAnimationFrame(function () { window.drawGuideCharts(panel); });
+  });
+})();
+</script>
 {% endblock %}

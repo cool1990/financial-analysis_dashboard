@@ -526,23 +526,198 @@
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
+      <p class="layer-sub">点一行看历史指引和后来的实际，再点同一行收起。</p>
       <div class="table-wrap">
       <table class="data guide-table">
         <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
-        <tbody>
-          <tr>
+        <tbody id="guideRows">
+          <tr class="guide-hit" data-guide-key="revenue" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-revenue">
             <td>营收<small class="basis">下季</small></td>
             <td>$42.50B – $45.50B</td>
             <td class="c-up">+4.0%</td>
             <td class="c-up">+12.6%</td>
             <td class="c-na"></td>
           </tr>
-          <tr>
+          <tr class="guide-detail" id="guide-panel-revenue" data-guide-panel="revenue" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+                <div class="card chart guide-chart">
+                  <h3>实际相对指引中值</h3>
+                  <p class="c-sub">零线以上是高于中值，以下是低于中值。实心柱落在指引区间外，浅色柱落在区间内。</p>
+                  <div class="c-body"><canvas data-guide-chart='{"labels": ["2022Q2", "2022Q3", "2022Q4", "2023Q1", "2023Q2", "2023Q3", "2023Q4", "2024Q1", "2024Q2", "2024Q3", "2024Q4", "2025Q1"], "outside": [false, false, false, true, false, false, true, false, true, false, true, true], "texts": ["-0.6%", "+1.7%", "+2.9%", "+5.1%", "+4.1%", "+2.7%", "+4.9%", "+2.0%", "+3.5%", "+2.1%", "+4.1%", "+4.1%"], "tips": ["相对中值 -0.6% · 区间内 · 实际 $28.82B · 中值 $29.00B", "相对中值 +1.7% · 区间内 · 实际 $27.71B · 中值 $27.25B", "相对中值 +2.9% · 区间内 · 实际 $32.16B · 中值 $31.25B", "相对中值 +5.1% · 超上限 · 实际 $28.64B · 中值 $27.25B", "相对中值 +4.1% · 区间内 · 实际 $32.00B · 中值 $30.75B", "相对中值 +2.7% · 区间内 · 实际 $34.15B · 中值 $33.25B", "相对中值 +4.9% · 超上限 · 实际 $40.11B · 中值 $38.25B", "相对中值 +2.0% · 区间内 · 实际 $36.45B · 中值 $35.75B", "相对中值 +3.5% · 超上限 · 实际 $39.07B · 中值 $37.75B", "相对中值 +2.1% · 区间内 · 实际 $40.59B · 中值 $39.75B", "相对中值 +4.1% · 超上限 · 实际 $48.38B · 中值 $46.50B", "相对中值 +4.1% · 超上限 · 实际 $42.31B · 中值 $40.65B"], "unit": "%", "values": [-0.6, 1.7, 2.9, 5.1, 4.1, 2.7, 4.9, 2.0, 3.5, 2.1, 4.1, 4.1]}' aria-label="实际相对指引中值"></canvas></div>
+                </div>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>2022财年Q2<small class="basis">2022财年Q1给出</small></td>
+                      <td>$28.00B – $30.00B</td>
+                      <td>$29.00B</td>
+                      <td>$28.82B</td>
+                      <td class="c-down">-0.6%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2022财年Q3<small class="basis">2022财年Q2给出</small></td>
+                      <td>$26.00B – $28.50B</td>
+                      <td>$27.25B</td>
+                      <td>$27.71B</td>
+                      <td class="c-up">+1.7%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2022财年Q4<small class="basis">2022财年Q3给出</small></td>
+                      <td>$30.00B – $32.50B</td>
+                      <td>$31.25B</td>
+                      <td>$32.16B</td>
+                      <td class="c-up">+2.9%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2023财年Q1<small class="basis">2022财年Q4给出</small></td>
+                      <td>$26.00B – $28.50B</td>
+                      <td>$27.25B</td>
+                      <td>$28.64B</td>
+                      <td class="c-up">+5.1%</td>
+                      <td class="c-up">超上限</td>
+                    </tr>
+                    <tr>
+                      <td>2023财年Q2<small class="basis">2023财年Q1给出</small></td>
+                      <td>$29.50B – $32.00B</td>
+                      <td>$30.75B</td>
+                      <td>$32.00B</td>
+                      <td class="c-up">+4.1%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2023财年Q3<small class="basis">2023财年Q2给出</small></td>
+                      <td>$32.00B – $34.50B</td>
+                      <td>$33.25B</td>
+                      <td>$34.15B</td>
+                      <td class="c-up">+2.7%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2023财年Q4<small class="basis">2023财年Q3给出</small></td>
+                      <td>$36.50B – $40.00B</td>
+                      <td>$38.25B</td>
+                      <td>$40.11B</td>
+                      <td class="c-up">+4.9%</td>
+                      <td class="c-up">超上限</td>
+                    </tr>
+                    <tr>
+                      <td>2024财年Q1<small class="basis">2023财年Q4给出</small></td>
+                      <td>$34.50B – $37.00B</td>
+                      <td>$35.75B</td>
+                      <td>$36.45B</td>
+                      <td class="c-up">+2.0%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2024财年Q2<small class="basis">2024财年Q1给出</small></td>
+                      <td>$36.50B – $39.00B</td>
+                      <td>$37.75B</td>
+                      <td>$39.07B</td>
+                      <td class="c-up">+3.5%</td>
+                      <td class="c-up">超上限</td>
+                    </tr>
+                    <tr>
+                      <td>2024财年Q3<small class="basis">2024财年Q2给出</small></td>
+                      <td>$38.50B – $41.00B</td>
+                      <td>$39.75B</td>
+                      <td>$40.59B</td>
+                      <td class="c-up">+2.1%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>2024财年Q4<small class="basis">2024财年Q3给出</small></td>
+                      <td>$45.00B – $48.00B</td>
+                      <td>$46.50B</td>
+                      <td>$48.38B</td>
+                      <td class="c-up">+4.1%</td>
+                      <td class="c-up">超上限</td>
+                    </tr>
+                    <tr>
+                      <td>2025财年Q1<small class="basis">2024财年Q4给出</small></td>
+                      <td>$39.50B – $41.80B</td>
+                      <td>$40.65B</td>
+                      <td>$42.31B</td>
+                      <td class="c-up">+4.1%</td>
+                      <td class="c-up">超上限</td>
+                    </tr>
+                    <tr>
+                      <td>2025财年Q2<small class="basis">2025财年Q1给出</small></td>
+                      <td>$42.50B – $45.50B</td>
+                      <td>$44.00B</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="guide-hit" data-guide-key="capex" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-capex">
             <td>资本开支<small class="basis">FY2025全年</small></td>
             <td>$64.00B – $72.00B</td>
             <td class="c-na"></td>
             <td class="c-up">+82.5%</td>
             <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-capex" data-guide-panel="capex" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+                <div class="card chart guide-chart">
+                  <h3>实际相对指引中值</h3>
+                  <p class="c-sub">零线以上是高于中值，以下是低于中值。实心柱落在指引区间外，浅色柱落在区间内。</p>
+                  <div class="c-body"><canvas data-guide-chart='{"labels": ["2022全年", "2023全年", "2024全年"], "outside": [true, false, true], "texts": ["-4.0%", "-3.4%", "-4.5%"], "tips": ["相对中值 -4.0% · 低于下限 · 实际 $31.19B · 中值 $32.50B", "相对中值 -3.4% · 区间内 · 实际 $27.05B · 中值 $28.00B", "相对中值 -4.5% · 低于下限 · 实际 $37.26B · 中值 $39.00B"], "unit": "%", "values": [-4.0, -3.4, -4.5]}' aria-label="实际相对指引中值"></canvas></div>
+                </div>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>FY2022全年<small class="basis">2022财年Q3给出</small></td>
+                      <td>$32.00B – $33.00B</td>
+                      <td>$32.50B</td>
+                      <td>$31.19B</td>
+                      <td class="c-down">-4.0%</td>
+                      <td class="c-down">低于下限</td>
+                    </tr>
+                    <tr>
+                      <td>FY2023全年<small class="basis">2023财年Q3给出</small></td>
+                      <td>$27.00B – $29.00B</td>
+                      <td>$28.00B</td>
+                      <td>$27.05B</td>
+                      <td class="c-down">-3.4%</td>
+                      <td class="c-flat">区间内</td>
+                    </tr>
+                    <tr>
+                      <td>FY2024全年<small class="basis">2024财年Q3给出</small></td>
+                      <td>$38.00B – $40.00B</td>
+                      <td>$39.00B</td>
+                      <td>$37.26B</td>
+                      <td class="c-down">-4.5%</td>
+                      <td class="c-down">低于下限</td>
+                    </tr>
+                    <tr>
+                      <td>FY2025全年<small class="basis">2025财年Q1给出</small></td>
+                      <td>$64.00B – $72.00B</td>
+                      <td>$68.00B</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -842,5 +1017,53 @@ window.PAGE_CHARTS = {
 };
 </script>
 <script src="../../static/charts.js"></script>
+<script>
+(function () {
+  var body = document.getElementById('guideRows');
+  if (!body) return;
+  function hits() { return body.querySelectorAll('[data-guide-key]'); }
+  function closeAll() {
+    body.querySelectorAll('[data-guide-panel]').forEach(function (row) { row.hidden = true; });
+    hits().forEach(function (row) { row.setAttribute('aria-expanded', 'false'); });
+  }
+  function open(key) {
+    closeAll();
+    var hit = body.querySelector('[data-guide-key="' + key + '"]');
+    var panel = body.querySelector('[data-guide-panel="' + key + '"]');
+    if (!hit || !panel) return;
+    hit.setAttribute('aria-expanded', 'true');
+    panel.hidden = false;
+    if (typeof window.drawGuideCharts === 'function') {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { window.drawGuideCharts(panel); });
+      });
+    }
+  }
+  function toggleFrom(hit) {
+    var key = hit.getAttribute('data-guide-key');
+    if (hit.getAttribute('aria-expanded') === 'true') closeAll();
+    else open(key);
+  }
+  body.addEventListener('click', function (event) {
+    if (event.target.closest('[data-guide-panel]')) return;
+    var hit = event.target.closest('[data-guide-key]');
+    if (!hit || !body.contains(hit)) return;
+    toggleFrom(hit);
+  });
+  body.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var hit = event.target.closest('[data-guide-key]');
+    if (!hit || event.target !== hit) return;
+    event.preventDefault();
+    toggleFrom(hit);
+  });
+  var box = document.getElementById('guide');
+  if (box) box.addEventListener('toggle', function () {
+    if (!box.open || typeof window.drawGuideCharts !== 'function') return;
+    var panel = body.querySelector('[data-guide-panel]:not([hidden])');
+    if (panel) requestAnimationFrame(function () { window.drawGuideCharts(panel); });
+  });
+})();
+</script>
 </body>
 </html>

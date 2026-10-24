@@ -329,5 +329,53 @@ window.PAGE_CHARTS = {
 };
 </script>
 <script src="../../static/charts.js"></script>
+<script>
+(function () {
+  var body = document.getElementById('guideRows');
+  if (!body) return;
+  function hits() { return body.querySelectorAll('[data-guide-key]'); }
+  function closeAll() {
+    body.querySelectorAll('[data-guide-panel]').forEach(function (row) { row.hidden = true; });
+    hits().forEach(function (row) { row.setAttribute('aria-expanded', 'false'); });
+  }
+  function open(key) {
+    closeAll();
+    var hit = body.querySelector('[data-guide-key="' + key + '"]');
+    var panel = body.querySelector('[data-guide-panel="' + key + '"]');
+    if (!hit || !panel) return;
+    hit.setAttribute('aria-expanded', 'true');
+    panel.hidden = false;
+    if (typeof window.drawGuideCharts === 'function') {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { window.drawGuideCharts(panel); });
+      });
+    }
+  }
+  function toggleFrom(hit) {
+    var key = hit.getAttribute('data-guide-key');
+    if (hit.getAttribute('aria-expanded') === 'true') closeAll();
+    else open(key);
+  }
+  body.addEventListener('click', function (event) {
+    if (event.target.closest('[data-guide-panel]')) return;
+    var hit = event.target.closest('[data-guide-key]');
+    if (!hit || !body.contains(hit)) return;
+    toggleFrom(hit);
+  });
+  body.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var hit = event.target.closest('[data-guide-key]');
+    if (!hit || event.target !== hit) return;
+    event.preventDefault();
+    toggleFrom(hit);
+  });
+  var box = document.getElementById('guide');
+  if (box) box.addEventListener('toggle', function () {
+    if (!box.open || typeof window.drawGuideCharts !== 'function') return;
+    var panel = body.querySelector('[data-guide-panel]:not([hidden])');
+    if (panel) requestAnimationFrame(function () { window.drawGuideCharts(panel); });
+  });
+})();
+</script>
 </body>
 </html>

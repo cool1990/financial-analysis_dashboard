@@ -2805,6 +2805,253 @@ def _fiscal_year_level(docs: dict[str, dict[str, Any]], year: int, keys: tuple[s
     return total
 
 
+def _period_index(period: str | None) -> int | None:
+    match = re.fullmatch(r"FY(\d{4})Q([1-4])", period or "")
+    if not match:
+        return None
+    return int(match.group(1)) * 4 + int(match.group(2))
+
+
+def _completion_period(guided: str) -> str | None:
+    """季度指引在该季业绩里兑现；全年指引在第四季业绩里兑现。"""
+    if re.fullmatch(r"FY\d{4}Q[1-4]", guided or ""):
+        return guided
+    match = re.fullmatch(r"FY(\d{4})", guided or "")
+    if match:
+        return f"FY{match.group(1)}Q4"
+    return None
+
+
+def _history_period_label(period: str) -> str:
+    if re.fullmatch(r"FY\d{4}", period or ""):
+        return f"{period}全年"
+    return _period_label(period) or period
+
+
+def _history_axis_label(period: str) -> str:
+    match = re.fullmatch(r"FY(\d{4})Q([1-4])", period or "")
+    if match:
+        return f"{match.group(1)}Q{match.group(2)}"
+    match = re.fullmatch(r"FY(\d{4})", period or "")
+    if match:
+        return f"{match.group(1)}全年"
+    return _history_period_label(period)
+
+
+def _guide_slot(actual: float | None, low: float | None, high: float | None, mid: float | None) -> dict[str, str]:
+    """实际相对指引区间：超上限、区间内、低于下限。点估计把中值当成上下限。"""
+    if actual is None:
+        return _blank_change()
+    lo = low if low is not None else mid
+    hi = high if high is not None else mid
+    if lo is None or hi is None:
+        return _blank_change()
+    if hi < lo:
+        lo, hi = hi, lo
+    tol = max(abs(lo), abs(hi), 1.0) * 1e-6
+    if actual > hi + tol:
+        return {"text": "超上限", "cls": "up"}
+    if actual < lo - tol:
+        return {"text": "低于下限", "cls": "down"}
+    return {"text": "区间内", "cls": "flat"}
+
+
+def _plot_value(text: str) -> float | None:
+    match = re.fullmatch(r"([+-]?\d+(?:\.\d+)?)(?:%|pp)", text or "")
+    if not match:
+        return None
+    return float(match.group(1))
+
+
+def _guide_actual_keys(metric_key: str, family_keys: tuple[str, ...]) -> tuple[str, ...]:
+    """GAAP / Non-GAAP 指引只对同一口径的实际。没标口径时沿用这一行的查找顺序。"""
+    if metric_key.endswith("_nongaap") or metric_key.endswith("_gaap"):
+        return (metric_key,)
+    return family_keys
+
+
+def _summed_year_actual(
+    docs: dict[str, dict[str, Any]],
+    year: int,
+    keys: tuple[str, ...],
+    page_index: int | None,
+) -> float | None:
+    """营收、资本开支全年实际是四个季度相加。缺一季就不加。"""
+    total = 0.0
+    for quarter in range(1, 5):
+        period = f"FY{year}Q{quarter}"
+        index = _period_index(period)
+        if page_index is not None and index is not None and index > page_index:
+            return None
+        value = _actual_level(docs.get(period), keys, False)
+        if value is None:
+            return None
+        total += value
+    return total
+
+
+def _guidance_history(
+    docs: dict[str, dict[str, Any]],
+    page: str,
+    family: str,
+    keys: tuple[str, ...],
+    ratio: bool,
+    horizon: str,
+) -> dict[str, Any]:
+    """一项业绩指引的历史：披露前最后一次数字指引，对照该期后来的实际。
+
+    只读各季文件里已经写好的 guidance.items 和 financials。没有的季度留空，不估算。
+    本页之后的季度不参与，避免旧财季页看到后来才给出的指引。
+    """
+    from pipeline.extract.guidance import normalize_period
+
+    note = ""
+    if ratio:
+        note = "每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 = 实际 − 指引中值，单位是百分点。"
+    else:
+        note = "每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。"
+    chart_sub = "零线以上是高于中值，以下是低于中值。实心柱落在指引区间外，浅色柱落在区间内。"
+    empty = {
+        "note": "",
+        "chart_title": "实际相对指引中值",
+        "chart_sub": chart_sub,
+        "empty": "已保存的季度里没有这项更早的数字指引，对不上后来的实际。",
+        "pending_note": "",
+        "points": [],
+        "plot": None,
+    }
+    if horizon not in {"quarter", "year"}:
+        return empty
+
+    page_index = _period_index(page)
+    best: dict[str, tuple[tuple, dict[str, Any], str]] = {}
+    for issuer, idoc in docs.items():
+        issuer_index = _period_index(issuer)
+        if issuer_index is None:
+            continue
+        if page_index is None:
+            if issuer != page:
+                continue
+        elif issuer_index > page_index:
+            continue
+        for item in (idoc.get("guidance") or {}).get("items") or []:
+            if (item.get("metric_key") or "") not in keys or item.get("type") not in {None, "numeric"}:
+                continue
+            if _guide_mid(item) is None:
+                continue
+            guided = normalize_period(item.get("period"))
+            if horizon == "quarter" and not re.fullmatch(r"FY\d{4}Q[1-4]", guided):
+                continue
+            if horizon == "year" and not re.fullmatch(r"FY\d{4}", guided):
+                continue
+            completion = _completion_period(guided)
+            completion_index = _period_index(completion)
+            if completion_index is None or issuer_index >= completion_index:
+                continue
+            rank = (
+                -issuer_index,
+                0 if str(item.get("metric_key") or "").endswith("_nongaap") else 1,
+                0 if item.get("source") == "press_release" else 1,
+            )
+            current = best.get(guided)
+            if current is None or rank < current[0]:
+                best[guided] = (rank, item, issuer)
+
+    points: list[dict[str, Any]] = []
+    labels: list[str] = []
+    values: list[float] = []
+    texts: list[str] = []
+    tips: list[str] = []
+    outside: list[bool] = []
+    def _guided_order(period: str) -> int:
+        return _period_index(_completion_period(period) or "") or 0
+
+    for guided in sorted(best, key=_guided_order):
+        _rank, raw_item, issuer = best[guided]
+        item = _scaled_guide_item(raw_item, ratio)
+        metric_key = str(item.get("metric_key") or keys[0])
+        low = _as_ratio(_finite(item.get("low")), ratio)
+        high = _as_ratio(_finite(item.get("high")), ratio)
+        mid = _as_ratio(_guide_mid(item), ratio)
+        shown = dict(item)
+        shown["low"], shown["high"], shown["mid"] = low, high, mid
+        actual_keys = _guide_actual_keys(metric_key, keys)
+        completion = _completion_period(guided) or ""
+        completion_index = _period_index(completion)
+        pending = page_index is not None and completion_index is not None and completion_index > page_index
+        actual: float | None
+        if pending:
+            actual = None
+            actual_text = "尚未披露"
+        elif re.fullmatch(r"FY\d{4}", guided) and family in {"revenue", "capex"}:
+            actual = _summed_year_actual(docs, int(guided[2:6]), actual_keys, page_index)
+            actual_text = _fmt_guide(actual, metric_key) if actual is not None else "无实际"
+        elif re.fullmatch(r"FY\d{4}Q[1-4]", guided):
+            actual = _actual_level(docs.get(guided), actual_keys, ratio)
+            actual_text = _fmt_guide(actual, metric_key) if actual is not None else "无实际"
+        else:
+            actual = None
+            actual_text = "无实际"
+        beat = _blank_change()
+        slot = _blank_change()
+        comparable = actual is not None and mid is not None
+        if comparable and not ratio and _safe_level_change(actual, mid) is None:
+            comparable = False
+        if comparable:
+            if ratio:
+                beat = _pp_change(actual, mid)
+            else:
+                beat = _change(_safe_level_change(actual, mid))
+            slot = _guide_slot(actual, low, high, mid)
+        plot_value = _plot_value(beat.get("text") or "")
+        point = {
+            "period": guided,
+            "label": _history_period_label(guided),
+            "issued": _period_label(issuer) or issuer,
+            "guide": _guide_display(shown, metric_key),
+            "mid": _fmt_guide(mid, metric_key),
+            "actual": actual_text,
+            "beat": beat,
+            "slot": slot,
+        }
+        points.append(point)
+        if plot_value is None:
+            continue
+        labels.append(_history_axis_label(guided))
+        values.append(plot_value)
+        texts.append(beat["text"])
+        outside.append(slot.get("text") in {"超上限", "低于下限"})
+        tips.append(f"相对中值 {beat['text']} · {slot['text'] or '—'} · 实际 {actual_text} · 中值 {point['mid']}")
+
+    if not points:
+        return empty
+    plot = None
+    if values:
+        plot = {
+            "labels": labels,
+            "values": values,
+            "texts": texts,
+            "tips": tips,
+            "outside": outside,
+            "unit": "pp" if ratio else "%",
+        }
+    if plot:
+        pending_note = ""
+    elif any(point["actual"] not in {"尚未披露", "无实际"} for point in points):
+        pending_note = "指引和实际的数量级对不上，相对中值先留空。"
+    else:
+        pending_note = "实际还没进季度文件，这张图先空着。"
+    return {
+        "note": note,
+        "chart_title": "实际相对指引中值",
+        "chart_sub": chart_sub,
+        "empty": "",
+        "pending_note": pending_note,
+        "points": points,
+        "plot": plot,
+    }
+
+
 def _performance_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     """管理层数字指引。没给的指标不占行；环比、同比、较共识算不出就空着。"""
     from pipeline.extract.guidance import normalize_period
@@ -2891,14 +3138,22 @@ def _performance_rows(doc: dict[str, Any], docs: dict[str, dict[str, Any]]) -> l
             yoy = _blank_change()
         if versus.get("text") in {None, "", "—"}:
             versus = _blank_change()
+        if re.fullmatch(r"FY\d{4}Q[1-4]", period or ""):
+            horizon = "quarter"
+        elif re.fullmatch(r"FY\d{4}", period or ""):
+            horizon = "year"
+        else:
+            horizon = ""
         rows.append(
             {
+                "family": family,
                 "label": shown,
                 "period": when,
                 "value": _guide_display(item, key),
                 "qoq": qoq,
                 "yoy": yoy,
                 "vs": versus,
+                "track": _guidance_history(docs, page, family, keys, ratio, horizon),
             }
         )
     return rows

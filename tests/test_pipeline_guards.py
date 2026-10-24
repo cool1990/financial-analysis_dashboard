@@ -890,6 +890,200 @@ def test_capex_guidance_row_skipped_when_not_numeric():
     assert _guide_section(doc, {})["rows"] == []
 
 
+def _guide_doc(period: str, items: list, **financials) -> dict:
+    fin = {key: {"value": value} for key, value in financials.items()}
+    return {
+        "meta": {"fiscal_period": period},
+        "guidance": {"items": items},
+        "scorecard": [],
+        "financials": fin,
+    }
+
+
+def test_guidance_history_uses_last_prior_guide_and_later_actual():
+    """披露前最后一次数字指引对照后来的实际。同一期被改过口，取更晚的那次。本页之后的季度不提前出现。"""
+    from builder.build import _guide_section
+
+    def revenue(low, mid, high, period, source="press_release"):
+        return {
+            "metric_key": "revenue",
+            "period": period,
+            "type": "numeric",
+            "low": low,
+            "mid": mid,
+            "high": high,
+            "source": source,
+        }
+
+    docs = {
+        "FY2025Q3": _guide_doc("FY2025Q3", [revenue(90, 100, 110, "FY2026Q1")], revenue=80),
+        "FY2025Q4": _guide_doc(
+            "FY2025Q4",
+            [revenue(100, 110, 120, "FY2026Q1", source="prepared_remarks"), revenue(130, 140, 150, "FY2026Q2")],
+            revenue=90,
+        ),
+        "FY2026Q1": _guide_doc("FY2026Q1", [revenue(160, 170, 180, "FY2026Q2")], revenue=125),
+    }
+    early = {row["family"]: row for row in _guide_section(docs["FY2025Q4"], docs)["rows"]}
+    early_points = {point["period"]: point for point in early["revenue"]["track"]["points"]}
+    assert list(early_points) == ["FY2026Q1", "FY2026Q2"]
+    assert early_points["FY2026Q1"]["guide"] == "$100.00 – $120.00"
+    assert early_points["FY2026Q1"]["actual"] == "尚未披露"
+    assert early_points["FY2026Q1"]["beat"]["text"] == ""
+    assert early["revenue"]["track"]["plot"] is None
+
+    latest = {row["family"]: row for row in _guide_section(docs["FY2026Q1"], docs)["rows"]}
+    points = {point["period"]: point for point in latest["revenue"]["track"]["points"]}
+    assert list(points) == ["FY2026Q1", "FY2026Q2"]
+    # FY2025Q4 改过 FY2026Q1 的口，不用 FY2025Q3 的 100。实际 125 高出 120 的上限。
+    hit = points["FY2026Q1"]
+    assert hit["issued"] == "2025财年Q4"
+    assert hit["mid"] == "$110.00"
+    assert hit["actual"] == "$125.00"
+    assert hit["beat"] == {"text": "+13.6%", "cls": "up"}
+    assert hit["slot"] == {"text": "超上限", "cls": "up"}
+    assert points["FY2026Q2"]["actual"] == "尚未披露"
+    assert latest["revenue"]["track"]["plot"]["labels"] == ["2026Q1"]
+    assert latest["revenue"]["track"]["plot"]["values"] == [13.6]
+    assert latest["revenue"]["track"]["plot"]["outside"] == [True]
+    assert latest["revenue"]["track"]["plot"]["unit"] == "%"
+
+
+def test_guidance_history_skips_incomparable_scale_and_same_release():
+    from builder.build import _REPORTING_CCY, _guide_section, _load_docs
+
+    mismatched = {
+        "FY2026Q1": _guide_doc("FY2026Q1", [{
+            "metric_key": "revenue",
+            "period": "FY2026Q2",
+            "type": "numeric",
+            "mid": 1960,
+            "low": 1960,
+            "high": 1960,
+            "point_raw": "1960",
+        }]),
+        "FY2026Q2": _guide_doc("FY2026Q2", [{
+            "metric_key": "revenue",
+            "period": "FY2026Q3",
+            "type": "numeric",
+            "mid": 200_000_000_000,
+            "low": 200_000_000_000,
+            "high": 200_000_000_000,
+        }], revenue=196_000_000_000),
+    }
+    row = _guide_section(mismatched["FY2026Q2"], mismatched)["rows"][0]
+    point = next(item for item in row["track"]["points"] if item["period"] == "FY2026Q2")
+    assert point["actual"] == "$196.00B"
+    assert point["beat"]["text"] == "" and point["slot"]["text"] == ""
+    assert row["track"]["plot"] is None
+    assert "数量级" in row["track"]["pending_note"]
+
+    token = _REPORTING_CCY.set("CNY")
+    try:
+        hk = _guide_section(
+            json.loads((ROOT / "data" / "0700.HK" / "FY2026Q1.json").read_text(encoding="utf-8")),
+            _load_docs("0700.HK"),
+        )
+    finally:
+        _REPORTING_CCY.reset(token)
+    revenue = next(row for row in hk["rows"] if row["label"] == "营收")
+    assert revenue["track"]["points"] == []
+    assert "没有这项更早的数字指引" in revenue["track"]["empty"]
+
+
+def test_guidance_history_meta_open_guide_and_tsm_printed_actuals():
+    """META 历史季已有数字指引时可对照实际；未披露的下一期仍显示尚未兑现。TSM 用已保存的指引对照后来的营收和毛利率。"""
+    from builder.build import _guide_section, _load_docs
+
+    meta = _guide_section(
+        json.loads((ROOT / "data" / "META" / "FY2026Q3.json").read_text(encoding="utf-8")),
+        _load_docs("META"),
+    )
+    meta_rows = {row["label"]: row for row in meta["rows"]}
+    revenue = meta_rows["营收"]["track"]
+    periods = [point["period"] for point in revenue["points"]]
+    assert periods[0] == "FY2022Q2"
+    assert periods[-1] == "FY2026Q4"
+    assert revenue["points"][-1]["actual"] == "尚未披露"
+    assert revenue["points"][-1]["guide"] == "$73.00B – $76.00B"
+    # 已兑现的最近一期应有实际与相对中值，图才有柱
+    q3 = next(point for point in revenue["points"] if point["period"] == "FY2026Q3")
+    assert q3["actual"] == "$64.60B"
+    assert revenue["plot"] is not None
+    assert revenue["plot"]["labels"][-1] == "2026Q3"
+    capex = meta_rows["资本开支"]["track"]
+    capex_labels = [point["label"] for point in capex["points"]]
+    assert capex_labels[0] == "FY2022全年"
+    assert capex_labels[-1] == "FY2026全年"
+    assert capex["points"][-1]["actual"] == "尚未披露"
+    # 全年指引已有更早兑现点时图可有柱；未披露的最后一期不单独要求空图
+
+    docs = _load_docs("TSM")
+    latest = {row["family"]: row for row in _guide_section(docs["FY2026Q3"], docs)["rows"]}
+    series = {point["period"]: point for point in latest["revenue"]["track"]["points"]}
+    periods = list(series)
+    assert periods[0] == "FY2022Q2"
+    assert periods[-1] == "FY2026Q4"
+    for need in (
+        "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4",
+        "FY2026Q1", "FY2026Q2", "FY2026Q3", "FY2026Q4",
+    ):
+        assert need in series
+    first = series["FY2025Q1"]
+    assert first["issued"] == "2024财年Q4"
+    assert first["guide"] == "$25.00B – $25.80B"
+    assert first["mid"] == "$25.40B"
+    assert first["actual"] == "$25.53B"
+    assert first["beat"] == {"text": "+0.5%", "cls": "up"}
+    assert first["slot"] == {"text": "区间内", "cls": "flat"}
+    third = series["FY2025Q3"]
+    assert third["guide"] == "$31.80B – $33.00B"
+    assert third["actual"] == "$33.10B"
+    assert third["beat"] == {"text": "+2.2%", "cls": "up"}
+    assert third["slot"] == {"text": "超上限", "cls": "up"}
+    assert series["FY2026Q4"]["actual"] == "尚未披露"
+    plot = latest["revenue"]["track"]["plot"]
+    i_q1 = plot["labels"].index("2025Q1")
+    i_q3 = plot["labels"].index("2025Q3")
+    assert plot["labels"][-1] == "2026Q3"
+    assert plot["values"][i_q1] == 0.5 and plot["values"][i_q3] == 2.2
+    assert plot["outside"][i_q1] is False and plot["outside"][i_q3] is True
+    assert "相对中值 +0.5%" in plot["tips"][i_q1] and "区间内" in plot["tips"][i_q1]
+    assert "（实际 − 指引中值）/ 指引中值" in latest["revenue"]["track"]["note"]
+
+    margin = {point["period"]: point for point in latest["gross_margin"]["track"]["points"]}
+    q1_margin = margin["FY2025Q1"]
+    assert q1_margin["guide"] == "57.00% – 59.00%"
+    assert q1_margin["mid"] == "58.00%"
+    assert q1_margin["actual"] == "58.80%"
+    assert q1_margin["beat"] == {"text": "+0.8pp", "cls": "up"}
+    assert q1_margin["slot"]["text"] == "区间内"
+    assert latest["gross_margin"]["track"]["plot"]["unit"] == "pp"
+    assert "百分点" in latest["gross_margin"]["track"]["note"]
+
+    prior = {row["family"]: row for row in _guide_section(docs["FY2025Q4"], docs)["rows"]}
+    prior_periods = [point["period"] for point in prior["revenue"]["track"]["points"]]
+    assert prior_periods[0] == "FY2022Q2"
+    assert prior_periods[-1] == "FY2026Q1"
+    for need in ("FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1"):
+        assert need in prior_periods
+    assert prior["revenue"]["track"]["points"][-1]["actual"] == "尚未披露"
+    assert "FY2026Q2" not in prior_periods
+    capex_points = {point["period"]: point for point in prior["capex"]["track"]["points"]}
+    assert capex_points["FY2025"]["actual"] == "无实际"
+    assert capex_points["FY2025"]["beat"]["text"] == ""
+    assert capex_points["FY2026"]["actual"] == "尚未披露"
+
+    template = (ROOT / "builder" / "templates" / "period.html").read_text(encoding="utf-8")
+    guide = template.split('id="guide"', 1)[1].split('id="qa"', 1)[0]
+    assert 'data-guide-key="{{ row.family }}"' in guide
+    assert "相对中值" in guide and "相对区间" in guide
+    assert "<h3>行业展望</h3>" in guide
+    assert "经营指标" not in guide and "股东回报" not in guide
+    script = (ROOT / "builder" / "static" / "charts.js").read_text(encoding="utf-8")
+    assert "drawGuideCharts" in script and "guideBeatLabels" in script
+
+
 def test_industry_outlook_prompt_teaches_depth_and_stage2_calls_deepseek_path():
     """行业展望由 Stage2 的 DeepSeek 按提示词写，不在构建时另写。"""
     prompt = (ROOT / "prompts" / "extract_industry_outlook.md").read_text(encoding="utf-8")
@@ -1058,7 +1252,7 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
         label = f"FQ{item['tv_label'][-1]} {item['tv_label'][:4]}"
         assert by_q[label]["actual"] is None
         assert by_q[label]["consensus"] == round_eps(item["eps_est"])
-    assert by_q["FQ4 2026"]["consensus"] == round_eps(8.366721) == 8.37
+    assert by_q["FQ4 2026"]["consensus"] == round_eps(8.352415) == 8.35
     assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((forward[2]["eps_est"] / 7.35 - 1) * 100)
     assert all(q["actual"] != 3.83 for q in chart["quarters"])
     assert all(q["basis"] == "Non-GAAP" for q in chart["quarters"] if q["actual"] is not None)
@@ -1142,7 +1336,7 @@ def test_expect_chart_leaves_missing_scan_fields_empty(monkeypatch):
             "revenue_forecast_next_fy": 800_000_000_000.0,
         },
         "future_quarters": [
-            {"tv_label": "2026-Q4", "eps_est": 8.366721, "rev_est": 74_882_505_478.0},
+            {"tv_label": "2026-Q4", "eps_est": 8.352415, "rev_est": 74_882_505_478.0},
             {"tv_label": "2027-Q1", "eps_est": 7.558111, "rev_est": None},
             {"tv_label": "2027-Q2", "eps_est": 7.811894, "rev_est": 73_784_201_435.0},
             {"tv_label": "2027-Q3", "eps_est": 8.355748, "rev_est": 78_152_843_573.0},
@@ -1174,7 +1368,7 @@ def test_expect_chart_leaves_missing_scan_fields_empty(monkeypatch):
     ]
     by_eps = {row["label"]: row for row in chart["quarters"]}
     by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
-    assert by_eps["FQ4 2026"]["consensus"] == 8.37
+    assert by_eps["FQ4 2026"]["consensus"] == 8.35
     assert by_eps["FQ1 2027"]["consensus"] == 7.56
     assert by_rev["FQ1 2027"]["consensus"] is None
     assert by_rev["FQ1 2027"]["actual"] is None
