@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "tickertrends",
+    "eps_basis": "gaap",
+    "transcript_url": "https://tickertrends.io/transcripts/GOOGL/Q1-earnings-transcript-2024",
+    "stage2_generation": {
+      "llm_model": "sonnet",
+      "generated_by": "mac-claude-cli",
+      "note": "Historical Stage2 written via local Claude CLI (sonnet medium) from English Obsidian/tickertrends transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -177,12 +183,379 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "status": "done",
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "营收 805 亿美元，同比 +15%，搜索、YouTube 广告与云共同拉动，闰年贡献略超 1 个百分点。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "搜索及其他广告收入增长 14%，零售垂直领域领涨，APAC 零售商贡献突出。",
+            "evidence_quote": "Search and other revenues grew 14% year-on-year led again by solid growth in the retail vertical",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "YouTube 广告增长 21%，直接响应和品牌均强；订阅、平台与设备增长 18%。",
+            "evidence_quote": "YouTube Ads revenues were up 21% year-on-year driven by growth in both direct response and brand.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "谷歌云收入 96 亿美元，同比增长 28%，GCP 与 AI 贡献提升。",
+            "evidence_quote": "Revenues were $9.6 billion for the quarter, up 28%",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "闰年为合并营收增速贡献略超 1 个百分点。",
+            "evidence_quote": "Q1 results reflect the benefit of leap year, which contributed slightly more than 1 point to our revenue growth rate",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率 58.1%，同比 +2.0pp。成本增速低于营收增速，主要成本为 YouTube 内容采购。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": true,
+            "description": "总营业成本 337 亿美元仅增 10%，低于营收 15% 的增速，推动毛利率提升。",
+            "evidence_quote": "total cost of revenues was $33.7 billion, up 10%",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "成本增速低于营收增速，由两者对比推断毛利率提升。",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "其他营业成本增长主要来自 YouTube 内容采购成本。",
+            "evidence_quote": "the increase driven primarily by content acquisition costs associated with YouTube",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "GAAP 营业利润率 31.6%，同比 +6.7pp；去年重组费 26 亿对比今年遣散 7.16 亿，叠加成本重塑。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": true,
+            "description": "同比基数受益于 2023Q1 的 26 亿美元重组费，本季遣散相关费用仅 7.16 亿美元。",
+            "evidence_quote": "the restructuring charges we took in the first quarter of 2023 of $2.6 billion as well as the $716 million in employee severance",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "持续重塑成本结构，剔除重组与遣散后营业利润率同比扩张 400 个基点。",
+            "evidence_quote": "400 basis point expansion of our Alphabet operating margin year-on-year, excluding the impact of restructuring and severance charges",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "营业利润 254.7 亿美元，同比 +46%；调整后增 31%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "收入增长叠加费用控制，GAAP 营业利润同比增长 46%。",
+            "evidence_quote": "Operating income was $25.5 billion, up 46% on a reported basis",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "去年同期重组费用较高，使报告口径增速高于调整后口径。",
+            "evidence_quote": "On an adjusted basis, operating income was up 31%",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "净利润 236.6 亿美元，同比 +57%，随营业利润大幅增长。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "营业利润增长 46% 是净利润增长的主要来源。",
+            "evidence_quote": "Net income was $23.7 billion and EPS was $1.89.",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "净利润增速高于营业利润，原文未拆解非营业项目，按营业利润增长推断主要来源。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "GAAP EPS 1.89 美元，同比 +62%，源于利润增长。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "净利润同比增长 57%，带动 EPS 提升。",
+            "evidence_quote": "Net income was $23.7 billion and EPS was $1.89.",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "EPS 增速高于净利润，推断股数减少也有贡献，但原文未说明。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "经营现金流 288.5 亿美元，同比 +23%，环比 +53%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "营业利润显著增长支撑经营现金流提升。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "原文未直接讨论经营现金流，依据利润增长推断。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "资本开支约 120 亿美元，同比 +91%，几乎全部用于技术基础设施。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "投入以服务器为最大项，其次为数据中心，反映对 AI 机会的信心。",
+            "evidence_quote": "driven overwhelmingly by investment in our technical infrastructure, with the largest component for servers followed by data centers",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "支持 Gemini、云客户及搜索与 YouTube 的 AI 应用算力需求。",
+            "evidence_quote": "reflects our confidence in the opportunities offered by AI across our business",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "fcf",
+        "summary": "自由现金流 168.4 亿美元，同比 -2%，资本开支翻倍抵消经营现金流增长；环比大幅回升。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "资本开支同比增长 91%，吞噬了经营现金流 23% 的增量。",
+            "evidence_quote": "We delivered free cash flow of $16.8 billion in the first quarter and $69.1 billion for the trailing 12 months.",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "由财务数据中经营现金流与资本开支的变化推断。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      }
+    ]
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "capex",
+        "metric_label": "季度资本开支",
+        "period": "FY2024",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "flat_or_up",
+        "statement": "预计 2024 年各季度资本开支大致不低于 Q1 约 120 亿美元的水平，季度值会因现金支付时点波动。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect quarterly CapEx throughout the year to be roughly at or above the Q1 level",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "办公设施占资本开支比例",
+        "period": "FY2024",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": "10%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "办公设施投资预计不到 2024 年总资本开支的 10%，与 2023 年大致持平。",
+        "source": "qa",
+        "source_quote": "our investment in office facilities will be about less than 10% of the total CapEx in 2024, roughly flat with our CapEx in 2023",
+        "low": null,
+        "mid": null,
+        "high": 10.0
+      },
+      {
+        "metric_key": "operating_margin",
+        "metric_label": "Alphabet 营业利润率",
+        "period": "FY2024",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "通过放缓费用增速，预计 2024 全年营业利润率较 2023 年扩张。",
+        "source": "prepared_remarks",
+        "source_quote": "We believe these efforts will enable us to deliver full year 2024 Alphabet operating margin expansion relative to 2023.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "外汇影响",
+        "period": "FY2024Q2",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "down",
+        "statement": "按当前即期汇率，预计 Q2 外汇逆风大于 Q1。",
+        "source": "prepared_remarks",
+        "source_quote": "at current spot rates, we expect a larger headwind from foreign exchange in Q2 versus Q1",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "revenue",
+        "metric_label": "APAC 零售商基数效应",
+        "period": "FY2024Q2",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "APAC 零售商支出增长自 2023Q2 开始，Q2 起将面临高基数。",
+        "source": "prepared_remarks",
+        "source_quote": "which means we will begin lapping that impact in the second quarter",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "股东回报",
+        "period": "FY2024",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "0.20",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "新增每股 0.20 美元季度股息，并新增 700 亿美元回购授权。",
+        "source": "prepared_remarks",
+        "source_quote": "adding a quarterly dividend of $0.20 per share to our capital return program as well as a new $70 billion authorization in share repurchases",
+        "low": 0.2,
+        "mid": 0.2,
+        "high": 0.2
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "YouTube 与云年化收入",
+        "period": "FY2024",
+        "type": "numeric",
+        "low_raw": "100000000000",
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "预计 2024 年底 YouTube 整体与云合计年化收入超过 1000 亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect YouTube overall and Cloud to exit 2024 at a combined annual run rate of over $100 billion",
+        "low": 100000000000.0,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -192,21 +565,528 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "需求变化（搜索与生成式 AI）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层把生成式 AI 视为搜索的扩容机会：AI 概览让搜索能回答更复杂的问题，并已在美国和英国的一小部分查询上实验数周。管理层称用户满意度和参与度均有提升，但未量化，且强调变现转型将随时间展开。"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "已服务数十亿次生成式 AI 查询，覆盖多个类别",
+              "Circle to Search 等入口增加了用户访问搜索的方式",
+              "SGE 响应的机器成本较 Labs 初期下降 80%，缓解了成本与延迟担忧"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "供给变化（算力与基础设施）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "公司把技术基础设施视为核心壁垒，表示将持续投入。Q1 资本开支约 120 亿美元，以服务器为主、数据中心次之，并预计全年季度水平不低于此。折旧和相关费用将成为日益增加的费用逆风，管理层表示需要通过放缓其他费用增速来腾出空间。"
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层列出 AI 变现的三条路径：广告（如 Gemini 引入 Performance Max、SGE 中的搜索与购物广告）、云，以及订阅。Google One 付费订阅用户超 1 亿，并推出含 Gemini Advanced 的 AI 高级套餐；YouTube 音乐与 Premium 订阅用户超 1 亿；YouTube TV 超 800 万付费用户。"
+          }
+        ]
+      },
+      {
+        "title": "公司战略（成本与组织）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "公司将模型团队整合至 Google DeepMind，并合并机器学习基础设施团队、平台与设备团队，目标是提升决策速度与算力分配效率。同时继续控制人员增速，Q1 人员数环比下降，但仍在云、DeepMind 和技术基础设施方面投入顶尖工程人才。"
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "GAAP",
+      "next_quarter": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2024Q2",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2024",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "询问可变现的商业查询趋势是否有变化，以及电商领域新进入者是否带来影响。",
+        "answer_summary": "Sundar（CEO）：多年经验是自然搜索体验好，变现随之跟进，趋势通常能延续。生成式 AI 和 AI 概览将扩大可服务的查询类型，能回答更复杂的问题，并且似乎覆盖各类查询。仍处早期，会稳健推进并把用户体验放在首位。未直接给出商业查询的具体数据，也未回应电商新进入者。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未提供商业查询增速数据，也未回应电商新进入者。",
+        "tone": "positive",
+        "answer_quote": "when things work well on the organic side, monetization follows. So typically, the trends we see carry over well.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "询问放缓费用增速、持续重塑成本结构还有哪些具体优化方向。",
+        "answer_summary": "Ruth（CFO）：重点是放缓费用增速，即持续重塑成本基础。她明确提到折旧和资本开支相关费用的逆风在加大。工作流与此前一致：产品与流程优先级、组织效率与结构（如合并设备与平台团队）、技术基础设施、用 AI 精简内部运营、与供应商的采购、房地产优化，均在持续推进。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "we are very cognizant of the increasing headwind we have from higher depreciation and expenses associated with the higher CapEx, and so these efforts are ongoing.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "询问生成式 AI 功能放入主搜索页后哪些查询场景效果最好，以及后续推进节奏。",
+        "answer_summary": "Sundar（CEO）：早期数据印证了其判断，即 SGE 会扩大能提供带来源链接答案的查询范围。AI 概览已在美国和英国推出，主要针对更复杂、体验提升明显的查询，已服务数十亿次查询，覆盖多个类别。仍在测试，以指标驱动，今年会持续迭代。未给出具体节奏。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出推出节奏和时间表。",
+        "tone": "positive",
+        "answer_quote": "We've already served billions of queries and it seems to cut across categories, but we are still continuing our testing.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "询问 Q1 的 120 亿美元资本开支是否可作为全年运行水平，以及明年是否会更高。",
+        "answer_summary": "Ruth（CFO）：预计全年各季度资本开支大致不低于 Q1 约 120 亿美元的现金资本开支水平，季度报告值会因付款时点波动。几乎全部投向技术基础设施。办公设施投资预计占 2024 年总资本开支不到 10%，与 2023 年大致持平。2025 年为时尚早，无可补充。",
+        "new_numbers": [
+          "约120亿美元/季度或以上",
+          "办公设施<10%"
+        ],
+        "directness": "direct",
+        "evasion_note": "2025 年资本开支明确拒绝评论。",
+        "tone": "positive",
+        "answer_quote": "we do expect the quarterly CapEx throughout the year to be roughly at or above the $12 billion cash CapEx we had here in Q1.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "询问在大规模运营和技术创新期，公司如何平衡推进组织、增长投入与利润率。",
+        "answer_summary": "Sundar（CEO）：AI 转型是千载难逢的机遇，公司自 2016 年起布局 TPU。机遇在于研究与创新规模，首次能以横向方式让 AI 影响搜索、YouTube、云、Waymo 等整个公司，杠杆很高。挑战在于推动心态转变：把人员调整到最高优先级，借助 20 年的机器效率经验，高效使用资金，同时大胆而负责任地推进。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "for the first time, we can work on AI in a horizontal way and it impacts the entire breadth of the company",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Stephen Ju",
+        "firm": "UBS",
+        "topic": "YouTube",
+        "is_new_topic": false,
+        "question_summary": "询问 Shorts 广告上线近两年，广告主接受度如何，以及竖屏变现是否存在结构性原因导致无法追平横屏。",
+        "answer_summary": "Philipp（CSO）：本季 YouTube 表现很强。美国 Shorts 相对 in-stream 的变现率 12 个月内翻了一倍多。广告主只有在看到正 ROI 时才会投入，说明短期和长期都有效。Shorts 是长期押注，日均观看量 700 亿次，上传频道数同比增长 50%。他目前看不出追平横屏变现的结构性障碍。",
+        "new_numbers": [
+          "Shorts 日均观看 700 亿次",
+          "上传 Shorts 频道数同比 +50%"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "structural reasons, whether we can't get to a match here, I have a hard time seeing those at the moment over time.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "询问资本开支近两个季度大增是否因供给改善，以及广告和云上的投资回报是更高的经营成本还是更好的回报。",
+        "answer_summary": "Ruth（CFO）：资本开支增长反映全公司机会，包括支持 Gemini 基础模型、服务云客户和 GCP 基础设施增长，以及搜索、YouTube 等应用。重点是确保有算力支持服务与机会。资本开支投入各业务后会开放更多服务与产品，带来收入机会，公司专注变现，也关注算力交付各环节的效率。未直接回答供给是否变宽松，也未量化回报。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回应供给是否更易获得，也未对回报率与过去比较作出判断。",
+        "tone": "positive",
+        "answer_quote": "as we're investing in CapEx and applying it across our various businesses, it opens up more services and products, which bring revenue opportunities.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jian Li (for Mark Mahaney)",
+        "firm": "Evercore",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "询问在外部 AI 聊天机器人环境下，AI 系统是否可能让谷歌搜索量出现阶跃式变化。",
+        "answer_summary": "Sundar（CEO）：这是搜索的积极时刻，让公司能深刻演进产品。搜索体验独特，用户来获取答案、探索和多方观点，公司长期投入创新，认为自己处境极佳。未直接讨论搜索量是否阶跃。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回答 AI 系统是否带来搜索量阶跃，也未提及外部聊天机器人。",
+        "tone": "positive",
+        "answer_quote": "we view this moment as a positive moment for Search. And I think it allows us to evolve our product in a profound way.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jian Li (for Mark Mahaney)",
+        "firm": "Evercore",
+        "topic": "云业务",
+        "is_new_topic": false,
+        "question_summary": "询问 YouTube 和云 2024 年底合计年化收入超 1000 亿美元的判断依据，是否来自云需求拐点。",
+        "answer_summary": "Ruth（CFO）：主要是业务持续的增长势头和强劲表现，这是为了说明公司长期打造的业务规模，上季度关于订阅业务也有类似表述。她没有说是云需求拐点或生成式 AI 工作负载需求台阶式变化。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回应是否由云需求拐点驱动。",
+        "tone": "neutral",
+        "answer_quote": "it's just the ongoing momentum that we've seen in the business that we've been talking about, the ongoing growth and strong performance.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "云业务",
+        "is_new_topic": false,
+        "question_summary": "询问 GCP 加速增长的机会与制约，是销售还是产品解决方案，以及是否会借助合作伙伴。",
+        "answer_summary": "Sundar（CEO）：云是拐点，AI 转型促使客户重新思考整个技术栈，对话增多。机会在付费 AI 基础设施、Vertex AI 的模型选择广度，以及用 Workspace 提升生产力。会通过自建与强大的合作伙伴计划结合推进。挑战是客户切换成本和门槛，公司持续投入以降低切换难度。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think you'll see us do it both organically and with a strong partner program as well.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "YouTube",
+        "is_new_topic": false,
+        "question_summary": "询问 YouTube 对 NFL Sunday Ticket 之外更多直播体育版权的态度。",
+        "answer_summary": "Philipp（CSO）：公司与美国及全球主要体育联盟、联合会、球队、运动员和广播商长期合作，结合庞大体育观众，推动 Sunday Ticket、YouTube TV、Primetime Channels 等订阅体验投入。目前没有可宣布的内容，也始终在寻找为用户、广告主和创作者创造价值的机会。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "明确表示没有可公布内容，未阐述版权策略。",
+        "tone": "neutral",
+        "answer_quote": "there's nothing that we have to announce at the moment.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "询问手机端侧 AI 搜索不访问网络时，公司如何变现。",
+        "answer_summary": "Sundar（CEO）：部分用例可在端侧完成，但多数需求仍需要云和网络的丰富性。Samsung 上的 Circle to Search 为用户提供了随时访问搜索的新方式，属于积极因素。他认为端侧与云之间的划分不会成为大的驱动因素。没有直接谈变现方式。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回答端侧场景的变现机制。",
+        "tone": "positive",
+        "answer_quote": "many, many things for which people will need to reach out to the cloud.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "询问能否量化 SGE 带来的参与度变化，如使用时长或查询量增加。",
+        "answer_summary": "Sundar（CEO）：美国和英国仅在一小部分查询上做了几周实时实验，各项迹象显示用户满意度提升，参与度增加，但会随时间展开。去年的担忧如成本、延迟，公司现在有信心管理，对变现转型也有信心。未给出量化数据。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未量化参与度提升幅度。",
+        "tone": "positive",
+        "answer_quote": "all indications are positive that it improves user satisfaction. We see an increase in engagement, but I see this as something which will play out over time.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "询问下半年硬件路线图中值得关注的重点方向。",
+        "answer_summary": "本轮回答仅涉及第一个问题，Sundar（CEO）未回应硬件路线图问题。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "硬件问题未被回答。",
+        "tone": "neutral",
+        "answer_quote": "On the first question on Search, not much more to add to what I said",
+        "review_flags": [
+          "hardware question unanswered"
+        ]
+      }
+    ],
+    "topic_stats": {
+      "搜索与广告": 3,
+      "费用与运营": 2,
+      "AI 产品与模型": 2,
+      "产能与资本开支": 2,
+      "YouTube": 2,
+      "云业务": 2,
+      "其他": 1
+    },
+    "new_topics": [
+      "其他"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "AI 产品与模型",
+      "产能与资本开支",
+      "云业务"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "询问可变现的商业查询趋势是否有变化，以及电商领域新进入者是否带来影响。",
+        "answer_summary": "Sundar（CEO）：多年经验是自然搜索体验好，变现随之跟进，趋势通常能延续。生成式 AI 和 AI 概览将扩大可服务的查询类型，能回答更复杂的问题，并且似乎覆盖各类查询。仍处早期，会稳健推进并把用户体验放在首位。未直接给出商业查询的具体数据，也未回应电商新进入者。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未提供商业查询增速数据，也未回应电商新进入者。",
+        "tone": "positive",
+        "answer_quote": "when things work well on the organic side, monetization follows. So typically, the trends we see carry over well.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Douglas Anmuth",
+        "firm": "JPMorgan",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "询问生成式 AI 功能放入主搜索页后哪些查询场景效果最好，以及后续推进节奏。",
+        "answer_summary": "Sundar（CEO）：早期数据印证了其判断，即 SGE 会扩大能提供带来源链接答案的查询范围。AI 概览已在美国和英国推出，主要针对更复杂、体验提升明显的查询，已服务数十亿次查询，覆盖多个类别。仍在测试，以指标驱动，今年会持续迭代。未给出具体节奏。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出推出节奏和时间表。",
+        "tone": "positive",
+        "answer_quote": "We've already served billions of queries and it seems to cut across categories, but we are still continuing our testing.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "询问资本开支近两个季度大增是否因供给改善，以及广告和云上的投资回报是更高的经营成本还是更好的回报。",
+        "answer_summary": "Ruth（CFO）：资本开支增长反映全公司机会，包括支持 Gemini 基础模型、服务云客户和 GCP 基础设施增长，以及搜索、YouTube 等应用。重点是确保有算力支持服务与机会。资本开支投入各业务后会开放更多服务与产品，带来收入机会，公司专注变现，也关注算力交付各环节的效率。未直接回答供给是否变宽松，也未量化回报。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回应供给是否更易获得，也未对回报率与过去比较作出判断。",
+        "tone": "positive",
+        "answer_quote": "as we're investing in CapEx and applying it across our various businesses, it opens up more services and products, which bring revenue opportunities.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jian Li (for Mark Mahaney)",
+        "firm": "Evercore",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "询问在外部 AI 聊天机器人环境下，AI 系统是否可能让谷歌搜索量出现阶跃式变化。",
+        "answer_summary": "Sundar（CEO）：这是搜索的积极时刻，让公司能深刻演进产品。搜索体验独特，用户来获取答案、探索和多方观点，公司长期投入创新，认为自己处境极佳。未直接讨论搜索量是否阶跃。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回答 AI 系统是否带来搜索量阶跃，也未提及外部聊天机器人。",
+        "tone": "positive",
+        "answer_quote": "we view this moment as a positive moment for Search. And I think it allows us to evolve our product in a profound way.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jian Li (for Mark Mahaney)",
+        "firm": "Evercore",
+        "topic": "云业务",
+        "is_new_topic": false,
+        "question_summary": "询问 YouTube 和云 2024 年底合计年化收入超 1000 亿美元的判断依据，是否来自云需求拐点。",
+        "answer_summary": "Ruth（CFO）：主要是业务持续的增长势头和强劲表现，这是为了说明公司长期打造的业务规模，上季度关于订阅业务也有类似表述。她没有说是云需求拐点或生成式 AI 工作负载需求台阶式变化。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未回应是否由云需求拐点驱动。",
+        "tone": "neutral",
+        "answer_quote": "it's just the ongoing momentum that we've seen in the business that we've been talking about, the ongoing growth and strong performance.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Kenneth Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "YouTube",
+        "is_new_topic": false,
+        "question_summary": "询问 YouTube 对 NFL Sunday Ticket 之外更多直播体育版权的态度。",
+        "answer_summary": "Philipp（CSO）：公司与美国及全球主要体育联盟、联合会、球队、运动员和广播商长期合作，结合庞大体育观众，推动 Sunday Ticket、YouTube TV、Primetime Channels 等订阅体验投入。目前没有可宣布的内容，也始终在寻找为用户、广告主和创作者创造价值的机会。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "明确表示没有可公布内容，未阐述版权策略。",
+        "tone": "neutral",
+        "answer_quote": "there's nothing that we have to announce at the moment.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "询问手机端侧 AI 搜索不访问网络时，公司如何变现。",
+        "answer_summary": "Sundar（CEO）：部分用例可在端侧完成，但多数需求仍需要云和网络的丰富性。Samsung 上的 Circle to Search 为用户提供了随时访问搜索的新方式，属于积极因素。他认为端侧与云之间的划分不会成为大的驱动因素。没有直接谈变现方式。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回答端侧场景的变现机制。",
+        "tone": "positive",
+        "answer_quote": "many, many things for which people will need to reach out to the cloud.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "询问能否量化 SGE 带来的参与度变化，如使用时长或查询量增加。",
+        "answer_summary": "Sundar（CEO）：美国和英国仅在一小部分查询上做了几周实时实验，各项迹象显示用户满意度提升，参与度增加，但会随时间展开。去年的担忧如成本、延迟，公司现在有信心管理，对变现转型也有信心。未给出量化数据。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未量化参与度提升幅度。",
+        "tone": "positive",
+        "answer_quote": "all indications are positive that it improves user satisfaction. We see an increase in engagement, but I see this as something which will play out over time.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "询问下半年硬件路线图中值得关注的重点方向。",
+        "answer_summary": "本轮回答仅涉及第一个问题，Sundar（CEO）未回应硬件路线图问题。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "硬件问题未被回答。",
+        "tone": "neutral",
+        "answer_quote": "On the first question on Search, not much more to add to what I said",
+        "review_flags": [
+          "hardware question unanswered"
+        ]
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
-    "prior_watchlist_review": [],
-    "next_watchlist": []
+    "headline": "搜索与云强劲，利润率大幅扩张，新增股息与700亿回购",
+    "key_findings": [
+      {
+        "finding": "营收与利润超预期增长",
+        "text": "营收 805 亿美元，同比 +15%；营业利润率 31.6%，同比 +6.7pp；EPS 1.89 美元，同比 +62%。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "谷歌云盈利并加速",
+        "text": "云收入同比增长 28%，营业利润 9 亿美元，营业利润率 9%，管理层称 AI 贡献提升。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "资本开支翻倍且预计维持高位",
+        "text": "Q1 资本开支约 120 亿美元，同比 +91%，管理层预计全年各季度大致不低于该水平。",
+        "evidence": "qa#2"
+      }
+    ],
+    "prior_watchlist_review": [
+      {
+        "item": "Q1 资本开支是否维持高位，不低于 Q4 的 110.2 亿美元",
+        "status": "confirmed",
+        "evidence": "Q1 资本开支 120.1 亿美元，高于 Q4。"
+      },
+      {
+        "item": "云收入同比增速≥26%，营业利润为正",
+        "status": "confirmed",
+        "evidence": "云收入同比 +28%，营业利润 9 亿美元。"
+      },
+      {
+        "item": "遣散相关费用是否压低营业利润率，低于 Q4 的 27.5%",
+        "status": "refuted",
+        "evidence": "GAAP 营业利润率 31.6%，高于 Q4。"
+      },
+      {
+        "item": "搜索及其他广告收入同比增速不低于 13%",
+        "status": "confirmed",
+        "evidence": "搜索及其他收入同比 +14%。"
+      },
+      {
+        "item": "自由现金流高于 Q4 的 78.96 亿美元",
+        "status": "confirmed",
+        "evidence": "Q1 自由现金流 168.4 亿美元。"
+      }
+    ],
+    "next_watchlist": [
+      {
+        "metric_key": "capex",
+        "condition": "Q2 资本开支是否维持在 Q1 水平或以上，验证管理层指引",
+        "threshold": "不低于约 120 亿美元"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "Q2 起面临 APAC 零售商高基数及更大的外汇逆风，搜索及其他广告增速能否保持",
+        "threshold": "搜索及其他收入同比增速不低于 12%"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "云收入增速能否保持并保持盈利",
+        "threshold": "云收入同比增速≥26%，营业利润为正"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "全年营业利润率扩张的进展，在折旧上升下是否仍高于去年同期",
+        "threshold": "高于 2023Q2 水平"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "YouTube 广告在 Q1 低基数受益消退后的增速",
+        "threshold": "同比增速不低于 15%"
+      }
+    ]
   },
   "thesis_review": {}
 }

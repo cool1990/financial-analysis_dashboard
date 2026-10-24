@@ -95,7 +95,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>9</b></a>
     <a href="#notes">数据来源<b>1</b></a>
   </div>
 </nav>
@@ -120,11 +120,11 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">12 项指标 · 点指标看图</span>
+    <span class="ev-meta">11 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">营业收入</span>
@@ -132,7 +132,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+15.4%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-6.7%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">营收 805 亿美元，同比 +15%，搜索、YouTube 广告与云共同拉动，闰年贡献略超 1 个百分点。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -155,7 +155,27 @@
       </div>
       <p class="small muted mix-note" data-fin-note>营收、营业成本、研发、销售、管理费用来自 SEC companyfacts 的单季 us-gaap。毛利为营收减营业成本，申报没有单独的毛利科目，也没有把营业成本再拆开。地区收入来自 10-Q/10-K XBRL 的地区轴。第四季没有单季事实时用全年减前九个月；地区口径对不上时留空。 已保存的披露文字里没有地区收入，地区柱留空。</p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>搜索及其他广告收入增长 14%，零售垂直领域领涨，APAC 零售商贡献突出。</p>
+<blockquote>Search and other revenues grew 14% year-on-year led again by solid growth in the retail vertical</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>YouTube 广告增长 21%，直接响应和品牌均强；订阅、平台与设备增长 18%。</p>
+<blockquote>YouTube Ads revenues were up 21% year-on-year driven by growth in both direct response and brand.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>谷歌云收入 96 亿美元，同比增长 28%，GCP 与 AI 贡献提升。</p>
+<blockquote>Revenues were $9.6 billion for the quarter, up 28%</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>闰年为合并营收增速贡献略超 1 个百分点。</p>
+<blockquote>Q1 results reflect the benefit of leap year, which contributed slightly more than 1 point to our revenue growth rate</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -182,7 +202,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+2.0pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+1.7pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">毛利率 58.1%，同比 +2.0pp。成本增速低于营收增速，主要成本为 YouTube 内容采购。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -195,7 +215,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>总营业成本 337 亿美元仅增 10%，低于营收 15% 的增速，推动毛利率提升。</p>
+<blockquote>total cost of revenues was $33.7 billion, up 10%</blockquote><p class="small muted">依据：成本增速低于营收增速，由两者对比推断毛利率提升。</p>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>其他营业成本增长主要来自 YouTube 内容采购成本。</p>
+<blockquote>the increase driven primarily by content acquisition costs associated with YouTube</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
       <span class="m-name">营业费用</span>
@@ -222,7 +252,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+6.7pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+4.2pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP 营业利润率 31.6%，同比 +6.7pp；去年重组费 26 亿对比今年遣散 7.16 亿，叠加成本重塑。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -235,70 +265,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（GAAP）</span>
-      <span class="m-val num">$25.47B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+46.3%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+7.5%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>同比基数受益于 2023Q1 的 26 亿美元重组费，本季遣散相关费用仅 7.16 亿美元。</p>
+<blockquote>the restructuring charges we took in the first quarter of 2023 of $2.6 billion as well as the $716 million in employee severance</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>持续重塑成本结构，剔除重组与遣散后营业利润率同比扩张 400 个基点。</p>
+<blockquote>400 basis point expansion of our Alphabet operating margin year-on-year, excluding the impact of restructuring and severance charges</blockquote>        </div>
       </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
-      <span class="m-name">净利润率（GAAP）</span>
-      <span class="m-val num">29.4%</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+7.8pp</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+5.4pp</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
-      <span class="m-name">净利润（GAAP）</span>
-      <span class="m-val num">$23.66B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+57.2%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+14.4%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
@@ -306,7 +283,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+61.5%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP EPS 1.89 美元，同比 +62%，源于利润增长。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -319,7 +296,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>净利润同比增长 57%，带动 EPS 提升。</p>
+<blockquote>Net income was $23.7 billion and EPS was $1.89.</blockquote><p class="small muted">依据：EPS 增速高于净利润，推断股数减少也有贡献，但原文未说明。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
@@ -327,7 +309,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+22.7%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+52.5%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">经营现金流 288.5 亿美元，同比 +23%，环比 +53%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -340,7 +322,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>营业利润显著增长支撑经营现金流提升。</p>
+<p class="small muted">依据：原文未直接讨论经营现金流，依据利润增长推断。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
@@ -348,7 +335,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+91.0%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+9.0%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">资本开支约 120 亿美元，同比 +91%，几乎全部用于技术基础设施。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -361,7 +348,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>投入以服务器为最大项，其次为数据中心，反映对 AI 机会的信心。</p>
+<blockquote>driven overwhelmingly by investment in our technical infrastructure, with the largest component for servers followed by data centers</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>支持 Gemini、云客户及搜索与 YouTube 的 AI 应用算力需求。</p>
+<blockquote>reflects our confidence in the opportunities offered by AI across our business</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
       <span class="m-name">自由现金流</span>
@@ -369,7 +366,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-2.2%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+113.2%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">自由现金流 168.4 亿美元，同比 -2%，资本开支翻倍抵消经营现金流增长；环比大幅回升。</span>
     </button>
     <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -382,39 +379,329 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>资本开支同比增长 91%，吞噬了经营现金流 23% 的增量。</p>
+<blockquote>We delivered free cash flow of $16.8 billion in the first quarter and $69.1 billion for the trailing 12 months.</blockquote><p class="small muted">依据：由财务数据中经营现金流与资本开支的变化推断。</p>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">营业利润（GAAP）</span>
+      <span class="m-val num">$25.47B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+46.3%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+7.5%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">营业利润 254.7 亿美元，同比 +46%；调整后增 31%。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>收入增长叠加费用控制，GAAP 营业利润同比增长 46%。</p>
+<blockquote>Operating income was $25.5 billion, up 46% on a reported basis</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>去年同期重组费用较高，使报告口径增速高于调整后口径。</p>
+<blockquote>On an adjusted basis, operating income was up 31%</blockquote>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
+      <span class="m-name">净利润（GAAP）</span>
+      <span class="m-val num">$23.66B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+57.2%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+14.4%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">净利润 236.6 亿美元，同比 +57%，随营业利润大幅增长。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>营业利润增长 46% 是净利润增长的主要来源。</p>
+<blockquote>Net income was $23.7 billion and EPS was $1.89.</blockquote><p class="small muted">依据：净利润增速高于营业利润，原文未拆解非营业项目，按营业利润增长推断主要来源。</p>        </div>
+      </div>
     </div>
   </div>
   </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 1 项 · 行业展望 4 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
-      <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
+      <p class="layer-sub">点一行看历史指引和后来的实际，再点同一行收起。</p>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody id="guideRows">
+          <tr class="guide-hit" data-guide-key="capex" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-capex">
+            <td>资本开支<small class="basis">FY2024全年</small></td>
+            <td>$10.00</td>
+            <td class="c-na"></td>
+            <td class="c-na"></td>
+            <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-capex" data-guide-panel="capex" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+<p class="guide-empty">实际还没进季度文件，这张图先空着。</p>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>FY2024全年<small class="basis">2024财年Q1给出</small></td>
+                      <td>$10.00</td>
+                      <td>$10.00</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>需求变化（搜索与生成式 AI）</h4>
+          <div class="outlook-copy">
+            <p>管理层把生成式 AI 视为搜索的扩容机会：AI 概览让搜索能回答更复杂的问题，并已在美国和英国的一小部分查询上实验数周。管理层称用户满意度和参与度均有提升，但未量化，且强调变现转型将随时间展开。</p>
+            <ul><li>已服务数十亿次生成式 AI 查询，覆盖多个类别</li><li>Circle to Search 等入口增加了用户访问搜索的方式</li><li>SGE 响应的机器成本较 Labs 初期下降 80%，缓解了成本与延迟担忧</li></ul>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化（算力与基础设施）</h4>
+          <div class="outlook-copy">
+            <p>公司把技术基础设施视为核心壁垒，表示将持续投入。Q1 资本开支约 120 亿美元，以服务器为主、数据中心次之，并预计全年季度水平不低于此。折旧和相关费用将成为日益增加的费用逆风，管理层表示需要通过放缓其他费用增速来腾出空间。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>管理层列出 AI 变现的三条路径：广告（如 Gemini 引入 Performance Max、SGE 中的搜索与购物广告）、云，以及订阅。Google One 付费订阅用户超 1 亿，并推出含 Gemini Advanced 的 AI 高级套餐；YouTube 音乐与 Premium 订阅用户超 1 亿；YouTube TV 超 800 万付费用户。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略（成本与组织）</h4>
+          <div class="outlook-copy">
+            <p>公司将模型团队整合至 Google DeepMind，并合并机器学习基础设施团队、平台与设备团队，目标是提升决策速度与算力分配效率。同时继续控制人员增速，Q1 人员数环比下降，但仍在云、DeepMind 和技术基础设施方面投入顶尖工程人才。</p>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">14 轮 · 部分回答 / 回避 9</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>14</b> 轮</span>
+<span>热门话题：<b>AI 产品与模型、产能与资本开支、云业务</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 9</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">询问可变现的商业查询趋势是否有变化，以及电商领域新进入者是否带来影响。</span>
+        <span class="qa-tags">
+<span class="pill">搜索与广告</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：多年经验是自然搜索体验好，变现随之跟进，趋势通常能延续。生成式 AI 和 AI 概览将扩大可服务的查询类型，能回答更复杂的问题，并且似乎覆盖各类查询。仍处早期，会稳健推进并把用户体验放在首位。未直接给出商业查询的具体数据，也未回应电商新进入者。</p>
+<p class="small">未回答的部分：未提供商业查询增速数据，也未回应电商新进入者。</p><blockquote>when things work well on the organic side, monetization follows. So typically, the trends we see carry over well.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">询问放缓费用增速、持续重塑成本结构还有哪些具体优化方向。</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Ruth（CFO）：重点是放缓费用增速，即持续重塑成本基础。她明确提到折旧和资本开支相关费用的逆风在加大。工作流与此前一致：产品与流程优先级、组织效率与结构（如合并设备与平台团队）、技术基础设施、用 AI 精简内部运营、与供应商的采购、房地产优化，均在持续推进。</p>
+<blockquote>we are very cognizant of the increasing headwind we have from higher depreciation and expenses associated with the higher CapEx, and so these efforts are ongoing.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Douglas Anmuth<small>JPMorgan</small></span>
+        <span class="qa-q">询问生成式 AI 功能放入主搜索页后哪些查询场景效果最好，以及后续推进节奏。</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：早期数据印证了其判断，即 SGE 会扩大能提供带来源链接答案的查询范围。AI 概览已在美国和英国推出，主要针对更复杂、体验提升明显的查询，已服务数十亿次查询，覆盖多个类别。仍在测试，以指标驱动，今年会持续迭代。未给出具体节奏。</p>
+<p class="small">未回答的部分：未给出推出节奏和时间表。</p><blockquote>We&#39;ve already served billions of queries and it seems to cut across categories, but we are still continuing our testing.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Douglas Anmuth<small>JPMorgan</small></span>
+        <span class="qa-q">询问 Q1 的 120 亿美元资本开支是否可作为全年运行水平，以及明年是否会更高。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Ruth（CFO）：预计全年各季度资本开支大致不低于 Q1 约 120 亿美元的现金资本开支水平，季度报告值会因付款时点波动。几乎全部投向技术基础设施。办公设施投资预计占 2024 年总资本开支不到 10%，与 2023 年大致持平。2025 年为时尚早，无可补充。</p>
+<p class="small">未回答的部分：2025 年资本开支明确拒绝评论。</p><blockquote>we do expect the quarterly CapEx throughout the year to be roughly at or above the $12 billion cash CapEx we had here in Q1.</blockquote>        <p class="small">新数字：约120亿美元/季度或以上；办公设施&lt;10%</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Eric Sheridan<small>Goldman Sachs</small></span>
+        <span class="qa-q">询问在大规模运营和技术创新期，公司如何平衡推进组织、增长投入与利润率。</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：AI 转型是千载难逢的机遇，公司自 2016 年起布局 TPU。机遇在于研究与创新规模，首次能以横向方式让 AI 影响搜索、YouTube、云、Waymo 等整个公司，杠杆很高。挑战在于推动心态转变：把人员调整到最高优先级，借助 20 年的机器效率经验，高效使用资金，同时大胆而负责任地推进。</p>
+<blockquote>for the first time, we can work on AI in a horizontal way and it impacts the entire breadth of the company</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Stephen Ju<small>UBS</small></span>
+        <span class="qa-q">询问 Shorts 广告上线近两年，广告主接受度如何，以及竖屏变现是否存在结构性原因导致无法追平横屏。</span>
+        <span class="qa-tags">
+<span class="pill">YouTube</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Philipp（CSO）：本季 YouTube 表现很强。美国 Shorts 相对 in-stream 的变现率 12 个月内翻了一倍多。广告主只有在看到正 ROI 时才会投入，说明短期和长期都有效。Shorts 是长期押注，日均观看量 700 亿次，上传频道数同比增长 50%。他目前看不出追平横屏变现的结构性障碍。</p>
+<blockquote>structural reasons, whether we can&#39;t get to a match here, I have a hard time seeing those at the moment over time.</blockquote>        <p class="small">新数字：Shorts 日均观看 700 亿次；上传 Shorts 频道数同比 +50%</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Justin Post<small>Bank of America</small></span>
+        <span class="qa-q">询问资本开支近两个季度大增是否因供给改善，以及广告和云上的投资回报是更高的经营成本还是更好的回报。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Ruth（CFO）：资本开支增长反映全公司机会，包括支持 Gemini 基础模型、服务云客户和 GCP 基础设施增长，以及搜索、YouTube 等应用。重点是确保有算力支持服务与机会。资本开支投入各业务后会开放更多服务与产品，带来收入机会，公司专注变现，也关注算力交付各环节的效率。未直接回答供给是否变宽松，也未量化回报。</p>
+<p class="small">未回答的部分：未回应供给是否更易获得，也未对回报率与过去比较作出判断。</p><blockquote>as we&#39;re investing in CapEx and applying it across our various businesses, it opens up more services and products, which bring revenue opportunities.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Jian Li (for Mark Mahaney)<small>Evercore</small></span>
+        <span class="qa-q">询问在外部 AI 聊天机器人环境下，AI 系统是否可能让谷歌搜索量出现阶跃式变化。</span>
+        <span class="qa-tags">
+<span class="pill">搜索与广告</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：这是搜索的积极时刻，让公司能深刻演进产品。搜索体验独特，用户来获取答案、探索和多方观点，公司长期投入创新，认为自己处境极佳。未直接讨论搜索量是否阶跃。</p>
+<p class="small">未回答的部分：未回答 AI 系统是否带来搜索量阶跃，也未提及外部聊天机器人。</p><blockquote>we view this moment as a positive moment for Search. And I think it allows us to evolve our product in a profound way.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Jian Li (for Mark Mahaney)<small>Evercore</small></span>
+        <span class="qa-q">询问 YouTube 和云 2024 年底合计年化收入超 1000 亿美元的判断依据，是否来自云需求拐点。</span>
+        <span class="qa-tags">
+<span class="pill">云业务</span><span class="pill warn">部分回答</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Ruth（CFO）：主要是业务持续的增长势头和强劲表现，这是为了说明公司长期打造的业务规模，上季度关于订阅业务也有类似表述。她没有说是云需求拐点或生成式 AI 工作负载需求台阶式变化。</p>
+<p class="small">未回答的部分：未回应是否由云需求拐点驱动。</p><blockquote>it&#39;s just the ongoing momentum that we&#39;ve seen in the business that we&#39;ve been talking about, the ongoing growth and strong performance.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Kenneth Gawrelski<small>Wells Fargo</small></span>
+        <span class="qa-q">询问 GCP 加速增长的机会与制约，是销售还是产品解决方案，以及是否会借助合作伙伴。</span>
+        <span class="qa-tags">
+<span class="pill">云业务</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：云是拐点，AI 转型促使客户重新思考整个技术栈，对话增多。机会在付费 AI 基础设施、Vertex AI 的模型选择广度，以及用 Workspace 提升生产力。会通过自建与强大的合作伙伴计划结合推进。挑战是客户切换成本和门槛，公司持续投入以降低切换难度。</p>
+<blockquote>I think you&#39;ll see us do it both organically and with a strong partner program as well.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Kenneth Gawrelski<small>Wells Fargo</small></span>
+        <span class="qa-q">询问 YouTube 对 NFL Sunday Ticket 之外更多直播体育版权的态度。</span>
+        <span class="qa-tags">
+<span class="pill">YouTube</span><span class="pill alert">回避</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Philipp（CSO）：公司与美国及全球主要体育联盟、联合会、球队、运动员和广播商长期合作，结合庞大体育观众，推动 Sunday Ticket、YouTube TV、Primetime Channels 等订阅体验投入。目前没有可宣布的内容，也始终在寻找为用户、广告主和创作者创造价值的机会。</p>
+<p class="small">未回答的部分：明确表示没有可公布内容，未阐述版权策略。</p><blockquote>there&#39;s nothing that we have to announce at the moment.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Ross Sandler<small>Barclays</small></span>
+        <span class="qa-q">询问手机端侧 AI 搜索不访问网络时，公司如何变现。</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：部分用例可在端侧完成，但多数需求仍需要云和网络的丰富性。Samsung 上的 Circle to Search 为用户提供了随时访问搜索的新方式，属于积极因素。他认为端侧与云之间的划分不会成为大的驱动因素。没有直接谈变现方式。</p>
+<p class="small">未回答的部分：未直接回答端侧场景的变现机制。</p><blockquote>many, many things for which people will need to reach out to the cloud.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Colin Sebastian<small>Baird</small></span>
+        <span class="qa-q">询问能否量化 SGE 带来的参与度变化，如使用时长或查询量增加。</span>
+        <span class="qa-tags">
+<span class="pill">搜索与广告</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Sundar（CEO）：美国和英国仅在一小部分查询上做了几周实时实验，各项迹象显示用户满意度提升，参与度增加，但会随时间展开。去年的担忧如成本、延迟，公司现在有信心管理，对变现转型也有信心。未给出量化数据。</p>
+<p class="small">未回答的部分：未量化参与度提升幅度。</p><blockquote>all indications are positive that it improves user satisfaction. We see an increase in engagement, but I see this as something which will play out over time.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Colin Sebastian<small>Baird</small></span>
+        <span class="qa-q">询问下半年硬件路线图中值得关注的重点方向。</span>
+        <span class="qa-tags">
+<span class="pill">其他</span><span class="pill alert">回避</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>本轮回答仅涉及第一个问题，Sundar（CEO）未回应硬件路线图问题。</p>
+<p class="small">核对：hardware question unanswered</p><p class="small">未回答的部分：硬件问题未被回答。</p><blockquote>On the first question on Search, not much more to add to what I said</blockquote>      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 1 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：— · 文件编号 — · 文字稿：—</p>
+    <p>新闻稿：— · 文件编号 — · 文字稿：tickertrends</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。</li></ul>  </div>
 </details>
