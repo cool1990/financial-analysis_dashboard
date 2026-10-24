@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "tickertrends",
+    "eps_basis": "gaap",
+    "transcript_url": "https://tickertrends.io/transcripts/AMZN/Q2-earnings-transcript-2026",
+    "stage2_generation": {
+      "llm_model": "sonnet",
+      "generated_by": "mac-claude-cli",
+      "note": "Historical Stage2 written via local Claude CLI (sonnet medium) from English Obsidian/tickertrends transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -147,13 +153,454 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "status": "done",
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "营收同比增 20%，AWS 增长 36.7%、广告 +26%、付费单位 +17%，Prime Day 移至二季度也抬升了本季。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AWS 收入同比增长 36.7%，连续第五个季度加速，AI 与核心服务共同驱动。",
+            "evidence_quote": "Revenue growth of 36.7% year-over-year, accelerating for the fifth straight quarter",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "全球付费单位同比增长 17%。",
+            "evidence_quote": "Worldwide paid units grew 17% year-over-year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Prime Day 今年移至二季度，抬升本季营收（去年全在三季度）。",
+            "evidence_quote": "These results include the timing shift of Prime Day into Q2 for most of our largest countries, including the U.S.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "广告收入 198 亿美元，同比增长 26%。",
+            "evidence_quote": "generating $19.8 billion of revenue, up 26% year-over-year",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率 52.3%，同比+0.4pp；原文未直接解释，运输成本增速低于单位增速是可见的正面因素。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": true,
+            "description": "剔除燃油和干线运费上涨后，运输成本增速低于单位增速，履约效率持续改善。",
+            "evidence_quote": "shipping costs grew more slowly than worldwide unit growth",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": false,
+            "description": "中东冲突带来的燃油通胀和司机运力限制推高运输成本，部分被 4 月起的 FBA 燃油及物流附加费抵消。",
+            "evidence_quote": "heightened transportation costs driven by fuel inflation from the conflict in the Middle East and higher line haul rates",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "高毛利的 AWS 与广告占比提升可能支撑毛利率，原文未明确说明。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "AWS 增速 36.7%、广告增速 26%，均高于整体 20%，推断结构上有利。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "营业利润 274.6 亿美元，同比+43%；AWS 营业利润 166 亿美元，另有约 12 亿美元一次性费用减少。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "约 6 亿美元关税退款（北美）和约 6 亿美元能源合约公允价值变动收益（主要在 AWS），合计减少费用约 12 亿美元。",
+            "evidence_quote": "This includes the benefit from two items that reduced expenses by approximately $1.2 billion during the quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AWS 营业利润 166 亿美元，增长强劲且效率提升。",
+            "evidence_quote": "AWS operating income was $16.6 billion, which reflects our strong growth, coupled with our focus on driving efficiencies across the business.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": false,
+            "description": "燃油与干线运费上涨抬高零售运输成本。",
+            "evidence_quote": "heightened transportation costs driven by fuel inflation from the conflict in the Middle East",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "营业利润率 13.7%，同比+2.3pp；AWS 利润率同比+650bp，北美 7.9%、国际 4.1%。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AWS 利润率同比提升 650bp（剔除衍生品收益为 520bp），由效率、产能优化和固定成本管控驱动。",
+            "evidence_quote": "AWS margins have continued to remain strong, and we're up 650 basis points year-over-year.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "关税退款与能源衍生品收益约 12 亿美元抬升利润率。",
+            "evidence_quote": "This includes the benefit from two items that reduced expenses by approximately $1.2 billion during the quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "净利润 626.5 亿美元，同比约 3.4 倍，远高于营业利润；原文未解释差额。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "净利润（626.5 亿美元）远超营业利润（274.6 亿美元），差额来自营业外项目，但电话会未说明来源。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "净利润比营业利润高约 350 亿美元，只能推断存在大额营业外收益，原文无依据，需查财报核实。",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营业层面约 12 亿美元一次性收益也贡献利润。",
+            "evidence_quote": "This includes the benefit from two items that reduced expenses by approximately $1.2 billion during the quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "净利润增速（约 245%）与营业利润增速（43%）严重背离，电话会未解释。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "GAAP EPS 5.75 美元，同比约 3.4 倍，随净利润大幅增长；电话会未讨论具体原因。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "EPS 变动主要跟随净利润，营业外项目的来源电话会未披露。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "EPS 同比增 242% 与净利润增 245% 基本同步，说明股本变化影响很小。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "EPS 大幅超出营业利润增速，需核对财报中营业外收益。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "经营现金流 453.9 亿美元，同比+40%；原文未直接拆解，与盈利增长方向一致。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AWS 与广告的利润增长应带动经营现金流，但原文未明确说明。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "营业利润同比+43%，OCF 同比+40%，两者方向一致。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "二季度现金资本开支 531 亿美元，主要投向 AWS 和生成式 AI，全年预期由约 2000 亿上调至约 2200 亿美元。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "为满足强劲客户需求，持续投入 AWS 与生成式 AI。",
+            "evidence_quote": "This primarily relates to AWS and generative AI as we invest to support strong customer demand.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": false,
+            "description": "内存成本上升将 2026 年资本开支预期由约 2000 亿推高至约 2200 亿美元。",
+            "evidence_quote": "The higher cost of memory pushing this number up from our prior estimate of about $200 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      }
+    ]
   },
   "guidance": {
-    "items": [],
-    "prior_guidance_review": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "三季度净销售额",
+        "period": "FY2026Q3",
+        "type": "numeric",
+        "low_raw": "197 billion",
+        "high_raw": "202 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "预计三季度净销售额 1970 亿至 2020 亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Q3 net sales are expected to be between $197 billion and $202 billion.",
+        "low": 197000000000.0,
+        "mid": 199500000000.0,
+        "high": 202000000000.0
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "metric_label": "三季度营业利润",
+        "period": "FY2026Q3",
+        "type": "numeric",
+        "low_raw": "22.5 billion",
+        "high_raw": "26.5 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "预计三季度营业利润 225 亿至 265 亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Q3 operating income is expected to be between $22.5 billion and $26.5 billion.",
+        "low": 22500000000.0,
+        "mid": 24500000000.0,
+        "high": 26500000000.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "三季度汇率影响",
+        "period": "FY2026Q3",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "80 basis points",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "-",
+        "statement": "按当前汇率，三季度指引含约 80 个基点的汇率负面影响。",
+        "source": "prepared_remarks",
+        "source_quote": "the Q3 guidance anticipates an unfavorable impact of approximately 80 basis points from the year-over-year changes in foreign exchange rates",
+        "low": 80.0,
+        "mid": 80.0,
+        "high": 80.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Prime Day 时点对三季度增速影响",
+        "period": "FY2026Q3",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "nearly 400 basis points",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "剔除 Prime Day 时点移位后，三季度同比增速将高出近 400 个基点。",
+        "source": "prepared_remarks",
+        "source_quote": "third quarter 2026 year-over-year growth would have been nearly 400 basis points higher",
+        "low": 400.0,
+        "mid": 400.0,
+        "high": 400.0
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "2026 年现金资本开支",
+        "period": "FY2026",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately $220 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "2026 年现金资本开支预计约 2200 亿美元，较此前约 2000 亿美元上调，主因内存成本上升。",
+        "source": "prepared_remarks",
+        "source_quote": "We now believe we will spend approximately $220 billion in cash CapEx in 2026.",
+        "low": 220000000000.0,
+        "mid": 220000000000.0,
+        "high": 220000000000.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "AWS 电力容量",
+        "period": "FY2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "到 2027 年底电力容量预计为 2025 年的两倍，目前按计划推进。",
+        "source": "qa",
+        "source_quote": "we expect to have double the power capacity by the end of 2027 that we had in 2025, and we continue to be on that track.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "AWS 容量与需求",
+        "period": "fy2026-fy2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层认为 2026 年产能仍不足以满足全部需求，2027 年同样如此。",
+        "source": "prepared_remarks",
+        "source_quote": "Even at that amount, we will still not have enough capacity to meet all the demand we have in 2026, and I believe this dynamic will also be true in 2027, too.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "机器人手臂部署",
+        "period": "FY2026",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "预计 2026 年机器人手臂（如 Cardinal、Sparrow）规模翻倍以上。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect to more than double our fleet of robotic arms, like Cardinal and Sparrow, in 2026.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Amazon Leo 卫星互联网",
+        "period": "FY2026",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "近 400 颗卫星在轨，足以在今年开始初始卫星互联网服务。",
+        "source": "prepared_remarks",
+        "source_quote": "Amazon Leo is close to 400 satellites in orbit, enough to begin initial satellite internet service this year.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
+    "prior_guidance_review": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "二季度营收",
+        "period": "FY2026Q2",
+        "guided": "1940亿至1990亿美元",
+        "actual": "2006亿美元",
+        "result": "高于指引上沿",
+        "note": "实际值来自给定财务数据；Prime Day 移至二季度是本季的一个因素。"
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "metric_label": "二季度营业利润",
+        "period": "FY2026Q2",
+        "guided": "200亿至240亿美元",
+        "actual": "274.6亿美元",
+        "result": "高于指引上沿",
+        "note": "含约12亿美元一次性费用减少（关税退款与能源合约公允价值收益）。"
+      }
+    ],
     "vs_consensus": [],
     "analyst_revisions": {
       "t_minus_1": {},
@@ -162,21 +609,483 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "需求变化（AI 与云）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层认为 AI 需求仍处早期：AWS 积压订单 4960 亿美元、同比三位数增长，2027 年产能大部分已被预订，2028 年也已有相当部分被预订。Andy 把需求描述为“哑铃型”：一端是 AI 实验室和少数爆款应用，另一端是靠 AI 降本增效的企业，中间的企业存量生产负载推理渗透还很低，他认为这部分长期将是最大的细分市场，但增速是否像实验室那样陡峭他并不确定。"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "AWS 增速 36.7%，连续五个季度加速，AI 年化收入与芯片年化收入均超 250 亿美元且三位数增长。",
+              "AI 带动核心服务：强化学习和智能体工具调用主要跑在 CPU 上，对 Graviton 和存储、向量数据库形成拉动。",
+              "企业上云仍有空间：全球 85% 的 IT 支出仍在本地，预计 10 到 20 年内翻转。"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "供给变化（产能与成本）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "2026 年现金资本开支上调到约 2200 亿美元，原因是内存成本上升；即便如此 2026 和 2027 年产能仍不足。数据中心提前约两年投入，服务器和网络设备在上线前几个月才采购，因此管理层称对需求有较强可见度。电力容量计划到 2027 年底达到 2025 年的两倍。"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "服务器与网络设备回本略少于 3 年，使用寿命至少 5 到 6 年，多数 AI 产能签有至少 5 年期合同。",
+              "数据中心使用寿命 30 年以上，可承载至少 5 到 6 代服务器，后续各代经济性更好。",
+              "内存、硬盘和 SSD 价格上涨是整个行业的共同压力。"
+            ]
+          },
+          {
+            "type": "p",
+            "text": "短期内数据中心集中建设会带来自由现金流压力，管理层预期数年后营收增速超过增量资本开支增速时，现金流和 ROIC 将改善。"
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层强调“一个模型不会统治世界”，Bedrock 汇集各家闭源和开源模型，并预计几年内会出现至少 6 个能力相当的模型。在芯片层面，公司继续与 Nvidia 深度合作，同时推广 Trainium 和 Graviton，称其价格性能领先。Anthropic 和 OpenAI 已做出多年多吉瓦的 Trainium 承诺，越来越多创业公司和大企业也在采用。"
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AWS 正向应用层和智能体服务延伸，包括 Kiro、Amazon Q、Connect、Transform、Continuum 以及 Bedrock Agents。此外，有客户希望脱离 AWS 云单独采购 Trainium 芯片，公司正在积极探讨，未来有较大可能开展。合同层面，已签协议在期内价格固定，新合同会把成本变化计入定价。"
+          }
+        ]
+      },
+      {
+        "title": "公司战略（零售与新业务）",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "杂货：去年 GMS 超 1500 亿美元；同日生鲜覆盖 2300 个城市，月活生鲜客户今年以来增长 50%。",
+              "履约：推进机器人和自动化，目标持续降低服务成本，但管理层提示利润率可能波动、进展未必线性。",
+              "广告：Sponsored Products 仍为最大产品，智能体和对话式购物场景中的赞助提示带来更高转化。",
+              "Amazon Leo 已有企业和政府的收入承诺，并有 20 多家合作伙伴。"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "外部环境",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "外部压力主要有三项：中东冲突带来的燃油通胀和司机运力限制推高运输成本，部分被 4 月起的 FBA 燃油及物流附加费抵消；内存等元件通胀推高资本开支；汇率在三季度指引中有约 80bp 的负面影响。关税方面，公司收到约 6 亿美元退款，并称这是预期退款的绝大部分，主要原因是公司并非多数商品的进口方，且此前提前备货。"
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "GAAP",
+      "next_quarter": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2026Q3",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2026",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Doug Anmuth",
+        "firm": "J.P. Morgan",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "市场普遍认为 AI 负载短期利润率偏低，请解释 AWS 二季度 39% 营业利润率的驱动因素及可持续性。",
+        "answer_summary": "Brian（CFO）：AWS 利润率同比提升 650 个基点，剔除衍生品会计收益后为 520 个基点；来自效率提升、产能优化（Q2 受益明显）和固定成本管控，并提示利润率会随投资水平、产品结构及 AI/非 AI 占比波动。\nAndy（CEO）：AI 业务的利润率轨迹与此前核心业务相似，且略快于当时的节奏。",
+        "new_numbers": [
+          "AWS 营业利润率同比+650bp",
+          "剔除衍生品收益后+520bp"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I would say that the profitability you're seeing from AWS isn't random. It's a result of disciplined efficiency gains, capacity optimization, which we benefited quite a bit from in Q2",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Doug Anmuth",
+        "firm": "J.P. Morgan",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "Bedrock 本季客户支出超过此前所有季度之和，全栈战略下亚马逊是否需要自有前沿模型？",
+        "answer_summary": "Andy（CEO）：没有自有前沿模型 AWS 也能做成极成功的业务，因为不会有一个模型统治一切，Bedrock 汇集各类模型。但公司仍在自研前沿模型，理由是控制成本、控制优先级和速度。预计几年内会有至少半打能力相当的模型，都在 Bedrock 上，其中之一是自家的。",
+        "new_numbers": [
+          "几年内至少6个能力相当的模型"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "My view of it is that within the next few years, you're going to have at least a half dozen models that are comparably good to each other. They'll all be in Bedrock, one of them will be ours.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "AWS 加速是否主要由新增产能上线驱动？下半年相对上半年、以及 2027 年将新增多少吉瓦？",
+        "answer_summary": "Andy（CEO）：加速是多因素的：功能最全、运营与安全最强、推理工作负载靠近数据；企业加速上云（全球 85% IT 支出仍在本地）；AI 带动 CPU/核心服务需求。产能建设按计划，到 2027 年底电力容量为 2025 年的两倍。未给出下半年或 2027 年的具体吉瓦数。",
+        "new_numbers": [
+          "全球85% IT支出仍在本地",
+          "2027年底电力容量为2025年两倍"
+        ],
+        "directness": "partial",
+        "evasion_note": "未回答下半年对比上半年的新增吉瓦及 2027 年具体规划，仅重申此前的翻倍目标。",
+        "tone": "positive",
+        "answer_quote": "We're on pace with the capacity build that we talked about a few quarters ago, where we said we expect to have double the power capacity by the end of 2027 that we had in 2025",
+        "review_flags": [
+          "未给出分期吉瓦数"
+        ]
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "展望 2027 年，长周期数据中心投入是否能开始放缓，还是未来几年仍需持续新建？",
+        "answer_summary": "Andy（CEO）：2027 年产能大部分已被预订，2028 年也已有相当部分被预订。AI 需求呈哑铃型：一端是 AI 实验室和少数爆款应用，另一端是获得降本增效的企业，中间的企业现有生产负载最终将是最大部分。公司将继续投入以保持领先，并认为 AWS 有潜力成为万亿美元营收业务。未直接说明是否放缓数据中心支出。",
+        "new_numbers": [
+          "AWS潜在年营收达1万亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未直接回答 2027 年长周期数据中心投入是否会放缓，转而强调需求与继续投资。",
+        "tone": "positive",
+        "answer_quote": "the lion's share of capacity in 2027, we're adding a lot of capacity, as I mentioned just a few minutes ago, is largely reserved, and we have quite a bit of capacity that's already been reserved for 2028.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "公司近期公开提及将向第三方数据中心销售 Trainium，何时可能实现，其 ROIC 相比 AWS 核心负载如何？",
+        "answer_summary": "Andy（CEO）：芯片业务年化收入已超 250 亿美元，Trainium 需求极大，Anthropic 和 OpenAI 做了多年多吉瓦承诺。越来越多客户希望脱离 AWS 云单独获得 Trainium 芯片，公司正在积极探讨，未来很有可能这样做。未给出时间表和 ROIC。",
+        "new_numbers": [
+          "芯片业务年化收入超250亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出时间点，也未对比 ROIC。",
+        "tone": "positive",
+        "answer_quote": "We do have an increasing number of customers who are interested in us providing the Trainium chips to them, separate from our cloud, and we're actively having those conversations and exploring",
+        "review_flags": [
+          "无时间表与ROIC"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "Kiro、Transform 以及办公生产力工具是否代表公司更主动地向应用层延伸，能否从上到下带动平台？",
+        "answer_summary": "Andy（CEO）：智能体应用机会很大，部分源于客户需求，部分源于公司内部需求。Kiro 和 Amazon Q 都是先内部使用再推向外部，Q 已在大量外部企业落地；Connect 被五大航空公司使用并快速增长；Transform 简化软件迁移；Continuum 帮助企业用前沿模型发现并修复代码漏洞。另有若干在研产品。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "we see a very substantial opportunity both for our customers and for AWS in building some of these agentic applications.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "考虑到需求信号和扩产计划，未来几年建设资金的来源如何考虑？",
+        "answer_summary": "Andy（CEO）：今年已发行债务，有很多融资选项，会在合适时点做出合适决定，今天没有更多可分享。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "仅提到已发债，未说明未来融资结构或规模。",
+        "tone": "neutral",
+        "answer_quote": "You've seen us issue debt this year. We have a lot of options available to us as we continue to fund this growth that we're seeing in AWS.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Ken Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "RPO 已是 2025 年三季度的 2.5 倍，这对 2027 年底之后（2028 年及以后）的产能展望意味着什么？",
+        "answer_summary": "Andy（CEO）：积压订单大幅增长，反映客户对核心与 AI 的热情；订单已纳入资本开支预测，预计未来会继续签约并保持领先。未给出 2028 年后的产能数字。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "只说明订单已纳入资本开支预测，未定性或定量说明 2028 年及以后产能。",
+        "tone": "positive",
+        "answer_quote": "We know about that backlog, obviously, so that's all taken into account in our CapEx projections.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Ken Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "定价与 ASP",
+        "is_new_topic": false,
+        "question_summary": "资本开支因供应链通胀上调，AWS 定价策略如何纳入未来成本通胀？长期合同能否保证稳定回报？",
+        "answer_summary": "Andy（CEO）：需求中一部分是按需，大部分来自已签协议，合同期内价格固定；新协议签订时会把成本纳入定价。内存、硬盘和 SSD 等部分部件价格已上涨。未说明已签长期合同的回报率。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回答长期合同回报是否稳定，仅说明合同价格在期内固定、新合同会计入成本。",
+        "tone": "neutral",
+        "answer_quote": "New agreements that you sign, you always take into account what your costs are and how you ultimately build a price that you agree to with your customers.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "零售与电商",
+        "is_new_topic": false,
+        "question_summary": "快速配送、生鲜杂货与日用品扩张中，消费者采用率和支出趋势信号如何？各地区有何差异？",
+        "answer_summary": "Andy（CEO）：对日用品和生鲜增长很有信心，配送速度加上选品和低价使客户将更多购物交给亚马逊。去年杂货 GMS 超 1500 亿美元；Whole Foods 所在地区增速显著高于可比杂货商；同日生鲜已覆盖 2300 个城市，月活生鲜客户今年以来增长 50%，生鲜订单单均件数为 3 倍。未提供分地区差异细节。",
+        "new_numbers": [
+          "去年杂货GMS超1500亿美元",
+          "同日生鲜覆盖2300个城市",
+          "月活生鲜客户今年以来+50%"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "we've hit on something with same-day perishables in our same-day facilities that's changing the trajectory of our everyday essentials business.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "毛利率与成本": 1,
+      "AI 产品与模型": 3,
+      "产能与资本开支": 3,
+      "客户与订单": 1,
+      "定价与 ASP": 1,
+      "零售与电商": 1
+    },
+    "new_topics": [
+      "定价与 ASP",
+      "零售与电商"
+    ],
+    "dropped_topics": [
+      "其他",
+      "搜索与广告",
+      "需求与出货"
+    ],
+    "hot_topics": [
+      "产能与资本开支",
+      "定价与 ASP",
+      "零售与电商"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "2",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "AWS 加速是否主要由新增产能上线驱动？下半年相对上半年、以及 2027 年将新增多少吉瓦？",
+        "answer_summary": "Andy（CEO）：加速是多因素的：功能最全、运营与安全最强、推理工作负载靠近数据；企业加速上云（全球 85% IT 支出仍在本地）；AI 带动 CPU/核心服务需求。产能建设按计划，到 2027 年底电力容量为 2025 年的两倍。未给出下半年或 2027 年的具体吉瓦数。",
+        "new_numbers": [
+          "全球85% IT支出仍在本地",
+          "2027年底电力容量为2025年两倍"
+        ],
+        "directness": "partial",
+        "evasion_note": "未回答下半年对比上半年的新增吉瓦及 2027 年具体规划，仅重申此前的翻倍目标。",
+        "tone": "positive",
+        "answer_quote": "We're on pace with the capacity build that we talked about a few quarters ago, where we said we expect to have double the power capacity by the end of 2027 that we had in 2025",
+        "review_flags": [
+          "未给出分期吉瓦数"
+        ]
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "展望 2027 年，长周期数据中心投入是否能开始放缓，还是未来几年仍需持续新建？",
+        "answer_summary": "Andy（CEO）：2027 年产能大部分已被预订，2028 年也已有相当部分被预订。AI 需求呈哑铃型：一端是 AI 实验室和少数爆款应用，另一端是获得降本增效的企业，中间的企业现有生产负载最终将是最大部分。公司将继续投入以保持领先，并认为 AWS 有潜力成为万亿美元营收业务。未直接说明是否放缓数据中心支出。",
+        "new_numbers": [
+          "AWS潜在年营收达1万亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未直接回答 2027 年长周期数据中心投入是否会放缓，转而强调需求与继续投资。",
+        "tone": "positive",
+        "answer_quote": "the lion's share of capacity in 2027, we're adding a lot of capacity, as I mentioned just a few minutes ago, is largely reserved, and we have quite a bit of capacity that's already been reserved for 2028.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "公司近期公开提及将向第三方数据中心销售 Trainium，何时可能实现，其 ROIC 相比 AWS 核心负载如何？",
+        "answer_summary": "Andy（CEO）：芯片业务年化收入已超 250 亿美元，Trainium 需求极大，Anthropic 和 OpenAI 做了多年多吉瓦承诺。越来越多客户希望脱离 AWS 云单独获得 Trainium 芯片，公司正在积极探讨，未来很有可能这样做。未给出时间表和 ROIC。",
+        "new_numbers": [
+          "芯片业务年化收入超250亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出时间点，也未对比 ROIC。",
+        "tone": "positive",
+        "answer_quote": "We do have an increasing number of customers who are interested in us providing the Trainium chips to them, separate from our cloud, and we're actively having those conversations and exploring",
+        "review_flags": [
+          "无时间表与ROIC"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "考虑到需求信号和扩产计划，未来几年建设资金的来源如何考虑？",
+        "answer_summary": "Andy（CEO）：今年已发行债务，有很多融资选项，会在合适时点做出合适决定，今天没有更多可分享。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "仅提到已发债，未说明未来融资结构或规模。",
+        "tone": "neutral",
+        "answer_quote": "You've seen us issue debt this year. We have a lot of options available to us as we continue to fund this growth that we're seeing in AWS.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Ken Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "RPO 已是 2025 年三季度的 2.5 倍，这对 2027 年底之后（2028 年及以后）的产能展望意味着什么？",
+        "answer_summary": "Andy（CEO）：积压订单大幅增长，反映客户对核心与 AI 的热情；订单已纳入资本开支预测，预计未来会继续签约并保持领先。未给出 2028 年后的产能数字。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "只说明订单已纳入资本开支预测，未定性或定量说明 2028 年及以后产能。",
+        "tone": "positive",
+        "answer_quote": "We know about that backlog, obviously, so that's all taken into account in our CapEx projections.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Ken Gawrelski",
+        "firm": "Wells Fargo",
+        "topic": "定价与 ASP",
+        "is_new_topic": false,
+        "question_summary": "资本开支因供应链通胀上调，AWS 定价策略如何纳入未来成本通胀？长期合同能否保证稳定回报？",
+        "answer_summary": "Andy（CEO）：需求中一部分是按需，大部分来自已签协议，合同期内价格固定；新协议签订时会把成本纳入定价。内存、硬盘和 SSD 等部分部件价格已上涨。未说明已签长期合同的回报率。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回答长期合同回报是否稳定，仅说明合同价格在期内固定、新合同会计入成本。",
+        "tone": "neutral",
+        "answer_quote": "New agreements that you sign, you always take into account what your costs are and how you ultimately build a price that you agree to with your customers.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
-    "prior_watchlist_review": [],
-    "next_watchlist": []
+    "headline": "AWS加速至36.7%，全年资本开支上调至约2200亿",
+    "key_findings": [
+      {
+        "finding": "AWS 增速创 18 个季度新高",
+        "text": "AWS 收入 422 亿美元，同比增长 36.7%，连续第五个季度加速，积压订单 4960 亿美元；营业利润 166 亿美元，利润率同比提升 650bp（剔除衍生品收益为 520bp）。",
+        "evidence": "qa#1"
+      },
+      {
+        "finding": "营收与营业利润均高于指引上沿",
+        "text": "营收 2006 亿美元（同比+20%）、营业利润 274.6 亿美元（同比+43%），均超过上季指引区间；营业利润含约 12 亿美元一次性费用减少。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "资本开支上调，产能仍紧",
+        "text": "二季度现金资本开支 531 亿美元，2026 年预期由约 2000 亿上调到约 2200 亿美元，原因是内存成本上升；管理层称 2026 和 2027 年产能仍不足。",
+        "evidence": "qa#2"
+      }
+    ],
+    "prior_watchlist_review": [
+      {
+        "item": "AWS增速是否维持或继续高于Q1的28%",
+        "status": "confirmed",
+        "evidence": "AWS 增速 36.7%，高于 28% 阈值并继续加速。"
+      },
+      {
+        "item": "Q2营业利润是否落在指引区间内（200亿至240亿美元）",
+        "status": "refuted",
+        "evidence": "实际 274.6 亿美元，高于指引上沿，含约 12 亿美元一次性收益。"
+      },
+      {
+        "item": "Q2现金资本开支是否继续高位，以及管理层是否更新全年资本开支",
+        "status": "confirmed",
+        "evidence": "Q2 现金资本开支 531 亿美元，全年预期上调至约 2200 亿美元。"
+      },
+      {
+        "item": "Q2营收是否落在指引区间内（1940亿至1990亿美元）",
+        "status": "refuted",
+        "evidence": "实际营收 2006 亿美元，高于指引上沿。"
+      },
+      {
+        "item": "Amazon Leo是否在Q3按计划商用上线，Q4起成本资本化",
+        "status": "pending",
+        "evidence": "管理层称近 400 颗卫星在轨，足以今年开始初始服务，未确认 Q3 商用时点。"
+      }
+    ],
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "AWS 收入增速是否继续加速或维持在 36.7% 以上",
+        "threshold": "≥36.7% 同比"
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "condition": "三季度营业利润是否落在指引区间内",
+        "threshold": "225亿至265亿美元"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "三季度营收是否落在指引区间内（Prime Day 移至二季度，汇率拖累约80bp）",
+        "threshold": "1970亿至2020亿美元"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "三季度现金资本开支是否维持高位，全年约2200亿美元是否再次调整",
+        "threshold": "全年约2200亿美元；Q2为531亿美元"
+      },
+      {
+        "metric_key": "other",
+        "condition": "Amazon Leo 是否按计划在今年开始初始卫星互联网服务",
+        "threshold": "2026年内启动初始服务"
+      }
+    ]
   },
   "thesis_review": {}
 }

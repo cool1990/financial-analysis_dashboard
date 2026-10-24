@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "non_gaap"
+    "transcript_source": "tickertrends",
+    "eps_basis": "non_gaap",
+    "transcript_url": "https://stockanalysis.com/stocks/orcl/transcripts/529436-q3-2026/",
+    "stage2_generation": {
+      "llm_model": "sonnet",
+      "generated_by": "mac-claude-cli",
+      "note": "Historical Stage2 written via local Claude CLI (sonnet medium) from English Obsidian/tickertrends transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -162,12 +168,343 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "status": "done",
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "营收同比增长 21.7% 至 171.9 亿美元，AI 基础设施与多云数据库高增，云应用固定汇率增 11%。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AI 基础设施收入同比增长 243%，需求超过供给，是增长主要来源。",
+            "evidence_quote": "AI infrastructure revenue grew 243% year-over-year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "多云数据库收入同比增长 531%，AWS 区域从 2 个增至 8 个。",
+            "evidence_quote": "Multi-cloud database revenue grew 531% year-over-year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "云应用固定汇率收入增长 11%，Fusion ERP、SCM、HCM 分别增 14%、15%、15%。",
+            "evidence_quote": "In constant currency, Cloud Applications revenue was up 11% in the quarter",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "GAAP 营业利润率 31.8%，同比 +0.9pp、环比 +2.3pp；规模效应提升，在建项目费用形成拖累。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": true,
+            "description": "规模扩大摊薄固定成本，管理层称 AI 容量毛利率 32%，高于 30% 指引。",
+            "evidence_quote": "Increased scale spreads our fixed costs over a larger base, increasing profitability.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "大量在建数据中心产生费用，是当前对利润率的主要拖累。",
+            "evidence_quote": "because we have so much under construction at one time, and we have some expenses for those things.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "GAAP 营业利润 54.6 亿美元，同比 +25.4%，增速快于营收，来自云收入扩张与规模效应。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "营收同比增长约 21.7%，营业利润增速更高，说明规模杠杆。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "依据财务数字：营收增 21.7%、营业利润增 25.4%、利润率提升；原文未直接拆解营业利润。",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": false,
+            "description": "规模扩大摊薄固定成本。",
+            "evidence_quote": "Increased scale spreads our fixed costs over a larger base, increasing profitability.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "GAAP 净利润 37.2 亿美元，同比 +26.7%；环比 -39.3%，电话会未解释环比下降原因。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "营业利润同比增长 25.4% 带动净利润增长。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "依据财务数字推断；原文未直接论述净利润。",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "0",
+            "is_primary": false,
+            "description": "TikTok U.S. 15% 股权按权益法核算，其收益将在 Q4 计入非经营性损益，本季无贡献。",
+            "evidence_quote": "we will recognize our share of the new company's earnings for the period from the close of the investment in late January to March 31st in our Q4 results",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "GAAP EPS 1.27 美元，同比 +24.5%；管理层称非 GAAP EPS 同比增长达 20% 以上；环比下降 39.5% 原因未披露。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "营收与利润同步增长，使有机非 GAAP EPS 增速达 20% 以上。",
+            "evidence_quote": "both organic total revenue and organic non-GAAP EPS grew at 20% or better in USD",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "环比下降原因原文未说明。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "财务数字显示环比 -39.5%，电话会无解释，不作推测。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "资本开支 186.4 亿美元，同比增 218%，用于 AI 数据中心与算力建设；融资机制使 capex 与自有现金需求脱钩。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AI 基础设施资本密集，数据中心、算力及电力同时在建。",
+            "evidence_quote": "Investing in AI infrastructure is capital-intensive",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "0",
+            "is_primary": false,
+            "description": "自带硬件与客户预付款模式使部分 capex 无需 Oracle 出现金。",
+            "evidence_quote": "there may be additional CapEx, but it doesn't require out-of-pocket cash from Oracle",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "经营现金流 71.5 亿美元，同比 +20.5%，环比大幅回升；原文未拆解。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "与营收和利润增长同步；管理层称客户预付款模式支持扩张。",
+            "evidence_quote": "A combination of bring your own hardware and upfront customer payments",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "该模式主要针对新签合同，对本季现金流的具体贡献原文未量化。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "fcf",
+        "summary": "自由现金流 -114.8 亿美元，因 186.4 亿美元 capex 远超 71.5 亿美元经营现金流。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "capex 大幅超过经营现金流，造成 FCF 深度为负。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "依据财务数字 capex 186.35 亿、经营现金流 71.51 亿推算；原文未直接论述 FCF。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      }
+    ]
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "capex",
+        "metric_label": "FY2027 资本开支",
+        "period": "FY2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "FY2027 capex 待本财年结束后披露；可能增加，但不一定需要 Oracle 自掏现金。",
+        "source": "qa",
+        "source_quote": "there may be additional CapEx, but it doesn't require out-of-pocket cash from Oracle",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "融资计划",
+        "period": "cy2026",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "计划融资最多 500 亿美元债务与股权，已完成 300 亿美元，尚未启动 ATM 股权部分；2026 日历年不再额外发债。",
+        "source": "prepared_remarks",
+        "source_quote": "we do not expect to issue any additional bonds beyond this amount in calendar year 2026",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "AI 加速器业务毛利率",
+        "period": "未指明",
+        "type": "numeric",
+        "low_raw": "30%",
+        "high_raw": "40%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "AI 加速器业务毛利率维持 30%-40% 的既有指引，并预计逐步改善。",
+        "source": "qa",
+        "source_quote": "we see, you know, gross margin in the 30%-40% range on that. That continues to hold for us.",
+        "low": 30.0,
+        "mid": 35.0,
+        "high": 40.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "AWS 多云数据库区域数",
+        "period": "FY2026Q4",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "22",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "预计 Q4 末上线 22 个 AWS 区域，Q3 末为 8 个。",
+        "source": "prepared_remarks",
+        "source_quote": "we will exit Q4 with 22 AWS regions live",
+        "low": 22.0,
+        "mid": 22.0,
+        "high": 22.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "TikTok U.S. 股权收益",
+        "period": "FY2026Q4",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "Q4 将按权益法确认 TikTok U.S. 15% 股权的收益份额，计入非经营性损益，为增量。",
+        "source": "prepared_remarks",
+        "source_quote": "It will be recorded as non-operating income or loss on our income statement and is incremental and additive to our financials.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "数据中心与电力容量",
+        "period": "未来三年",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "未来三年将通过合作伙伴上线超过 10GW 电力及数据中心容量，其中超 90% 已落实资金。",
+        "source": "prepared_remarks",
+        "source_quote": "we have secured more than 10 GW of power and data center capacity coming online over the next three years.",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -177,21 +514,319 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层称 AI 基础设施（GPU 与 CPU）需求持续超过供给，体现在 5530 亿美元 RPO 上。推理需求被认为正在各处快速增长，驱动力是模型使用率提高和新用例。企业自训大模型并未成为主流，需求更多来自把最佳模型与私有数据私密结合，推动数据迁移上云，并拉动多云数据库增长（同比 531%）。"
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "公司通过合作伙伴锁定未来三年超过 10GW 的容量，其中超过 90% 已落实资金，其余计划本月完成。供应链方面制造站点增至三倍，机架产出提高 4 倍，从机架交付到产生收入的时间缩短 60%。Q3 交付超过 400MW，90% 的承诺容量按期或提前交付。"
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "公司引入“自带硬件”和客户预付款等模式，自上次财报后已签署超过 290 亿美元合同，使扩张不必额外增加 Oracle 的债务或股权融资。Doug 称 capex 与 Oracle 资本需求出现“脱钩”，同时承诺维持投资级评级。"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "AI 加速器毛利率 32%，高于 30% 指引；长期区间 30%-40%",
+              "邻近服务占总支出 10%-20%，毛利更高",
+              "多云数据库毛利率约 60%-80%，增长迅速",
+              "当前利润拖累主要来自同时在建项目的费用"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "针对“SaaS 末日论”，管理层认为只有小型或单一功能 SaaS 厂商可能被颠覆，Oracle 以全套行业应用加内嵌 AI 代理（1,000 多个，随季度升级免费提供）应对。Q3 披露多项胜过 Workday、SAP 的 Fusion 订单，并宣称新 CX 产品是 Salesforce 所没有的。"
+          }
+        ]
+      },
+      {
+        "title": "公司战略（主权云与多云）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "主权云需求从数据主权扩展到运营与合同主权，Alloy 模式提供完整全栈 OCI，规模可从 3 个机架到 500 个机架。多云方面，Microsoft 33 个、Google 14 个区域已上线，AWS 区域将在 Q4 末达 22 个，公司把多云数据库作为高毛利增长引擎。"
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "GAAP",
+      "next_quarter": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2026Q4",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2026",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "John DiFucci",
+        "firm": "Guggenheim",
+        "topic": "云业务",
+        "is_new_topic": false,
+        "question_summary": "AI 基础设施的光环效应是否正在传导到传统云负载（专属区域、主权云、Alloy）和应用订单，底层动能是否在增强？",
+        "answer_summary": "Mike（CEO）确认存在光环效应：1）在 OCI 上训练大量模型，并与应用紧邻部署，可把高质量 AI 作为功能嵌入应用，客户能更快见到价值；2）OCI 更快更便宜，可帮客户“创造预算”来资助大型转型；3）主权 AI 与 Alloy 叠加，使全球管线增加，Oracle 无论 3 个机架还是 500 个机架都能交付完整 OCI 服务。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "Yes, we absolutely are seeing a halo effect, and let me add a little bit of color on that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "John DiFucci",
+        "firm": "Guggenheim",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "能否提供 FY2027 资本开支的可见度？",
+        "answer_summary": "Doug（主要财务官）表示不给 FY2027 capex 数字，待本财年结束后再谈。他强调 capex 与 Oracle 自身资本需求“脱钩”：新的融资机制下 capex 可能增加，但无需 Oracle 掏现金；公司仍承诺维持投资级评级，并在已宣布的 500 亿美元融资框架内。",
+        "new_numbers": [
+          "2026 日历年融资 500 亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出 FY2027 capex 数值或区间，仅表示下季之后再披露。",
+        "tone": "neutral",
+        "answer_quote": "On CapEx, I think we'll get back to everyone next after the end of the fiscal year and talk about next year's CapEx at that point in time.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Mark Murphy",
+        "firm": "JPMorgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "随着转向推理，德州、怀俄明等远离用户的集中式数据中心是否需要调整选址以靠近人口和光纤密集区？",
+        "answer_summary": "Clay（CEO）称推理需求正在各处快速增长。选址考虑成本、可用性、主权等多因素；延迟是相对的，需几秒思考的业务问题多 40 毫秒无影响。当前低延迟瓶颈在于硬件类型而非位置，行业创新集中在新型加速器上，因此公司可继续把数据中心放在电力充足、土地充裕之处。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "Thankfully the data center location is actually a very tiny part of that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Siti Panigrahi",
+        "firm": "Mizuho",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "企业用私有数据训练私有 LLM 的需求如何？Analyst Day 提到的 AI 数据库增长拐点有多大把握？",
+        "answer_summary": "Clay（CEO）称早期设想的企业自训大模型基本未成为主流；更受欢迎且增长的是把最佳模型与私有数据以私密方式结合。Oracle AI Database 增加了 MCP 服务器、自然语言转 SQL 等功能，AI Data Platform 提供代理开发平台。客户要用上最新 AI 必须先把数据迁上云，推动多云数据库加速。未直接量化“拐点”。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回应对 Analyst Day 所提 AI 数据库增长拐点的把握程度，只给出定性动能。",
+        "tone": "positive",
+        "answer_quote": "What we see is that for customers to take advantage of the latest and greatest AI, they first have to be in the cloud, and there's still a lot of data that's not in the cloud.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Moerdler",
+        "firm": "Sanford Bernstein",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "考虑建设成本与融资成本，对 AI 数据中心业务的价值创造有多大信心？",
+        "answer_summary": "Clay（CEO）：加速器本身毛利率仍在 30%-40% 区间并有渐进改善；数据中心中约 10%-20% 支出用于通用计算、存储、负载均衡等毛利更高的邻近服务；多云数据库毛利约 60%-80% 且快速增长，OCI 整体毛利结构持续增强。当前利润拖累主要来自同时在建项目的费用，而已交付容量均已按盈利价格签约。",
+        "new_numbers": [
+          "AI 加速器毛利率 30%-40%",
+          "邻近服务占总支出 10%-20%",
+          "多云数据库毛利率 60%-80%"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "the limitation on the profitability is not on the capacity we've delivered.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Moerdler",
+        "firm": "Sanford Bernstein",
+        "topic": "云业务",
+        "is_new_topic": false,
+        "question_summary": "如何把 AI 数据中心业务转化为主权云的 AI 提供商，对 Oracle 价值有何影响？",
+        "answer_summary": "Mike（CEO）：主权已从数据主权扩展到数据、运营和合同主权，Alloy 模式可同时满足。Oracle 提供的是完整全栈 OCI 而非边缘主权区，还可在主权区运行应用套件和 AI 数据平台；主权区大小及边界可按客户需求划定，合同与交付灵活性最强。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "It's not a subset, it's not a few edge devices, it's all of OCI.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Raimo Lenschow",
+        "firm": "Barclays",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "“AI 将杀死 SaaS”的担忧在客户侧是否也被讨论？Oracle 应用偏确定性是否是解释？",
+        "answer_summary": "Mike（CEO）：没遇到客户愿意用拼凑的小型 AI 功能替换零售、核心银行、电子病历等系统，客户反而希望尽快开箱即用 AI。Fusion 已有 1,000 个 AI 代理，银行套件有数百个，随季度升级免费提供。他认为 AI 对 Oracle SaaS 是助力，Oracle 是颠覆者。",
+        "new_numbers": [
+          "Fusion 内置 1,000 个 AI 代理"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "Instead of thinking that AI spells the death of SaaS, at least for Oracle, I think it actually helps our SaaS position",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Brad Zelnick",
+        "firm": "Deutsche Bank",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "在众多厂商争夺跨系统 AI 交互层的背景下，Oracle 凭借数据库和应用的核心数据，角色如何演进？",
+        "answer_summary": "Mike（CEO）：数据引力尤其是关键业务数据引力是优势，代理应从记录系统起步；AI Agent Studio 随 Fusion 季度升级发布，也可跨行业应用和第三方应用构建代理。Larry（董事长兼 CTO）：提供预建代理和 AI 数据平台开发环境，客户与伙伴可用云上任意主流模型自建代理；未来 Fusion 会计结账将由自主代理完成，目标是自动化整个行业生态。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think data gravity matters here, and I think mission-critical data gravity matters even more.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "云业务": 2,
+      "产能与资本开支": 2,
+      "AI 产品与模型": 2,
+      "毛利率与成本": 1,
+      "竞争格局": 1
+    },
+    "new_topics": [
+      "AI 产品与模型",
+      "云业务",
+      "产能与资本开支",
+      "毛利率与成本",
+      "竞争格局"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "云业务",
+      "产能与资本开支",
+      "AI 产品与模型"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "John DiFucci",
+        "firm": "Guggenheim",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "能否提供 FY2027 资本开支的可见度？",
+        "answer_summary": "Doug（主要财务官）表示不给 FY2027 capex 数字，待本财年结束后再谈。他强调 capex 与 Oracle 自身资本需求“脱钩”：新的融资机制下 capex 可能增加，但无需 Oracle 掏现金；公司仍承诺维持投资级评级，并在已宣布的 500 亿美元融资框架内。",
+        "new_numbers": [
+          "2026 日历年融资 500 亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出 FY2027 capex 数值或区间，仅表示下季之后再披露。",
+        "tone": "neutral",
+        "answer_quote": "On CapEx, I think we'll get back to everyone next after the end of the fiscal year and talk about next year's CapEx at that point in time.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Siti Panigrahi",
+        "firm": "Mizuho",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "企业用私有数据训练私有 LLM 的需求如何？Analyst Day 提到的 AI 数据库增长拐点有多大把握？",
+        "answer_summary": "Clay（CEO）称早期设想的企业自训大模型基本未成为主流；更受欢迎且增长的是把最佳模型与私有数据以私密方式结合。Oracle AI Database 增加了 MCP 服务器、自然语言转 SQL 等功能，AI Data Platform 提供代理开发平台。客户要用上最新 AI 必须先把数据迁上云，推动多云数据库加速。未直接量化“拐点”。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回应对 Analyst Day 所提 AI 数据库增长拐点的把握程度，只给出定性动能。",
+        "tone": "positive",
+        "answer_quote": "What we see is that for customers to take advantage of the latest and greatest AI, they first have to be in the cloud, and there's still a lot of data that's not in the cloud.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "营收增22%，AI基建与多云数据库高增，现金流深度为负",
+    "key_findings": [
+      {
+        "finding": "增长由 AI 基础设施和多云数据库驱动",
+        "text": "营收 171.9 亿美元同比增 21.7%；AI 基础设施收入同比增 243%，多云数据库增 531%，云应用固定汇率增 11%。RPO 达 5530 亿美元。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "资本开支远超经营现金流，FCF 为负",
+        "text": "Capex 186.4 亿美元，经营现金流 71.5 亿美元，FCF 为 -114.8 亿美元。公司已完成 300 亿美元融资，计划总额最多 500 亿美元。",
+        "evidence": "fcf"
+      },
+      {
+        "finding": "管理层强调利润率随规模提升",
+        "text": "GAAP 营业利润率 31.8%，同比 +0.9pp；AI 容量毛利率 32%，高于 30% 指引；在建项目费用是主要拖累。",
+        "evidence": "qa#4"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "capex",
+        "condition": "Q4 财报后管理层披露 FY2027 capex，并说明有多少无需 Oracle 自掏现金",
+        "threshold": "披露 FY2027 capex 数值或区间"
+      },
+      {
+        "metric_key": "other",
+        "condition": "AWS 多云数据库区域在 Q4 末达到计划数量",
+        "threshold": "22 个 AWS 区域上线"
+      },
+      {
+        "metric_key": "other",
+        "condition": "AI 容量毛利率保持在管理层指引区间之上",
+        "threshold": "不低于 30%"
+      },
+      {
+        "metric_key": "net_income_gaap",
+        "condition": "Q4 确认 TikTok U.S. 权益法收益份额，并计入非经营性损益",
+        "threshold": "Q4 出现该项收益"
+      },
+      {
+        "metric_key": "other",
+        "condition": "500 亿美元融资中 ATM 股权部分是否启动",
+        "threshold": "ATM 启动与否及规模"
+      }
+    ]
   },
   "thesis_review": {}
 }

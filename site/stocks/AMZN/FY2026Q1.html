@@ -95,7 +95,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>6</b></a>
     <a href="#notes">数据来源<b>1</b></a>
   </div>
 </nav>
@@ -124,7 +124,7 @@
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">营业收入</span>
@@ -132,7 +132,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+16.6%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-14.9%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">收入1815亿美元，同比增17%（剔除汇率增15%）；AWS加速至28%，件量增15%，广告增22%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -155,7 +155,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note>营收、营业成本、研发、销售、管理费用来自 SEC companyfacts 的单季 us-gaap。毛利为营收减营业成本，申报没有单独的毛利科目，也没有把营业成本再拆开。地区收入来自 10-Q/10-K XBRL 的地区轴。第四季没有单季事实时用全年减前九个月；地区口径对不上时留空。 已保存的披露文字里没有地区收入，地区柱留空。</p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>零售件量同比增长15%，为疫情末期以来最高；北美收入增12%。</p>
+<blockquote>Units grew 15% year-over-year, the highest we&#39;ve seen since the tail end of COVID lockdowns.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>AWS收入376亿美元，增速加快480个基点至28%，核心与AI服务共同驱动；广告收入172亿美元，增22%。</p>
+<blockquote>Revenue was $37.6 billion and growth accelerated 480 basis points to 28% year-over-year, driven by both core and AI services.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>汇率带来29亿美元有利影响，剔除后净销售额增长15%。</p>
+<blockquote>Excluding the $2.9 billion favorable impact from foreign exchange, net sales increased 15%.</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -182,7 +197,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+1.3pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+3.3pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">毛利率51.8%，同比升1.3pp，环比升3.3pp，应与高毛利的AWS与广告占比提升及履约效率改善有关。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -195,7 +210,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>AWS与广告增长快于零售，高毛利业务占比提升（推断，电话会未直接讲毛利率）。</p>
+<p class="small muted">依据：电话会未讨论毛利率，由AWS增28%、广告增22%快于总收入推断。</p>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>履约网络效率提升，件量增长快于运营成本，降低单位服务成本。</p>
+<blockquote>Overall unit growth of 15% continues to outpace our cost to operate the fulfillment network</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_gaap">
       <span class="m-name">营业利润率（GAAP）</span>
@@ -203,7 +228,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+1.3pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+1.4pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">营业利润率13.1%，创历史新高，同比升1.3pp；各分部运营更高效。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -216,70 +241,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（GAAP）</span>
-      <span class="m-val num">$23.85B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+29.6%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-4.5%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>履约成本增速（9%）和出站运费增速（12%）低于件量增速（15%），推动利润率提升。</p>
+<blockquote>outbound shipping costs grew 12% year-over-year and fulfillment expense grew 9% year-over-year</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>AWS营业利润142亿美元，随高增长与效率提升放大。</p>
+<blockquote>AWS operating income was $14.2 billion and reflects our strong growth, coupled with our focus on driving efficiencies across the business.</blockquote>        </div>
       </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
-      <span class="m-name">净利润率（GAAP）</span>
-      <span class="m-val num">16.7%</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+5.7pp</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+6.7pp</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
-      <span class="m-name">净利润（GAAP）</span>
-      <span class="m-val num">$30.25B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+76.7%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+42.8%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
@@ -287,7 +259,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+74.8%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP每股收益2.78美元，同比增75%，主要随净利润增长。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -300,7 +272,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>EPS增长随净利润增长（同比+77%），电话会未单独讨论EPS，属推断。</p>
+<p class="small muted">依据：EPS与净利润同向，电话会未对EPS给出说明。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
@@ -308,7 +285,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+53.0%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-52.2%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">经营现金流260.3亿美元，同比增53%，环比降52%；电话会未单独解释。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -321,39 +298,360 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>同比增长应与营业利润增长相关；环比下降应与季节性营运资金变动有关，电话会未说明，属推断。</p>
+<p class="small muted">依据：文字稿未讨论经营现金流驱动因素。</p>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">营业利润（GAAP）</span>
+      <span class="m-val num">$23.85B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+29.6%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-4.5%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">营业利润238.5亿美元，同比增30%；北美83亿、国际14亿、AWS142亿。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>AWS贡献142亿美元，是营业利润最大来源；北美营业利润率7.9%，国际3.6%。</p>
+<blockquote>AWS operating income was $14.2 billion</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>收入增长17%，件量增15%，运营杠杆释放。</p>
+<blockquote>Worldwide operating income was $23.9 billion with an operating margin of 13.1%, our highest operating margin ever.</blockquote>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
+      <span class="m-name">净利润（GAAP）</span>
+      <span class="m-val num">$30.25B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+76.7%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+42.8%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">净利润302.6亿美元，同比增77%，明显高于营业利润；电话会未解释差额来源。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
+          <p>净利润超过营业利润，应有非营业收益贡献，电话会未说明，属推断。</p>
+<p class="small muted">依据：净利润302.6亿美元高于营业利润238.5亿美元，差额来自营业外项目，具体原因文字稿未提供。</p>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营业利润同比增30%，提供利润基础。</p>
+<blockquote>Worldwide operating income was $23.9 billion</blockquote>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
+      <span class="m-name">资本开支</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">Q1现金资本开支432亿美元，主要用于AWS和生成式AI以满足强劲需求。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>资本开支主要用于AWS和生成式AI，支持客户强劲需求。</p>
+<blockquote>Our cash CapEx was $43.2 billion in Q1.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>AWS增长越快，短期资本开支越多；土地、电力、芯片等在计费前6至24个月投入。</p>
+<blockquote>the faster AWS grows, the more short-term CapEx we will spend.</blockquote>        </div>
+      </div>
     </div>
   </div>
   </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 2 项 · 行业展望 5 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
-      <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
+      <p class="layer-sub">点一行看历史指引和后来的实际，再点同一行收起。</p>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody id="guideRows">
+          <tr class="guide-hit" data-guide-key="revenue" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-revenue">
+            <td>营收<small class="basis">下季</small></td>
+            <td>$194.00B – $199.00B</td>
+            <td class="c-up">+8.3%</td>
+            <td class="c-up">+17.2%</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-revenue" data-guide-panel="revenue" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+<p class="guide-empty">实际还没进季度文件，这张图先空着。</p>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>2026财年Q2<small class="basis">2026财年Q1给出</small></td>
+                      <td>$194.00B – $199.00B</td>
+                      <td>$196.50B</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="guide-hit" data-guide-key="operating_margin" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-operating_margin">
+            <td>营业利润率<small class="basis">下季</small></td>
+            <td>20000000000.00% – 24000000000.00%</td>
+            <td class="c-up">+21999999986.9pp</td>
+            <td class="c-up">+21999999988.6pp</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-operating_margin" data-guide-panel="operating_margin" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 = 实际 − 指引中值，单位是百分点。</p>
+<p class="guide-empty">实际还没进季度文件，这张图先空着。</p>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>2026财年Q2<small class="basis">2026财年Q1给出</small></td>
+                      <td>200000000.00% – 240000000.00%</td>
+                      <td>220000000.00%</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>需求变化</h4>
+          <div class="outlook-copy">
+            <p>AWS需求处于加速阶段：收入376亿美元，增速28%，为15个季度最高，由核心与AI服务共同驱动，AI收入同比三位数增长。管理层强调AI支出与核心服务需求高度相关，AI工作负载进入生产后会带动核心需求，后训练、强化学习和智能体调用都消耗大量CPU和核心服务。</p>
+            <ul><li>Q1在手订单（backlog）3640亿美元，不含Anthropic超1000亿美元的新协议；管理层称客户有相当广度。</li><li>企业侧AI当前最大成果在降本增效项目（客服、流程自动化、欺诈检测），全新体验类项目也在进入生产。</li><li>内存涨价和供应紧张促使本地部署客户加快上云，因为供应商优先供给最大客户。</li></ul>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化</h4>
+          <div class="outlook-copy">
+            <p>管理层指出内存等组件成本大幅上涨、整体供给不足，但公司从去年中后期就与战略供应商锁定大量供给，目前未受产能限制，仍在密切观察。Trainium2基本售罄，Trainium3几乎被认购完，Trainium4已有大部分被预订；管理层还提到有潜在向外销售Trainium机架的可能，但需在现有需求与外售之间权衡。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>管理层强调自研芯片带来的差异化：Trainium2价格性能比可比GPU约好30%，自研芯片业务年化收入超200亿美元，若按同行方式对外销售则相当于500亿美元，并声称已是全球前三的数据中心芯片业务之一。同时与NVIDIA保持深度合作，仍会大量下单。在模型层，Bedrock引入OpenAI模型和有状态托管智能体，管理层称这是别人没有的。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>AWS的资本开支需要在计费前6至24个月投入土地、电力、建筑和芯片服务器，数据中心使用寿命30年以上，芯片服务器网络设备为5至6年。管理层承认在资本开支增速明显超过收入增速时，早期自由现金流承压，但认为投入数年后累计自由现金流和投资回报有吸引力。长期看，Trainium预计每年可节省数百亿美元资本开支，并带来数百个基点的营业利润率优势。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略（智能体电商与新业务）</h4>
+          <div class="outlook-copy">
+            <ul><li>零售：件量增15%，生鲜同日达覆盖超2300个城镇，Rufus月活增超115%，管理层计划把Rufus做成最好的购物助手，并与第三方通用智能体沟通改进。</li><li>广告：收入172亿美元，增22%，管理层认为智能体电商带来赞助内容和赞助提示词的新机会。</li><li>Amazon Leo：商用服务预计Q3上线，今年计划超20次发射，Q2会带来约10亿美元同比成本增加，Q4起开始资本化部分成本。</li></ul>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">10 轮 · 部分回答 / 回避 6</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>10</b> 轮</span>
+<span>热门话题：<b>AI 产品与模型、产能与资本开支、客户与订单</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 6</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Eric Sheridan<small>Goldman Sachs</small></span>
+        <span class="qa-q">为兑现当前 AWS 在手订单，未来几年需要多大投入来扩充算力和产能？自研芯片和 AI 基础设施路线在竞争中有何优势？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：AWS 增速 28%，是 15 个季度以来最快，基数为 1500 亿美元年化收入。客户选择 AWS 做 AI，原因是全栈能力、推理要靠近数据和应用，以及安全与运营表现。</li><li>核心业务同样强劲，来自企业上云迁移，也来自 AI 带动的后训练、强化学习和智能体调用。</li><li>公司同时拥有 Graviton CPU 和 Trainium AI 芯片。资本开支没有新的更新，计划与之前大体一致。他预计未来几年会投入大量资本，把握这个“千载难逢”的机会。</li></ul></div>
+<p class="small">未回答的部分：未给出未来几年具体投资金额，只称计划大体不变</p><blockquote>I don&#39;t have an update on -- a new update on capital. Our plan is largely the same, but we do view this as truly a once-in-a-lifetime opportunity</blockquote>        <p class="small">新数字：AWS 同比增长28%；年化收入约1500亿美元</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">请更新 AWS 在手订单（backlog）的规模，以及除大型 AI 实验室外的客户广度。</span>
+        <span class="qa-tags">
+<span class="pill">客户与订单</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Andy（CEO）：Q1 backlog 为 3640 亿美元，不含近期宣布的 Anthropic 超 1000 亿美元新协议。客户有相当的广度，并非只集中在一两家。</p>
+<blockquote>the backlog for Q1 is $364 billion. That does not include the recent deal that we announced with Anthropic for over $100 billion.</blockquote>        <p class="small">新数字：Q1 backlog 3640亿美元；Anthropic 新协议超1000亿美元（未计入）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brian Nowak<small>Morgan Stanley</small></span>
+        <span class="qa-q">2026 年在 Rufus 和智能体电商方面，公司最关注哪些里程碑，才能保持领先？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：非常看好智能体电商。Rufus 月活增长超过 115%，互动量增长超过 400%。</li><li>当前第三方通用智能体在价格、商品信息和个性化数据上还做得不好，类似早期搜索引擎的导流阶段。公司在与这些方沟通改进。</li><li>他认为用户会倾向从自己常购的零售商的购物助手开始，所以目标是把 Rufus 做成最好的购物助手。</li></ul></div>
+<p class="small">未回答的部分：未给出 2026 年具体里程碑，只讲方向</p><blockquote>we&#39;re aiming to have it be the best shopping assistant anywhere, and I think we&#39;re on that path.</blockquote>        <p class="small">新数字：Rufus 月活增长超115%；互动量增长超400%</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Justin Post<small>Bank of America</small></span>
+        <span class="qa-q">Bedrock 上线全套 OpenAI 模型有多大意义？公司对自研 Nova 模型的重视程度如何？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：这对客户意义重大，因为客户需要选择，没有一个模型能通吃。5.4 无状态模型已于昨日上线，5.5 将在几周内上线。</li><li>他认为未来是有状态 API，与 OpenAI 合作推出的 Bedrock 托管智能体（预览）是别人没有的。他没有直接回应 Nova。</li></ul></div>
+<p class="small">未回答的部分：未直接回答对 Nova 的投入侧重</p><blockquote>I think the future of using these models is a stateful model, a stateful API.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Justin Post<small>Bank of America</small></span>
+        <span class="qa-q">股东信提到可能出售 Trainium 机架。在产能紧张下，时间表和机会规模如何？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Andy（CEO）：这很有可能。但 Trainium 需求极大，需要在现有客户和留作机架销售之间分配。对现有客户，也要权衡是“Trainium 加 AWS 云基础设施”还是只卖芯片。他预计未来几年很可能会出售机架。</p>
+<p class="small">未回答的部分：未给出时间点和规模</p><blockquote>I expect over time, there&#39;s a good chance we&#39;re going to sell racks over the next couple of years.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Robert Sanderson<small>Loop Capital Markets</small></span>
+        <span class="qa-q">请量化 Amazon Leo 未来几年在消费者和企业市场的收入机会、放量的制约因素、Globalstar 带来的新服务，以及长期是否会延伸到轨道数据中心等非通信服务。</span>
+        <span class="qa-tags">
+<span class="pill">其他</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：非常看好 Leo。已有超过250颗卫星在轨，今年计划超过20次发射，2027年超过30次。</li><li>商用后性能预计下行约2倍、上行约6倍优于现有方案，并有成本优势。Delta 承诺从2028年起至少一半机队使用。</li><li>制约增长的主要因素是把星座送上太空。业务有机会成为数十亿美元级收入业务，前期资本密集，类似 AWS。</li><li>收购 Globalstar 获得稀缺频谱和卫星技术，用于直连设备，并与 Apple 建立合作。他没有回答轨道数据中心等问题，也没有给出具体收入数字。</li></ul></div>
+<p class="small">未回答的部分：未量化收入，未回应轨道数据中心</p><blockquote>what stops us from growing the business, we have to get the constellation into space. We have over 20 launches planned this year. We have over 30 launches planned in 2027.</blockquote>        <p class="small">新数字：在轨卫星超250颗；2026年计划超20次发射；2027年超30次发射；下行约2倍、上行约6倍优于现有方案</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Shweta Khajuria<small>Wolfe Research</small></span>
+        <span class="qa-q">内存和存储涨价及供应链通胀，会如何影响今年及明年的资本开支？</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：内存等组件成本大幅上涨，供需缺口明显。公司从去年中后期就看到趋势，与战略供应商合作获得了大量供应，目前没有受产能限制，但在密切关注。</li><li>供应商优先供给最大的客户（含云厂商），这促使有本地基础设施的企业加快上云。他没有给出对资本开支的量化影响。</li></ul></div>
+<p class="small">未回答的部分：未量化对资本开支的影响</p><blockquote>I think the team has been very scrappy. I think we&#39;ve done a good job in making sure that we&#39;re not capacity constrained there, but we&#39;re watching that very closely.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Shweta Khajuria<small>Wolfe Research</small></span>
+        <span class="qa-q">若由智能体代替用户购物，广告机会如何看待？</span>
+        <span class="qa-tags">
+<span class="pill">搜索与广告</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：他认为广告会受益。广告智能体工具让中小商家制作创意和选受众更快更省，会带来更多广告主。</li><li>智能体对话是多轮的，有多个机会展示相关商品，部分是自然结果，部分是赞助内容，还包括赞助提示词（sponsored prompts）。</li></ul></div>
+<blockquote>I actually believe that advertising will do well in a world of agentic commerce.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Colin Sebastian<small>Baird</small></span>
+        <span class="qa-q">早期采用者和大客户的增量 AI 需求，与更广泛企业客户的需求曲线相比如何？</span>
+        <span class="qa-tags">
+<span class="pill">需求与出货</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：AI 实验室在算力上花费巨大，这些公司在 AI 和核心业务上都大量消费。同时企业采用也相当可观。</li><li>企业目前最大的成功仍是降本增效类项目，例如客服自动化、流程自动化和欺诈检测。全新体验和重塑现有体验的项目也在进入生产，数量显著。</li></ul></div>
+<blockquote>the largest absolute place that we see enterprises having success is in projects that are around cost avoidance and productivities.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Colin Sebastian<small>Baird</small></span>
+        <span class="qa-q">在亚马逊内部，AI 在产品和运营效率两方面最大的机会在哪里？</span>
+        <span class="qa-tags">
+<span class="pill">AI 产品与模型</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Andy（CEO）：他认为公司任何业务和工作方式都会受到巨大影响。所有客户体验将被重新发明，每条业务线都要从零设想未来体验。</li><li>内部工作方式也会被改变：智能体编码已在改变产品开发，DevOps、客服、研究、分析和销售也会如此。</li><li>他举例：某服务的引擎替换，通常需要40至50人约一年，而5人借助智能体编码工具在65天内完成。</li></ul></div>
+<blockquote>we took 5 really smart people, AI forward-thinking people building on agentic coding tools and those 5 people rebuilt it in 65 days.</blockquote>        <p class="small">新数字：5人65天完成原需40-50人约一年的工作</p>
+      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 1 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：— · 文件编号 — · 文字稿：—</p>
+    <p>新闻稿：— · 文件编号 — · 文字稿：tickertrends</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。</li></ul>  </div>
 </details>
