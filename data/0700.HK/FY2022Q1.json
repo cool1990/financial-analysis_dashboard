@@ -9,16 +9,22 @@
     "release_at_utc": "2022-05-18T13:19:43Z",
     "accession": "manual:2eb5fa4af4b7",
     "press_release_url": "file:data/0700.HK/raw/FY2022Q1/press_release.pdf",
-    "transcript_source": "local_import",
+    "transcript_source": "motley_fool",
     "eps_basis": "gaap",
     "listing": "hk",
     "reporting_currency": "CNY",
     "sec_form": null,
     "extract_method": "hk_results",
-    "extract_mode": "disclosed"
+    "extract_mode": "disclosed",
+    "transcript_url": "https://www.fool.com/earnings/call-transcripts/2022/05/19/tencent-hldgs-unspadr-tcehy-q1-2022-earnings-call/",
+    "stage2_generation": {
+      "llm_model": "cursor-cloud-agent",
+      "generated_by": "cursor-cloud-agent",
+      "note": "Historical Stage2 written by the Cursor cloud agent from the English earnings-call transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf",
@@ -439,12 +445,607 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "港股手工导入未调用变动原因模型"
+    "stage": 2,
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "指标表收入1354.71亿元，同比增0.1%，环比降6.0%。同比几乎为零，电话会称为基本持平。Martin（总裁）称增值服务占收入54%，其中社交网络22%、国内游戏24%、国际游戏8%，网络广告13%，金融科技及企业服务32%。指标表分部为增值服务727.38亿元、网络广告179.88亿元、金融科技及企业服务427.68亿元。用上年同期金额相减，广告少38.32亿元，金融科技及企业服务多37.40亿元，增值服务多2.95亿元，增减大致抵消。这是金额相减，不是指标表同比。电话会称增值服务730亿元、基本持平，社交网络290亿元、同比增1%，国内游戏330亿元、同比降1%，国际游戏110亿元、同比增4%，广告180亿元、同比降18%、环比降16%，金融科技及企业服务430亿元、同比增10%、环比降11%。这些子项增速和取整金额只作为口述。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": true,
+            "description": "收入几乎持平，最大的减项是网络广告。James（CSO）称广告收入180亿元，同比降18%、环比降16%，出价密度不足压低了千次展示费用。",
+            "evidence_quote": "Revenue was CNY 18 billion in the first quarter, down 18% year on year and down 16% quarter on quarter. And subdued bidding density results in lower eCPMs.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "指标表网络广告179.88亿元，比上年同期218.20亿元少38.32亿元，是三个分部里绝对值最大的减项。没有这一项，收入不会只增0.1%。180亿元和18%、16%是口述，主因判断用的是锚点金额相减。",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "金融科技及企业服务是主要正项。James称分部收入430亿元，同比增10%、环比降11%。商业支付增速放缓，因为3月多地应对疫情，餐饮、出行等日常消费和大额旅行预订都减少，交通、餐饮服务和服装的支付量减速更明显。",
+            "evidence_quote": "Segment revenue was CNY 43 billion, up 10% year on year and down 11% quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "指标表金融科技及企业服务427.68亿元，比上年同期390.28亿元多37.40亿元，与广告的减项几乎对冲。10%和11%是电话会口径，不写成指标表同比。",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": false,
+            "description": "国内游戏是增值服务内部的拖累。Martin称国内游戏收入330亿元，同比降1%，未成年保护的直接和间接影响打到了活跃账号和付费账号。国际游戏110亿元，同比只增4%，慢于前几季，因为PUBG Mobile消费在疫后正常化，而且英雄联盟和部落冲突的内容更新节奏偏后。",
+            "evidence_quote": "Domestic games revenue was down 1% year on year to RMB 33 billion as direct and indirect effects of minor protection measures impacted active user and paying user accounts.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "增值服务整体仍比上年同期多2.95亿元，所以国内游戏的下降被社交网络和国际游戏抵消，不是总收入的主因。330亿元和降1%是口述。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "Pony（CEO）称总收入1350亿元，同比基本持平，环比降6%。John（CFO）称1355亿元，同比持平，环比降6%。指标表1354.71亿元，同比增0.1%，环比降6.0%。摘要用指标表。1350亿元和1355亿元是口述取整。",
+          "Martin称增值服务730亿元、同比基本持平，社交网络290亿元、同比增1%，国内游戏330亿元、同比降1%，国际游戏110亿元、同比增4%。James称广告180亿元、同比降18%、环比降16%，金融科技及企业服务430亿元、同比增10%、环比降11%。指标表分部为727.38亿元、179.88亿元、427.68亿元，没有这些子项的同比。取整金额和增速只作为电话会口述。"
+        ]
+      },
+      {
+        "metric": "gross_profit_gaap",
+        "summary": "指标表毛利570.74亿元，同比降8.9%，环比降1.3%。收入同比只增0.1%，毛利下降来自毛利率压缩，而不是收入萎缩。Pony称毛利570亿元，同比降9%、环比降1%。John称571亿元，同比降9%或环比降1%。摘要用570.74亿元和指标表的8.9%、1.3%。分部毛利电话会没有单列金额。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": true,
+            "description": "收入基本稳定，但经营成本上升，所以毛利下降。John把同比下降归因于收入稳定而成本增加、产品组合转向低毛利，以及战略项目继续投入。",
+            "evidence_quote": "The year-on-year decrease reflected the result of stable revenue with increased operating costs, mix shift toward lower-margin products and our continued investments in key strategic initiatives.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "收入从1353.03亿元到1354.71亿元几乎不变，毛利从626.35亿元降到570.74亿元，少55.61亿元。差额来自成本率，不是量的大幅下滑。55.61亿元是锚点金额相减，不是另算的指标表同比。",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "低毛利收入占比上升，放大了毛利降幅。广告毛利率降到36.7%，金融科技及企业服务毛利率31.6%，都低于整体42.1%，而广告收入又在收缩、金融科技收入在增加。",
+            "evidence_quote": "Gross margin for online advertising was 36.7%, down 8.4 percentage points year on year or 6 percentage points quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "John在总毛利率的原因里单列了向低毛利产品的组合转移。广告毛利率降8.4个百分点是分部里最陡的，但广告只占收入约13%，所以它是第二位，不是毛利金额下降的全部。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "Pony称毛利570亿元，同比降9%，环比降1%。John称571亿元，同比降9%，环比降1%。指标表毛利570.74亿元，同比降8.9%，环比降1.3%。摘要用指标表。570亿元、571亿元、9%和1%是口述取整。"
+        ]
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "指标表GAAP毛利率42.1%，同比降4.2个百分点，环比升2.0个百分点。John称整体毛利率42.1%，同比降4.2个百分点，环比升2个百分点，与指标表一致。分部毛利率是口述，指标表未单列：增值服务50.4%，同比降4.7个百分点、环比升1.7个百分点；网络广告36.7%，同比降8.4个百分点、环比降6个百分点；金融科技及企业服务31.6%，同比基本持平、环比升4.5个百分点。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "-",
+            "is_primary": true,
+            "description": "毛利率同比下降，首先是因为收入稳定而成本上升。增值服务收入稳定，但游戏内容成本、服务器和带宽成本上升，视频号还在投入。广告侧还有视频号相关成本、北京冬奥内容成本，以及文化事业建设费今年不再全额减免。",
+            "evidence_quote": "The year-on-year decrease reflected stable segment revenue with increased costs, including content cost for games, server and bandwidth costs in addition to our investment in strategic initiatives, in particular, video accounts.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "增值服务占收入54%，其毛利率降4.7个百分点，对整体4.2个百分点的降幅贡献最大。广告毛利率降得更多，但权重较小。成本上升写在John对增值服务和广告毛利率的解释里。",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "-",
+            "is_primary": false,
+            "description": "组合转向低毛利产品。金融科技及企业服务毛利率31.6%，低于整体，而这块收入同比仍增；广告收入下降，进一步改变了组合。",
+            "evidence_quote": "The year-on-year decrease reflected the result of stable revenue with increased operating costs, mix shift toward lower-margin products and our continued investments in key strategic initiatives.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "John把组合转移和成本上升并列。组合是第二位，因为增值服务毛利率自身的下降已经能解释整体降幅的主要部分。",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "环比毛利率回升2.0个百分点，是季节性组合转向游戏等高毛利业务。金融科技及企业服务环比回升，则来自组合转向毛利更高的金融科技，以及削减亏损云合同。",
+            "evidence_quote": "The quarter-on-quarter increase was due to seasonal revenue mix shift toward high-margin businesses, such as games.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "同比方向仍是下降，所以环比改善不是主因。指标表环比升2.0个百分点，与John所说的升2个百分点一致。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称整体毛利率42.1%，同比降4.2个百分点，环比升2个百分点。指标表42.1%，同比降4.2个百分点，环比升2.0个百分点。水平与同比一致。分部毛利率50.4%、36.7%、31.6%及其百分点变化是电话会口述，指标表未单列。"
+        ]
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "指标表GAAP经营利润372.17亿元，同比降33.9%，环比降66.1%。上年同期562.73亿元，上季1097.23亿元。John称经营利润372亿元，同比降34%、环比降66%。非GAAP经营利润指标表365.38亿元，没有同比；上年同期金额为427.58亿元。John称非GAAP经营利润365亿元，同比降15%、环比增10%；Pony称370亿元，同比降15%、环比增10%。摘要的GAAP金额用372.17亿元，非GAAP金额用365.38亿元，15%和10%只作为口述。其他净收益131亿元，同比降33%、环比降85%，其中出售Sea Limited部分股权收益185亿元，被交通服务、网络媒体等被投公司减值部分抵消。John称这些其他净收益主要是非GAAP调整项，所以GAAP经营利润降幅远大于非GAAP。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "人员相关费用上升，是经营利润同比下降里最大的一块。不含研发的一般行政开支113亿元，同比增47%，因为战略领域增员、海外子公司开支增加，以及新收购子公司。研发开支154亿元，同比增36%，同样主要因为人员成本和收购。季末员工约11.6万人，同比增30%、环比增3%。",
+            "evidence_quote": "The year-on-year increase reflected greater staff costs driven by headcount increase to support our ongoing investment in key strategic areas, greater expenses incurred by our overseas subsidiaries as well as expenses from recently acquired subsidiaries.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "指标表一般及行政开支266.69亿元，上年同期189.67亿元，多77.02亿元。销售费用80.58亿元，上年同期85.30亿元，少4.72亿元。费用净增约72亿元。毛利少55.61亿元。经营利润少190.56亿元，扣掉毛利和费用后，其余约63亿元对应其他净收益下降。费用净增大于另外两项，所以费用是主因。这些都是锚点金额相减，不是指标表同比。",
+            "quote_unverified": false
+          },
+          {
+            "type": "一次性项目",
+            "direction": "-",
+            "is_primary": false,
+            "description": "其他净收益同比降33%、环比降85%，压低了GAAP经营利润。当季包含出售Sea Limited部分股权的185亿元收益，同时对交通服务、网络媒体等被投公司计提减值。",
+            "evidence_quote": "Net other gains were CNY 13.1 billion, down 33% year on year or 85% quarter on quarter, which were primarily non-IFRS adjustment items, including CNY 18.5 billion gain arising from our partial divestment of Sea Limited, partly offset by impairment provisions against investee companies in verticals such as transportation services and online media.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "其他净收益下降约63亿元，小于费用净增，所以不是主因。但它解释了为什么GAAP经营利润同比降33.9%，而电话会所说的非GAAP只降15%。环比降66.1%、利润率环比降48.6个百分点，对应上季经营利润1097.23亿元的高基数，John把环比直接连到其他净收益降85%。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "销售及市场推广开支下降，部分抵消人员费用。John称81亿元，同比降6%、环比降31%，来自营销费用优化；环比还叠加游戏和企业服务的季节性少投。",
+            "evidence_quote": "Y-on-Y decrease reflected our marketing expense optimization measures.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "指标表销售费用80.58亿元，比上年同期少4.72亿元，远小于一般行政开支的增加，所以营销节省改变不了经营利润下降的方向。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称GAAP经营利润372亿元，同比降34%，环比降66%。指标表372.17亿元，同比降33.9%，环比降66.1%。摘要用指标表。372亿元、34%和66%是口述取整。上季经营利润1097.23亿元来自指标表，用来说明环比高基数。",
+          "非GAAP经营利润指标表365.38亿元，没有同比，上年同期金额为427.58亿元。Pony称370亿元，同比降15%，环比增10%。John称365亿元，同比降15%，环比增10%。摘要用365.38亿元。370亿元是Pony的取整。15%和10%是口述，不写成指标表同比。"
+        ]
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "指标表GAAP经营利润率27.5%，同比降14.1个百分点，环比降48.6个百分点。上季经营利润率76.1%，所以环比落差很大。电话会没有直接报GAAP经营利润率。John称非GAAP经营利润率27%，同比降4.6个百分点，环比升4个百分点；非GAAP净利润率19.4%，同比降6.1个百分点，环比升1.5个百分点。非GAAP经营利润率的同比降幅接近毛利率的4.2个百分点，GAAP多出来的降幅主要来自其他净收益等调整项，不能把27%和4.6个百分点写成GAAP。销售费用占收入5.9%，同比基本持平。研发占收入11.4%。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "-",
+            "is_primary": true,
+            "description": "GAAP经营利润率同比降14.1个百分点，远大于非GAAP经营利润率同比降4.6个百分点。差额来自其他净收益等非GAAP调整项：其他净收益同比降33%、环比降85%，其中有185亿元的Sea Limited部分出售收益，并被减值抵消一部分。",
+            "evidence_quote": "Net other gains were CNY 13.1 billion, down 33% year on year or 85% quarter on quarter, which were primarily non-IFRS adjustment items, including CNY 18.5 billion gain arising from our partial divestment of Sea Limited, partly offset by impairment provisions against investee companies in verticals such as transportation services and online media.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "毛利率只降4.2个百分点，非GAAP经营利润率降4.6个百分点，两者接近。GAAP经营利润率多降约9.5个百分点，对得上其他净收益被当成调整项这一说明。环比降48.6个百分点，也要放在上季76.1%的高基数上看，而不是本季经营性利润率突然少掉将近一半。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "人员费用推高了费用率。不含研发的一般行政开支同比增47%至113亿元，研发同比增36%至154亿元，季末约11.6万人、同比增30%。",
+            "evidence_quote": "R&D expenses were CNY 15.4 billion, up 36% year on year or 10% quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "非GAAP经营利润率只比毛利率多降0.4个百分点，说明人员费用的上升大体被营销节省抵消，费用率不是GAAP 14.1个百分点的主体。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营销开支优化让销售费用同比下降，占收入5.9%且占比基本稳定，对利润率是小幅正贡献。",
+            "evidence_quote": "Selling and marketing expenses were 5.9% of revenues, broadly stable year on year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "销售费用率稳定，解释不了经营利润率的下降，只说明营销不是拖累项。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表GAAP经营利润率27.5%，同比降14.1个百分点，环比降48.6个百分点。John称非GAAP经营利润率27%，同比降4.6个百分点，环比升4个百分点。两个口径的水平接近，同比方向和幅度差很多。摘要的27.5%和14.1个百分点只用GAAP指标表，不把27%写成GAAP经营利润率。"
+        ]
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "指标表GAAP净利润237.33亿元，同比降51.6%，环比降75.2%。上年同期490.08亿元，上季957.05亿元。降幅大于经营利润的33.9%，因为经营利润之下，联营和合营从盈利变成亏损，财务费用也上升，所得税下降只抵消一部分。John称权益持有人应占净利润234亿元，同比降51%、环比降75%。指标表用的是期内盈利237.33亿元，摘要以指标表为准。非GAAP净利润没有进指标表：Pony称260亿元，John称255亿元，两人都说同比降23%、环比增3%。有效税率18.2%，所得税53亿元，同比降27%。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "净利润同比少252.75亿元，其中经营利润少190.56亿元，是更大的一块。经营利润下降的主因是人员费用：研发和一般行政开支上升，员工同比增30%。",
+            "evidence_quote": "At quarter end, we had approximately 116,000 employees, up 30% year on year or 3% quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "252.75亿元和190.56亿元是指标表净利润、经营利润与各自上年同期金额相减，不是另写一套同比。经营利润的降幅已经构成净利润降幅的主体，所以费用仍是主因。联营亏损解释的是为什么净利润降51.6%、快于经营利润降33.9%。",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "联营及合营从上年盈利13亿元变成亏损63亿元。非GAAP口径从盈利5亿元变成亏损22亿元。原因包括海外游戏联营在疫后消费正常化后收入下降、交通服务类联营确认亏损，以及京东不再作为联营公司。",
+            "evidence_quote": "Non-IFRS share of losses were CNY 2.2 billion, compared to non-IFRS share of profits of CNY 0.5 billion a year ago, reflecting revenue decline at certain overseas game associates due to post-COVID user spending normalization, losses recognized from associates in the transportation services verticals and the impact from JD.com ceasing to be an associate.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "联营由盈转亏约76亿元，大于净利润降幅与经营利润降幅的差额，因为所得税下降抵消了一部分。它是净利润降得比经营利润更快的原因，但金额仍小于经营利润本身的下降。",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "-",
+            "is_primary": false,
+            "description": "财务费用19亿元，同比增42%、环比增4%，来自负债增加后的利息，以及同比和环比都更低的汇兑收益。",
+            "evidence_quote": "Net finance costs were CNY 1.9 billion, up 42% year on year or 4% quarter on quarter, reflecting greater interest expenses due to increased indebtedness as well as lower foreign exchange gains both year on year and quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "财务费用的金额远小于联营亏损和经营利润下降，汇率只是净利润的次要拖累。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称权益持有人应占净利润234亿元，同比降51%，环比降75%。指标表期内盈利237.33亿元，同比降51.6%，环比降75.2%。摘要用237.33亿元。234亿元是权益持有人口径的口述，不改写成指标表净利润。",
+          "非GAAP净利润指标表未单列。Pony称260亿元，同比降23%，环比增3%。John称255亿元，同比降23%，环比增3%。两人相差5亿元。摘要并列口述，不选其中一个当作指标表数字。23%和3%也不写成指标表同比。"
+        ]
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "指标表GAAP摊薄每股收益2.404元，同比降51.1%，环比降75.4%。John称2.404元，同比降51%、环比降75%，金额与指标表一致。非GAAP摊薄每股收益指标表2.62元，没有同比。John称2.62元，同比降23%、环比增3%。每股收益的同比降幅与净利润的51.6%接近，新增的拖累同样是联营由盈转亏，而不是股本突然变化。指标表没有披露摊薄股数，摘要不反推股数。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": true,
+            "description": "每股收益同比降51.1%，方向和净利润一致。更大的一块仍是经营利润下降，而经营利润下降主要来自人员费用和研发投入。",
+            "evidence_quote": "Diluted EPS was CNY 2.404, down 51% year on year or 75% quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "指标表每股收益从4.917元降到2.404元，降幅51.1%，与净利润降51.6%只差0.5个百分点。两者同步，说明主因在利润而不是股本。51%是John的口述取整。",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": false,
+            "description": "联营由盈转亏，使每股收益降得比经营利润更快。非GAAP口径下，联营从盈利5亿元变成亏损22亿元，京东不再作为联营公司也在其中。",
+            "evidence_quote": "Shared of losses of associates and JVs were CNY 6.3 billion, compared to share of profits of CNY 1.3 billion last year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "经营利润同比降33.9%，每股收益降51.1%。多出来的幅度与联营从盈利13亿元变成亏损63亿元相符。",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "所得税同比降27%至53亿元，有效税率18.2%，对净利润和每股收益是正贡献，但抵不过联营亏损。",
+            "evidence_quote": "Income tax expense decreased by 27% to CNY 5.3 billion for the first quarter of 2022 on a year-on-year basis. The effective tax rate was 18.2%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "税是减项里的对冲，不是每股收益下降的原因。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称GAAP摊薄每股收益2.404元，同比降51%，环比降75%。指标表2.404元，同比降51.1%，环比降75.4%。金额一致。51%和75%是口述取整，摘要同比用51.1%，环比用75.4%。",
+          "非GAAP每股收益指标表2.62元，没有同比和环比。John称2.62元，同比降23%，环比增3%。金额一致。23%和3%只作为电话会口述，不写成指标表同比。"
+        ]
+      },
+      {
+        "metric": "opex",
+        "summary": "指标表销售费用80.58亿元，一般及行政开支266.69亿元。John把费用拆开说：销售及市场推广81亿元，同比降6%、环比降31%，剔除股权激励后同比降7%、环比降32%，占收入5.9%；研发154亿元，同比增36%、环比增10%，剔除股权激励后同比增27%、环比增6%，占收入11.4%；不含研发的一般行政113亿元，同比增47%、环比增9%，剔除股权激励后同比增25%、环比降7%。154亿元加113亿元等于267亿元，与266.69亿元只差取整。指标表没有给出这两项开支的同比，36%、47%、6%都是口述。季末员工约11.6万人，同比增30%、环比增3%。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "费用上升的主因是人员和研发。研发同比增36%，不含研发的一般行政同比增47%，都指向战略领域增员、人均相关的员工成本，以及新收购和海外子公司。",
+            "evidence_quote": "The year on year and quarter on quarter increases were mainly due to greater staff costs reflecting our ongoing investment in key strategic initiatives as well as the impact of recent acquisition of subsidiaries.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "一般及行政开支比上年同期多77.02亿元，销售费用少4.72亿元。净增加在人员相关的那一项，所以它是主因。77.02亿元是锚点金额相减。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "销售费用是少数在下降的成本。同比降幅来自营销优化，环比降幅还因为游戏和企业服务投放随季节减少。",
+            "evidence_quote": "Selling and marketing expenses were CNY 8.1 billion, down 6% year on year or 31% quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "销售费用下降对总费用是抵消项。指标表80.58亿元，John说的81亿元是取整。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称销售及市场推广开支81亿元，同比降6%，环比降31%。指标表销售费用80.58亿元，没有同比。81亿元和6%、31%是口述。",
+          "John称研发154亿元、同比增36%，不含研发的一般行政113亿元、同比增47%。两项之和267亿元，指标表一般及行政开支266.69亿元。差额是口述取整。指标表没有266.69亿元的同比，不把相减得到的增幅写成指标表同比。"
+        ]
+      },
+      {
+        "metric": "capex",
+        "summary": "指标表资本开支69.71亿元，同比降9.9%，环比降40.2%。上年同期77.34亿元，上季116.61亿元。John称合计70亿元，同比降10%、环比降40%。其中经营性资本开支52亿元，同比降21%；非经营性资本开支18亿元，同比增54%。52亿元加18亿元等于70亿元，与69.71亿元的差额是取整。摘要的合计金额和同比、环比用指标表。电话会没有解释经营性资本开支下降的业务原因。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "-",
+            "is_primary": true,
+            "description": "合计资本开支下降，是因为经营性资本开支降到52亿元、同比降21%。",
+            "evidence_quote": "Total capex was CNY 7 billion, down 10% year on year or 40% quarter on quarter. Within total capex, operating capex was CNY 5.2 billion, down 21% year on year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "经营性资本开支是70亿元里的52亿元，同比降21%，足够拉动合计同比降9.9%。电话会没有说明服务器、网络或其他项目谁在减少，所以主因只落到经营性这一类，不再往下编。",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "非经营性资本开支升至18亿元，同比增54%，抵消了一部分经营性资本开支的下降。",
+            "evidence_quote": "Nonoperating capex increased by 54% year on year to CNY 1.8 billion.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "非经营性在增加，所以合计降幅小于经营性降幅。它不是下降的原因。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "John称资本开支70亿元，同比降10%，环比降40%；经营性52亿元，同比降21%；非经营性18亿元，同比增54%。指标表69.71亿元，同比降9.9%，环比降40.2%。摘要合计用指标表。70亿元、10%和40%是口述取整。经营性和非经营性拆分指标表未单列。"
+        ]
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "指标表未单列经营现金流，不从电话会回填。John称当季经营现金流338亿元，同比和环比都降34%。同比下降在正常营运资金变动之外，部分因为游戏和网络广告的现金收款减少，而研发和人员成本继续增长。环比下降主要因为每年一季度计入的年度奖金。338亿元和34%只作为口述。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": true,
+            "description": "经营现金流同比下降，部分因为游戏和广告的现金收款减少。",
+            "evidence_quote": "year on year decline among normal working capital change was partly due to lower cash receipts from games and online advertising while our R&D and staff cost continue to grow.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "指标表没有经营现金流，主因只采用John的原话。广告收入和国内游戏收入偏弱，与收款减少的方向一致，但不把338亿元写进指标表。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发和人员成本继续增长，同时消耗现金。环比则主要因为一季度的年度奖金。",
+            "evidence_quote": "quarter on quarter decline was primarily due to our annual bonus payment recorded in the first quarter each year.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "人员成本上升已经体现在费用里。奖金解释的是环比，不是同比34%的全部。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表未单列经营现金流，摘要不回填。John称338亿元，同比和环比都降34%。这是电话会口述。"
+        ]
+      },
+      {
+        "metric": "fcf",
+        "summary": "指标表未单列财务自由现金流，不回填。另列口径为152亿元。John称当季自由现金流152亿元，同比降54%，环比先说54%再改口55%。同比54%是口述，不写成指标表同比。经营现金流口述338亿元，减去指标表资本开支69.71亿元，并不等于152亿元。电话会没有给出中间项，摘要不自行轧差。季末净债务110亿元，上季202亿元。上市被投公司股权公允价值约6060亿元，或950亿美元。本季回购约890万股，金额约30亿元。这些都不是自由现金流。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "-",
+            "is_primary": true,
+            "description": "自由现金流同比下降，跟随经营现金流。游戏和广告现金收款减少，研发和人员成本继续增长。资本开支同比下降，本来会抬高自由现金流，但抵不过经营现金流的下降。",
+            "evidence_quote": "Free cash flow for the quarter was CNY 15.2 billion, down 54% year on year and 54% -- 55% quarter on quarter.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "资本开支同比降9.9%，若其他不变，自由现金流应更好。John同时说经营现金流同比降34%，所以自由现金流同比降54%的主因是收款和人员现金成本，不是资本开支。152亿元不回填指标表。",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "-",
+            "is_primary": false,
+            "description": "研发和员工成本继续增长，是经营现金流同比下降的另一部分，因而也压自由现金流。",
+            "evidence_quote": "year on year decline among normal working capital change was partly due to lower cash receipts from games and online advertising while our R&D and staff cost continue to grow.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "这句话同时提到收款和人员成本。收款放在主因，人员成本是并列的次因。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": [
+          "指标表未单列财务自由现金流，不回填。另列口径152亿元，与John所说的15.2 billion一致，即152亿元。他称同比降54%，环比先说54%再改口55%。摘要不把环比收成单一数字。",
+          "经营现金流口述338亿元，减去指标表资本开支69.71亿元，得数并不是152亿元。电话会没有解释差额，摘要不把自由现金流定义成经营现金流减资本开支。"
+        ]
+      }
+    ],
+    "status": "done"
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "other",
+        "metric_label": "成本结构",
+        "period": "FY2022",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "未说明",
+        "direction": null,
+        "statement": "Pony（CEO）称，公司已经实施成本控制，并整顿部分非核心业务，以便今后达到更优的成本结构。他没有给节省金额，也没有给完成季度。",
+        "source": "prepared_remarks",
+        "source_quote": "During the challenging first quarter of 2022, we implement cost control initiatives and rationalized certain non-core businesses, which will enable us to achieve a more optimized cost structure going forward.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "一般行政开支增速",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比增速",
+        "direction": "down",
+        "statement": "James（CSO）称，今年往后一般行政开支的增速应放缓。依据是人数增速已经放慢，新增人员往往成本更低，人均成本也在减速。这是增速放缓，不是说金额下降，也没有给百分比。",
+        "source": "qa",
+        "source_quote": "So as we work through this year, we should expect the G&A expenses to decelerate.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "营销开支",
+        "period": "FY2022",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "未说明",
+        "direction": "down",
+        "statement": "Martin（总裁）称，疫情这种临时因素不会用来进一步削减组织和人员；如果冲击延续，可能走的是削减营销成本。若继续封控，需要做的营销本来就更少。这是有条件的方向，没有金额。",
+        "source": "qa",
+        "source_quote": "But we may pursue other cost controls such as reduction in marketing costs.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "广告趋势",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比趋势",
+        "direction": "up",
+        "statement": "James重申此前看法：进入2022年下半年，广告趋势应转正，因为会跨过一批影响广告主和自家媒介的合规变化，并逐步放出包括视频号在内的新库存。他补充，多地疫情是上次电话会之后的新因素，控制得有多快，决定原先说法是否仍成立，时间表可能后移。原文用了SQL一词，疑似听写误差，摘要不把它当成产品名。没有给转正后的百分比。这是趋势，不是收入水平，所以不记成收入指引。",
+        "source": "qa",
+        "source_quote": "So what we've said in previous calls was that as we moved into the second half of 2022, then all our SQL advertising trends should inflect positively because, first of all, we'll lap a number of discrete regulatory changes, both affecting our advertisers and also affecting our own advertising media.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "国内游戏行业流水",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比趋势",
+        "direction": "up",
+        "statement": "James称，版号增多、规则立足点更稳之后，行业流水趋势有理由在年内开始改善，再过几个月才体现到报表收入。这不是腾讯国内游戏收入的数字区间，公司这次也没有出现在该批版号名单上。",
+        "source": "qa",
+        "source_quote": "I think in terms of the outlook, then, yes, with more BanHao being issued and with the industry now on a more stable regulatory footing, then it's reasonable to expect that the industry grossing trends will begin to improve as we move through the year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "国际手游同比",
+        "period": "FY2022",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "同比趋势",
+        "direction": "down",
+        "statement": "James称，PUBG Mobile还有几个月面对高基数，同比要到今年晚些时候才正常化。这是近几个月同比仍难的方向，不是收入金额。",
+        "source": "qa",
+        "source_quote": "So I think it's reasonable to expect that PUBG Mobile, there'll be tough comparatives for another few months before the year-on-year trends normalize toward the end of this year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "高制作新游戏",
+        "period": "FY2023",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "未说明",
+        "direction": "up",
+        "statement": "James称，看到2023年及以后，过去两年加码的高制作游戏才会发布，并开始明显推高国际游戏收入。Martin在准备发言里也说，尤其从2023年起发布多款高预算新作。没有给2023年的收入数字。",
+        "source": "qa",
+        "source_quote": "and then as we look into 2023 and beyond, that's when we expect more sort of big-budget games that we've been ramping up in the last two years to be released and to start meaningfully impacting the international game revenue positively.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "视频号变现",
+        "period": "更长期",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "未说明",
+        "direction": null,
+        "statement": "Pony称，视频号最终应按单位时长达到与市场上同类产品相似的变现，但需要时间。广告负载大概率更克制，不会简单看齐同业；他同时认为可以通过技术和微信生态提高转化，从而做出更高的千次展示费用。没有给负载或收入目标。",
+        "source": "qa",
+        "source_quote": "Most likely, I would say our ad load probably will not be the same. It would probably be more self-restrained in terms of the ad load.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "长视频盈利",
+        "period": "更长期",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "未说明",
+        "direction": "up",
+        "statement": "James称，长视频的目标不是做成暂时的单季盈亏平衡，而是逐步做成结构上健康、可持续的盈利。他没有把本季或下季打平列为目标，也没有给利润率。",
+        "source": "qa",
+        "source_quote": "But we -- our aspiration is not to get our video business to a temporary breakeven situation. It is to, over time, move our video business to a structurally healthy and sustainable position.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -454,21 +1055,631 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "外部环境（疫情与监管）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "一季度的外部环境同时受疫情和监管拉动。James（CSO）把消费和企业情绪直接绑在各城市疫情上。上海出现严重疫情后，商业支付量连续多周低于趋势并且同比为负，当时只是温和修复，仍低于本来应有的水平。深圳3月是小规模疫情，支付量随封控急跌，4月较快恢复，5月已大体回到此前趋势并同比增长。因此他认为宏观逆风不是全国一个幅度：广告受到的负面影响最明显，既有经济总量压力，也因为很多公司、尤其是跨国公司把营销预算放在上海；支付按城市分化；云项目上线有一些负面影响；游戏则比较难看出影响。和2020年初相比，这次疫情发生在春节后数周，人们已经回到工作和学校，娱乐应用起来得更慢，腾讯会议、企业微信文档这类生产力工具起来得更快，因为更多机构和用户已经会用，腾讯会议过去两年的份额也上升明显。监管方面，Martin（总裁）说过去两个月高层对数字经济和平台经济放出支持信号。他点名全国政协会议上汪洋支持做强、高质量、更大规模的数字经济，刘鹤重申坚定支持平台经济和民营经济；4月29日政治局会议提出促进平台经济健康发展、完成整改、实施常态化监管，并出台具体支持措施。他认为信号要变成业务影响有时间滞后，整改、常态化监管和支持措施大体按这个顺序推进。积极的一点是4月游戏版号恢复审批。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "需求端几乎是零增长，但结构差很大。指标表收入1354.71亿元，同比增0.1%、环比降6.0%。Martin称增值服务约占54%，社交网络、国内游戏、国际游戏分别约占22%、24%、8%，广告约占13%，金融科技及企业服务约占32%。指标表对应金额是增值服务727.38亿元、网络广告179.88亿元、金融科技及企业服务427.68亿元。电话会称社交网络290亿元、同比增1%，视频号直播增加，音乐和游戏相关直播下降，两边大体抵消。增值服务订阅数同比增6%至2.39亿。腾讯视频订阅1.24亿，点名剧集《雪中悍刀行》和动画《完美世界》第二季。音乐订阅同比增32%至8000万。国内游戏330亿元、同比降1%，未成年保护打到活跃和付费账号；英雄联盟手游和金铲铲之战有增量，天涯明月刀手游和使命召唤手游下降。王者荣耀春节档流水增长放慢，是因为成功的商业化道具变少，成年用户基本盘稳定，3月随道具改善恢复同比增长。国际游戏110亿元、同比增4%，PUBG Mobile在疫后消费正常化，个人电脑端的无畏契约流水同比仍显著增长。Pony（CEO）称微信和WeChat合并月活12.9亿，QQ移动端月活5.64亿。小程序日活超过5亿，零售和餐饮的成交额增长明显。广告侧，社交及其他广告160亿元、同比降15%，媒体广告20亿元、同比降30%。朋友圈略降，教育和房地产的投放减弱盖过了快消和游戏；公众号广告同比明显增加，其中超过20%来自跳转购买和跳转消息。二季度至今，快消、电商和旅游已经因为疫情和供应链收缩投放。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "供给端是内容、云能力和人，不是一条产线。视频号的观看人数和时长同比显著增长，新闻、知识和娱乐内容变多，推荐技术也更好，并加强了企业消息和购物功能。小程序接入更多政务和健康服务，用来培养使用习惯。国内新游里，金铲铲之战一季度在自走棋品类日活第一、全部手游日活第六，被称作2021年全行业最成功的新游。3月底上线的重返帝国，4月按流水在即时战略品类排第二。国际侧，1月上线蜘蛛侠主题的PUBG玩法，3月的兰博基尼联动成为该作最畅销的车辆内容；无畏契约按月活是全部品类里第六受欢迎的个人电脑游戏，也是过去四年新个人电脑游戏里排位最高的。沙丘主题的香料战争于4月26日抢先体验，英雄射击手游Apex于电话会前一日全球上线。资本开支则在收缩：指标表69.71亿元，同比降9.9%、环比降40.2%，经营性资本开支口述52亿元、同比降21%，非经营性18亿元、同比增54%。人和研发没有跟着资本开支收缩。季末约11.6万名员工，同比增30%、环比增3%。研发开支口述154亿元，同比增36%，占收入11.4%。John（CFO）没有把资本开支下降解释成需求不足或项目取消，只给出了经营性和非经营性的拆分。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "竞争格局被监管和疫情一起改写。国内游戏仍维持高日活产品的领先，和平精英是中国第一的射击游戏，三周年版本在4月用新的战斗道具和战场设计拉时长。但版号环境变了。James称，未来获批数量会少于2018年暂停之前，这个判断已经持有几年，所以过去两年把游戏业务改成做更少、预算更大、希望更好的产品。任一时刻的管线与一些人数少得多的对手相当或更窄，因为单款投入的人数更多。2021年发布的游戏里有两款按用户计是行业最成功的两款；这次版号名单没有腾讯的游戏，他认为可以接受，因为没有版号的时期最伤的是没有现金流的小团队，名单先从小公司开始是合理的。海外手游行业2022年初相对2021年初普遍放缓或下降，PUBG Mobile的流水同比转弱，但个人电脑游戏和部落冲突这类长线产品更稳。广告联盟方面，个人电脑时代腾讯是落后者，移动互联网起来后才成为主要参与者；这一轮的两大参与者是腾讯和字节跳动，和以前的周期不同，但联盟业务在以往冲击后都恢复过。云则更不像西方：全行业大约一半收入来自其他互联网公司，一半来自金融、制造、政府和本地服务。很多厂商仍在做重定制的集成项目，商品化的内容分发容易价格战。实时视频只有少数公司有低时延算法。高德纳把腾讯列为2021年中国通信平台即服务收入第一。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "商业模式的核心变化是毛利率被成本和组合同时压低，云和视频号还没把高毛利收入做出来。指标表毛利率42.1%，同比降4.2个百分点，环比升2.0个百分点；毛利570.74亿元，同比降8.9%。增值服务毛利率50.4%，同比降4.7个百分点，成本在游戏内容、服务器、带宽和视频号。广告毛利率36.7%，同比降8.4个百分点、环比降6个百分点，除了收入下降和视频号成本，还有冬奥内容，以及文化事业建设费不再全额减免。James在问答里补充，冬奥的转播权和运营开支花了数亿元人民币，这是低毛利活动；视频号目前对成本的影响大于对收入的影响。广告库存本身也不一样：朋友圈和视频号是高毛利自有库存，媒体服务是低毛利自有库存，广告联盟天生低毛利。奢侈品更偏前者，电商可能更偏后者，所以哪类广告主先恢复，会改混合毛利率。金融科技及企业服务毛利率31.6%，同比基本持平，环比升4.5个百分点，因为组合转向毛利更高的金融科技，并且主动减少亏损云合同。企业服务收入同比略降，是有意从追求收入转到质量和客户价值：缩掉转包成本很高的项目，以及只卖云主机和内容分发、折扣很深的合同，同时增加视频云和安全这些毛利更健康的平台服务。客户从内容分发迁到点播、直播和实时通信之后，门槛更高，利润率也更健康。John在最后一个问题里确认，退出亏损合同使云的毛利率有所改善，但没有给百分点。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "公司战略是收成本、留人和把云、视频号、国际游戏留在投入名单上。Pony称，一季度已经做成本控制并整顿部分非核心业务，用小程序、腾讯会议和企业微信帮企业和消费者应对疫情，同时继续投企业软件、视频号和国际游戏。Martin把人员优化限定在结构性需要上，不为了会过去的疫情去砍组织；营销费用可以更快调下来。James把今年的成本分成四块：销售费用已经减速，行政费用随人数增速和人均成本放缓而应在年内减速，腾讯视频的内容成本可能要几个月才体现到毛利率，退出低毛利企业服务会更早看到好处。联营从盈利变成亏损，一大原因是重仓公司过去一年加大社区团购，现在这些投入已经明显放慢，会经联营收益反映到腾讯的损益。投资组合上，James称一季度从撤资和分派筹集的资本大约是新投入的四倍：向股东分派了价值约160亿美元的京东股份，处置另一家公司约30亿美元股份且部分用于回购，还处置了其他公司约数十亿美元股份。发达市场央行快速加息，会影响高增长、低利润、长久期科技公司的估值，所以撤资会继续，但公司仍会选择性投资。季末净债务110亿元，低于上季的202亿元。另列自由现金流152亿元，指标表未单列财务自由现金流。回购约890万股、约30亿元。长视频不追求单季账面打平，要的是可持续盈利，并利用阅文、新丽传媒和自家游戏做上游内容。广告系统在升级机器学习基础设施，用来提高定向和转化，电话会没有讨论后续年份才出现的对话式助手或大模型产品。",
+            "items": []
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "non-GAAP",
+      "next_quarter": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2022Q2",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "non-GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2022",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Alicia Yap",
+        "firm": "Citi",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "疫情和封控之下，消费、数字内容、付费意愿、广告预算和云迁移有什么变化，下半年游戏、支付、广告和云会怎样。",
+        "answer_summary": "James（CSO）：消费和企业行为跟各城市疫情绑在一起。上海商业支付量连续多周低于趋势且同比为负，眼下温和修复，但仍低于本来水平。深圳3月封控时支付量急跌，4月较快恢复，5月已回到此前趋势并同比增长。广告的负面影响最明显，一是经济总量有压力，二是很多公司尤其跨国公司在上海做营销预算；支付按城市分化，不是全国一律；云项目上线有一些负面影响；游戏比较难看出影响。和2020年初相比，这次疫情在春节后数周，人们已复工复学，娱乐应用起来得更慢，腾讯会议和企业微信文档起来得更快，也因为更多机构已经会用，而且腾讯会议过去两年份额上升明显。",
+        "new_numbers": [
+          {
+            "value": "5月同比转正",
+            "number": "5月同比转正",
+            "meaning": "深圳商业支付量相对此前趋势"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给下半年游戏、支付、广告或云的增速，只把影响归结为各城市疫情如何演变。",
+        "tone": "cautious",
+        "answer_quote": "So I think that the negative impact is particularly notable on advertising, partly because of the overall pressure on GDP partly because many companies, especially multinationals, run their marketing budgets out of Shanghai.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Alicia Yap",
+        "firm": "Citi",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "点播、直播和实时通信这些更复杂的方案，会不会带来更好的价格、更低的运营成本和更好的企业服务利润率，目前客户采用情况如何。",
+        "answer_summary": "James（CSO）：客户会从单纯的内容分发，迁到更复杂的实时视频通信，再迁到整合的通信平台即服务。迁移之后进入门槛更高，利润率也更健康。内容分发有不少公司转售运营商带宽，腾讯有自有专线，但这块偏商品化，容易打价格战、压缩利润。实时视频只有少数公司有低时延算法，腾讯因为多年支撑微信和QQ上的海量视频聊天而具备这个能力。再往上，很多企业销售本来就用微信联系客户，用企业微信把这些关系汇总、再把视频沟通做进系统，是自然的一步。他对全球和中国的趋势都乐观，认为很多消费场景会从文字聊天走到视频聊天，低时延实时视频会变成做生意的必要成本。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出视频云或实时通信的价格、采用率，也没有给对企业服务利润率的量化贡献。",
+        "tone": "positive",
+        "answer_quote": "And as they migrate the competitive barriers to entry become higher and the margins correspondingly become healthier.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Eddie Leung",
+        "firm": "Bank of America Merrill Lynch",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "新的云策略会不会改变客户结构，包括行业、客户规模和客户复杂度。",
+        "answer_summary": "James（CSO）：中国云和西方不完全一样。历史上和目前，全行业收入大约一半来自其他互联网公司，一半来自金融、制造、政府和本地服务等原本线下的行业。这次调整不是为了改变这个需求现实，而是为了用可承受的成本服务正在上网的线下企业。眼下云厂商倾向做非常定制、成本很重的方案，更像系统集成或信息技术咨询。资本充裕时做得到，但不可扩展、不可持续，也不是长期增长的来源。腾讯主动聚焦可扩展、因而可持续、可盈利的机会。来自其他互联网公司的收入会继续，但长期更大的增长来自其他行业。该分部大约一半是基础设施，一半是平台软件和行业解决方案，两边都想增长，尤其是后者。",
+        "new_numbers": [
+          {
+            "value": "约一半",
+            "number": "约一半",
+            "meaning": "中国云行业收入来自其他互联网公司的比例"
+          },
+          {
+            "value": "约一半",
+            "number": "约一半",
+            "meaning": "腾讯该分部收入来自平台软件和行业解决方案的比例"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "So we have made a proactive decision that we are focusing on scalable and therefore sustainable and profitable opportunities.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Ronald Keung",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "二季度消费和封控变差之后，广告增长何时稳住或出现拐点，宏观、基数和视频号变现各自起什么作用。",
+        "answer_summary": "James（CSO）：此前的说法是，进入2022年下半年，广告趋势应转正。一是会跨过一批影响广告主和自家广告媒介的监管变化，二是会逐步放出新增库存，包括视频号。上次通话之后的新因素是多地疫情。疫情压制消费，也压制物流，尤其上海是物流枢纽，还冲击跨国公司做营销决策的城市。疫情控制有多快，决定原先说法是否仍成立，或者时间表后移。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出广告同比转正的季度或百分比，只说取决于疫情控制，时间表可能后移。",
+        "tone": "cautious",
+        "answer_quote": "And depending how quickly COVID is brought under control will determine whether our previous comments still holds true or whether the timetable gets pushed back because, again, the COVID is hurting consumption, which is unhelpful.",
+        "review_flags": [
+          "原文SQL疑似听写误差，不把它当成广告产品名"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "William Packer",
+        "firm": "Exane BNP Paribas",
+        "topic": "平台监管",
+        "is_new_topic": true,
+        "question_summary": "主管部门近期谈到平台经济健康发展和整改完成，这两项目标对腾讯意味着什么。",
+        "answer_summary": "Martin（总裁）：过去两个月，高层对数字经济和平台经济放出不少支持信号。全国政协会议上，汪洋明确支持做强、高质量以及更大规模的数字经济；刘鹤重申坚定支持平台经济和民营经济。这与4月29日政治局会议一致：促进平台经济健康发展，完成整改，实施常态化监管，并出台支持规范增长的具体措施。信号清楚，但要变成对业务的实际影响会有时间滞后，要等具体监管部门和部委把方向变成行动。顺序大体是先完成整改，再常态化监管，然后出台支持措施，三步未必严格先后，但需要时间。公司会与监管机构密切配合。积极进展是4月开始审批游戏版号。转型继续的话，合规、行为规范的公司会开始受益。",
+        "new_numbers": [
+          {
+            "value": "4月29日",
+            "number": "4月29日",
+            "meaning": "政治局会议释放平台经济支持信号的日期"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "But I think for this to translate into a real impact on our business, there is going to be a time lag in process.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "William Packer",
+        "firm": "Exane BNP Paribas",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "一季度经营成本增速已经放慢，今年余下时间成本增速怎么走，有哪些推高和压低的因素。",
+        "answer_summary": "James（CSO）：成本分四块。第一，一季度销售及市场推广开支增速已经放慢，这是公司能较快控制的；但其他互联网公司也在放慢投放，会反过来压广告收入。第二，一般行政开支大体跟人数和人均成本走，一季度仍快速增长；不过人数增速在放缓，新增人员往往成本更低，人均成本也在减速，因此今年往后行政开支应减速。第三，销售成本会影响毛利率：腾讯视频的成本管理可能要几个月才体现，退出一些低毛利企业服务则会更早看到好处。第四，净利润还要经过联营。联营从上年盈利变成亏损，一大原因是若干重仓公司过去一年加大社区团购。这些公司过去12个月投得很猛，现在已明显放慢，会开始进入它们的损益，再通过联营收益进入腾讯的损益。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出今年余下时间的总费用增速，只拆成销售、行政、销售成本和联营四类，并说行政开支会减速。",
+        "tone": "cautious",
+        "answer_quote": "So as we work through this year, we should expect the G&A expenses to decelerate.",
+        "review_flags": [
+          "社区团购支出里的若干亿元是假设举例，不是已披露金额"
+        ]
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Charlene Liu",
+        "firm": "HSBC",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "不同广告产品谁恢复得更快或更慢，这种结构变化会怎样影响往后的千次展示费用。广告结果低于预期。",
+        "answer_summary": "James（CSO）：冬奥的转播权和相关运营开支花了数亿元人民币，这是低毛利活动，压低广告业务的混合毛利率。视频号增长目前更多体现在成本而不是收入，一季度播放量仍很快，一部分成本进了广告分部。往后视频号变现怎么走，会决定广告业务的增量利润率。广告内部还有三类：朋友圈、视频号这类自有高毛利库存，媒体服务这类自有低毛利库存，以及本身低毛利的广告联盟。增长落在哪一类，会明显改变混合毛利率。这也取决于哪类广告主恢复更快：奢侈品更偏高毛利自有库存，电商可能更偏低毛利广告联盟。广告系统改造在不同库存上的体现时间也不一样。",
+        "new_numbers": [
+          {
+            "value": "数亿元人民币",
+            "number": "数亿元人民币",
+            "meaning": "冬奥转播权和相关运营开支，电话会没有给精确数字"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有按广告产品排出恢复快慢，也没有给往后的千次展示费用。他讲的是毛利率结构和广告主类别。",
+        "tone": "cautious",
+        "answer_quote": "Now I think in terms of the advertising results for the quarter, then it's worth being aware the Winter olympics cost us hundreds of millions of renminbi between the sort of broadcast rights and the actual operating expenses around it.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jerry Liu",
+        "firm": "UBS",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "版号恢复后，国内游戏的流水或收入能否在今年晚些时候更积极地看，还是因为新作偏晚而要更有耐心。",
+        "answer_summary": "James（CSO）：版号恢复有两层好处：能发更多游戏；信号意义是监管机构对行业现状更满意，环境更稳定，不用总猜测还有没有新的监管变化。公司对版号恢复很满意，但这次名单里没有自己的游戏，他认为可以接受。没有版号的时期，最受伤的是没有游戏、因而没有现金流的初创公司；已有游戏和现金流的大公司更能熬过去。版号先从小公司开始、再轮到包括腾讯在内的大公司，是合理的。版号增多、监管立足点更稳之后，行业流水趋势有理由在年内开始改善，之后才会转成报表收入，不是立刻发生，要几个月。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "说的是行业流水会改善、再过几个月体现到报表收入，没有给腾讯国内游戏的增速。他也说明这次名单里没有腾讯的游戏。",
+        "tone": "cautious",
+        "answer_quote": "And over time, that will then translate into reported revenue trends, but it's not an immediate process, and it will take several months to play out.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jerry Liu",
+        "firm": "UBS",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "国际游戏一季度有没有上年四季谈到的会计调整，国际流水能否加快，还是疫后正常化还要更久。",
+        "answer_summary": "James（CSO）：四季度对子公司Supercell有一笔收入追认，一季度对Riot有一笔会计上的收入回拨，回拨规模小于追认。海外热门手游从2020年末到2021年末很旺，现在面对高基数，多家上市公司都有类似现象。PUBG Mobile还有几个月会很难看同比，到今年晚些时候同比才会正常化。多数大型个人电脑游戏没那么受益于疫情，也没那么受疫情后遗症伤害，表现可以。部落冲突这类长生命周期手游也不错，收入会随当季内容上下波动，用户趋势和付费倾向稳定到增长。2023年及以后，过去两年加码的高制作游戏才会发布，并开始明显推高国际游戏收入。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "On the international games, then, yes, we had a sort of catch-up of revenue in Q4 related to one of our subsidiaries, Supercell. And then there was a sort of accounting catch down of revenue in Q1 related to Riot.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "John Choi",
+        "firm": "Daiwa Capital Markets",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "微信视频号长期的广告潜力有多大，广告负载和商业潜力最终能否看齐同业。",
+        "answer_summary": "Pony（CEO）：视频号的播放量和时长增长让人鼓舞。变现潜力上，最终应按单位时长达到与市场上同类产品相似的变现水平，但需要时间。过程中会继续改善体验，在变现和体验之间找平衡。朋友圈广告就是例子：库存释放会比同业更渐进。广告负载很可能不会一样，大概率更克制。他相信可以通过技术、偏高端的用户和内容，以及和公众号、社交关系、通信基础设施、小程序的连接提高转化，从而最终做出更高的千次展示费用。平台总时长较短时，前20分钟的价值高于后20分钟。目标是既平衡变现和体验，又释放平台的变现潜力。",
+        "new_numbers": [
+          {
+            "value": "前20分钟",
+            "number": "前20分钟",
+            "meaning": "Pony用来说明较短时长里前段价值更高的举例"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "And I think if you want to think about the monetization potential, I would say, eventually, right, it should have a similar monetization per time spent with similar products in the market. But it will take time to get there.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "John Choi",
+        "firm": "Daiwa Capital Markets",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "被投公司价值因市场波动下降很多，投资策略会不会因此更进取或更保守。",
+        "answer_summary": "James（CSO）：组合价值的环比下降，很大一部分来自主动动作：把价值约160亿美元的京东股份直接分给投资者；处置另一家公司约30亿美元股份，所得部分用于回购；还处置了其他公司约数十亿美元股份。一季度从撤资和分派筹集的资本，大约是投到其他公司的四倍。撤资和分派之后，剩下的组合价值下降是自然且可取的。往后仍会积极撤资。发达市场央行正在以几十年未见的速度加息，会影响高增长、低利润、长久期科技公司的估值，组合里有一部分是这类公司。加快撤资和分派是管理这种风险的办法之一。同时公司自由现金流很强，能看到消费者和企业的新技术趋势，估值下降时旧机会也会重新出现。会很挑剔、很有纪律，但仍会把资本投到看中的机会上。",
+        "new_numbers": [
+          {
+            "value": "约160亿美元",
+            "number": "约160亿美元",
+            "meaning": "一季度分派给股东的京东股份价值"
+          },
+          {
+            "value": "约四倍",
+            "number": "约四倍",
+            "meaning": "一季度撤资和分派所筹资本相对新投资的倍数"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "So all in, during the first quarter, if you compare the capital we sort of raised from divestments and distributions, it was about four times bigger than the capital we put to work investing in other companies.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Gary Yu",
+        "firm": "Morgan Stanley",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "请把压低广告利润率的因素按影响大小排序，包括高毛利库存的千次展示费用、疫情和视频号投入，并说明往后的利润率趋势。",
+        "answer_summary": "James（CSO）：上季度曾把影响因素排序：最主要是监管压制需求，教育、游戏等品类的投放下降；其次是监管压制供给，例如闪屏广告，这对广告联盟有负面影响，对朋友圈和公众号则更多是需求问题。刷新到本季，首要因素变成疫情。疫情对投放有前面说过的几方面负面后果。上海用了较长时间才控制住，深圳则很快，说明近期有成功先例；但对广告不利的是，上海更像中国媒介和营销决策的中心，尤其对跨国公司，深圳不是。上海的情况会不成比例地影响全国广告。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "把本季首要因素改成疫情，但没有给各因素的百分点，也没有给出往后的广告毛利率路径。视频号投入的排序没有单独量化。",
+        "tone": "cautious",
+        "answer_quote": "Refreshing that framework this quarter, then the paramount driver is COVID.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Gary Yu",
+        "firm": "Morgan Stanley",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "人员和一般行政、研发还有没有更大力度的优化空间，非核心业务能否再砍。",
+        "answer_summary": "Martin（总裁）：和组织、人员相关的成本，优化原则是看结构性变化和结构性需要，不会为了短期到中期就会过去的临时因素去反应。当前新增的负面影响主要与疫情有关，所以不会因此进一步优化组织和人员。可能会做其他成本控制，例如削减营销成本；如果继续封控，需要做的营销本来就没那么多。组织和人员会更多地基于结构性因素。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "So if we look at the current situation, the incremental negative impact is actually largely related to COVID. So that's why we felt we're not going to react to this by optimizing our organization and staff further.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "Elinor Leung",
+        "firm": "CLSA",
+        "topic": "竞争格局",
+        "is_new_topic": false,
+        "question_summary": "版号恢复的第一个月只批了45款，政府以后会不会结构性少批，如果新游变少，对未来游戏增长有什么影响。",
+        "answer_summary": "James（CSO）：一般来说，未来游戏版号会少于2018年暂停之前，这个判断已经持有几年。这也是过去两年把游戏业务从上到下改成发更少、预算更大、希望更好的游戏的重要原因。公司认为自己在行业里先走了这一步。任一时刻，产品管线与一些人数少得多的竞争对手相当或更窄，因为每个游戏投入的人数更多，相信未来只有有限游戏能拿到版号，所以要把这有限的几款尽量做足。2021年公司发布的游戏里有两款按用户计是行业最成功的两款。今年重返帝国在策略品类按流水排第二，这个品类用户少但每用户收入高。管线更窄、数量更少，但单款更大更好。除了监管，用户也更挑剔，即使没有监管变化，也应该把资源集中到更少、更大的赌注上。",
+        "new_numbers": [
+          {
+            "value": "少于2018年前",
+            "number": "少于2018年前",
+            "meaning": "James对未来游戏版号数量相对暂停前的判断"
+          },
+          {
+            "value": "两款",
+            "number": "两款",
+            "meaning": "2021年按用户计行业最成功的新游里来自腾讯的数量"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "We believe that, generally speaking, there will be fewer game approvals in the future than they were in the pre-2018 period.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Alex Yao",
+        "firm": "J.P. Morgan",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "云策略转型已经影响到收入，转型过程中的毛利率趋势怎样。",
+        "answer_summary": "John（CFO）：云对毛利率的影响实际上有所改善，因为公司退出了亏损合同。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "只说云毛利率因退出亏损合同而有所改善，没有给出改善的百分点，也没有说转型期间的后续趋势。",
+        "tone": "positive",
+        "answer_quote": "In terms of the impact on the cloud in respect of the gross margin, it actually improved a bit because of the fact that we have mentioned getting away from loss-suffering contracts.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Alex Yao",
+        "firm": "J.P. Morgan",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "今年明显在做成本优化和利润率改善，这是否也包括长视频，做到盈亏平衡是不是这条业务的优先事项。",
+        "answer_summary": "James（CSO）：目标不是把视频业务做成暂时的盈亏平衡，而是逐步做成结构上健康、可持续的状态。腾讯视频过去有些季度已经打平，但没有维持住。单季打平并不难：可以不订购昂贵内容，可以已经订了却不在当季播出，也可以当季核销资本化内容、让下一季的增量利润看起来很高，但真实经济回报并不好。这些都能用来做下一季的账面打平，但不是公司要的。最难的一步希望已经做过：腾讯视频曾是中国第八或第九家进入这个市场的公司，现在在订阅用户、订阅收入和广告收入上都是明确领先，过去也有季度打平。现在要走向可持续盈利。一部分是继续通过价格理顺来优化收入，一部分是对播出内容更挑剔。从后面追到前面时，什么内容重要还不知道，每个品类都得争；现在在第一，更清楚什么内容算数，可以把开支分给算数的内容。还有向上游知识产权做垂直整合：阅文的网文、新丽传媒的内容，或腾讯游戏组合里的手游。中国长视频仍然很难，但行业在成本和每用户收入上已经更理性。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有把本季或本年实现盈亏平衡列为目标，改为追求可持续的盈利结构，没有给利润率或时间。",
+        "tone": "cautious",
+        "answer_quote": "We're trying to just move the business to a structurally healthy position.",
+        "review_flags": [
+          "回答明确拒绝把单季盈亏平衡当成目标"
+        ]
+      }
+    ],
+    "topic_stats": {
+      "宏观与汇率": 1,
+      "产品结构": 2,
+      "客户与订单": 1,
+      "指引与展望": 2,
+      "平台监管": 1,
+      "费用与运营": 2,
+      "毛利率与成本": 4,
+      "需求与出货": 1,
+      "其他": 1,
+      "竞争格局": 1
+    },
+    "new_topics": [
+      "产品结构",
+      "其他",
+      "宏观与汇率",
+      "客户与订单",
+      "平台监管",
+      "指引与展望",
+      "毛利率与成本",
+      "竞争格局",
+      "费用与运营",
+      "需求与出货"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "毛利率与成本",
+      "产品结构",
+      "指引与展望"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Alicia Yap",
+        "firm": "Citi",
+        "topic": "宏观与汇率",
+        "is_new_topic": false,
+        "question_summary": "疫情和封控之下，消费、数字内容、付费意愿、广告预算和云迁移有什么变化，下半年游戏、支付、广告和云会怎样。",
+        "answer_summary": "James（CSO）：消费和企业行为跟各城市疫情绑在一起。上海商业支付量连续多周低于趋势且同比为负，眼下温和修复，但仍低于本来水平。深圳3月封控时支付量急跌，4月较快恢复，5月已回到此前趋势并同比增长。广告的负面影响最明显，一是经济总量有压力，二是很多公司尤其跨国公司在上海做营销预算；支付按城市分化，不是全国一律；云项目上线有一些负面影响；游戏比较难看出影响。和2020年初相比，这次疫情在春节后数周，人们已复工复学，娱乐应用起来得更慢，腾讯会议和企业微信文档起来得更快，也因为更多机构已经会用，而且腾讯会议过去两年份额上升明显。",
+        "new_numbers": [
+          {
+            "value": "5月同比转正",
+            "number": "5月同比转正",
+            "meaning": "深圳商业支付量相对此前趋势"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给下半年游戏、支付、广告或云的增速，只把影响归结为各城市疫情如何演变。",
+        "tone": "cautious",
+        "answer_quote": "So I think that the negative impact is particularly notable on advertising, partly because of the overall pressure on GDP partly because many companies, especially multinationals, run their marketing budgets out of Shanghai.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "1",
+        "analyst": "Alicia Yap",
+        "firm": "Citi",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "点播、直播和实时通信这些更复杂的方案，会不会带来更好的价格、更低的运营成本和更好的企业服务利润率，目前客户采用情况如何。",
+        "answer_summary": "James（CSO）：客户会从单纯的内容分发，迁到更复杂的实时视频通信，再迁到整合的通信平台即服务。迁移之后进入门槛更高，利润率也更健康。内容分发有不少公司转售运营商带宽，腾讯有自有专线，但这块偏商品化，容易打价格战、压缩利润。实时视频只有少数公司有低时延算法，腾讯因为多年支撑微信和QQ上的海量视频聊天而具备这个能力。再往上，很多企业销售本来就用微信联系客户，用企业微信把这些关系汇总、再把视频沟通做进系统，是自然的一步。他对全球和中国的趋势都乐观，认为很多消费场景会从文字聊天走到视频聊天，低时延实时视频会变成做生意的必要成本。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出视频云或实时通信的价格、采用率，也没有给对企业服务利润率的量化贡献。",
+        "tone": "positive",
+        "answer_quote": "And as they migrate the competitive barriers to entry become higher and the margins correspondingly become healthier.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Ronald Keung",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "二季度消费和封控变差之后，广告增长何时稳住或出现拐点，宏观、基数和视频号变现各自起什么作用。",
+        "answer_summary": "James（CSO）：此前的说法是，进入2022年下半年，广告趋势应转正。一是会跨过一批影响广告主和自家广告媒介的监管变化，二是会逐步放出新增库存，包括视频号。上次通话之后的新因素是多地疫情。疫情压制消费，也压制物流，尤其上海是物流枢纽，还冲击跨国公司做营销决策的城市。疫情控制有多快，决定原先说法是否仍成立，或者时间表后移。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出广告同比转正的季度或百分比，只说取决于疫情控制，时间表可能后移。",
+        "tone": "cautious",
+        "answer_quote": "And depending how quickly COVID is brought under control will determine whether our previous comments still holds true or whether the timetable gets pushed back because, again, the COVID is hurting consumption, which is unhelpful.",
+        "review_flags": [
+          "原文SQL疑似听写误差，不把它当成广告产品名"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "William Packer",
+        "firm": "Exane BNP Paribas",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "一季度经营成本增速已经放慢，今年余下时间成本增速怎么走，有哪些推高和压低的因素。",
+        "answer_summary": "James（CSO）：成本分四块。第一，一季度销售及市场推广开支增速已经放慢，这是公司能较快控制的；但其他互联网公司也在放慢投放，会反过来压广告收入。第二，一般行政开支大体跟人数和人均成本走，一季度仍快速增长；不过人数增速在放缓，新增人员往往成本更低，人均成本也在减速，因此今年往后行政开支应减速。第三，销售成本会影响毛利率：腾讯视频的成本管理可能要几个月才体现，退出一些低毛利企业服务则会更早看到好处。第四，净利润还要经过联营。联营从上年盈利变成亏损，一大原因是若干重仓公司过去一年加大社区团购。这些公司过去12个月投得很猛，现在已明显放慢，会开始进入它们的损益，再通过联营收益进入腾讯的损益。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出今年余下时间的总费用增速，只拆成销售、行政、销售成本和联营四类，并说行政开支会减速。",
+        "tone": "cautious",
+        "answer_quote": "So as we work through this year, we should expect the G&A expenses to decelerate.",
+        "review_flags": [
+          "社区团购支出里的若干亿元是假设举例，不是已披露金额"
+        ]
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Charlene Liu",
+        "firm": "HSBC",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "不同广告产品谁恢复得更快或更慢，这种结构变化会怎样影响往后的千次展示费用。广告结果低于预期。",
+        "answer_summary": "James（CSO）：冬奥的转播权和相关运营开支花了数亿元人民币，这是低毛利活动，压低广告业务的混合毛利率。视频号增长目前更多体现在成本而不是收入，一季度播放量仍很快，一部分成本进了广告分部。往后视频号变现怎么走，会决定广告业务的增量利润率。广告内部还有三类：朋友圈、视频号这类自有高毛利库存，媒体服务这类自有低毛利库存，以及本身低毛利的广告联盟。增长落在哪一类，会明显改变混合毛利率。这也取决于哪类广告主恢复更快：奢侈品更偏高毛利自有库存，电商可能更偏低毛利广告联盟。广告系统改造在不同库存上的体现时间也不一样。",
+        "new_numbers": [
+          {
+            "value": "数亿元人民币",
+            "number": "数亿元人民币",
+            "meaning": "冬奥转播权和相关运营开支，电话会没有给精确数字"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有按广告产品排出恢复快慢，也没有给往后的千次展示费用。他讲的是毛利率结构和广告主类别。",
+        "tone": "cautious",
+        "answer_quote": "Now I think in terms of the advertising results for the quarter, then it's worth being aware the Winter olympics cost us hundreds of millions of renminbi between the sort of broadcast rights and the actual operating expenses around it.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Jerry Liu",
+        "firm": "UBS",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "版号恢复后，国内游戏的流水或收入能否在今年晚些时候更积极地看，还是因为新作偏晚而要更有耐心。",
+        "answer_summary": "James（CSO）：版号恢复有两层好处：能发更多游戏；信号意义是监管机构对行业现状更满意，环境更稳定，不用总猜测还有没有新的监管变化。公司对版号恢复很满意，但这次名单里没有自己的游戏，他认为可以接受。没有版号的时期，最受伤的是没有游戏、因而没有现金流的初创公司；已有游戏和现金流的大公司更能熬过去。版号先从小公司开始、再轮到包括腾讯在内的大公司，是合理的。版号增多、监管立足点更稳之后，行业流水趋势有理由在年内开始改善，之后才会转成报表收入，不是立刻发生，要几个月。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "说的是行业流水会改善、再过几个月体现到报表收入，没有给腾讯国内游戏的增速。他也说明这次名单里没有腾讯的游戏。",
+        "tone": "cautious",
+        "answer_quote": "And over time, that will then translate into reported revenue trends, but it's not an immediate process, and it will take several months to play out.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Gary Yu",
+        "firm": "Morgan Stanley",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "请把压低广告利润率的因素按影响大小排序，包括高毛利库存的千次展示费用、疫情和视频号投入，并说明往后的利润率趋势。",
+        "answer_summary": "James（CSO）：上季度曾把影响因素排序：最主要是监管压制需求，教育、游戏等品类的投放下降；其次是监管压制供给，例如闪屏广告，这对广告联盟有负面影响，对朋友圈和公众号则更多是需求问题。刷新到本季，首要因素变成疫情。疫情对投放有前面说过的几方面负面后果。上海用了较长时间才控制住，深圳则很快，说明近期有成功先例；但对广告不利的是，上海更像中国媒介和营销决策的中心，尤其对跨国公司，深圳不是。上海的情况会不成比例地影响全国广告。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "把本季首要因素改成疫情，但没有给各因素的百分点，也没有给出往后的广告毛利率路径。视频号投入的排序没有单独量化。",
+        "tone": "cautious",
+        "answer_quote": "Refreshing that framework this quarter, then the paramount driver is COVID.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Alex Yao",
+        "firm": "J.P. Morgan",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "云策略转型已经影响到收入，转型过程中的毛利率趋势怎样。",
+        "answer_summary": "John（CFO）：云对毛利率的影响实际上有所改善，因为公司退出了亏损合同。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "只说云毛利率因退出亏损合同而有所改善，没有给出改善的百分点，也没有说转型期间的后续趋势。",
+        "tone": "positive",
+        "answer_quote": "In terms of the impact on the cloud in respect of the gross margin, it actually improved a bit because of the fact that we have mentioned getting away from loss-suffering contracts.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Alex Yao",
+        "firm": "J.P. Morgan",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "今年明显在做成本优化和利润率改善，这是否也包括长视频，做到盈亏平衡是不是这条业务的优先事项。",
+        "answer_summary": "James（CSO）：目标不是把视频业务做成暂时的盈亏平衡，而是逐步做成结构上健康、可持续的状态。腾讯视频过去有些季度已经打平，但没有维持住。单季打平并不难：可以不订购昂贵内容，可以已经订了却不在当季播出，也可以当季核销资本化内容、让下一季的增量利润看起来很高，但真实经济回报并不好。这些都能用来做下一季的账面打平，但不是公司要的。最难的一步希望已经做过：腾讯视频曾是中国第八或第九家进入这个市场的公司，现在在订阅用户、订阅收入和广告收入上都是明确领先，过去也有季度打平。现在要走向可持续盈利。一部分是继续通过价格理顺来优化收入，一部分是对播出内容更挑剔。从后面追到前面时，什么内容重要还不知道，每个品类都得争；现在在第一，更清楚什么内容算数，可以把开支分给算数的内容。还有向上游知识产权做垂直整合：阅文的网文、新丽传媒的内容，或腾讯游戏组合里的手游。中国长视频仍然很难，但行业在成本和每用户收入上已经更理性。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有把本季或本年实现盈亏平衡列为目标，改为追求可持续的盈利结构，没有给利润率或时间。",
+        "tone": "cautious",
+        "answer_quote": "We're trying to just move the business to a structurally healthy position.",
+        "review_flags": [
+          "回答明确拒绝把单季盈亏平衡当成目标"
+        ]
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "收入1354.71亿元增0.1%，经营利润372.17亿元降33.9%",
+    "key_findings": [
+      {
+        "finding": "指标表收入1354.71亿元，同比增0.1%、环比降6.0%；增值服务727.38亿元、网络广告179.88亿元、金融科技及企业服务427.68亿元，广告收缩与金融科技扩张大致抵消。",
+        "text": "指标表收入1354.71亿元，同比增0.1%、环比降6.0%；增值服务727.38亿元、网络广告179.88亿元、金融科技及企业服务427.68亿元，广告收缩与金融科技扩张大致抵消。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "毛利570.74亿元，同比降8.9%；毛利率42.1%，同比降4.2个百分点。GAAP经营利润372.17亿元，同比降33.9%；经营利润率27.5%，同比降14.1个百分点。非GAAP经营利润365.38亿元。",
+        "text": "毛利570.74亿元，同比降8.9%；毛利率42.1%，同比降4.2个百分点。GAAP经营利润372.17亿元，同比降33.9%；经营利润率27.5%，同比降14.1个百分点。非GAAP经营利润365.38亿元。",
+        "evidence": "operating_margin_gaap"
+      },
+      {
+        "finding": "GAAP净利润237.33亿元，同比降51.6%；每股收益2.404元，同比降51.1%；非GAAP每股收益2.62元。资本开支69.71亿元，同比降9.9%。另列自由现金流152亿元，指标表未单列财务自由现金流。",
+        "text": "GAAP净利润237.33亿元，同比降51.6%；每股收益2.404元，同比降51.1%；非GAAP每股收益2.62元。资本开支69.71亿元，同比降9.9%。另列自由现金流152亿元，指标表未单列财务自由现金流。",
+        "evidence": "eps_gaap"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2022Q2收入同比是否仍不低于0%。本季指标表收入1354.71亿元，同比增0.1%，环比降6.0%。",
+        "threshold": "同比不低于0%"
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "condition": "FY2022Q2毛利率同比降幅是否小于4.2个百分点。本季42.1%，同比降4.2个百分点，环比升2.0个百分点。",
+        "threshold": "同比降幅小于4.2个百分点"
+      },
+      {
+        "metric_key": "operating_margin_gaap",
+        "condition": "FY2022Q2的GAAP经营利润率同比降幅是否小于14.1个百分点。本季27.5%。电话会所称27%、同比降4.6个百分点是非GAAP口径，不要混用。",
+        "threshold": "同比降幅小于14.1个百分点"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "FY2022Q2资本开支同比是否仍为负。本季69.71亿元，同比降9.9%，环比降40.2%。",
+        "threshold": "同比低于0%"
+      },
+      {
+        "metric_key": "other",
+        "condition": "FY2022Q2网络广告收入同比是否仍为负。本季指标表179.88亿元，电话会称约180亿元、同比降18%。",
+        "threshold": "同比低于0%"
+      }
+    ]
   },
   "thesis_review": {}
 }

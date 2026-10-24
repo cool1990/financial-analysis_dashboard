@@ -95,7 +95,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>9</b></a>
     <a href="#notes">数据来源<b>3</b></a>
   </div>
 </nav>
@@ -111,7 +111,7 @@
         <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比</small>
       </h2>
       <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
-      <p class="eps-note" id="expectNote">深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。 TradingView 预期是港币，财报实际是人民币。已按 HKDCNY 0.8506（2026-10-23，tradingview:FX_IDC:HKDCNY）把预期换成人民币再比较。 扫描里的 EPS 接近非国际财务报告准则，柱上实际仍是报表摊薄每股盈利。</p>
+      <p class="eps-note" id="expectNote">深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 17:54 PT。 TradingView 预期是港币，财报实际是人民币。行情日没有 HKDCNY 收盘，已按最近可用的 HKDCNY 0.8508（2026-10-23，tradingview:FX_IDC:HKDCNY）把预期换成人民币再比较。 扫描里的 EPS 接近非国际财务报告准则，柱上实际仍是报表摊薄每股盈利。</p>
     </div>
   </div>
 </section>
@@ -120,11 +120,11 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">13 项指标 · 点指标看图</span>
+    <span class="ev-meta">15 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">港股手工导入未调用变动原因模型</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">收入</span>
@@ -132,7 +132,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+0.1%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-6.0%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表收入1354.71亿元，同比增0.1%，环比降6.0%。同比几乎为零，电话会称为基本持平。Martin（总裁）称增值服务占收入54%，其中社交网络22%、国内游戏24%、国际游戏8%，网络广告13%，金融科技及企业服务32%。指标表分部为增值服务727.38亿元、网络广告179.88亿元、金融科技及企业服务427.68亿元。用上年同期金额相减，广告少38.32亿元，金融科技及企业服务多37.40亿元，增值服务多2.95亿元，增减大致抵消。这是金额相减，不是指标表同比。电话会称增值服务730亿元、基本持平，社交网络290亿元、同比增1%，国内游戏330亿元、同比降1%，国际游戏110亿元、同比增4%，广告180亿元、同比降18%、环比降16%，金融科技及企业服务430亿元、同比增10%、环比降11%。这些子项增速和取整金额只作为口述。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -160,7 +160,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note>人民币金额来自已保存的季度 JSON，不覆盖这些文件。收入、毛利取季度 JSON。营业成本仅在两者都有时用收入减毛利。营业费用只在销售及市场推广、一般及行政都有时相加。业务分部只取季度 JSON 里已经抽出的增值服务、营销服务、金融科技及企业服务；没有单独披露的「其他」不倒挤。业绩稿简明综合收益表能读出的季度改用表内原数，包括表里的其他。没有季度文件、也没有表内数字的季度留空。地区收入未披露。不把港币或美元写进人民币字段。 已保存的披露文字里没有地区收入，地区柱留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。</p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>收入几乎持平，最大的减项是网络广告。James（CSO）称广告收入180亿元，同比降18%、环比降16%，出价密度不足压低了千次展示费用。</p>
+<blockquote>Revenue was CNY 18 billion in the first quarter, down 18% year on year and down 16% quarter on quarter. And subdued bidding density results in lower eCPMs.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>金融科技及企业服务是主要正项。James称分部收入430亿元，同比增10%、环比降11%。商业支付增速放缓，因为3月多地应对疫情，餐饮、出行等日常消费和大额旅行预订都减少，交通、餐饮服务和服装的支付量减速更明显。</p>
+<blockquote>Segment revenue was CNY 43 billion, up 10% year on year and down 11% quarter on quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>国内游戏是增值服务内部的拖累。Martin称国内游戏收入330亿元，同比降1%，未成年保护的直接和间接影响打到了活跃账号和付费账号。国际游戏110亿元，同比只增4%，慢于前几季，因为PUBG Mobile消费在疫后正常化，而且英雄联盟和部落冲突的内容更新节奏偏后。</p>
+<blockquote>Domestic games revenue was down 1% year on year to RMB 33 billion as direct and indirect effects of minor protection measures impacted active user and paying user accounts.</blockquote>        </div>
+<p class="conflict">冲突：Pony（CEO）称总收入1350亿元，同比基本持平，环比降6%。John（CFO）称1355亿元，同比持平，环比降6%。指标表1354.71亿元，同比增0.1%，环比降6.0%。摘要用指标表。1350亿元和1355亿元是口述取整。；Martin称增值服务730亿元、同比基本持平，社交网络290亿元、同比增1%，国内游戏330亿元、同比降1%，国际游戏110亿元、同比增4%。James称广告180亿元、同比降18%、环比降16%，金融科技及企业服务430亿元、同比增10%、环比降11%。指标表分部为727.38亿元、179.88亿元、427.68亿元，没有这些子项的同比。取整金额和增速只作为电话会口述。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -189,7 +204,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-4.2pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+2.0pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表GAAP毛利率42.1%，同比降4.2个百分点，环比升2.0个百分点。John称整体毛利率42.1%，同比降4.2个百分点，环比升2个百分点，与指标表一致。分部毛利率是口述，指标表未单列：增值服务50.4%，同比降4.7个百分点、环比升1.7个百分点；网络广告36.7%，同比降8.4个百分点、环比降6个百分点；金融科技及企业服务31.6%，同比基本持平、环比升4.5个百分点。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -202,26 +217,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
-      <span class="m-name">营业费用</span>
-      <span class="m-val num">¥34.73B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+26.3%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-3.5%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum">销售及市场推广、一般及行政合计，不含营业成本。</span>
-    </button>
-    <div class="fin-panel" id="fin-panel-opex" data-fin-panel="opex" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率同比下降，首先是因为收入稳定而成本上升。增值服务收入稳定，但游戏内容成本、服务器和带宽成本上升，视频号还在投入。广告侧还有视频号相关成本、北京冬奥内容成本，以及文化事业建设费今年不再全额减免。</p>
+<blockquote>The year-on-year decrease reflected stable segment revenue with increased costs, including content cost for games, server and bandwidth costs in addition to our investment in strategic initiatives, in particular, video accounts.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>组合转向低毛利产品。金融科技及企业服务毛利率31.6%，低于整体，而这块收入同比仍增；广告收入下降，进一步改变了组合。</p>
+<blockquote>The year-on-year decrease reflected the result of stable revenue with increased operating costs, mix shift toward lower-margin products and our continued investments in key strategic initiatives.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>环比毛利率回升2.0个百分点，是季节性组合转向游戏等高毛利业务。金融科技及企业服务环比回升，则来自组合转向毛利更高的金融科技，以及削减亏损云合同。</p>
+<blockquote>The quarter-on-quarter increase was due to seasonal revenue mix shift toward high-margin businesses, such as games.</blockquote>        </div>
+<p class="conflict">冲突：John称整体毛利率42.1%，同比降4.2个百分点，环比升2个百分点。指标表42.1%，同比降4.2个百分点，环比升2.0个百分点。水平与同比一致。分部毛利率50.4%、36.7%、31.6%及其百分点变化是电话会口述，指标表未单列。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_margin_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_nongaap">
       <span class="m-name">经营利润率（Non-IFRS）</span>
@@ -229,7 +240,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-4.6pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_nongaap" data-fin-panel="operating_margin_nongaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -242,7 +253,7 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_income_nongaap" aria-pressed="false" aria-controls="fin-panel-operating_income_nongaap">
       <span class="m-name">营业利润（Non-IFRS）</span>
@@ -250,7 +261,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-14.5%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+10.2%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_income_nongaap" data-fin-panel="operating_income_nongaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -263,7 +274,7 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
+<p class="muted">暂无单独解读。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_gaap">
       <span class="m-name">经营利润率（IFRS）</span>
@@ -271,7 +282,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-14.1pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-48.6pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表GAAP经营利润率27.5%，同比降14.1个百分点，环比降48.6个百分点。上季经营利润率76.1%，所以环比落差很大。电话会没有直接报GAAP经营利润率。John称非GAAP经营利润率27%，同比降4.6个百分点，环比升4个百分点；非GAAP净利润率19.4%，同比降6.1个百分点，环比升1.5个百分点。非GAAP经营利润率的同比降幅接近毛利率的4.2个百分点，GAAP多出来的降幅主要来自其他净收益等调整项，不能把27%和4.6个百分点写成GAAP。销售费用占收入5.9%，同比基本持平。研发占收入11.4%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -284,70 +295,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（IFRS）</span>
-      <span class="m-val num">¥37.22B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-down">-33.9%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-66.1%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
-      <span class="m-name">净利润率（IFRS）</span>
-      <span class="m-val num">17.5%</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-down">-18.7pp</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-48.9pp</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
-      <span class="m-name">净利润（IFRS）</span>
-      <span class="m-val num">¥23.73B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-down">-51.6%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-down">-75.2%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>GAAP经营利润率同比降14.1个百分点，远大于非GAAP经营利润率同比降4.6个百分点。差额来自其他净收益等非GAAP调整项：其他净收益同比降33%、环比降85%，其中有185亿元的Sea Limited部分出售收益，并被减值抵消一部分。</p>
+<blockquote>Net other gains were CNY 13.1 billion, down 33% year on year or 85% quarter on quarter, which were primarily non-IFRS adjustment items, including CNY 18.5 billion gain arising from our partial divestment of Sea Limited, partly offset by impairment provisions against investee companies in verticals such as transportation services and online media.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>人员费用推高了费用率。不含研发的一般行政开支同比增47%至113亿元，研发同比增36%至154亿元，季末约11.6万人、同比增30%。</p>
+<blockquote>R&amp;D expenses were CNY 15.4 billion, up 36% year on year or 10% quarter on quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营销开支优化让销售费用同比下降，占收入5.9%且占比基本稳定，对利润率是小幅正贡献。</p>
+<blockquote>Selling and marketing expenses were 5.9% of revenues, broadly stable year on year.</blockquote>        </div>
+<p class="conflict">冲突：指标表GAAP经营利润率27.5%，同比降14.1个百分点，环比降48.6个百分点。John称非GAAP经营利润率27%，同比降4.6个百分点，环比升4个百分点。两个口径的水平接近，同比方向和幅度差很多。摘要的27.5%和14.1个百分点只用GAAP指标表，不把27%写成GAAP经营利润率。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_nongaap" aria-pressed="false" aria-controls="fin-panel-eps_nongaap">
       <span class="m-name">摊薄每股盈利（Non-IFRS）</span>
@@ -355,7 +318,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum"><span class="muted">—</span></span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_nongaap" data-fin-panel="eps_nongaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -368,7 +331,7 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+<p class="muted">暂无单独解读。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">摊薄每股盈利（IFRS）</span>
@@ -376,7 +339,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-51.1%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-75.4%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表GAAP摊薄每股收益2.404元，同比降51.1%，环比降75.4%。John称2.404元，同比降51%、环比降75%，金额与指标表一致。非GAAP摊薄每股收益指标表2.62元，没有同比。John称2.62元，同比降23%、环比增3%。每股收益的同比降幅与净利润的51.6%接近，新增的拖累同样是联营由盈转亏，而不是股本突然变化。指标表没有披露摊薄股数，摘要不反推股数。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -389,7 +352,22 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>每股收益同比降51.1%，方向和净利润一致。更大的一块仍是经营利润下降，而经营利润下降主要来自人员费用和研发投入。</p>
+<blockquote>Diluted EPS was CNY 2.404, down 51% year on year or 75% quarter on quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>联营由盈转亏，使每股收益降得比经营利润更快。非GAAP口径下，联营从盈利5亿元变成亏损22亿元，京东不再作为联营公司也在其中。</p>
+<blockquote>Shared of losses of associates and JVs were CNY 6.3 billion, compared to share of profits of CNY 1.3 billion last year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>所得税同比降27%至53亿元，有效税率18.2%，对净利润和每股收益是正贡献，但抵不过联营亏损。</p>
+<blockquote>Income tax expense decreased by 27% to CNY 5.3 billion for the first quarter of 2022 on a year-on-year basis. The effective tax rate was 18.2%.</blockquote>        </div>
+<p class="conflict">冲突：John称GAAP摊薄每股收益2.404元，同比降51%，环比降75%。指标表2.404元，同比降51.1%，环比降75.4%。金额一致。51%和75%是口述取整，摘要同比用51.1%，环比用75.4%。；非GAAP每股收益指标表2.62元，没有同比和环比。John称2.62元，同比降23%，环比增3%。金额一致。23%和3%只作为电话会口述，不写成指标表同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
@@ -397,7 +375,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-9.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-40.2%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表资本开支69.71亿元，同比降9.9%，环比降40.2%。上年同期77.34亿元，上季116.61亿元。John称合计70亿元，同比降10%、环比降40%。其中经营性资本开支52亿元，同比降21%；非经营性资本开支18亿元，同比增54%。52亿元加18亿元等于70亿元，与69.71亿元的差额是取整。摘要的合计金额和同比、环比用指标表。电话会没有解释经营性资本开支下降的业务原因。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -410,14 +388,220 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">港股手工导入未调用变动原因模型</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>合计资本开支下降，是因为经营性资本开支降到52亿元、同比降21%。</p>
+<blockquote>Total capex was CNY 7 billion, down 10% year on year or 40% quarter on quarter. Within total capex, operating capex was CNY 5.2 billion, down 21% year on year.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>非经营性资本开支升至18亿元，同比增54%，抵消了一部分经营性资本开支的下降。</p>
+<blockquote>Nonoperating capex increased by 54% year on year to CNY 1.8 billion.</blockquote>        </div>
+<p class="conflict">冲突：John称资本开支70亿元，同比降10%，环比降40%；经营性52亿元，同比降21%；非经营性18亿元，同比增54%。指标表69.71亿元，同比降9.9%，环比降40.2%。摘要合计用指标表。70亿元、10%和40%是口述取整。经营性和非经营性拆分指标表未单列。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="gross_profit_gaap" aria-pressed="false" aria-controls="fin-panel-gross_profit_gaap">
+      <span class="m-name">毛利（IFRS）</span>
+      <span class="m-val num">¥57.07B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-down">-8.9%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-1.3%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表毛利570.74亿元，同比降8.9%，环比降1.3%。收入同比只增0.1%，毛利下降来自毛利率压缩，而不是收入萎缩。Pony称毛利570亿元，同比降9%、环比降1%。John称571亿元，同比降9%或环比降1%。摘要用570.74亿元和指标表的8.9%、1.3%。分部毛利电话会没有单列金额。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-gross_profit_gaap" data-fin-panel="gross_profit_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>收入基本稳定，但经营成本上升，所以毛利下降。John把同比下降归因于收入稳定而成本增加、产品组合转向低毛利，以及战略项目继续投入。</p>
+<blockquote>The year-on-year decrease reflected the result of stable revenue with increased operating costs, mix shift toward lower-margin products and our continued investments in key strategic initiatives.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>低毛利收入占比上升，放大了毛利降幅。广告毛利率降到36.7%，金融科技及企业服务毛利率31.6%，都低于整体42.1%，而广告收入又在收缩、金融科技收入在增加。</p>
+<blockquote>Gross margin for online advertising was 36.7%, down 8.4 percentage points year on year or 6 percentage points quarter on quarter.</blockquote>        </div>
+<p class="conflict">冲突：Pony称毛利570亿元，同比降9%，环比降1%。John称571亿元，同比降9%，环比降1%。指标表毛利570.74亿元，同比降8.9%，环比降1.3%。摘要用指标表。570亿元、571亿元、9%和1%是口述取整。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">经营盈利（IFRS）</span>
+      <span class="m-val num">¥37.22B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-down">-33.9%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-66.1%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表GAAP经营利润372.17亿元，同比降33.9%，环比降66.1%。上年同期562.73亿元，上季1097.23亿元。John称经营利润372亿元，同比降34%、环比降66%。非GAAP经营利润指标表365.38亿元，没有同比；上年同期金额为427.58亿元。John称非GAAP经营利润365亿元，同比降15%、环比增10%；Pony称370亿元，同比降15%、环比增10%。摘要的GAAP金额用372.17亿元，非GAAP金额用365.38亿元，15%和10%只作为口述。其他净收益131亿元，同比降33%、环比降85%，其中出售Sea Limited部分股权收益185亿元，被交通服务、网络媒体等被投公司减值部分抵消。John称这些其他净收益主要是非GAAP调整项，所以GAAP经营利润降幅远大于非GAAP。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>人员相关费用上升，是经营利润同比下降里最大的一块。不含研发的一般行政开支113亿元，同比增47%，因为战略领域增员、海外子公司开支增加，以及新收购子公司。研发开支154亿元，同比增36%，同样主要因为人员成本和收购。季末员工约11.6万人，同比增30%、环比增3%。</p>
+<blockquote>The year-on-year increase reflected greater staff costs driven by headcount increase to support our ongoing investment in key strategic areas, greater expenses incurred by our overseas subsidiaries as well as expenses from recently acquired subsidiaries.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>其他净收益同比降33%、环比降85%，压低了GAAP经营利润。当季包含出售Sea Limited部分股权的185亿元收益，同时对交通服务、网络媒体等被投公司计提减值。</p>
+<blockquote>Net other gains were CNY 13.1 billion, down 33% year on year or 85% quarter on quarter, which were primarily non-IFRS adjustment items, including CNY 18.5 billion gain arising from our partial divestment of Sea Limited, partly offset by impairment provisions against investee companies in verticals such as transportation services and online media.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>销售及市场推广开支下降，部分抵消人员费用。John称81亿元，同比降6%、环比降31%，来自营销费用优化；环比还叠加游戏和企业服务的季节性少投。</p>
+<blockquote>Y-on-Y decrease reflected our marketing expense optimization measures.</blockquote>        </div>
+<p class="conflict">冲突：John称GAAP经营利润372亿元，同比降34%，环比降66%。指标表372.17亿元，同比降33.9%，环比降66.1%。摘要用指标表。372亿元、34%和66%是口述取整。上季经营利润1097.23亿元来自指标表，用来说明环比高基数。；非GAAP经营利润指标表365.38亿元，没有同比，上年同期金额为427.58亿元。Pony称370亿元，同比降15%，环比增10%。John称365亿元，同比降15%，环比增10%。摘要用365.38亿元。370亿元是Pony的取整。15%和10%是口述，不写成指标表同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
+      <span class="m-name">期内盈利（IFRS）</span>
+      <span class="m-val num">¥23.73B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-down">-51.6%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-down">-75.2%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表GAAP净利润237.33亿元，同比降51.6%，环比降75.2%。上年同期490.08亿元，上季957.05亿元。降幅大于经营利润的33.9%，因为经营利润之下，联营和合营从盈利变成亏损，财务费用也上升，所得税下降只抵消一部分。John称权益持有人应占净利润234亿元，同比降51%、环比降75%。指标表用的是期内盈利237.33亿元，摘要以指标表为准。非GAAP净利润没有进指标表：Pony称260亿元，John称255亿元，两人都说同比降23%、环比增3%。有效税率18.2%，所得税53亿元，同比降27%。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>净利润同比少252.75亿元，其中经营利润少190.56亿元，是更大的一块。经营利润下降的主因是人员费用：研发和一般行政开支上升，员工同比增30%。</p>
+<blockquote>At quarter end, we had approximately 116,000 employees, up 30% year on year or 3% quarter on quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>联营及合营从上年盈利13亿元变成亏损63亿元。非GAAP口径从盈利5亿元变成亏损22亿元。原因包括海外游戏联营在疫后消费正常化后收入下降、交通服务类联营确认亏损，以及京东不再作为联营公司。</p>
+<blockquote>Non-IFRS share of losses were CNY 2.2 billion, compared to non-IFRS share of profits of CNY 0.5 billion a year ago, reflecting revenue decline at certain overseas game associates due to post-COVID user spending normalization, losses recognized from associates in the transportation services verticals and the impact from JD.com ceasing to be an associate.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>财务费用19亿元，同比增42%、环比增4%，来自负债增加后的利息，以及同比和环比都更低的汇兑收益。</p>
+<blockquote>Net finance costs were CNY 1.9 billion, up 42% year on year or 4% quarter on quarter, reflecting greater interest expenses due to increased indebtedness as well as lower foreign exchange gains both year on year and quarter on quarter.</blockquote>        </div>
+<p class="conflict">冲突：John称权益持有人应占净利润234亿元，同比降51%，环比降75%。指标表期内盈利237.33亿元，同比降51.6%，环比降75.2%。摘要用237.33亿元。234亿元是权益持有人口径的口述，不改写成指标表净利润。；非GAAP净利润指标表未单列。Pony称260亿元，同比降23%，环比增3%。John称255亿元，同比降23%，环比增3%。两人相差5亿元。摘要并列口述，不选其中一个当作指标表数字。23%和3%也不写成指标表同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
+      <span class="m-name">opex</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表销售费用80.58亿元，一般及行政开支266.69亿元。John把费用拆开说：销售及市场推广81亿元，同比降6%、环比降31%，剔除股权激励后同比降7%、环比降32%，占收入5.9%；研发154亿元，同比增36%、环比增10%，剔除股权激励后同比增27%、环比增6%，占收入11.4%；不含研发的一般行政113亿元，同比增47%、环比增9%，剔除股权激励后同比增25%、环比降7%。154亿元加113亿元等于267亿元，与266.69亿元只差取整。指标表没有给出这两项开支的同比，36%、47%、6%都是口述。季末员工约11.6万人，同比增30%、环比增3%。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-opex" data-fin-panel="opex" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>费用上升的主因是人员和研发。研发同比增36%，不含研发的一般行政同比增47%，都指向战略领域增员、人均相关的员工成本，以及新收购和海外子公司。</p>
+<blockquote>The year on year and quarter on quarter increases were mainly due to greater staff costs reflecting our ongoing investment in key strategic initiatives as well as the impact of recent acquisition of subsidiaries.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>销售费用是少数在下降的成本。同比降幅来自营销优化，环比降幅还因为游戏和企业服务投放随季节减少。</p>
+<blockquote>Selling and marketing expenses were CNY 8.1 billion, down 6% year on year or 31% quarter on quarter.</blockquote>        </div>
+<p class="conflict">冲突：John称销售及市场推广开支81亿元，同比降6%，环比降31%。指标表销售费用80.58亿元，没有同比。81亿元和6%、31%是口述。；John称研发154亿元、同比增36%，不含研发的一般行政113亿元、同比增47%。两项之和267亿元，指标表一般及行政开支266.69亿元。差额是口述取整。指标表没有266.69亿元的同比，不把相减得到的增幅写成指标表同比。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
+      <span class="m-name">经营现金流</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表未单列经营现金流，不从电话会回填。John称当季经营现金流338亿元，同比和环比都降34%。同比下降在正常营运资金变动之外，部分因为游戏和网络广告的现金收款减少，而研发和人员成本继续增长。环比下降主要因为每年一季度计入的年度奖金。338亿元和34%只作为口述。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>经营现金流同比下降，部分因为游戏和广告的现金收款减少。</p>
+<blockquote>year on year decline among normal working capital change was partly due to lower cash receipts from games and online advertising while our R&amp;D and staff cost continue to grow.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>研发和人员成本继续增长，同时消耗现金。环比则主要因为一季度的年度奖金。</p>
+<blockquote>quarter on quarter decline was primarily due to our annual bonus payment recorded in the first quarter each year.</blockquote>        </div>
+<p class="conflict">冲突：指标表未单列经营现金流，摘要不回填。John称338亿元，同比和环比都降34%。这是电话会口述。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
+      <span class="m-name">自由现金流</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表未单列财务自由现金流，不回填。另列口径为152亿元。John称当季自由现金流152亿元，同比降54%，环比先说54%再改口55%。同比54%是口述，不写成指标表同比。经营现金流口述338亿元，减去指标表资本开支69.71亿元，并不等于152亿元。电话会没有给出中间项，摘要不自行轧差。季末净债务110亿元，上季202亿元。上市被投公司股权公允价值约6060亿元，或950亿美元。本季回购约890万股，金额约30亿元。这些都不是自由现金流。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>自由现金流同比下降，跟随经营现金流。游戏和广告现金收款减少，研发和人员成本继续增长。资本开支同比下降，本来会抬高自由现金流，但抵不过经营现金流的下降。</p>
+<blockquote>Free cash flow for the quarter was CNY 15.2 billion, down 54% year on year and 54% -- 55% quarter on quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>研发和员工成本继续增长，是经营现金流同比下降的另一部分，因而也压自由现金流。</p>
+<blockquote>year on year decline among normal working capital change was partly due to lower cash receipts from games and online advertising while our R&amp;D and staff cost continue to grow.</blockquote>        </div>
+<p class="conflict">冲突：指标表未单列财务自由现金流，不回填。另列口径152亿元，与John所说的15.2 billion一致，即152亿元。他称同比降54%，环比先说54%再改口55%。摘要不把环比收成单一数字。；经营现金流口述338亿元，减去指标表资本开支69.71亿元，得数并不是152亿元。电话会没有解释差额，摘要不把自由现金流定义成经营现金流减资本开支。</p>      </div>
     </div>
   </div>
 <p class="layer-sub" style="margin-top:8px">部分历史季度来自本季新闻稿的对比列，没有单独的季度页。</p>  </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 6 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
@@ -426,23 +610,252 @@
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境（疫情与监管）</h4>
+          <div class="outlook-copy">
+            <p>一季度的外部环境同时受疫情和监管拉动。James（CSO）把消费和企业情绪直接绑在各城市疫情上。上海出现严重疫情后，商业支付量连续多周低于趋势并且同比为负，当时只是温和修复，仍低于本来应有的水平。深圳3月是小规模疫情，支付量随封控急跌，4月较快恢复，5月已大体回到此前趋势并同比增长。因此他认为宏观逆风不是全国一个幅度：广告受到的负面影响最明显，既有经济总量压力，也因为很多公司、尤其是跨国公司把营销预算放在上海；支付按城市分化；云项目上线有一些负面影响；游戏则比较难看出影响。和2020年初相比，这次疫情发生在春节后数周，人们已经回到工作和学校，娱乐应用起来得更慢，腾讯会议、企业微信文档这类生产力工具起来得更快，因为更多机构和用户已经会用，腾讯会议过去两年的份额也上升明显。监管方面，Martin（总裁）说过去两个月高层对数字经济和平台经济放出支持信号。他点名全国政协会议上汪洋支持做强、高质量、更大规模的数字经济，刘鹤重申坚定支持平台经济和民营经济；4月29日政治局会议提出促进平台经济健康发展、完成整改、实施常态化监管，并出台具体支持措施。他认为信号要变成业务影响有时间滞后，整改、常态化监管和支持措施大体按这个顺序推进。积极的一点是4月游戏版号恢复审批。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化</h4>
+          <div class="outlook-copy">
+            <p>需求端几乎是零增长，但结构差很大。指标表收入1354.71亿元，同比增0.1%、环比降6.0%。Martin称增值服务约占54%，社交网络、国内游戏、国际游戏分别约占22%、24%、8%，广告约占13%，金融科技及企业服务约占32%。指标表对应金额是增值服务727.38亿元、网络广告179.88亿元、金融科技及企业服务427.68亿元。电话会称社交网络290亿元、同比增1%，视频号直播增加，音乐和游戏相关直播下降，两边大体抵消。增值服务订阅数同比增6%至2.39亿。腾讯视频订阅1.24亿，点名剧集《雪中悍刀行》和动画《完美世界》第二季。音乐订阅同比增32%至8000万。国内游戏330亿元、同比降1%，未成年保护打到活跃和付费账号；英雄联盟手游和金铲铲之战有增量，天涯明月刀手游和使命召唤手游下降。王者荣耀春节档流水增长放慢，是因为成功的商业化道具变少，成年用户基本盘稳定，3月随道具改善恢复同比增长。国际游戏110亿元、同比增4%，PUBG Mobile在疫后消费正常化，个人电脑端的无畏契约流水同比仍显著增长。Pony（CEO）称微信和WeChat合并月活12.9亿，QQ移动端月活5.64亿。小程序日活超过5亿，零售和餐饮的成交额增长明显。广告侧，社交及其他广告160亿元、同比降15%，媒体广告20亿元、同比降30%。朋友圈略降，教育和房地产的投放减弱盖过了快消和游戏；公众号广告同比明显增加，其中超过20%来自跳转购买和跳转消息。二季度至今，快消、电商和旅游已经因为疫情和供应链收缩投放。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化</h4>
+          <div class="outlook-copy">
+            <p>供给端是内容、云能力和人，不是一条产线。视频号的观看人数和时长同比显著增长，新闻、知识和娱乐内容变多，推荐技术也更好，并加强了企业消息和购物功能。小程序接入更多政务和健康服务，用来培养使用习惯。国内新游里，金铲铲之战一季度在自走棋品类日活第一、全部手游日活第六，被称作2021年全行业最成功的新游。3月底上线的重返帝国，4月按流水在即时战略品类排第二。国际侧，1月上线蜘蛛侠主题的PUBG玩法，3月的兰博基尼联动成为该作最畅销的车辆内容；无畏契约按月活是全部品类里第六受欢迎的个人电脑游戏，也是过去四年新个人电脑游戏里排位最高的。沙丘主题的香料战争于4月26日抢先体验，英雄射击手游Apex于电话会前一日全球上线。资本开支则在收缩：指标表69.71亿元，同比降9.9%、环比降40.2%，经营性资本开支口述52亿元、同比降21%，非经营性18亿元、同比增54%。人和研发没有跟着资本开支收缩。季末约11.6万名员工，同比增30%、环比增3%。研发开支口述154亿元，同比增36%，占收入11.4%。John（CFO）没有把资本开支下降解释成需求不足或项目取消，只给出了经营性和非经营性的拆分。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>竞争格局被监管和疫情一起改写。国内游戏仍维持高日活产品的领先，和平精英是中国第一的射击游戏，三周年版本在4月用新的战斗道具和战场设计拉时长。但版号环境变了。James称，未来获批数量会少于2018年暂停之前，这个判断已经持有几年，所以过去两年把游戏业务改成做更少、预算更大、希望更好的产品。任一时刻的管线与一些人数少得多的对手相当或更窄，因为单款投入的人数更多。2021年发布的游戏里有两款按用户计是行业最成功的两款；这次版号名单没有腾讯的游戏，他认为可以接受，因为没有版号的时期最伤的是没有现金流的小团队，名单先从小公司开始是合理的。海外手游行业2022年初相对2021年初普遍放缓或下降，PUBG Mobile的流水同比转弱，但个人电脑游戏和部落冲突这类长线产品更稳。广告联盟方面，个人电脑时代腾讯是落后者，移动互联网起来后才成为主要参与者；这一轮的两大参与者是腾讯和字节跳动，和以前的周期不同，但联盟业务在以往冲击后都恢复过。云则更不像西方：全行业大约一半收入来自其他互联网公司，一半来自金融、制造、政府和本地服务。很多厂商仍在做重定制的集成项目，商品化的内容分发容易价格战。实时视频只有少数公司有低时延算法。高德纳把腾讯列为2021年中国通信平台即服务收入第一。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>商业模式的核心变化是毛利率被成本和组合同时压低，云和视频号还没把高毛利收入做出来。指标表毛利率42.1%，同比降4.2个百分点，环比升2.0个百分点；毛利570.74亿元，同比降8.9%。增值服务毛利率50.4%，同比降4.7个百分点，成本在游戏内容、服务器、带宽和视频号。广告毛利率36.7%，同比降8.4个百分点、环比降6个百分点，除了收入下降和视频号成本，还有冬奥内容，以及文化事业建设费不再全额减免。James在问答里补充，冬奥的转播权和运营开支花了数亿元人民币，这是低毛利活动；视频号目前对成本的影响大于对收入的影响。广告库存本身也不一样：朋友圈和视频号是高毛利自有库存，媒体服务是低毛利自有库存，广告联盟天生低毛利。奢侈品更偏前者，电商可能更偏后者，所以哪类广告主先恢复，会改混合毛利率。金融科技及企业服务毛利率31.6%，同比基本持平，环比升4.5个百分点，因为组合转向毛利更高的金融科技，并且主动减少亏损云合同。企业服务收入同比略降，是有意从追求收入转到质量和客户价值：缩掉转包成本很高的项目，以及只卖云主机和内容分发、折扣很深的合同，同时增加视频云和安全这些毛利更健康的平台服务。客户从内容分发迁到点播、直播和实时通信之后，门槛更高，利润率也更健康。John在最后一个问题里确认，退出亏损合同使云的毛利率有所改善，但没有给百分点。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略</h4>
+          <div class="outlook-copy">
+            <p>公司战略是收成本、留人和把云、视频号、国际游戏留在投入名单上。Pony称，一季度已经做成本控制并整顿部分非核心业务，用小程序、腾讯会议和企业微信帮企业和消费者应对疫情，同时继续投企业软件、视频号和国际游戏。Martin把人员优化限定在结构性需要上，不为了会过去的疫情去砍组织；营销费用可以更快调下来。James把今年的成本分成四块：销售费用已经减速，行政费用随人数增速和人均成本放缓而应在年内减速，腾讯视频的内容成本可能要几个月才体现到毛利率，退出低毛利企业服务会更早看到好处。联营从盈利变成亏损，一大原因是重仓公司过去一年加大社区团购，现在这些投入已经明显放慢，会经联营收益反映到腾讯的损益。投资组合上，James称一季度从撤资和分派筹集的资本大约是新投入的四倍：向股东分派了价值约160亿美元的京东股份，处置另一家公司约30亿美元股份且部分用于回购，还处置了其他公司约数十亿美元股份。发达市场央行快速加息，会影响高增长、低利润、长久期科技公司的估值，所以撤资会继续，但公司仍会选择性投资。季末净债务110亿元，低于上季的202亿元。另列自由现金流152亿元，指标表未单列财务自由现金流。回购约890万股、约30亿元。长视频不追求单季账面打平，要的是可持续盈利，并利用阅文、新丽传媒和自家游戏做上游内容。广告系统在升级机器学习基础设施，用来提高定向和转化，电话会没有讨论后续年份才出现的对话式助手或大模型产品。</p>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">16 轮 · 部分回答 / 回避 9</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>16</b> 轮</span>
+<span>热门话题：<b>毛利率与成本、产品结构、指引与展望</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 9</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alicia Yap<small>Citi</small></span>
+        <span class="qa-q">疫情和封控之下，消费、数字内容、付费意愿、广告预算和云迁移有什么变化，下半年游戏、支付、广告和云会怎样。</span>
+        <span class="qa-tags">
+<span class="pill">宏观与汇率</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：消费和企业行为跟各城市疫情绑在一起。上海商业支付量连续多周低于趋势且同比为负，眼下温和修复，但仍低于本来水平。深圳3月封控时支付量急跌，4月较快恢复，5月已回到此前趋势并同比增长。广告的负面影响最明显，一是经济总量有压力，二是很多公司尤其跨国公司在上海做营销预算；支付按城市分化，不是全国一律；云项目上线有一些负面影响；游戏比较难看出影响。和2020年初相比，这次疫情在春节后数周，人们已复工复学，娱乐应用起来得更慢，腾讯会议和企业微信文档起来得更快，也因为更多机构已经会用，而且腾讯会议过去两年份额上升明显。</p>
+<p class="small">未回答的部分：没有给下半年游戏、支付、广告或云的增速，只把影响归结为各城市疫情如何演变。</p><blockquote>So I think that the negative impact is particularly notable on advertising, partly because of the overall pressure on GDP partly because many companies, especially multinationals, run their marketing budgets out of Shanghai.</blockquote>        <p class="small">新数字：5月同比转正（深圳商业支付量相对此前趋势）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alicia Yap<small>Citi</small></span>
+        <span class="qa-q">点播、直播和实时通信这些更复杂的方案，会不会带来更好的价格、更低的运营成本和更好的企业服务利润率，目前客户采用情况如何。</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：客户会从单纯的内容分发，迁到更复杂的实时视频通信，再迁到整合的通信平台即服务。迁移之后进入门槛更高，利润率也更健康。内容分发有不少公司转售运营商带宽，腾讯有自有专线，但这块偏商品化，容易打价格战、压缩利润。实时视频只有少数公司有低时延算法，腾讯因为多年支撑微信和QQ上的海量视频聊天而具备这个能力。再往上，很多企业销售本来就用微信联系客户，用企业微信把这些关系汇总、再把视频沟通做进系统，是自然的一步。他对全球和中国的趋势都乐观，认为很多消费场景会从文字聊天走到视频聊天，低时延实时视频会变成做生意的必要成本。</p>
+<p class="small">未回答的部分：没有给出视频云或实时通信的价格、采用率，也没有给对企业服务利润率的量化贡献。</p><blockquote>And as they migrate the competitive barriers to entry become higher and the margins correspondingly become healthier.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Eddie Leung<small>Bank of America Merrill Lynch</small></span>
+        <span class="qa-q">新的云策略会不会改变客户结构，包括行业、客户规模和客户复杂度。</span>
+        <span class="qa-tags">
+<span class="pill">客户与订单</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：中国云和西方不完全一样。历史上和目前，全行业收入大约一半来自其他互联网公司，一半来自金融、制造、政府和本地服务等原本线下的行业。这次调整不是为了改变这个需求现实，而是为了用可承受的成本服务正在上网的线下企业。眼下云厂商倾向做非常定制、成本很重的方案，更像系统集成或信息技术咨询。资本充裕时做得到，但不可扩展、不可持续，也不是长期增长的来源。腾讯主动聚焦可扩展、因而可持续、可盈利的机会。来自其他互联网公司的收入会继续，但长期更大的增长来自其他行业。该分部大约一半是基础设施，一半是平台软件和行业解决方案，两边都想增长，尤其是后者。</p>
+<blockquote>So we have made a proactive decision that we are focusing on scalable and therefore sustainable and profitable opportunities.</blockquote>        <p class="small">新数字：约一半（中国云行业收入来自其他互联网公司的比例）；约一半（腾讯该分部收入来自平台软件和行业解决方案的比例）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Ronald Keung<small>Goldman Sachs</small></span>
+        <span class="qa-q">二季度消费和封控变差之后，广告增长何时稳住或出现拐点，宏观、基数和视频号变现各自起什么作用。</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：此前的说法是，进入2022年下半年，广告趋势应转正。一是会跨过一批影响广告主和自家广告媒介的监管变化，二是会逐步放出新增库存，包括视频号。上次通话之后的新因素是多地疫情。疫情压制消费，也压制物流，尤其上海是物流枢纽，还冲击跨国公司做营销决策的城市。疫情控制有多快，决定原先说法是否仍成立，或者时间表后移。</p>
+<p class="small">核对：原文SQL疑似听写误差，不把它当成广告产品名</p><p class="small">未回答的部分：没有给出广告同比转正的季度或百分比，只说取决于疫情控制，时间表可能后移。</p><blockquote>And depending how quickly COVID is brought under control will determine whether our previous comments still holds true or whether the timetable gets pushed back because, again, the COVID is hurting consumption, which is unhelpful.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">William Packer<small>Exane BNP Paribas</small></span>
+        <span class="qa-q">主管部门近期谈到平台经济健康发展和整改完成，这两项目标对腾讯意味着什么。</span>
+        <span class="qa-tags">
+<span class="pill">平台监管</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：过去两个月，高层对数字经济和平台经济放出不少支持信号。全国政协会议上，汪洋明确支持做强、高质量以及更大规模的数字经济；刘鹤重申坚定支持平台经济和民营经济。这与4月29日政治局会议一致：促进平台经济健康发展，完成整改，实施常态化监管，并出台支持规范增长的具体措施。信号清楚，但要变成对业务的实际影响会有时间滞后，要等具体监管部门和部委把方向变成行动。顺序大体是先完成整改，再常态化监管，然后出台支持措施，三步未必严格先后，但需要时间。公司会与监管机构密切配合。积极进展是4月开始审批游戏版号。转型继续的话，合规、行为规范的公司会开始受益。</p>
+<blockquote>But I think for this to translate into a real impact on our business, there is going to be a time lag in process.</blockquote>        <p class="small">新数字：4月29日（政治局会议释放平台经济支持信号的日期）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">William Packer<small>Exane BNP Paribas</small></span>
+        <span class="qa-q">一季度经营成本增速已经放慢，今年余下时间成本增速怎么走，有哪些推高和压低的因素。</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：成本分四块。第一，一季度销售及市场推广开支增速已经放慢，这是公司能较快控制的；但其他互联网公司也在放慢投放，会反过来压广告收入。第二，一般行政开支大体跟人数和人均成本走，一季度仍快速增长；不过人数增速在放缓，新增人员往往成本更低，人均成本也在减速，因此今年往后行政开支应减速。第三，销售成本会影响毛利率：腾讯视频的成本管理可能要几个月才体现，退出一些低毛利企业服务则会更早看到好处。第四，净利润还要经过联营。联营从上年盈利变成亏损，一大原因是若干重仓公司过去一年加大社区团购。这些公司过去12个月投得很猛，现在已明显放慢，会开始进入它们的损益，再通过联营收益进入腾讯的损益。</p>
+<p class="small">核对：社区团购支出里的若干亿元是假设举例，不是已披露金额</p><p class="small">未回答的部分：没有给出今年余下时间的总费用增速，只拆成销售、行政、销售成本和联营四类，并说行政开支会减速。</p><blockquote>So as we work through this year, we should expect the G&amp;A expenses to decelerate.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Charlene Liu<small>HSBC</small></span>
+        <span class="qa-q">不同广告产品谁恢复得更快或更慢，这种结构变化会怎样影响往后的千次展示费用。广告结果低于预期。</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：冬奥的转播权和相关运营开支花了数亿元人民币，这是低毛利活动，压低广告业务的混合毛利率。视频号增长目前更多体现在成本而不是收入，一季度播放量仍很快，一部分成本进了广告分部。往后视频号变现怎么走，会决定广告业务的增量利润率。广告内部还有三类：朋友圈、视频号这类自有高毛利库存，媒体服务这类自有低毛利库存，以及本身低毛利的广告联盟。增长落在哪一类，会明显改变混合毛利率。这也取决于哪类广告主恢复更快：奢侈品更偏高毛利自有库存，电商可能更偏低毛利广告联盟。广告系统改造在不同库存上的体现时间也不一样。</p>
+<p class="small">未回答的部分：没有按广告产品排出恢复快慢，也没有给往后的千次展示费用。他讲的是毛利率结构和广告主类别。</p><blockquote>Now I think in terms of the advertising results for the quarter, then it&#39;s worth being aware the Winter olympics cost us hundreds of millions of renminbi between the sort of broadcast rights and the actual operating expenses around it.</blockquote>        <p class="small">新数字：数亿元人民币（冬奥转播权和相关运营开支，电话会没有给精确数字）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Jerry Liu<small>UBS</small></span>
+        <span class="qa-q">版号恢复后，国内游戏的流水或收入能否在今年晚些时候更积极地看，还是因为新作偏晚而要更有耐心。</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：版号恢复有两层好处：能发更多游戏；信号意义是监管机构对行业现状更满意，环境更稳定，不用总猜测还有没有新的监管变化。公司对版号恢复很满意，但这次名单里没有自己的游戏，他认为可以接受。没有版号的时期，最受伤的是没有游戏、因而没有现金流的初创公司；已有游戏和现金流的大公司更能熬过去。版号先从小公司开始、再轮到包括腾讯在内的大公司，是合理的。版号增多、监管立足点更稳之后，行业流水趋势有理由在年内开始改善，之后才会转成报表收入，不是立刻发生，要几个月。</p>
+<p class="small">未回答的部分：说的是行业流水会改善、再过几个月体现到报表收入，没有给腾讯国内游戏的增速。他也说明这次名单里没有腾讯的游戏。</p><blockquote>And over time, that will then translate into reported revenue trends, but it&#39;s not an immediate process, and it will take several months to play out.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Jerry Liu<small>UBS</small></span>
+        <span class="qa-q">国际游戏一季度有没有上年四季谈到的会计调整，国际流水能否加快，还是疫后正常化还要更久。</span>
+        <span class="qa-tags">
+<span class="pill">需求与出货</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：四季度对子公司Supercell有一笔收入追认，一季度对Riot有一笔会计上的收入回拨，回拨规模小于追认。海外热门手游从2020年末到2021年末很旺，现在面对高基数，多家上市公司都有类似现象。PUBG Mobile还有几个月会很难看同比，到今年晚些时候同比才会正常化。多数大型个人电脑游戏没那么受益于疫情，也没那么受疫情后遗症伤害，表现可以。部落冲突这类长生命周期手游也不错，收入会随当季内容上下波动，用户趋势和付费倾向稳定到增长。2023年及以后，过去两年加码的高制作游戏才会发布，并开始明显推高国际游戏收入。</p>
+<blockquote>On the international games, then, yes, we had a sort of catch-up of revenue in Q4 related to one of our subsidiaries, Supercell. And then there was a sort of accounting catch down of revenue in Q1 related to Riot.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">John Choi<small>Daiwa Capital Markets</small></span>
+        <span class="qa-q">微信视频号长期的广告潜力有多大，广告负载和商业潜力最终能否看齐同业。</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Pony（CEO）：视频号的播放量和时长增长让人鼓舞。变现潜力上，最终应按单位时长达到与市场上同类产品相似的变现水平，但需要时间。过程中会继续改善体验，在变现和体验之间找平衡。朋友圈广告就是例子：库存释放会比同业更渐进。广告负载很可能不会一样，大概率更克制。他相信可以通过技术、偏高端的用户和内容，以及和公众号、社交关系、通信基础设施、小程序的连接提高转化，从而最终做出更高的千次展示费用。平台总时长较短时，前20分钟的价值高于后20分钟。目标是既平衡变现和体验，又释放平台的变现潜力。</p>
+<blockquote>And I think if you want to think about the monetization potential, I would say, eventually, right, it should have a similar monetization per time spent with similar products in the market. But it will take time to get there.</blockquote>        <p class="small">新数字：前20分钟（Pony用来说明较短时长里前段价值更高的举例）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">John Choi<small>Daiwa Capital Markets</small></span>
+        <span class="qa-q">被投公司价值因市场波动下降很多，投资策略会不会因此更进取或更保守。</span>
+        <span class="qa-tags">
+<span class="pill">其他</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：组合价值的环比下降，很大一部分来自主动动作：把价值约160亿美元的京东股份直接分给投资者；处置另一家公司约30亿美元股份，所得部分用于回购；还处置了其他公司约数十亿美元股份。一季度从撤资和分派筹集的资本，大约是投到其他公司的四倍。撤资和分派之后，剩下的组合价值下降是自然且可取的。往后仍会积极撤资。发达市场央行正在以几十年未见的速度加息，会影响高增长、低利润、长久期科技公司的估值，组合里有一部分是这类公司。加快撤资和分派是管理这种风险的办法之一。同时公司自由现金流很强，能看到消费者和企业的新技术趋势，估值下降时旧机会也会重新出现。会很挑剔、很有纪律，但仍会把资本投到看中的机会上。</p>
+<blockquote>So all in, during the first quarter, if you compare the capital we sort of raised from divestments and distributions, it was about four times bigger than the capital we put to work investing in other companies.</blockquote>        <p class="small">新数字：约160亿美元（一季度分派给股东的京东股份价值）；约四倍（一季度撤资和分派所筹资本相对新投资的倍数）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Gary Yu<small>Morgan Stanley</small></span>
+        <span class="qa-q">请把压低广告利润率的因素按影响大小排序，包括高毛利库存的千次展示费用、疫情和视频号投入，并说明往后的利润率趋势。</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：上季度曾把影响因素排序：最主要是监管压制需求，教育、游戏等品类的投放下降；其次是监管压制供给，例如闪屏广告，这对广告联盟有负面影响，对朋友圈和公众号则更多是需求问题。刷新到本季，首要因素变成疫情。疫情对投放有前面说过的几方面负面后果。上海用了较长时间才控制住，深圳则很快，说明近期有成功先例；但对广告不利的是，上海更像中国媒介和营销决策的中心，尤其对跨国公司，深圳不是。上海的情况会不成比例地影响全国广告。</p>
+<p class="small">未回答的部分：把本季首要因素改成疫情，但没有给各因素的百分点，也没有给出往后的广告毛利率路径。视频号投入的排序没有单独量化。</p><blockquote>Refreshing that framework this quarter, then the paramount driver is COVID.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Gary Yu<small>Morgan Stanley</small></span>
+        <span class="qa-q">人员和一般行政、研发还有没有更大力度的优化空间，非核心业务能否再砍。</span>
+        <span class="qa-tags">
+<span class="pill">费用与运营</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Martin（总裁）：和组织、人员相关的成本，优化原则是看结构性变化和结构性需要，不会为了短期到中期就会过去的临时因素去反应。当前新增的负面影响主要与疫情有关，所以不会因此进一步优化组织和人员。可能会做其他成本控制，例如削减营销成本；如果继续封控，需要做的营销本来就没那么多。组织和人员会更多地基于结构性因素。</p>
+<blockquote>So if we look at the current situation, the incremental negative impact is actually largely related to COVID. So that&#39;s why we felt we&#39;re not going to react to this by optimizing our organization and staff further.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Elinor Leung<small>CLSA</small></span>
+        <span class="qa-q">版号恢复的第一个月只批了45款，政府以后会不会结构性少批，如果新游变少，对未来游戏增长有什么影响。</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：一般来说，未来游戏版号会少于2018年暂停之前，这个判断已经持有几年。这也是过去两年把游戏业务从上到下改成发更少、预算更大、希望更好的游戏的重要原因。公司认为自己在行业里先走了这一步。任一时刻，产品管线与一些人数少得多的竞争对手相当或更窄，因为每个游戏投入的人数更多，相信未来只有有限游戏能拿到版号，所以要把这有限的几款尽量做足。2021年公司发布的游戏里有两款按用户计是行业最成功的两款。今年重返帝国在策略品类按流水排第二，这个品类用户少但每用户收入高。管线更窄、数量更少，但单款更大更好。除了监管，用户也更挑剔，即使没有监管变化，也应该把资源集中到更少、更大的赌注上。</p>
+<blockquote>We believe that, generally speaking, there will be fewer game approvals in the future than they were in the pre-2018 period.</blockquote>        <p class="small">新数字：少于2018年前（James对未来游戏版号数量相对暂停前的判断）；两款（2021年按用户计行业最成功的新游里来自腾讯的数量）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alex Yao<small>J.P. Morgan</small></span>
+        <span class="qa-q">云策略转型已经影响到收入，转型过程中的毛利率趋势怎样。</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>John（CFO）：云对毛利率的影响实际上有所改善，因为公司退出了亏损合同。</p>
+<p class="small">未回答的部分：只说云毛利率因退出亏损合同而有所改善，没有给出改善的百分点，也没有说转型期间的后续趋势。</p><blockquote>In terms of the impact on the cloud in respect of the gross margin, it actually improved a bit because of the fact that we have mentioned getting away from loss-suffering contracts.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Alex Yao<small>J.P. Morgan</small></span>
+        <span class="qa-q">今年明显在做成本优化和利润率改善，这是否也包括长视频，做到盈亏平衡是不是这条业务的优先事项。</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>James（CSO）：目标不是把视频业务做成暂时的盈亏平衡，而是逐步做成结构上健康、可持续的状态。腾讯视频过去有些季度已经打平，但没有维持住。单季打平并不难：可以不订购昂贵内容，可以已经订了却不在当季播出，也可以当季核销资本化内容、让下一季的增量利润看起来很高，但真实经济回报并不好。这些都能用来做下一季的账面打平，但不是公司要的。最难的一步希望已经做过：腾讯视频曾是中国第八或第九家进入这个市场的公司，现在在订阅用户、订阅收入和广告收入上都是明确领先，过去也有季度打平。现在要走向可持续盈利。一部分是继续通过价格理顺来优化收入，一部分是对播出内容更挑剔。从后面追到前面时，什么内容重要还不知道，每个品类都得争；现在在第一，更清楚什么内容算数，可以把开支分给算数的内容。还有向上游知识产权做垂直整合：阅文的网文、新丽传媒的内容，或腾讯游戏组合里的手游。中国长视频仍然很难，但行业在成本和每用户收入上已经更理性。</p>
+<p class="small">核对：回答明确拒绝把单季盈亏平衡当成目标</p><p class="small">未回答的部分：没有把本季或本年实现盈亏平衡列为目标，改为追求可持续的盈利结构，没有给利润率或时间。</p><blockquote>We&#39;re trying to just move the business to a structurally healthy position.</blockquote>      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 3 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：<a href="file:data/0700.HK/raw/FY2022Q1/press_release.pdf" rel="noopener">SEC EDGAR</a> · 文件编号 manual:2eb5fa4af4b7 · 文字稿：local_import</p>
+    <p>新闻稿：<a href="file:data/0700.HK/raw/FY2022Q1/press_release.pdf" rel="noopener">SEC EDGAR</a> · 文件编号 manual:2eb5fa4af4b7 · 文字稿：Motley Fool 文字稿</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±¥0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf</li><li>listing=hk，Stage1 按收益表规则抽取，未调用 LLM，也未接一致预期</li><li>电话会已导入（local_import）。其中的美元口径未写入财务字段；Stage2 解读需另跑 run --stage 2。</li></ul>  </div>
 </details>
@@ -486,7 +899,7 @@ window.PAGE_CHARTS = {
   "moneyUnit": "十亿人民币",
   "epsUnit": "人民币",
   "finView": {"by_key": {"cost_of_revenue": {"charts": [{"amount": [13.41, 15.23, 18.56, 20.24, 24.11, 28.3, 33.53, 34.9, 36.49, 39.23, 45.12, 49.74, 45.65, 49.7, 54.76, 59.66, 55.27, 61.67, 68.8, 74.79, 72.67, 75.51, 79.62, 86.37, 78.4, 76.17, 78.11, 83.13, 81.8, 78.37, 78.1, 77.63, 75.63, 75.22, 78.36, 81.79, 79.53, 79.49, 84.07, 86.08, 85.19, 86.35], "amount_text": ["¥13.41B", "¥15.23B", "¥18.56B", "¥20.24B", "¥24.11B", "¥28.30B", "¥33.53B", "¥34.90B", "¥36.49B", "¥39.23B", "¥45.12B", "¥49.74B", "¥45.65B", "¥49.70B", "¥54.76B", "¥59.66B", "¥55.27B", "¥61.67B", "¥68.80B", "¥74.79B", "¥72.67B", "¥75.51B", "¥79.62B", "¥86.37B", "¥78.40B", "¥76.17B", "¥78.11B", "¥83.13B", "¥81.80B", "¥78.37B", "¥78.10B", "¥77.63B", "¥75.63B", "¥75.22B", "¥78.36B", "¥81.79B", "¥79.53B", "¥79.49B", "¥84.07B", "¥86.08B", "¥85.19B", "¥86.35B"], "annual": {"amount": [67.44, 120.83, 170.57, 209.76, 260.53, 314.17, 315.81, 315.91, 311.01, 329.17], "amount_text": ["¥67.44B", "¥120.83B", "¥170.57B", "¥209.76B", "¥260.53B", "¥314.17B", "¥315.81B", "¥315.91B", "¥311.01B", "¥329.17B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 79.2, 41.2, 23.0, 24.2, 20.6, 0.5, 0.0, -1.5, 5.8]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿人民币", "title": "营业成本", "yoy": [null, null, null, null, 79.8, 85.8, 80.7, 72.4, 51.3, 38.6, 34.6, 42.5, 25.1, 26.7, 21.4, 19.9, 21.1, 24.1, 25.6, 25.4, 31.5, 22.4, 15.7, 15.5, 7.9, 0.9, -1.9, -3.8, 4.3, 2.9, -0.0, -6.6, -7.5, -4.0, 0.3, 5.4, 5.2, 5.7, 7.3, 5.2, 7.1, 8.6]}], "note": "营业成本由营业收入减去毛利得到。没有把营业成本再拆开。"}, "gross_margin_gaap": {"charts": [{"amount": [18.59, 20.46, 21.83, 23.63, 25.44, 28.31, 31.68, 31.5, 37.04, 34.45, 35.48, 35.15, 39.82, 39.13, 42.48, 46.11, 52.79, 53.21, 56.65, 58.88, 62.63, 62.74, 62.75, 57.82, 57.07, 57.87, 61.98, 61.82, 68.18, 70.84, 76.52, 77.56, 83.87, 85.89, 88.83, 90.65, 100.49, 105.01, 108.8, 108.29, 111.27, 118.43], "amount_text": ["¥18.59B", "¥20.46B", "¥21.83B", "¥23.63B", "¥25.44B", "¥28.31B", "¥31.68B", "¥31.50B", "¥37.04B", "¥34.45B", "¥35.48B", "¥35.15B", "¥39.82B", "¥39.13B", "¥42.48B", "¥46.11B", "¥52.79B", "¥53.21B", "¥56.65B", "¥58.88B", "¥62.63B", "¥62.74B", "¥62.75B", "¥57.82B", "¥57.07B", "¥57.87B", "¥61.98B", "¥61.82B", "¥68.18B", "¥70.84B", "¥76.52B", "¥77.56B", "¥83.87B", "¥85.89B", "¥88.83B", "¥90.65B", "¥100.49B", "¥105.01B", "¥108.80B", "¥108.29B", "¥111.27B", "¥118.43B"], "annual": {"amount": [84.5, 116.92, 142.12, 167.53, 221.53, 245.94, 238.75, 293.11, 349.25, 422.59], "amount_text": ["¥84.50B", "¥116.92B", "¥142.12B", "¥167.53B", "¥221.53B", "¥245.94B", "¥238.75B", "¥293.11B", "¥349.25B", "¥422.59B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 38.4, 21.5, 17.9, 32.2, 11.0, -2.9, 22.8, 19.2, 21.0]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿人民币", "title": "毛利", "yoy": [null, null, null, null, 36.9, 38.4, 45.1, 33.3, 45.6, 21.7, 12.0, 11.6, 7.5, 13.6, 19.7, 31.2, 32.6, 36.0, 33.4, 27.7, 18.6, 17.9, 10.8, -1.8, -8.9, -7.8, -1.2, 6.9, 19.5, 22.4, 23.5, 25.5, 23.0, 21.3, 16.1, 16.9, 19.8, 22.3, 22.5, 19.5, 10.7, 12.8]}], "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。"}, "gross_margin_nongaap": {"charts": [{"amount": [18.59, 20.46, 21.83, 23.63, 25.44, 28.31, 31.68, 31.5, 37.04, 34.45, 35.48, 35.15, 39.82, 39.13, 42.48, 46.11, 52.79, 53.21, 56.65, 58.88, 62.63, 62.74, 62.75, 57.82, 57.07, 57.87, 61.98, 61.82, 68.18, 70.84, 76.52, 77.56, 83.87, 85.89, 88.83, 90.65, 100.49, 105.01, 108.8, 108.29, 111.27, 118.43], "amount_text": ["¥18.59B", "¥20.46B", "¥21.83B", "¥23.63B", "¥25.44B", "¥28.31B", "¥31.68B", "¥31.50B", "¥37.04B", "¥34.45B", "¥35.48B", "¥35.15B", "¥39.82B", "¥39.13B", "¥42.48B", "¥46.11B", "¥52.79B", "¥53.21B", "¥56.65B", "¥58.88B", "¥62.63B", "¥62.74B", "¥62.75B", "¥57.82B", "¥57.07B", "¥57.87B", "¥61.98B", "¥61.82B", "¥68.18B", "¥70.84B", "¥76.52B", "¥77.56B", "¥83.87B", "¥85.89B", "¥88.83B", "¥90.65B", "¥100.49B", "¥105.01B", "¥108.80B", "¥108.29B", "¥111.27B", "¥118.43B"], "annual": {"amount": [84.5, 116.92, 142.12, 167.53, 221.53, 245.94, 238.75, 293.11, 349.25, 422.59], "amount_text": ["¥84.50B", "¥116.92B", "¥142.12B", "¥167.53B", "¥221.53B", "¥245.94B", "¥238.75B", "¥293.11B", "¥349.25B", "¥422.59B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 38.4, 21.5, 17.9, 32.2, 11.0, -2.9, 22.8, 19.2, 21.0]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿人民币", "title": "毛利", "yoy": [null, null, null, null, 36.9, 38.4, 45.1, 33.3, 45.6, 21.7, 12.0, 11.6, 7.5, 13.6, 19.7, 31.2, 32.6, 36.0, 33.4, 27.7, 18.6, 17.9, 10.8, -1.8, -8.9, -7.8, -1.2, 6.9, 19.5, 22.4, 23.5, 25.5, 23.0, 21.3, 16.1, 16.9, 19.8, 22.3, 22.5, 19.5, 10.7, 12.8]}], "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。"}, "opex": {"charts": [{"amount": [6.4, 7.66, 9.16, 11.37, 10.17, 11.83, 13.87, 14.83, 15.0, 16.22, 17.46, 17.07, 15.57, 17.3, 19.26, 22.71, 21.21, 24.25, 26.11, 29.81, 27.5, 32.65, 34.3, 36.0, 34.73, 34.16, 33.6, 33.43, 31.66, 33.73, 34.2, 38.15, 32.34, 36.65, 38.47, 41.69, 41.53, 41.33, 45.73, 49.27, 45.14, 50.68], "amount_text": ["¥6.40B", "¥7.66B", "¥9.16B", "¥11.37B", "¥10.17B", "¥11.83B", "¥13.87B", "¥14.83B", "¥15.00B", "¥16.22B", "¥17.46B", "¥17.07B", "¥15.57B", "¥17.30B", "¥19.26B", "¥22.71B", "¥21.21B", "¥24.25B", "¥26.11B", "¥29.81B", "¥27.50B", "¥32.65B", "¥34.30B", "¥36.00B", "¥34.73B", "¥34.16B", "¥33.60B", "¥33.43B", "¥31.66B", "¥33.73B", "¥34.20B", "¥38.15B", "¥32.34B", "¥36.65B", "¥38.47B", "¥41.69B", "¥41.53B", "¥41.33B", "¥45.73B", "¥49.27B", "¥45.14B", "¥50.68B"], "annual": {"amount": [34.59, 50.7, 65.75, 74.84, 101.38, 130.44, 135.93, 137.74, 149.15, 177.85], "amount_text": ["¥34.59B", "¥50.70B", "¥65.75B", "¥74.84B", "¥101.38B", "¥130.44B", "¥135.93B", "¥137.74B", "¥149.15B", "¥177.85B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 46.6, 29.7, 13.8, 35.5, 28.7, 4.2, 1.3, 8.3, 19.2]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿人民币", "title": "营业费用", "yoy": [null, null, null, null, 58.9, 54.4, 51.4, 30.4, 47.5, 37.1, 25.9, 15.1, 3.8, 6.6, 10.3, 33.0, 36.2, 40.2, 35.6, 31.2, 29.7, 34.6, 31.4, 20.7, 26.3, 4.6, -2.0, -7.1, -8.8, -1.3, 1.8, 14.1, 2.2, 8.7, 12.5, 9.3, 28.4, 12.8, 18.9, 18.2, 8.7, 22.6]}, {"annual": {"focus": "FY2025", "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "points": [{"gap": false, "items": [{"amount": "¥12.14B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 35.1, "stack": true, "value": 12136000000.0}, {"amount": "¥22.46B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 64.9, "stack": true, "value": 22459000000.0}], "period": "FY2016"}, {"gap": false, "items": [{"amount": "¥17.65B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 34.8, "stack": true, "value": 17652000000.0}, {"amount": "¥33.05B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 65.2, "stack": true, "value": 33051000000.0}], "period": "FY2017"}, {"gap": false, "items": [{"amount": "¥24.23B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 36.9, "stack": true, "value": 24233000000.0}, {"amount": "¥41.52B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 63.1, "stack": true, "value": 41522000000.0}], "period": "FY2018"}, {"gap": false, "items": [{"amount": "¥21.40B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 28.6, "stack": true, "value": 21396000000.0}, {"amount": "¥53.45B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 71.4, "stack": true, "value": 53446000000.0}], "period": "FY2019"}, {"gap": false, "items": [{"amount": "¥33.76B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 33.3, "stack": true, "value": 33758000000.0}, {"amount": "¥67.62B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 66.7, "stack": true, "value": 67625000000.0}], "period": "FY2020"}, {"gap": false, "items": [{"amount": "¥40.59B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 31.1, "stack": true, "value": 40594000000.0}, {"amount": "¥89.85B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 68.9, "stack": true, "value": 89847000000.0}], "period": "FY2021"}, {"gap": false, "items": [{"amount": "¥29.23B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 21.5, "stack": true, "value": 29229000000.0}, {"amount": "¥106.70B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 78.5, "stack": true, "value": 106696000000.0}], "period": "FY2022"}, {"gap": false, "items": [{"amount": "¥34.21B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 24.8, "stack": true, "value": 34211000000.0}, {"amount": "¥103.53B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 75.2, "stack": true, "value": 103525000000.0}], "period": "FY2023"}, {"gap": false, "items": [{"amount": "¥36.39B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 24.4, "stack": true, "value": 36388000000.0}, {"amount": "¥112.76B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 75.6, "stack": true, "value": 112761000000.0}], "period": "FY2024"}, {"gap": false, "items": [{"amount": "¥41.73B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 23.5, "stack": true, "value": 41727000000.0}, {"amount": "¥136.13B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 76.5, "stack": true, "value": 136127000000.0}], "period": "FY2025"}]}, "focus": "FY2022Q1", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": false, "items": [{"amount": "¥2.03B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 31.8, "stack": true, "value": 2032000000.0}, {"amount": "¥4.37B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 68.2, "stack": true, "value": 4368000000.0}], "period": "FY2016Q1"}, {"gap": false, "items": [{"amount": "¥2.37B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 30.9, "stack": true, "value": 2365000000.0}, {"amount": "¥5.30B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 69.1, "stack": true, "value": 5299000000.0}], "period": "FY2016Q2"}, {"gap": false, "items": [{"amount": "¥3.28B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 35.8, "stack": true, "value": 3277000000.0}, {"amount": "¥5.88B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 64.2, "stack": true, "value": 5883000000.0}], "period": "FY2016Q3"}, {"gap": false, "items": [{"amount": "¥4.46B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 39.2, "stack": true, "value": 4462000000.0}, {"amount": "¥6.91B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 60.8, "stack": true, "value": 6909000000.0}], "period": "FY2016Q4"}, {"gap": false, "items": [{"amount": "¥3.16B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 31.1, "stack": true, "value": 3158000000.0}, {"amount": "¥7.01B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 68.9, "stack": true, "value": 7012000000.0}], "period": "FY2017Q1"}, {"gap": false, "items": [{"amount": "¥3.66B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 30.9, "stack": true, "value": 3660000000.0}, {"amount": "¥8.17B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 69.1, "stack": true, "value": 8170000000.0}], "period": "FY2017Q2"}, {"gap": false, "items": [{"amount": "¥4.81B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 34.7, "stack": true, "value": 4812000000.0}, {"amount": "¥9.06B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 65.3, "stack": true, "value": 9058000000.0}], "period": "FY2017Q3"}, {"gap": false, "items": [{"amount": "¥6.02B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 40.6, "stack": true, "value": 6022000000.0}, {"amount": "¥8.81B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 59.4, "stack": true, "value": 8811000000.0}], "period": "FY2017Q4"}, {"gap": false, "items": [{"amount": "¥5.57B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 37.1, "stack": true, "value": 5570000000.0}, {"amount": "¥9.43B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 62.9, "stack": true, "value": 9430000000.0}], "period": "FY2018Q1"}, {"gap": false, "items": [{"amount": "¥6.36B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 39.2, "stack": true, "value": 6360000000.0}, {"amount": "¥9.86B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 60.8, "stack": true, "value": 9857000000.0}], "period": "FY2018Q2"}, {"gap": false, "items": [{"amount": "¥6.57B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 37.6, "stack": true, "value": 6573000000.0}, {"amount": "¥10.89B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 62.4, "stack": true, "value": 10890000000.0}], "period": "FY2018Q3"}, {"gap": false, "items": [{"amount": "¥5.73B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 33.6, "stack": true, "value": 5730000000.0}, {"amount": "¥11.35B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 66.4, "stack": true, "value": 11345000000.0}], "period": "FY2018Q4"}, {"gap": false, "items": [{"amount": "¥4.24B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 27.2, "stack": true, "value": 4244000000.0}, {"amount": "¥11.33B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 72.8, "stack": true, "value": 11331000000.0}], "period": "FY2019Q1"}, {"gap": false, "items": [{"amount": "¥4.72B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 27.3, "stack": true, "value": 4718000000.0}, {"amount": "¥12.58B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 72.7, "stack": true, "value": 12577000000.0}], "period": "FY2019Q2"}, {"gap": false, "items": [{"amount": "¥5.72B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 29.7, "stack": true, "value": 5722000000.0}, {"amount": "¥13.54B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 70.3, "stack": true, "value": 13536000000.0}], "period": "FY2019Q3"}, {"gap": false, "items": [{"amount": "¥6.71B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 29.6, "stack": true, "value": 6712000000.0}, {"amount": "¥16.00B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 70.4, "stack": true, "value": 16002000000.0}], "period": "FY2019Q4"}, {"gap": false, "items": [{"amount": "¥7.05B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 33.2, "stack": true, "value": 7049000000.0}, {"amount": "¥14.16B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 66.8, "stack": true, "value": 14158000000.0}], "period": "FY2020Q1"}, {"gap": false, "items": [{"amount": "¥7.76B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 32.0, "stack": true, "value": 7756000000.0}, {"amount": "¥16.50B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 68.0, "stack": true, "value": 16499000000.0}], "period": "FY2020Q2"}, {"gap": false, "items": [{"amount": "¥8.92B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 34.2, "stack": true, "value": 8920000000.0}, {"amount": "¥17.19B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 65.8, "stack": true, "value": 17189000000.0}], "period": "FY2020Q3"}, {"gap": false, "items": [{"amount": "¥10.03B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 33.7, "stack": true, "value": 10033000000.0}, {"amount": "¥19.78B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 66.3, "stack": true, "value": 19779000000.0}], "period": "FY2020Q4"}, {"gap": false, "items": [{"amount": "¥8.53B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 31.0, "stack": true, "value": 8530000000.0}, {"amount": "¥18.97B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 69.0, "stack": true, "value": 18967000000.0}], "period": "FY2021Q1"}, {"gap": false, "items": [{"amount": "¥10.01B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 30.7, "stack": true, "value": 10013000000.0}, {"amount": "¥22.64B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 69.3, "stack": true, "value": 22638000000.0}], "period": "FY2021Q2"}, {"gap": false, "items": [{"amount": "¥10.44B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 30.4, "stack": true, "value": 10435000000.0}, {"amount": "¥23.86B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 69.6, "stack": true, "value": 23862000000.0}], "period": "FY2021Q3"}, {"gap": false, "items": [{"amount": "¥11.62B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 32.3, "stack": true, "value": 11616000000.0}, {"amount": "¥24.38B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 67.7, "stack": true, "value": 24380000000.0}], "period": "FY2021Q4"}, {"gap": false, "items": [{"amount": "¥8.06B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 23.2, "stack": true, "value": 8058000000.0}, {"amount": "¥26.67B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 76.8, "stack": true, "value": 26669000000.0}], "period": "FY2022Q1"}, {"gap": false, "items": [{"amount": "¥7.93B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 23.2, "stack": true, "value": 7932000000.0}, {"amount": "¥26.23B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 76.8, "stack": true, "value": 26233000000.0}], "period": "FY2022Q2"}, {"gap": false, "items": [{"amount": "¥7.12B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 21.2, "stack": true, "value": 7124000000.0}, {"amount": "¥26.48B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 78.8, "stack": true, "value": 26480000000.0}], "period": "FY2022Q3"}, {"gap": false, "items": [{"amount": "¥6.12B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 18.3, "stack": true, "value": 6115000000.0}, {"amount": "¥27.31B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 81.7, "stack": true, "value": 27314000000.0}], "period": "FY2022Q4"}, {"gap": false, "items": [{"amount": "¥7.02B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 22.2, "stack": true, "value": 7018000000.0}, {"amount": "¥24.64B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 77.8, "stack": true, "value": 24642000000.0}], "period": "FY2023Q1"}, {"gap": false, "items": [{"amount": "¥8.31B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 24.6, "stack": true, "value": 8310000000.0}, {"amount": "¥25.42B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 75.4, "stack": true, "value": 25419000000.0}], "period": "FY2023Q2"}, {"gap": false, "items": [{"amount": "¥7.91B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 23.1, "stack": true, "value": 7912000000.0}, {"amount": "¥26.29B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 76.9, "stack": true, "value": 26289000000.0}], "period": "FY2023Q3"}, {"gap": false, "items": [{"amount": "¥10.97B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 28.8, "stack": true, "value": 10971000000.0}, {"amount": "¥27.18B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 71.2, "stack": true, "value": 27175000000.0}], "period": "FY2023Q4"}, {"gap": false, "items": [{"amount": "¥7.54B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 23.3, "stack": true, "value": 7536000000.0}, {"amount": "¥24.81B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 76.7, "stack": true, "value": 24809000000.0}], "period": "FY2024Q1"}, {"gap": false, "items": [{"amount": "¥9.16B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 25.0, "stack": true, "value": 9156000000.0}, {"amount": "¥27.49B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 75.0, "stack": true, "value": 27491000000.0}], "period": "FY2024Q2"}, {"gap": false, "items": [{"amount": "¥9.41B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 24.5, "stack": true, "value": 9411000000.0}, {"amount": "¥29.06B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 75.5, "stack": true, "value": 29058000000.0}], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "¥10.29B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 24.7, "stack": true, "value": 10285000000.0}, {"amount": "¥31.40B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 75.3, "stack": true, "value": 31403000000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "¥7.87B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 18.9, "stack": true, "value": 7866000000.0}, {"amount": "¥33.66B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 81.1, "stack": true, "value": 33664000000.0}], "period": "FY2025Q1"}, {"gap": false, "items": [{"amount": "¥9.41B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 22.8, "stack": true, "value": 9410000000.0}, {"amount": "¥31.92B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 77.2, "stack": true, "value": 31921000000.0}], "period": "FY2025Q2"}, {"gap": false, "items": [{"amount": "¥11.47B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 25.1, "stack": true, "value": 11468000000.0}, {"amount": "¥34.26B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 74.9, "stack": true, "value": 34259000000.0}], "period": "FY2025Q3"}, {"gap": false, "items": [{"amount": "¥12.98B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 26.4, "stack": true, "value": 12983000000.0}, {"amount": "¥36.28B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 73.6, "stack": true, "value": 36283000000.0}], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "¥11.34B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 25.1, "stack": true, "value": 11343000000.0}, {"amount": "¥33.80B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 74.9, "stack": true, "value": 33800000000.0}], "period": "FY2026Q1"}, {"gap": false, "items": [{"amount": "¥11.87B", "key": "selling", "legend": "销售及市场推广", "name": "销售及市场推广", "share": 23.4, "stack": true, "value": 11869000000.0}, {"amount": "¥38.81B", "key": "ga", "legend": "一般及行政", "name": "一般及行政", "share": 76.6, "stack": true, "value": 38808000000.0}], "period": "FY2026Q2"}], "subtitle": "占比", "title": "费用构成"}], "note": "营业费用按申报列出的费用项加总，不含营业成本。占比以这些费用项合计为分母。"}, "revenue": {"charts": [{"amount": [32.0, 35.69, 40.39, 43.86, 49.55, 56.61, 65.21, 66.39, 73.53, 73.67, 80.59, 84.9, 85.47, 88.82, 97.24, 105.77, 108.06, 114.88, 125.45, 133.67, 135.3, 138.26, 142.37, 144.19, 135.47, 134.03, 140.09, 144.95, 149.99, 149.21, 154.62, 155.2, 159.5, 161.12, 167.19, 172.45, 180.02, 184.5, 192.87, 194.37, 196.46, 204.78], "amount_text": ["¥32.00B", "¥35.69B", "¥40.39B", "¥43.86B", "¥49.55B", "¥56.61B", "¥65.21B", "¥66.39B", "¥73.53B", "¥73.67B", "¥80.59B", "¥84.90B", "¥85.47B", "¥88.82B", "¥97.24B", "¥105.77B", "¥108.06B", "¥114.88B", "¥125.45B", "¥133.67B", "¥135.30B", "¥138.26B", "¥142.37B", "¥144.19B", "¥135.47B", "¥134.03B", "¥140.09B", "¥144.95B", "¥149.99B", "¥149.21B", "¥154.62B", "¥155.20B", "¥159.50B", "¥161.12B", "¥167.19B", "¥172.45B", "¥180.02B", "¥184.50B", "¥192.87B", "¥194.37B", "¥196.46B", "¥204.78B"], "annual": {"amount": [151.94, 237.76, 312.69, 377.29, 482.06, 560.12, 554.55, 609.01, 660.26, 751.77], "amount_text": ["¥151.94B", "¥237.76B", "¥312.69B", "¥377.29B", "¥482.06B", "¥560.12B", "¥554.55B", "¥609.01B", "¥660.26B", "¥751.77B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 56.5, 31.5, 20.7, 27.8, 16.2, -1.0, 9.8, 8.4, 13.9]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿人民币", "title": "营业收入", "yoy": [null, null, null, null, 54.9, 58.6, 61.5, 51.4, 48.4, 30.2, 23.6, 27.9, 16.2, 20.6, 20.6, 24.6, 26.4, 29.3, 29.0, 26.4, 25.2, 20.3, 13.5, 7.9, 0.1, -3.1, -1.6, 0.5, 10.7, 11.3, 10.4, 7.1, 6.3, 8.0, 8.1, 11.1, 12.9, 14.5, 15.4, 12.7, 9.1, 11.0]}, {"annual": {"focus": "FY2025", "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "points": [{"gap": false, "items": [{"amount": "¥107.81B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 80.0, "stack": true, "value": 107810000000.0}, {"amount": "¥26.97B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.0, "stack": true, "value": 26970000000.0}], "period": "FY2016"}, {"gap": false, "items": [{"amount": "¥153.98B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.2, "stack": true, "value": 153983000000.0}, {"amount": "¥40.44B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.8, "stack": true, "value": 40439000000.0}], "period": "FY2017"}, {"gap": false, "items": [{"amount": "¥176.65B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 75.3, "stack": true, "value": 176646000000.0}, {"amount": "¥58.08B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 24.7, "stack": true, "value": 58079000000.0}], "period": "FY2018"}, {"gap": false, "items": [{"amount": "¥199.99B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.1, "stack": true, "value": 199991000000.0}, {"amount": "¥68.38B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.5, "stack": true, "value": 68377000000.0}, {"amount": "¥101.36B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 27.4, "stack": true, "value": 101355000000.0}], "period": "FY2019"}, {"gap": false, "items": [{"amount": "¥264.21B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 55.7, "stack": true, "value": 264212000000.0}, {"amount": "¥82.27B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.3, "stack": true, "value": 82271000000.0}, {"amount": "¥128.09B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 27.0, "stack": true, "value": 128086000000.0}], "period": "FY2020"}, {"gap": false, "items": [{"amount": "¥291.57B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.8, "stack": true, "value": 291572000000.0}, {"amount": "¥88.67B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.1, "stack": true, "value": 88666000000.0}, {"amount": "¥172.19B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.2, "stack": true, "value": 172195000000.0}], "period": "FY2021"}, {"gap": false, "items": [{"amount": "¥287.56B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.5, "stack": true, "value": 287565000000.0}, {"amount": "¥82.73B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.1, "stack": true, "value": 82729000000.0}, {"amount": "¥177.06B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.3, "stack": true, "value": 177064000000.0}], "period": "FY2022"}, {"gap": false, "items": [{"amount": "¥298.38B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.4, "stack": true, "value": 298375000000.0}, {"amount": "¥101.48B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.8, "stack": true, "value": 101482000000.0}, {"amount": "¥203.76B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.8, "stack": true, "value": 203763000000.0}], "period": "FY2023"}, {"gap": false, "items": [{"amount": "¥319.17B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 48.7, "stack": true, "value": 319168000000.0}, {"amount": "¥121.37B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.5, "stack": true, "value": 121374000000.0}, {"amount": "¥211.96B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.3, "stack": true, "value": 211956000000.0}, {"amount": "¥3.48B", "key": "other", "legend": "其他", "name": "其他", "share": 0.5, "stack": true, "value": 3480000000.0}], "period": "FY2024"}, {"gap": false, "items": [{"amount": "¥369.28B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.2, "stack": true, "value": 369281000000.0}, {"amount": "¥144.97B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.3, "stack": true, "value": 144973000000.0}, {"amount": "¥229.44B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.6, "stack": true, "value": 229435000000.0}, {"amount": "¥6.24B", "key": "other", "legend": "其他", "name": "其他", "share": 0.8, "stack": true, "value": 6239000000.0}], "period": "FY2025"}]}, "focus": "FY2022Q1", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": false, "items": [{"amount": "¥24.96B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 84.2, "stack": true, "value": 24964000000.0}, {"amount": "¥4.70B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.8, "stack": true, "value": 4701000000.0}], "period": "FY2016Q1"}, {"gap": false, "items": [{"amount": "¥25.68B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.7, "stack": true, "value": 25680000000.0}, {"amount": "¥6.53B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.3, "stack": true, "value": 6532000000.0}], "period": "FY2016Q2"}, {"gap": false, "items": [{"amount": "¥27.98B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.0, "stack": true, "value": 27975000000.0}, {"amount": "¥7.45B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.0, "stack": true, "value": 7449000000.0}], "period": "FY2016Q3"}, {"gap": false, "items": [{"amount": "¥29.19B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 77.9, "stack": true, "value": 29191000000.0}, {"amount": "¥8.29B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 22.1, "stack": true, "value": 8288000000.0}], "period": "FY2016Q4"}, {"gap": false, "items": [{"amount": "¥35.11B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 83.6, "stack": true, "value": 35108000000.0}, {"amount": "¥6.89B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.4, "stack": true, "value": 6888000000.0}], "period": "FY2017Q1"}, {"gap": false, "items": [{"amount": "¥36.80B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 78.4, "stack": true, "value": 36804000000.0}, {"amount": "¥10.15B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.6, "stack": true, "value": 10148000000.0}], "period": "FY2017Q2"}, {"gap": false, "items": [{"amount": "¥42.12B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.2, "stack": true, "value": 42124000000.0}, {"amount": "¥11.04B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.8, "stack": true, "value": 11042000000.0}], "period": "FY2017Q3"}, {"gap": false, "items": [{"amount": "¥39.95B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 76.4, "stack": true, "value": 39947000000.0}, {"amount": "¥12.36B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 23.6, "stack": true, "value": 12361000000.0}], "period": "FY2017Q4"}, {"gap": false, "items": [{"amount": "¥46.88B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 81.4, "stack": true, "value": 46877000000.0}, {"amount": "¥10.69B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.6, "stack": true, "value": 10689000000.0}], "period": "FY2018Q1"}, {"gap": false, "items": [{"amount": "¥42.07B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 74.9, "stack": true, "value": 42069000000.0}, {"amount": "¥14.11B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 25.1, "stack": true, "value": 14110000000.0}], "period": "FY2018Q2"}, {"gap": false, "items": [{"amount": "¥44.05B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 73.1, "stack": true, "value": 44049000000.0}, {"amount": "¥16.25B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 26.9, "stack": true, "value": 16247000000.0}], "period": "FY2018Q3"}, {"gap": false, "items": [{"amount": "¥43.65B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 71.9, "stack": true, "value": 43651000000.0}, {"amount": "¥17.03B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 28.1, "stack": true, "value": 17033000000.0}], "period": "FY2018Q4"}, {"gap": false, "items": [{"amount": "¥48.97B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 58.2, "stack": true, "value": 48974000000.0}, {"amount": "¥13.38B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.9, "stack": true, "value": 13377000000.0}, {"amount": "¥21.79B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 25.9, "stack": true, "value": 21789000000.0}], "period": "FY2019Q1"}, {"gap": false, "items": [{"amount": "¥48.08B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 55.0, "stack": true, "value": 48080000000.0}, {"amount": "¥16.41B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.8, "stack": true, "value": 16409000000.0}, {"amount": "¥22.89B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 26.2, "stack": true, "value": 22888000000.0}], "period": "FY2019Q2"}, {"gap": false, "items": [{"amount": "¥50.63B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.9, "stack": true, "value": 50629000000.0}, {"amount": "¥18.37B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.2, "stack": true, "value": 18366000000.0}, {"amount": "¥26.76B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 27.9, "stack": true, "value": 26758000000.0}], "period": "FY2019Q3"}, {"gap": false, "items": [{"amount": "¥52.31B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 51.1, "stack": true, "value": 52308000000.0}, {"amount": "¥20.23B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.7, "stack": true, "value": 20225000000.0}, {"amount": "¥29.92B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.2, "stack": true, "value": 29920000000.0}], "period": "FY2019Q4"}, {"gap": false, "items": [{"amount": "¥62.43B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 58.6, "stack": true, "value": 62429000000.0}, {"amount": "¥17.71B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.6, "stack": true, "value": 17713000000.0}, {"amount": "¥26.48B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 24.8, "stack": true, "value": 26475000000.0}], "period": "FY2020Q1"}, {"gap": false, "items": [{"amount": "¥65.00B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 57.3, "stack": true, "value": 65002000000.0}, {"amount": "¥18.55B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.4, "stack": true, "value": 18552000000.0}, {"amount": "¥29.86B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 26.3, "stack": true, "value": 29862000000.0}], "period": "FY2020Q2"}, {"gap": false, "items": [{"amount": "¥69.80B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 56.1, "stack": true, "value": 69802000000.0}, {"amount": "¥21.35B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.2, "stack": true, "value": 21351000000.0}, {"amount": "¥33.26B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 26.7, "stack": true, "value": 33255000000.0}], "period": "FY2020Q3"}, {"gap": false, "items": [{"amount": "¥66.98B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 51.5, "stack": true, "value": 66979000000.0}, {"amount": "¥24.66B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.9, "stack": true, "value": 24655000000.0}, {"amount": "¥38.49B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.6, "stack": true, "value": 38494000000.0}], "period": "FY2020Q4"}, {"gap": false, "items": [{"amount": "¥72.44B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.3, "stack": true, "value": 72443000000.0}, {"amount": "¥21.82B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.4, "stack": true, "value": 21820000000.0}, {"amount": "¥39.03B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.3, "stack": true, "value": 39028000000.0}], "period": "FY2021Q1"}, {"gap": false, "items": [{"amount": "¥72.01B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.7, "stack": true, "value": 72013000000.0}, {"amount": "¥22.83B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.7, "stack": true, "value": 22833000000.0}, {"amount": "¥41.89B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.6, "stack": true, "value": 41892000000.0}], "period": "FY2021Q2"}, {"gap": false, "items": [{"amount": "¥75.20B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 53.3, "stack": true, "value": 75203000000.0}, {"amount": "¥22.50B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.0, "stack": true, "value": 22495000000.0}, {"amount": "¥43.32B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.7, "stack": true, "value": 43317000000.0}], "period": "FY2021Q3"}, {"gap": false, "items": [{"amount": "¥71.91B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 50.9, "stack": true, "value": 71913000000.0}, {"amount": "¥21.52B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.2, "stack": true, "value": 21518000000.0}, {"amount": "¥47.96B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.9, "stack": true, "value": 47958000000.0}], "period": "FY2021Q4"}, {"gap": false, "items": [{"amount": "¥72.74B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.5, "stack": true, "value": 72738000000.0}, {"amount": "¥17.99B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 13.5, "stack": true, "value": 17988000000.0}, {"amount": "¥42.77B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.0, "stack": true, "value": 42768000000.0}], "period": "FY2022Q1"}, {"gap": false, "items": [{"amount": "¥71.68B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.1, "stack": true, "value": 71683000000.0}, {"amount": "¥18.64B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 14.1, "stack": true, "value": 18638000000.0}, {"amount": "¥42.21B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.8, "stack": true, "value": 42208000000.0}], "period": "FY2022Q2"}, {"gap": false, "items": [{"amount": "¥72.73B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.3, "stack": true, "value": 72727000000.0}, {"amount": "¥21.44B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.4, "stack": true, "value": 21443000000.0}, {"amount": "¥44.84B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.3, "stack": true, "value": 44844000000.0}], "period": "FY2022Q3"}, {"gap": false, "items": [{"amount": "¥70.42B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.5, "stack": true, "value": 70417000000.0}, {"amount": "¥24.66B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.3, "stack": true, "value": 24660000000.0}, {"amount": "¥47.24B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.2, "stack": true, "value": 47244000000.0}], "period": "FY2022Q4"}, {"gap": false, "items": [{"amount": "¥79.34B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 53.2, "stack": true, "value": 79337000000.0}, {"amount": "¥20.96B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 14.1, "stack": true, "value": 20964000000.0}, {"amount": "¥48.70B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.7, "stack": true, "value": 48701000000.0}], "period": "FY2023Q1"}, {"gap": false, "items": [{"amount": "¥74.21B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 50.2, "stack": true, "value": 74211000000.0}, {"amount": "¥25.00B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.9, "stack": true, "value": 25003000000.0}, {"amount": "¥48.63B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.9, "stack": true, "value": 48635000000.0}], "period": "FY2023Q2"}, {"gap": false, "items": [{"amount": "¥75.75B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.3, "stack": true, "value": 75748000000.0}, {"amount": "¥25.72B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.8, "stack": true, "value": 25721000000.0}, {"amount": "¥52.05B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.9, "stack": true, "value": 52048000000.0}], "period": "FY2023Q3"}, {"gap": false, "items": [{"amount": "¥69.08B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 45.1, "stack": true, "value": 69079000000.0}, {"amount": "¥29.79B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.4, "stack": true, "value": 29794000000.0}, {"amount": "¥54.38B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 35.5, "stack": true, "value": 54379000000.0}], "period": "FY2023Q4"}, {"gap": false, "items": [{"amount": "¥78.63B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.3, "stack": true, "value": 78629000000.0}, {"amount": "¥26.51B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.6, "stack": true, "value": 26506000000.0}, {"amount": "¥52.30B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.8, "stack": true, "value": 52302000000.0}, {"amount": "¥2.06B", "key": "other", "legend": "其他", "name": "其他", "share": 1.3, "stack": true, "value": 2064000000.0}], "period": "FY2024Q1"}, {"gap": false, "items": [{"amount": "¥78.82B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.5, "stack": true, "value": 78822000000.0}, {"amount": "¥29.87B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.8, "stack": true, "value": 29871000000.0}, {"amount": "¥50.44B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.7, "stack": true, "value": 50440000000.0}], "period": "FY2024Q2"}, {"gap": false, "items": [{"amount": "¥82.69B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.5, "stack": true, "value": 82695000000.0}, {"amount": "¥29.99B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.9, "stack": true, "value": 29993000000.0}, {"amount": "¥53.09B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.8, "stack": true, "value": 53089000000.0}, {"amount": "¥1.42B", "key": "other", "legend": "其他", "name": "其他", "share": 0.8, "stack": true, "value": 1416000000.0}], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "¥79.02B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 46.4, "stack": true, "value": 79022000000.0}, {"amount": "¥35.00B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.6, "stack": true, "value": 35004000000.0}, {"amount": "¥56.12B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.0, "stack": true, "value": 56125000000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "¥92.13B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 51.2, "stack": true, "value": 92133000000.0}, {"amount": "¥31.85B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.7, "stack": true, "value": 31853000000.0}, {"amount": "¥54.91B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.5, "stack": true, "value": 54907000000.0}, {"amount": "¥1.13B", "key": "other", "legend": "其他", "name": "其他", "share": 0.6, "stack": true, "value": 1129000000.0}], "period": "FY2025Q1"}, {"gap": false, "items": [{"amount": "¥91.37B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 50.0, "stack": true, "value": 91368000000.0}, {"amount": "¥35.76B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.6, "stack": true, "value": 35762000000.0}, {"amount": "¥55.54B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.4, "stack": true, "value": 55536000000.0}], "period": "FY2025Q2"}, {"gap": false, "items": [{"amount": "¥95.86B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.7, "stack": true, "value": 95860000000.0}, {"amount": "¥36.24B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.8, "stack": true, "value": 36242000000.0}, {"amount": "¥58.17B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.2, "stack": true, "value": 58174000000.0}, {"amount": "¥2.59B", "key": "other", "legend": "其他", "name": "其他", "share": 1.3, "stack": true, "value": 2593000000.0}], "period": "FY2025Q3"}, {"gap": false, "items": [{"amount": "¥89.92B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 46.3, "stack": true, "value": 89920000000.0}, {"amount": "¥41.12B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.2, "stack": true, "value": 41116000000.0}, {"amount": "¥60.82B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.3, "stack": true, "value": 60818000000.0}, {"amount": "¥2.52B", "key": "other", "legend": "其他", "name": "其他", "share": 1.3, "stack": true, "value": 2517000000.0}], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "¥96.11B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 48.9, "stack": true, "value": 96110000000.0}, {"amount": "¥38.17B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.4, "stack": true, "value": 38171000000.0}, {"amount": "¥59.88B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.5, "stack": true, "value": 59885000000.0}, {"amount": "¥2.29B", "key": "other", "legend": "其他", "name": "其他", "share": 1.2, "stack": true, "value": 2292000000.0}], "period": "FY2026Q1"}, {"gap": false, "items": [{"amount": "¥98.41B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 48.7, "stack": true, "value": 98414000000.0}, {"amount": "¥43.56B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.5, "stack": true, "value": 43565000000.0}, {"amount": "¥60.29B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.8, "stack": true, "value": 60286000000.0}], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2022Q1", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": true, "items": [], "period": "FY2016Q1"}, {"gap": true, "items": [], "period": "FY2016Q2"}, {"gap": true, "items": [], "period": "FY2016Q3"}, {"gap": true, "items": [], "period": "FY2016Q4"}, {"gap": true, "items": [], "period": "FY2017Q1"}, {"gap": true, "items": [], "period": "FY2017Q2"}, {"gap": true, "items": [], "period": "FY2017Q3"}, {"gap": true, "items": [], "period": "FY2017Q4"}, {"gap": true, "items": [], "period": "FY2018Q1"}, {"gap": true, "items": [], "period": "FY2018Q2"}, {"gap": true, "items": [], "period": "FY2018Q3"}, {"gap": true, "items": [], "period": "FY2018Q4"}, {"gap": true, "items": [], "period": "FY2019Q1"}, {"gap": true, "items": [], "period": "FY2019Q2"}, {"gap": true, "items": [], "period": "FY2019Q3"}, {"gap": true, "items": [], "period": "FY2019Q4"}, {"gap": true, "items": [], "period": "FY2020Q1"}, {"gap": true, "items": [], "period": "FY2020Q2"}, {"gap": true, "items": [], "period": "FY2020Q3"}, {"gap": true, "items": [], "period": "FY2020Q4"}, {"gap": true, "items": [], "period": "FY2021Q1"}, {"gap": true, "items": [], "period": "FY2021Q2"}, {"gap": true, "items": [], "period": "FY2021Q3"}, {"gap": true, "items": [], "period": "FY2021Q4"}, {"gap": true, "items": [], "period": "FY2022Q1"}, {"gap": true, "items": [], "period": "FY2022Q2"}, {"gap": true, "items": [], "period": "FY2022Q3"}, {"gap": true, "items": [], "period": "FY2022Q4"}, {"gap": true, "items": [], "period": "FY2023Q1"}, {"gap": true, "items": [], "period": "FY2023Q2"}, {"gap": true, "items": [], "period": "FY2023Q3"}, {"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按地区"}], "note": "人民币金额来自已保存的季度 JSON，不覆盖这些文件。收入、毛利取季度 JSON。营业成本仅在两者都有时用收入减毛利。营业费用只在销售及市场推广、一般及行政都有时相加。业务分部只取季度 JSON 里已经抽出的增值服务、营销服务、金融科技及企业服务；没有单独披露的「其他」不倒挤。业绩稿简明综合收益表能读出的季度改用表内原数，包括表里的其他。没有季度文件、也没有表内数字的季度留空。地区收入未披露。不把港币或美元写进人民币字段。 已保存的披露文字里没有地区收入，地区柱留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"}}, "charts": [{"amount": [32.0, 35.69, 40.39, 43.86, 49.55, 56.61, 65.21, 66.39, 73.53, 73.67, 80.59, 84.9, 85.47, 88.82, 97.24, 105.77, 108.06, 114.88, 125.45, 133.67, 135.3, 138.26, 142.37, 144.19, 135.47, 134.03, 140.09, 144.95, 149.99, 149.21, 154.62, 155.2, 159.5, 161.12, 167.19, 172.45, 180.02, 184.5, 192.87, 194.37, 196.46, 204.78], "amount_text": ["¥32.00B", "¥35.69B", "¥40.39B", "¥43.86B", "¥49.55B", "¥56.61B", "¥65.21B", "¥66.39B", "¥73.53B", "¥73.67B", "¥80.59B", "¥84.90B", "¥85.47B", "¥88.82B", "¥97.24B", "¥105.77B", "¥108.06B", "¥114.88B", "¥125.45B", "¥133.67B", "¥135.30B", "¥138.26B", "¥142.37B", "¥144.19B", "¥135.47B", "¥134.03B", "¥140.09B", "¥144.95B", "¥149.99B", "¥149.21B", "¥154.62B", "¥155.20B", "¥159.50B", "¥161.12B", "¥167.19B", "¥172.45B", "¥180.02B", "¥184.50B", "¥192.87B", "¥194.37B", "¥196.46B", "¥204.78B"], "annual": {"amount": [151.94, 237.76, 312.69, 377.29, 482.06, 560.12, 554.55, 609.01, 660.26, 751.77], "amount_text": ["¥151.94B", "¥237.76B", "¥312.69B", "¥377.29B", "¥482.06B", "¥560.12B", "¥554.55B", "¥609.01B", "¥660.26B", "¥751.77B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 56.5, 31.5, 20.7, 27.8, 16.2, -1.0, 9.8, 8.4, 13.9]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "subtitle": "十亿人民币", "title": "营业收入", "yoy": [null, null, null, null, 54.9, 58.6, 61.5, 51.4, 48.4, 30.2, 23.6, 27.9, 16.2, 20.6, 20.6, 24.6, 26.4, 29.3, 29.0, 26.4, 25.2, 20.3, 13.5, 7.9, 0.1, -3.1, -1.6, 0.5, 10.7, 11.3, 10.4, 7.1, 6.3, 8.0, 8.1, 11.1, 12.9, 14.5, 15.4, 12.7, 9.1, 11.0]}, {"annual": {"focus": "FY2025", "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "points": [{"gap": false, "items": [{"amount": "¥107.81B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 80.0, "stack": true, "value": 107810000000.0}, {"amount": "¥26.97B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.0, "stack": true, "value": 26970000000.0}], "period": "FY2016"}, {"gap": false, "items": [{"amount": "¥153.98B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.2, "stack": true, "value": 153983000000.0}, {"amount": "¥40.44B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.8, "stack": true, "value": 40439000000.0}], "period": "FY2017"}, {"gap": false, "items": [{"amount": "¥176.65B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 75.3, "stack": true, "value": 176646000000.0}, {"amount": "¥58.08B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 24.7, "stack": true, "value": 58079000000.0}], "period": "FY2018"}, {"gap": false, "items": [{"amount": "¥199.99B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.1, "stack": true, "value": 199991000000.0}, {"amount": "¥68.38B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.5, "stack": true, "value": 68377000000.0}, {"amount": "¥101.36B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 27.4, "stack": true, "value": 101355000000.0}], "period": "FY2019"}, {"gap": false, "items": [{"amount": "¥264.21B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 55.7, "stack": true, "value": 264212000000.0}, {"amount": "¥82.27B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.3, "stack": true, "value": 82271000000.0}, {"amount": "¥128.09B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 27.0, "stack": true, "value": 128086000000.0}], "period": "FY2020"}, {"gap": false, "items": [{"amount": "¥291.57B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.8, "stack": true, "value": 291572000000.0}, {"amount": "¥88.67B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.1, "stack": true, "value": 88666000000.0}, {"amount": "¥172.19B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.2, "stack": true, "value": 172195000000.0}], "period": "FY2021"}, {"gap": false, "items": [{"amount": "¥287.56B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.5, "stack": true, "value": 287565000000.0}, {"amount": "¥82.73B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.1, "stack": true, "value": 82729000000.0}, {"amount": "¥177.06B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.3, "stack": true, "value": 177064000000.0}], "period": "FY2022"}, {"gap": false, "items": [{"amount": "¥298.38B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.4, "stack": true, "value": 298375000000.0}, {"amount": "¥101.48B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.8, "stack": true, "value": 101482000000.0}, {"amount": "¥203.76B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.8, "stack": true, "value": 203763000000.0}], "period": "FY2023"}, {"gap": false, "items": [{"amount": "¥319.17B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 48.7, "stack": true, "value": 319168000000.0}, {"amount": "¥121.37B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.5, "stack": true, "value": 121374000000.0}, {"amount": "¥211.96B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.3, "stack": true, "value": 211956000000.0}, {"amount": "¥3.48B", "key": "other", "legend": "其他", "name": "其他", "share": 0.5, "stack": true, "value": 3480000000.0}], "period": "FY2024"}, {"gap": false, "items": [{"amount": "¥369.28B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.2, "stack": true, "value": 369281000000.0}, {"amount": "¥144.97B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.3, "stack": true, "value": 144973000000.0}, {"amount": "¥229.44B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.6, "stack": true, "value": 229435000000.0}, {"amount": "¥6.24B", "key": "other", "legend": "其他", "name": "其他", "share": 0.8, "stack": true, "value": 6239000000.0}], "period": "FY2025"}]}, "focus": "FY2022Q1", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": false, "items": [{"amount": "¥24.96B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 84.2, "stack": true, "value": 24964000000.0}, {"amount": "¥4.70B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.8, "stack": true, "value": 4701000000.0}], "period": "FY2016Q1"}, {"gap": false, "items": [{"amount": "¥25.68B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.7, "stack": true, "value": 25680000000.0}, {"amount": "¥6.53B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.3, "stack": true, "value": 6532000000.0}], "period": "FY2016Q2"}, {"gap": false, "items": [{"amount": "¥27.98B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.0, "stack": true, "value": 27975000000.0}, {"amount": "¥7.45B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.0, "stack": true, "value": 7449000000.0}], "period": "FY2016Q3"}, {"gap": false, "items": [{"amount": "¥29.19B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 77.9, "stack": true, "value": 29191000000.0}, {"amount": "¥8.29B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 22.1, "stack": true, "value": 8288000000.0}], "period": "FY2016Q4"}, {"gap": false, "items": [{"amount": "¥35.11B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 83.6, "stack": true, "value": 35108000000.0}, {"amount": "¥6.89B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.4, "stack": true, "value": 6888000000.0}], "period": "FY2017Q1"}, {"gap": false, "items": [{"amount": "¥36.80B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 78.4, "stack": true, "value": 36804000000.0}, {"amount": "¥10.15B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.6, "stack": true, "value": 10148000000.0}], "period": "FY2017Q2"}, {"gap": false, "items": [{"amount": "¥42.12B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 79.2, "stack": true, "value": 42124000000.0}, {"amount": "¥11.04B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.8, "stack": true, "value": 11042000000.0}], "period": "FY2017Q3"}, {"gap": false, "items": [{"amount": "¥39.95B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 76.4, "stack": true, "value": 39947000000.0}, {"amount": "¥12.36B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 23.6, "stack": true, "value": 12361000000.0}], "period": "FY2017Q4"}, {"gap": false, "items": [{"amount": "¥46.88B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 81.4, "stack": true, "value": 46877000000.0}, {"amount": "¥10.69B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.6, "stack": true, "value": 10689000000.0}], "period": "FY2018Q1"}, {"gap": false, "items": [{"amount": "¥42.07B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 74.9, "stack": true, "value": 42069000000.0}, {"amount": "¥14.11B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 25.1, "stack": true, "value": 14110000000.0}], "period": "FY2018Q2"}, {"gap": false, "items": [{"amount": "¥44.05B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 73.1, "stack": true, "value": 44049000000.0}, {"amount": "¥16.25B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 26.9, "stack": true, "value": 16247000000.0}], "period": "FY2018Q3"}, {"gap": false, "items": [{"amount": "¥43.65B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 71.9, "stack": true, "value": 43651000000.0}, {"amount": "¥17.03B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 28.1, "stack": true, "value": 17033000000.0}], "period": "FY2018Q4"}, {"gap": false, "items": [{"amount": "¥48.97B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 58.2, "stack": true, "value": 48974000000.0}, {"amount": "¥13.38B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.9, "stack": true, "value": 13377000000.0}, {"amount": "¥21.79B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 25.9, "stack": true, "value": 21789000000.0}], "period": "FY2019Q1"}, {"gap": false, "items": [{"amount": "¥48.08B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 55.0, "stack": true, "value": 48080000000.0}, {"amount": "¥16.41B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.8, "stack": true, "value": 16409000000.0}, {"amount": "¥22.89B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 26.2, "stack": true, "value": 22888000000.0}], "period": "FY2019Q2"}, {"gap": false, "items": [{"amount": "¥50.63B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.9, "stack": true, "value": 50629000000.0}, {"amount": "¥18.37B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.2, "stack": true, "value": 18366000000.0}, {"amount": "¥26.76B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 27.9, "stack": true, "value": 26758000000.0}], "period": "FY2019Q3"}, {"gap": false, "items": [{"amount": "¥52.31B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 51.1, "stack": true, "value": 52308000000.0}, {"amount": "¥20.23B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.7, "stack": true, "value": 20225000000.0}, {"amount": "¥29.92B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.2, "stack": true, "value": 29920000000.0}], "period": "FY2019Q4"}, {"gap": false, "items": [{"amount": "¥62.43B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 58.6, "stack": true, "value": 62429000000.0}, {"amount": "¥17.71B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.6, "stack": true, "value": 17713000000.0}, {"amount": "¥26.48B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 24.8, "stack": true, "value": 26475000000.0}], "period": "FY2020Q1"}, {"gap": false, "items": [{"amount": "¥65.00B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 57.3, "stack": true, "value": 65002000000.0}, {"amount": "¥18.55B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.4, "stack": true, "value": 18552000000.0}, {"amount": "¥29.86B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 26.3, "stack": true, "value": 29862000000.0}], "period": "FY2020Q2"}, {"gap": false, "items": [{"amount": "¥69.80B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 56.1, "stack": true, "value": 69802000000.0}, {"amount": "¥21.35B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.2, "stack": true, "value": 21351000000.0}, {"amount": "¥33.26B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 26.7, "stack": true, "value": 33255000000.0}], "period": "FY2020Q3"}, {"gap": false, "items": [{"amount": "¥66.98B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 51.5, "stack": true, "value": 66979000000.0}, {"amount": "¥24.66B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.9, "stack": true, "value": 24655000000.0}, {"amount": "¥38.49B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.6, "stack": true, "value": 38494000000.0}], "period": "FY2020Q4"}, {"gap": false, "items": [{"amount": "¥72.44B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.3, "stack": true, "value": 72443000000.0}, {"amount": "¥21.82B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.4, "stack": true, "value": 21820000000.0}, {"amount": "¥39.03B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.3, "stack": true, "value": 39028000000.0}], "period": "FY2021Q1"}, {"gap": false, "items": [{"amount": "¥72.01B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.7, "stack": true, "value": 72013000000.0}, {"amount": "¥22.83B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.7, "stack": true, "value": 22833000000.0}, {"amount": "¥41.89B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.6, "stack": true, "value": 41892000000.0}], "period": "FY2021Q2"}, {"gap": false, "items": [{"amount": "¥75.20B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 53.3, "stack": true, "value": 75203000000.0}, {"amount": "¥22.50B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.0, "stack": true, "value": 22495000000.0}, {"amount": "¥43.32B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.7, "stack": true, "value": 43317000000.0}], "period": "FY2021Q3"}, {"gap": false, "items": [{"amount": "¥71.91B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 50.9, "stack": true, "value": 71913000000.0}, {"amount": "¥21.52B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.2, "stack": true, "value": 21518000000.0}, {"amount": "¥47.96B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.9, "stack": true, "value": 47958000000.0}], "period": "FY2021Q4"}, {"gap": false, "items": [{"amount": "¥72.74B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.5, "stack": true, "value": 72738000000.0}, {"amount": "¥17.99B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 13.5, "stack": true, "value": 17988000000.0}, {"amount": "¥42.77B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.0, "stack": true, "value": 42768000000.0}], "period": "FY2022Q1"}, {"gap": false, "items": [{"amount": "¥71.68B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 54.1, "stack": true, "value": 71683000000.0}, {"amount": "¥18.64B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 14.1, "stack": true, "value": 18638000000.0}, {"amount": "¥42.21B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.8, "stack": true, "value": 42208000000.0}], "period": "FY2022Q2"}, {"gap": false, "items": [{"amount": "¥72.73B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 52.3, "stack": true, "value": 72727000000.0}, {"amount": "¥21.44B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 15.4, "stack": true, "value": 21443000000.0}, {"amount": "¥44.84B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.3, "stack": true, "value": 44844000000.0}], "period": "FY2022Q3"}, {"gap": false, "items": [{"amount": "¥70.42B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.5, "stack": true, "value": 70417000000.0}, {"amount": "¥24.66B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.3, "stack": true, "value": 24660000000.0}, {"amount": "¥47.24B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.2, "stack": true, "value": 47244000000.0}], "period": "FY2022Q4"}, {"gap": false, "items": [{"amount": "¥79.34B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 53.2, "stack": true, "value": 79337000000.0}, {"amount": "¥20.96B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 14.1, "stack": true, "value": 20964000000.0}, {"amount": "¥48.70B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.7, "stack": true, "value": 48701000000.0}], "period": "FY2023Q1"}, {"gap": false, "items": [{"amount": "¥74.21B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 50.2, "stack": true, "value": 74211000000.0}, {"amount": "¥25.00B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.9, "stack": true, "value": 25003000000.0}, {"amount": "¥48.63B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.9, "stack": true, "value": 48635000000.0}], "period": "FY2023Q2"}, {"gap": false, "items": [{"amount": "¥75.75B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.3, "stack": true, "value": 75748000000.0}, {"amount": "¥25.72B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.8, "stack": true, "value": 25721000000.0}, {"amount": "¥52.05B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.9, "stack": true, "value": 52048000000.0}], "period": "FY2023Q3"}, {"gap": false, "items": [{"amount": "¥69.08B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 45.1, "stack": true, "value": 69079000000.0}, {"amount": "¥29.79B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.4, "stack": true, "value": 29794000000.0}, {"amount": "¥54.38B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 35.5, "stack": true, "value": 54379000000.0}], "period": "FY2023Q4"}, {"gap": false, "items": [{"amount": "¥78.63B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.3, "stack": true, "value": 78629000000.0}, {"amount": "¥26.51B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 16.6, "stack": true, "value": 26506000000.0}, {"amount": "¥52.30B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 32.8, "stack": true, "value": 52302000000.0}, {"amount": "¥2.06B", "key": "other", "legend": "其他", "name": "其他", "share": 1.3, "stack": true, "value": 2064000000.0}], "period": "FY2024Q1"}, {"gap": false, "items": [{"amount": "¥78.82B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.5, "stack": true, "value": 78822000000.0}, {"amount": "¥29.87B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.8, "stack": true, "value": 29871000000.0}, {"amount": "¥50.44B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.7, "stack": true, "value": 50440000000.0}], "period": "FY2024Q2"}, {"gap": false, "items": [{"amount": "¥82.69B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.5, "stack": true, "value": 82695000000.0}, {"amount": "¥29.99B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.9, "stack": true, "value": 29993000000.0}, {"amount": "¥53.09B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.8, "stack": true, "value": 53089000000.0}, {"amount": "¥1.42B", "key": "other", "legend": "其他", "name": "其他", "share": 0.8, "stack": true, "value": 1416000000.0}], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "¥79.02B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 46.4, "stack": true, "value": 79022000000.0}, {"amount": "¥35.00B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 20.6, "stack": true, "value": 35004000000.0}, {"amount": "¥56.12B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 33.0, "stack": true, "value": 56125000000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "¥92.13B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 51.2, "stack": true, "value": 92133000000.0}, {"amount": "¥31.85B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 17.7, "stack": true, "value": 31853000000.0}, {"amount": "¥54.91B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.5, "stack": true, "value": 54907000000.0}, {"amount": "¥1.13B", "key": "other", "legend": "其他", "name": "其他", "share": 0.6, "stack": true, "value": 1129000000.0}], "period": "FY2025Q1"}, {"gap": false, "items": [{"amount": "¥91.37B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 50.0, "stack": true, "value": 91368000000.0}, {"amount": "¥35.76B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.6, "stack": true, "value": 35762000000.0}, {"amount": "¥55.54B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.4, "stack": true, "value": 55536000000.0}], "period": "FY2025Q2"}, {"gap": false, "items": [{"amount": "¥95.86B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 49.7, "stack": true, "value": 95860000000.0}, {"amount": "¥36.24B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 18.8, "stack": true, "value": 36242000000.0}, {"amount": "¥58.17B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.2, "stack": true, "value": 58174000000.0}, {"amount": "¥2.59B", "key": "other", "legend": "其他", "name": "其他", "share": 1.3, "stack": true, "value": 2593000000.0}], "period": "FY2025Q3"}, {"gap": false, "items": [{"amount": "¥89.92B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 46.3, "stack": true, "value": 89920000000.0}, {"amount": "¥41.12B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.2, "stack": true, "value": 41116000000.0}, {"amount": "¥60.82B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 31.3, "stack": true, "value": 60818000000.0}, {"amount": "¥2.52B", "key": "other", "legend": "其他", "name": "其他", "share": 1.3, "stack": true, "value": 2517000000.0}], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "¥96.11B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 48.9, "stack": true, "value": 96110000000.0}, {"amount": "¥38.17B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 19.4, "stack": true, "value": 38171000000.0}, {"amount": "¥59.88B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 30.5, "stack": true, "value": 59885000000.0}, {"amount": "¥2.29B", "key": "other", "legend": "其他", "name": "其他", "share": 1.2, "stack": true, "value": 2292000000.0}], "period": "FY2026Q1"}, {"gap": false, "items": [{"amount": "¥98.41B", "key": "vas", "legend": "增值服务", "name": "增值服务", "share": 48.7, "stack": true, "value": 98414000000.0}, {"amount": "¥43.56B", "key": "marketing", "legend": "营销服务", "name": "营销服务", "share": 21.5, "stack": true, "value": 43565000000.0}, {"amount": "¥60.29B", "key": "fintech", "legend": "金融科技及企业服务", "name": "金融科技及企业服务", "share": 29.8, "stack": true, "value": 60286000000.0}], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2022Q1", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"], "points": [{"gap": true, "items": [], "period": "FY2016Q1"}, {"gap": true, "items": [], "period": "FY2016Q2"}, {"gap": true, "items": [], "period": "FY2016Q3"}, {"gap": true, "items": [], "period": "FY2016Q4"}, {"gap": true, "items": [], "period": "FY2017Q1"}, {"gap": true, "items": [], "period": "FY2017Q2"}, {"gap": true, "items": [], "period": "FY2017Q3"}, {"gap": true, "items": [], "period": "FY2017Q4"}, {"gap": true, "items": [], "period": "FY2018Q1"}, {"gap": true, "items": [], "period": "FY2018Q2"}, {"gap": true, "items": [], "period": "FY2018Q3"}, {"gap": true, "items": [], "period": "FY2018Q4"}, {"gap": true, "items": [], "period": "FY2019Q1"}, {"gap": true, "items": [], "period": "FY2019Q2"}, {"gap": true, "items": [], "period": "FY2019Q3"}, {"gap": true, "items": [], "period": "FY2019Q4"}, {"gap": true, "items": [], "period": "FY2020Q1"}, {"gap": true, "items": [], "period": "FY2020Q2"}, {"gap": true, "items": [], "period": "FY2020Q3"}, {"gap": true, "items": [], "period": "FY2020Q4"}, {"gap": true, "items": [], "period": "FY2021Q1"}, {"gap": true, "items": [], "period": "FY2021Q2"}, {"gap": true, "items": [], "period": "FY2021Q3"}, {"gap": true, "items": [], "period": "FY2021Q4"}, {"gap": true, "items": [], "period": "FY2022Q1"}, {"gap": true, "items": [], "period": "FY2022Q2"}, {"gap": true, "items": [], "period": "FY2022Q3"}, {"gap": true, "items": [], "period": "FY2022Q4"}, {"gap": true, "items": [], "period": "FY2023Q1"}, {"gap": true, "items": [], "period": "FY2023Q2"}, {"gap": true, "items": [], "period": "FY2023Q3"}, {"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}], "subtitle": "占比", "title": "按地区"}], "default": "revenue", "grain": true, "note": "人民币金额来自已保存的季度 JSON，不覆盖这些文件。收入、毛利取季度 JSON。营业成本仅在两者都有时用收入减毛利。营业费用只在销售及市场推广、一般及行政都有时相加。业务分部只取季度 JSON 里已经抽出的增值服务、营销服务、金融科技及企业服务；没有单独披露的「其他」不倒挤。业绩稿简明综合收益表能读出的季度改用表内原数，包括表里的其他。没有季度文件、也没有表内数字的季度留空。地区收入未披露。不把港币或美元写进人民币字段。 已保存的披露文字里没有地区收入，地区柱留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"},
-  "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。 TradingView 预期是港币，财报实际是人民币。已按 HKDCNY 0.8506（2026-10-23，tradingview:FX_IDC:HKDCNY）把预期换成人民币再比较。 扫描里的 EPS 接近非国际财务报告准则，柱上实际仍是报表摊薄每股盈利。", "quarters": [{"actual": 4.39, "basis": "GAAP", "consensus": 3.16, "label": "FQ2 2021", "note": "超预期 $1.23", "note_cls": "beat", "yoy_pct": 27.640384055862665}, {"actual": 4.07, "basis": "GAAP", "consensus": 2.71, "label": "FQ3 2021", "note": "超预期 $1.36", "note_cls": "beat", "yoy_pct": 2.774974772956606}, {"actual": 9.79, "basis": "GAAP", "consensus": 2.99, "label": "FQ4 2021", "note": "超预期 $6.80", "note_cls": "beat", "yoy_pct": 60.22913256955809}, {"actual": 2.4, "basis": "GAAP", "consensus": 3.04, "label": "FQ1 2022", "note": "不及预期 $0.64", "note_cls": "miss", "yoy_pct": -51.10839943054708}, {"actual": 1.92, "basis": "GAAP", "consensus": 2.41, "label": "FQ2 2022", "note": "不及预期 $0.49", "note_cls": "miss", "yoy_pct": -56.34830180077501}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。 TradingView 预期是港币，财报实际是人民币。已按 HKDCNY 0.8506（2026-10-23，tradingview:FX_IDC:HKDCNY）把预期换成人民币再比较。", "quarters": [{"actual": 138.26, "basis": "营收", "consensus": 141.64, "label": "FQ2 2021", "note": "不及预期 ¥3.38B", "note_cls": "miss", "yoy_pct": 20.347658052105185}, {"actual": 142.37, "basis": "营收", "consensus": 148.96, "label": "FQ3 2021", "note": "不及预期 ¥6.59B", "note_cls": "miss", "yoy_pct": 13.4885648919464}, {"actual": 144.19, "basis": "营收", "consensus": 152.97, "label": "FQ4 2021", "note": "不及预期 ¥8.78B", "note_cls": "miss", "yoy_pct": 7.869438688102702}, {"actual": 135.47, "basis": "营收", "consensus": 147.91, "label": "FQ1 2022", "note": "不及预期 ¥12.44B", "note_cls": "miss", "yoy_pct": 0.12416576129132392}, {"actual": 134.03, "basis": "营收", "consensus": 133.81, "label": "FQ2 2022", "note": "超预期 ¥220.98M", "note_cls": "beat", "yoy_pct": -3.0558589314258024}], "sides": []}, "sides": []}
+  "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 17:54 PT。 TradingView 预期是港币，财报实际是人民币。行情日没有 HKDCNY 收盘，已按最近可用的 HKDCNY 0.8508（2026-10-23，tradingview:FX_IDC:HKDCNY）把预期换成人民币再比较。 扫描里的 EPS 接近非国际财务报告准则，柱上实际仍是报表摊薄每股盈利。", "quarters": [{"actual": 4.39, "basis": "GAAP", "consensus": 3.16, "label": "FQ2 2021", "note": "超预期 $1.23", "note_cls": "beat", "yoy_pct": 27.640384055862665}, {"actual": 4.07, "basis": "GAAP", "consensus": 2.71, "label": "FQ3 2021", "note": "超预期 $1.36", "note_cls": "beat", "yoy_pct": 2.774974772956606}, {"actual": 9.79, "basis": "GAAP", "consensus": 2.99, "label": "FQ4 2021", "note": "超预期 $6.80", "note_cls": "beat", "yoy_pct": 60.22913256955809}, {"actual": 2.4, "basis": "GAAP", "consensus": 3.04, "label": "FQ1 2022", "note": "不及预期 $0.64", "note_cls": "miss", "yoy_pct": -51.10839943054708}, {"actual": 1.92, "basis": "GAAP", "consensus": 2.41, "label": "FQ2 2022", "note": "不及预期 $0.49", "note_cls": "miss", "yoy_pct": -56.34830180077501}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 17:54 PT。 TradingView 预期是港币，财报实际是人民币。行情日没有 HKDCNY 收盘，已按最近可用的 HKDCNY 0.8508（2026-10-23，tradingview:FX_IDC:HKDCNY）把预期换成人民币再比较。", "quarters": [{"actual": 138.26, "basis": "营收", "consensus": 141.67, "label": "FQ2 2021", "note": "不及预期 ¥3.41B", "note_cls": "miss", "yoy_pct": 20.347658052105185}, {"actual": 142.37, "basis": "营收", "consensus": 148.99, "label": "FQ3 2021", "note": "不及预期 ¥6.63B", "note_cls": "miss", "yoy_pct": 13.4885648919464}, {"actual": 144.19, "basis": "营收", "consensus": 153.0, "label": "FQ4 2021", "note": "不及预期 ¥8.81B", "note_cls": "miss", "yoy_pct": 7.869438688102702}, {"actual": 135.47, "basis": "营收", "consensus": 147.95, "label": "FQ1 2022", "note": "不及预期 ¥12.48B", "note_cls": "miss", "yoy_pct": 0.12416576129132392}, {"actual": 134.03, "basis": "营收", "consensus": 133.84, "label": "FQ2 2022", "note": "超预期 ¥189.51M", "note_cls": "beat", "yoy_pct": -3.0558589314258024}], "sides": []}, "sides": []}
 };
 </script>
 <script src="../../static/charts.js"></script>

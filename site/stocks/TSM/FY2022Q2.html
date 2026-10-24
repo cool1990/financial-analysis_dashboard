@@ -96,7 +96,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>10</b></a>
     <a href="#notes">数据来源<b>3</b></a>
   </div>
 </nav>
@@ -112,7 +112,7 @@
         <small id="expectHint">深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比</small>
       </h2>
       <div class="eps-chart"><canvas id="epsSurprise" aria-label="盈利预期"></canvas></div>
-      <p class="eps-note" id="expectNote">深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。 柱上是新闻稿写明的 US$1.55 per ADR，不是把新台币按平均汇率换算。记分卡若因只有台币引用被清空，仍用这句已披露的美元。</p>
+      <p class="eps-note" id="expectNote">深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 17:54 PT。 柱上是新闻稿写明的 US$1.55 per ADR，不是把新台币按平均汇率换算。记分卡若因只有台币引用被清空，仍用这句已披露的美元。</p>
     </div>
   </div>
 </section>
@@ -121,11 +121,11 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">10 项指标 · 点指标看图</span>
+    <span class="ev-meta">14 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">营业收入</span>
@@ -133,7 +133,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+36.6%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+3.4%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表营收181.60亿美元，同比增36.6%，环比增3.4%。同比36.6%来自指标表。电话会准备发言只并列新台币口径环比增8.8%和美元口径环比增3.4%，由高性能计算、物联网和汽车相关需求支撑，六个平台全部增长。摘要不把两个口径的差额写成不变汇率增速，也不把新台币营收换成美元。C.C. Wei（CEO）口述营收新台币5340亿元或18.2亿美元，摘要采用指标表181.60亿美元。5纳米占晶圆收入21%，7纳米占30%，7纳米及更先进合计51%。智能手机环比增3%至占38%，高性能计算增13%至占43%，物联网增14%至占8%，汽车增14%至占5%，数字消费电子增5%至占3%。库存天数增加7天至95天，因为预建5纳米晶圆并增加原料；应收账款周转天数减少1天至37天。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -161,7 +161,32 @@
       </div>
       <p class="small muted mix-note" data-fin-note>美元营收取自财报幻灯片「Net Revenue (US$ billions)」当季列；该季白字为空时，用后一份幻灯片的上季或去年同季列，不取指引列。台币营业费用和净利润除以同一列的 Average Exchange Rate--USD/NTD 换成美元。毛利 = 美元营收 × 毛利率，营业利润 = 美元营收 × 营业利润率，营业成本 = 美元营收 − 毛利。1 ADR = 5 股普通股。普通股 EPS 为新台币。ADR 美元只取新闻稿写明的 US$ per ADR，不按当季平均汇率把新台币换算成美元。平台占比只取「nQyy Revenue by Platform」文字且合计约 100% 的季度，金额 = 占比 × 当季美元营收；全年页，以及只有图、文字里没有百分比的季度，不补数。地区收入在已保存文字里没有占比，geo 留空。不使用图像识别，不把新台币当成美元。幻灯片没有覆盖、或当季营收为空时，只用新闻稿写明的美元金额和 US$ per ADR 补上，不按汇率把新台币换算成美元。 已保存的披露文字里没有地区收入，地区柱留空。 FY2016Q1、FY2016Q2、FY2016Q3、FY2016Q4、FY2017Q1、FY2017Q2、FY2017Q3、FY2017Q4、FY2018Q1、FY2018Q2、FY2018Q3、FY2018Q4、FY2019Q1、FY2019Q2、FY2019Q3、FY2019Q4、FY2020Q1、FY2020Q2、FY2020Q3、FY2020Q4、FY2021Q1、FY2021Q2、FY2021Q3、FY2021Q4、FY2022Q1、FY2022Q2、FY2022Q3、FY2022Q4、FY2023Q1、FY2023Q2、FY2023Q3、FY2023Q4、FY2024Q1、FY2024Q2、FY2024Q3、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q2、FY2026Q3 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。</p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>美元营收环比增3.4%，电话会把支撑归于高性能计算、物联网和汽车相关需求。</p>
+<blockquote>Second quarter revenue increased 8.8% sequentially in NT or 3.4% in U.S. dollars, as our second quarter business was supported by strong HPC, IoT and automotive-related demand.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>电话会并列新台币口径环比增8.8%与美元口径环比增3.4%。美元增速低于新台币增速。摘要不把差额写成不变汇率增速，也不把新台币换算成美元。</p>
+<blockquote>Second quarter revenue increased 8.8% sequentially in NT or 3.4% in U.S. dollars, as our second quarter business was supported by strong HPC, IoT and automotive-related demand.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>六个平台全部增长。智能手机占38%且环比增3%，高性能计算占43%且环比增13%，物联网占8%且环比增14%，汽车占5%且环比增14%，数字消费电子占3%且环比增5%。</p>
+<blockquote>All 6 platforms increased in the second quarter. Smartphone increased 3% quarter-over-quarter to account for 38% of our second quarter revenue. HPC increased 13% to account for 43%. IoT increased 14% to account for 8%. Automotive increased 14% to account for 5%. And digital consumer electronics increased 5% to account for 3%.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>5纳米占晶圆收入21%，7纳米占30%，7纳米及更先进合计51%。</p>
+<blockquote>5-nanometer process technology contributed 21% of wafer revenue in the second quarter while 7-nanometer accounted for 30%. Advanced technologies, which are defined as 7-nanometer and below, accounted for 51% of wafer revenue.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>库存天数增加7天至95天，用于预建5纳米晶圆并增加原料库存。这是备货，不是本季出货已经放慢。</p>
+<blockquote>On financial ratios, accounts receivable turnover days decreased 1 day to 37 days while days of inventory increased 7 days to 95 days as we prebuild N5 wafers and increased raw materials inventory.</blockquote>        </div>
+<p class="conflict">冲突：C.C. Wei（CEO）口述第二季营收新台币5340亿元或18.2亿美元。指标表营收为181.60亿美元，同比增36.6%，环比增3.4%。摘要采用181.60亿美元。18.2亿美元与指标表不一致。新台币5340亿元不换算成美元。同比36.6%来自指标表，电话会准备发言没有口述这个同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="cost_of_revenue" aria-pressed="false" aria-controls="fin-panel-cost_of_revenue">
       <span class="m-name">营业成本</span>
@@ -190,7 +215,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表毛利率59.1%，未给同比或环比百分点。电话会称环比升3.5个百分点，后文又说升350个基点，至59.1%，略高于三个月前的指引，主因汇率更有利、成本改善和价值销售。相对原指引，汇率假设1美元兑28.8元新台币，实际为1美元兑29.42元新台币，大约造成90个基点差异。摘要不把电话会口述的环比百分点写成指标表同比，90个基点只作为汇率影响，不单列成毛利率水平。</span>
     </button>
     <div class="fin-panel" id="fin-panel-gross_margin_gaap" data-fin-panel="gross_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -203,7 +228,27 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>毛利率环比升至59.1%，电话会把汇率更有利放在成本改善和价值销售之前。相对原指引，汇率大约解释90个基点。</p>
+<blockquote>Compared to first quarter, our second quarter gross margin increased by 350 basis points sequentially to 59.1%, mainly due to a more favorable foreign exchange rate, cost improvement and value selling.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>实际毛利率高于三个月前区间的上限。指引假设1美元兑28.8元新台币，实际第二季为1美元兑29.42元新台币，大约差90个基点。</p>
+<blockquote>Compared to our second quarter guidance, our actual gross margins exceeded the high end of the range provided 3 months ago as our guidance was based on exchange rate assumption of $1 to TWD 28.8, whereas the actual second quarter exchange rate was $1 to TWD 29.42. This created about 90 basis point difference in our actual second quarter gross margin versus our original guidance.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>成本改善是毛利率环比上升的另一项原因，与汇率、价值销售并列。</p>
+<blockquote>Second quarter gross margin increased 3.5 percentage points sequentially to 59.1%, slightly ahead of our guidance, as we enjoyed a more favorable foreign exchange rate, cost improvement and value selling.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">价</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>价值销售与汇率、成本改善一起推高第二季毛利率。电话会没有单独给出价格涨幅。</p>
+<blockquote>Second quarter gross margin increased 3.5 percentage points sequentially to 59.1%, slightly ahead of our guidance, as we enjoyed a more favorable foreign exchange rate, cost improvement and value selling.</blockquote>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_margin_gaap" aria-pressed="false" aria-controls="fin-panel-operating_margin_gaap">
       <span class="m-name">营业利润率（GAAP）</span>
@@ -211,7 +256,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表营业利润率49.1%，未给同比或环比百分点。电话会称营业利润率环比升3.5个百分点至49.1%，升幅与毛利率一致。摘要不把3.5个百分点写成指标表同比。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -224,28 +269,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（GAAP）</span>
-      <span class="m-val num">$8.92B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+71.6%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+11.3%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营业利润率环比升3.5个百分点至49.1%，电话会称升幅与毛利率一致。</p>
+<blockquote>Likewise, operating margin increased 3.5 percentage points sequentially to 49.1%, in line with our gross margin increase.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">汇率</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>毛利率环比上升的主因是汇率、成本改善和价值销售。营业利润率与毛利率同步上升，因此这些因素同样传到营业利润率。电话会没有单独拆营业费用率。</p>
+<p class="small muted">依据：营业利润率的原句只说与毛利率升幅一致。毛利率原句把原因归于更有利的汇率、成本改善和价值销售。这里把汇率标成营业利润率的次要原因，是从两句的同步关系推出来的。</p>        </div>
+<p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="eps_gaap" aria-pressed="false" aria-controls="fin-panel-eps_gaap">
       <span class="m-name">稀释每股收益（GAAP）</span>
@@ -253,7 +287,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+66.7%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+10.7%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">指标表美国存托凭证每股收益1.55美元，同比增66.7%，环比增10.7%。电话会称第二季每股收益为新台币9.14元，净资产收益率39.4%。摘要用1.55美元。普通股新台币每股收益放在冲突项，不换算成美元。66.7%和10.7%来自指标表，电话会没有口述这两个增速。</span>
     </button>
     <div class="fin-panel" id="fin-panel-eps_gaap" data-fin-panel="eps_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -266,7 +300,162 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会没有解释1.55美元的构成。</p>
+<p class="small muted">依据：指标表美国存托凭证每股收益1.55美元，同比66.7%，环比10.7%。电话会只说普通股每股收益新台币9.14元和净资产收益率39.4%，没有把新台币金额或增速对应到美元每股收益。营收同比增36.6%、毛利率59.1%、营业利润率49.1%，盈利能力上升与每股收益上升方向一致，但电话会没有做这项拆解。</p>        </div>
+<p class="conflict">冲突：电话会称第二季每股收益为新台币9.14元，净资产收益率39.4%。指标表美国存托凭证每股收益为1.55美元，同比增66.7%，环比增10.7%。摘要用1.55美元。普通股新台币每股收益不换算成美元。电话会没有口述1.55美元、66.7%或10.7%。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="gross_profit_gaap" aria-pressed="false" aria-controls="fin-panel-gross_profit_gaap">
+      <span class="m-name">毛利（GAAP）</span>
+      <span class="m-val num">$10.73B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表毛利107.33亿美元，未给同比或环比。该金额对应营收181.60亿美元和毛利率59.1%。电话会没有单列美元毛利，摘要不另算同比。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-gross_profit_gaap" data-fin-panel="gross_profit_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会没有单列美元毛利，不能把毛利率的汇率和成本原因直接写成毛利金额的拆解。</p>
+<p class="small muted">依据：指标表毛利107.33亿美元，无同比、环比。它对应营收181.60亿美元和毛利率59.1%。电话会只讲了毛利率59.1%和环比升3.5个百分点，没有讲美元毛利。</p>        </div>
+<p class="conflict">冲突：电话会没有报美元毛利。指标表毛利107.33亿美元，无同比。不把毛利率环比升3.5个百分点换算成毛利同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">营业利润（GAAP）</span>
+      <span class="m-val num">$8.92B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表营业利润89.17亿美元，未给同比或环比。该金额对应营收181.60亿美元和营业利润率49.1%。电话会没有单列美元营业利润。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会只说营业利润率升至49.1%，没有解释89.17亿美元这一金额。</p>
+<p class="small muted">依据：指标表营业利润89.17亿美元，无同比、环比，对应营收181.60亿美元和营业利润率49.1%。电话会只说营业利润率环比升3.5个百分点，没有美元营业利润。</p>        </div>
+<p class="conflict">冲突：电话会没有报美元营业利润。指标表营业利润89.17亿美元，无同比。</p><p class="small muted">同比 / 环比基于新闻稿中的上季、去年同季对比列计算。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
+      <span class="m-name">资本开支</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表资本开支未单列，不回填。电话会称第二季资本开支7.34亿美元，同时称资本开支新台币2180亿元。两个口径不互相换算。今年一部分资本开支因设备交期推迟到2023年，Wendell（CFO）说今年更靠近此前指引的下沿。投资者关系主管把该区间复述为400亿至440亿美元，不记成财务长本场新报的数字，也不写入指标表。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>第二季美元资本开支口述为7.34亿美元。指标表未单列，不回填。</p>
+<blockquote>In U.S. dollar terms, our second quarter capital expenditures totaled $7.34 billion.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>同一段还给出资本开支新台币2180亿元，以及经营现金约新台币3390亿元。不把新台币换成美元。</p>
+<blockquote>During the second quarter, we generated about TWD 339 billion in cash from operations, spent TWD 218 billion in CapEx and distributed TWD 71 billion for third quarter &#39;21 cash dividend.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>设备交期拉长，今年一部分资本开支会推到2023年。这说的是全年节奏，不是把第二季7.34亿美元改掉。</p>
+<blockquote>As a result, we expect some of our CapEx this year to be pushed out into 2023.</blockquote>        </div>
+<p class="conflict">冲突：指标表资本开支为空，不回填。电话会称第二季资本开支7.34亿美元，另称新台币2180亿元。两个口径不互相换算。400亿至440亿美元是投资者关系主管复述的此前全年区间，财务长本场只说更靠近下沿，不把该区间写入指标表。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
+      <span class="m-name">经营现金流</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表经营现金流未单列，不回填，也不把新台币换算成美元。电话会称第二季经营活动现金约新台币3390亿元，派发2021年第三季现金股利新台币710亿元，期末现金余额增加新台币1020亿元至新台币1.3万亿元。现金及有价证券为新台币1.4万亿元。流动负债增加新台币220亿元，其中应付账款增加新台币470亿元，短期借款减少新台币290亿元。长期有息负债增加新台币1240亿元，主要因为发行公司债新台币1090亿元。这些是现金余额和负债，不是经营现金流本身。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>经营现金约新台币3390亿元。指标表未单列，不换算成美元，也不回填。</p>
+<blockquote>During the second quarter, we generated about TWD 339 billion in cash from operations, spent TWD 218 billion in CapEx and distributed TWD 71 billion for third quarter &#39;21 cash dividend.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>期末现金余额增加新台币1020亿元，至新台币1.3万亿元。这是现金余额，不是经营现金流本身。</p>
+<blockquote>Overall, our cash balance increased by TWD 102 billion to TWD 1.3 trillion at the end of the quarter.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>现金及有价证券新台币1.4万亿元。长期有息负债增加新台币1240亿元，主要因为本季发行公司债新台币1090亿元。</p>
+<blockquote>We ended the second quarter with cash and marketable securities of TWD 1.4 trillion.</blockquote>        </div>
+<p class="conflict">冲突：指标表经营现金流为空，不回填。电话会只给经营现金约新台币3390亿元，没有美元经营现金流。现金及有价证券新台币1.4万亿元、期末现金新台币1.3万亿元都不是经营现金流。本文不把新台币换算成美元。</p>      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
+      <span class="m-name">自由现金流</span>
+      <span class="m-val num">—</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-na">—</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">指标表自由现金流未单列。电话会没有报自由现金流。不用经营现金减资本开支自行计算，也不回填。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>电话会没有自由现金流科目。</p>
+<p class="small muted">依据：指标表自由现金流为空。电话会给出经营现金约新台币3390亿元和资本开支新台币2180亿元，另有美元资本开支7.34亿美元，但没有定义或报出自由现金流。期末现金余额增加不能当成自由现金流，两项相减也不采用。</p>        </div>
+<p class="conflict">冲突：电话会没有自由现金流。经营现金约新台币3390亿元减去资本开支新台币2180亿元不是公司口径，不采用，也不回填指标表。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="share_count" aria-pressed="false" aria-controls="fin-panel-share_count">
       <span class="m-name">股份数量</span>
@@ -290,7 +479,7 @@
         <div class="drv">
           <div class="drv-meta">
 <span class="pill">结构</span><span class="pill warn">推测</span><span>新闻稿</span>          </div>
-          <p>没有读到 Weighted-average shares 或 shares used in per share calculations。</p>
+          <p>新闻稿没有给出计算每股收益所用的加权平均股数。</p>
 <p class="small muted">依据：不拿每股收益冒充股数。</p>        </div>
       </div>
     </div>
@@ -377,32 +566,290 @@
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 3 项 · 行业展望 6 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
-      <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>营收<small class="basis">下季</small></td>
+            <td>$19.80B – $20.60B</td>
+            <td class="c-up">+11.2%</td>
+            <td class="c-up">+35.8%</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr>
+            <td>毛利率（GAAP）<small class="basis">下季</small></td>
+            <td>57.50% – 59.50%</td>
+            <td class="c-down">-0.6pp</td>
+            <td class="c-up">+7.2pp</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr>
+            <td>营业利润率（GAAP）<small class="basis">下季</small></td>
+            <td>47.00% – 49.00%</td>
+            <td class="c-down">-1.1pp</td>
+            <td class="c-up">+6.8pp</td>
+            <td class="c-na"></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境（宏观与库存）</h4>
+          <div class="outlook-copy">
+            <p>C.C. Wei（CEO）把第二季放在库存周期里看。智能手机、个人电脑和消费电子的终端动能转弱，供应链已经开始行动，他预期库存水平在整个2022年下半年下降。疫情两年带来的居家需求退潮后，这种调整在他看来合理。过量库存要几个季度才能回到更健康水平，这一轮更像典型周期，调整很可能一直走到2023年上半年。公司内部也准备了不同情景。需求并不均匀：消费端转弱，数据中心和汽车相关仍然稳定，产能可以调去支持这些领域。尽管去库存还在进行，客户需求仍超过公司的供应能力，所以2022年全年产能维持紧张，美元营收增速定为百分之三十出头。Wendell（CFO）在问答里把基准情形说成更接近典型下行周期，库存修正或延续到2023年上半年，并明确不像2008年那种大幅下行。无晶圆厂库存天数，他预期下半年逐步下降。2023年上半年的利用率，C.C. Wei（CEO）不给数字，只说健康，并说产能仍然紧张；原文里利用率不足一词带有会后更正的括号。指标表第二季营收181.60亿美元，同比增36.6%，环比增3.4%。他口述18.2亿美元，摘要采用指标表。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化（平台与制程）</h4>
+          <div class="outlook-copy">
+            <p>Wendell（CFO）说第二季六个平台全部增长。智能手机环比增3%，占营收38%；高性能计算增13%，占43%；物联网增14%，占8%；汽车增14%，占5%；数字消费电子增5%，占3%。晶圆收入里5纳米占21%，7纳米占30%，7纳米及更先进合计51%。他同时并列新台币口径环比增8.8%和美元口径环比增3.4%，摘要不把两者的差额写成不变汇率增速，也不把新台币营收换成美元。C.C. Wei（CEO）说第三季仍由5纳米和7纳米的持续需求支撑。高性能计算被他定为长期增长的主引擎，也是未来数年增量营收里最大的一块。很多电子产品的出货增长可能持平到低个位数，硅含量增速更高，落在中到高个位数，从而拉动长期晶圆需求。长期美元营收复合增速他重申为15%到20%。问答里他拒绝拆分出货、售价和含量各占多少，只说边缘装置的含量增加至少是中到高个位数，再加上价值销售，这个复合增速做得到。5G智能手机渗透率，Wendell（CFO）仍看大约50%。高端智能手机方面，C.C. Wei（CEO）说没有看到太多库存堆积。高性能计算两边他都做，X86和ARM架构都在显著增长，对X86的敞口也很高。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化（产能与资本开支）</h4>
+          <div class="outlook-copy">
+            <p>C.C. Wei（CEO）说设备供应商交期拉长，先进节点和成熟节点都有，因此今年一部分资本开支会推到2023年。这不影响2022年的产能计划，而且一部分2023年要用的设备还能把交付往前拉。Wendell（CFO）确认设备时程变化同时发生在先进制程和成熟制程，并说今年资本开支更靠近此前指引的下沿；2023年的资本开支现在谈太早，但只要未来展望好，就会有纪律地继续投。此前三年千亿美元的说法，他本场不评论，也不评论2022年以后的资本开支。投资者关系主管把此前区间复述为400亿至440亿美元，这不是财务长本场新报的美元区间。第二季指标表未单列资本开支、经营现金流和自由现金流。电话会口述资本开支7.34亿美元，另报新台币2180亿元，经营现金约新台币3390亿元，摘要不回填，也不在两个币种之间换算。库存天数增加7天至95天，原因是预建5纳米晶圆并增加原料；应收账款周转天数减少1天至37天。特殊技术产能方面，C.C. Wei（CEO）说增加50%指的是特殊技术产能。Wendell（CFO）补充，扩张同时包括新产能和现有产能转换。C.C. Wei（CEO）说非常有信心，因为边缘装置的硅含量继续增加，领先制程之外也需要特殊技术，这次是应客户要求来扩。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化（节点对照）</h4>
+          <div class="outlook-copy">
+            <p>C.C. Wei（CEO）说3纳米今年下半年量产，良率良好，收入从2023年上半年开始贡献，2023年由高性能计算和智能手机带动顺利爬坡。美元金额在爬坡初期会大于以往节点的同期，但因为总盘子变大，单看领先节点一开始的收入占比意义下降。3纳米增强版继续加强性能、功耗和良率，并给智能手机和高性能计算完整平台，客户参与度高，量产大约排在3纳米之后一年。2纳米开发进度符合预期，风险生产在2024年，量产在2025年，晶体管采用纳米片。相对3纳米增强版，同功耗下的速度提升，原句写作10到15且没有百分号；同速度下功耗改善20%到30%，逻辑密度增加超过20%。Mark Liu（董事长）主持问答时说，从现在起要用平台来看技术：2纳米不只有晶圆缩比，还包括晶体管缩比、新的电源线结构和芯粒，让客户做架构创新。缩比系数变小，是为了控成本并维持新一代技术的价值，客户当前真正要的是能效，因此这是完整节点的能效迁移。C.C. Wei（CEO）把背面供电称为超级电源轨，属于2纳米平台，在客户需要的时点推出。分析师追问每千片资本开支和资本开支负担时，电话会没有给出数字就进入下一位提问。使用芯粒的客户在2纳米上会增加，并成为2纳米及之后的主要做法，比例不公布。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式（定价与成本）</h4>
+          <div class="outlook-copy">
+            <p>Wendell（CFO）说盈利由六件事决定：领先技术的开发和爬坡、定价、成本、产能利用率、技术组合、汇率。第二季毛利率59.1%。电话会称环比升3.5个百分点，后文又说升350个基点，主因是汇率更有利、成本改善和价值销售，略高于三个月前的指引。当时指引假设1美元兑28.8元新台币，实际汇率是1美元兑29.42元新台币，大约带来90个基点的差异。营业利润率49.1%，环比同样升3.5个百分点，与毛利率升幅一致。指标表毛利107.33亿美元、营业利润89.17亿美元，电话会没有另报这两个美元金额。后面会面对原料、公用事业和设备的通胀，领先节点更复杂，成熟节点的新投资，以及海外厂扩张。第三季毛利率中值环比下降约60个基点，略有利的汇率假设抵不过更高的原料和电费。剔除公司控制不了的汇率后，长期毛利率53%及以上仍然可以达到；问答里他补充会努力做得更好。3纳米在2023年这第一年会稀释毛利率，幅度是2到3个百分点，稀释的基准是对明年毛利率的预测，53%及以上的长期目标已经包含这次稀释。定价是策略性的、按价值来定，具体价格不评论。若客户把库存修正做得更猛，C.C. Wei（CEO）仍说今年产能很紧、利用率保持健康，因此毛利率可以守住。折旧今年同比增幅高于中个位数，但低于年初所说，因为设备交付时程变化；明年折旧会明显高于今年。美国存托凭证每股收益用指标表的1.55美元、同比增66.7%；电话会口述普通股每股收益新台币9.14元、净资产收益率39.4%，不把新台币换成美元。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略（海外厂与客户）</h4>
+          <div class="outlook-copy">
+            <p>Mark Liu（董事长）说美国厂仍在建设，成本高于原先预期。过去两年美国人工比计划高，疫情造成的供应链中断也超出预期。他已经把成本差距的全貌告诉当地政府。美国客户仍希望把产品放进这座厂，公司认为当地还有业务机会。成本在上升，但成本不是唯一考虑，补贴谈判和降本都还在进行。现阶段不打算在美国做合资厂，以免把产能绑给特定客户；客户需求会起落，这座厂要开放给整个客户群。Wendell（CFO）说不考虑项目融资，因为条款更严、成本更高，扩产主要靠经营现金流，并用强资产负债表借款。长期协议占明年营收的比例他不讨论，只说会和客户一起规划产能，也包括为了产能支持收取预付款。C.C. Wei（CEO）说没有看到客户为了价格变化把需求从明年一季度提前到今年下半年，当前产能仍然很紧。先进封装方面，三维集成或系统整合芯片先服务高速、省电的高性能计算，增长健康，可能略快于公司整体预测；到2纳米时他对这项技术的需求更有信心。日本设立三维集成研发中心，是因为当地在原料和封装上有基础，例如基板居全球前列，用来补公司的技术。基板只做非常先进、服务高性能计算或大尺寸的产品。系统整合芯片目前主要给高性能计算，手机是否采用要看芯粒架构、互连密度和散热，公司会用其他方案满足手机。资本开支和产能规划按长期结构性需求来做，不按近端因素。他重申技术领先、制造支持和客户信任，用来抓住5G和高性能计算相关应用的多年增长。</p>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">16 轮 · 部分回答 / 回避 10</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>16</b> 轮</span>
+<span>热门话题：<b>库存与供需、毛利率与成本、产能与资本开支</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 10</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Randy Abrams<small>Crédit Suisse</small></span>
+        <span class="qa-q">第三季展望强、全年美元增速又在百分之三十出头，如何与下半年至明年上半年的库存下降同时成立？2023年上半年会不会出现利用率不足，幅度有多大？</span>
+        <span class="qa-tags">
+<span class="pill">库存与供需</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>C.C. Wei（CEO）：今年确实有百分之三十出头的增长，同时客户已经开始降库存，修正至少延续到2023年上半年。即便有库存调整和宏观不确定，长期半导体需求的结构性轨迹仍在。凭借领先且有差异的先进和特殊技术、高性能计算组合和战略客户关系，他预期产能仍然紧张、业务更有韧性，对近端和长期增长都有信心。追问2023年上半年是否仍然紧张，他回答仍然如此。利用率他不给数字，只说健康。原文在利用率不足一词上带有会后公司更正的括号。</p>
+<p class="small">核对：利用率不足一词在原文括号里注明会后由公司更正</p><p class="small">未回答的部分：没有给出2023年上半年产能利用率的数字，只说健康、产能仍然紧张。</p><blockquote>Yes, we do have mid-30s growth in this year. But we also expect our customers start to take action to decrease their inventory level. How far? We expect that a few quarters, at least into the first half of 2023, they will continue to do the inventory correction.</blockquote>        <p class="small">新数字：百分之三十出头（今年美元营收增速，问答里再次确认）；至少到2023年上半年（客户库存修正持续的时间）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Randy Abrams<small>Crédit Suisse</small></span>
+        <span class="qa-q">设备延迟导致的资本开支后移，落在3纳米、5纳米还是成熟制程？明年资本开支怎么框架？今年全年会落在什么水平？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：设备交付时程的变化目前同时发生在先进节点和成熟节点。明年资本开支现在谈太早。公司向来是为未来的机会投资，只要未来展望好就会继续投，但保持纪律。追问今年全年时，他说会更靠近此前指引的下沿。投资者关系主管随后把该区间复述为400亿至440亿美元，这句不记成财务长的新口径。</p>
+<p class="small">未回答的部分：没有给出2023年资本开支金额，也没有在本场亲口说出400亿至440亿美元。下沿对应的区间由投资者关系主管复述。</p><blockquote>I think next year will be too early. But I can tell you that this year, it will be closer to the lower end of our previous guidance.</blockquote>        <p class="small">新数字：更靠近此前区间下沿（财务长对今年资本开支位置的说法，本场没有亲口报出美元区间）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Bruce Lu<small>Goldman Sachs</small></span>
+        <span class="qa-q">未来数年15%到20%的复合增速里，有多少来自硅含量，有多少来自出货，有多少来自售价或产品组合？</span>
+        <span class="qa-tags">
+<span class="pill">需求与出货</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>C.C. Wei（CEO）：精确拆分属于机密，不能分享。边缘装置的含量增加至少是中到高个位数。电子产品出货即使持平或只有低个位数，也仍在增长。这些因素加上对客户的价值销售，使他有信心说15%到20%的复合增速做得到。</p>
+<p class="small">未回答的部分：不提供出货、售价和硅含量在复合增速里的拆分比例。</p><blockquote>The content increase actually is at least mid- to high single digit for our edge devices.</blockquote>        <p class="small">新数字：至少中到高个位数（边缘装置硅含量的增幅）；15%到20%（未来数年美元营收复合增速，问答里再次确认做得到）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Bruce Lu<small>Goldman Sachs</small></span>
+        <span class="qa-q">董事长此前说未来三年特殊与成熟产能增加50%。这是全新产能还是转换？需求来自哪里，信心有多高？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>C.C. Wei（CEO）：50%指的是特殊技术产能，不是整体产能，也不是逻辑产能增加50%。这样做是因为客户需要，公司配合他们的增长。过去几年几乎没有增加特殊技术，只有少量从逻辑升级到特殊技术。这次不同，边缘装置的硅含量上升，既要领先制程，也要特殊技术。他的信心用非常有信心来形容。</li><li>Wendell（CFO）：扩张同时包括新产能和现有产能转换。</li></ul></div>
+<blockquote>50% increase, we mean that 50% is in specialty technologies capacity. It doesn&#39;t mean the overall capacity increase.</blockquote>        <p class="small">新数字：50%（未来三年特殊技术产能的增幅，不是整体逻辑产能）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Sunny Lin<small>UBS</small></span>
+        <span class="qa-q">公司对2023年半导体周期的基准情形是什么？更像2015年、2019年那种典型下行，还是更大幅度的修正？</span>
+        <span class="qa-tags">
+<span class="pill">库存与供需</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：基准情形是更接近典型的下行周期。库存修正可能走几个季度，贯穿2023年上半年。这不像2008年那种大幅下行。</p>
+<blockquote>Yes. Sunny, yes, our base case is a typical -- more of a typical down cycle. The inventory correction maybe go for a few quarters, through the first half of 2023. It&#39;s not like a big down cycle back in 2008 or something like that.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Sunny Lin<small>UBS</small></span>
+        <span class="qa-q">3纳米爬坡后，2023年的收入贡献怎么看？对盈利的影响出现在第四季，还是主要从明年一季度开始，幅度有多大？</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：现在再拿领先节点刚爬坡时的收入占比和过去比，意义下降，因为总盘子在变大，而且会继续变大。按美元金额，起步阶段会大于以往节点。盈利稀释方面，他预期第一年即2023年影响毛利率2至3个百分点。</p>
+<blockquote>In terms of profitability dilution, we expect that it will impact between 2 to 3 percentage points in gross margins in 20 -- in the first year, 2023.</blockquote>        <p class="small">新数字：2至3个百分点（3纳米在2023年对毛利率的稀释）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Brett Simpson<small>Arete Research</small></span>
+        <span class="qa-q">无晶圆厂库存天数下半年怎么走？对2022年和2023年半导体行业增长的看法有没有在过去三个月改变？</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Wendell（CFO）：无晶圆厂库存天数预期在今年下半年逐步下降。</li><li>C.C. Wei（CEO）：不含存储的半导体预测，以及2022年晶圆代工增长预测，都维持早先的判断。2023年行业现在预测还太早，库存修正会继续。对公司来说，技术地位比过去强，高性能计算组合也强，又有长期战略客户，因此即使只是库存修正，2023年仍是公司的增长年。</li></ul></div>
+<p class="small">未回答的部分：2022年行业和晶圆代工预测只说维持不变，没有重述百分比。2023年行业增速明确还太早，只给出公司自身仍是增长年的方向。</p><blockquote>Our forecast for the semiconductor exclude memory and the forecast on the foundry growth in 2022 remain the same as we projected earlier. For 2023, it&#39;s too early to forecast.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Charlie Chan<small>Morgan Stanley</small></span>
+        <span class="qa-q">宏观放缓会不会接下来打到数据中心客户的资本开支和高端智能手机订单？高端手机的半导体需求会不会也进入库存修正？</span>
+        <span class="qa-tags">
+<span class="pill">库存与供需</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>C.C. Wei（CEO）：边缘装置持续产生数据，这些数据需要以足够的速度和功耗效率来处理，因此需要领先制程。即便有库存修正，他预期公司业务在近端不确定中波动更小、更有韧性，并对长期增长有信心。高端智能手机方面，他坦率说没有看到太多库存堆积。</p>
+<p class="small">未回答的部分：高端手机明确说没有看到太多库存。高性能计算和数据中心没有给库存量或调整幅度，只说业务更有韧性。</p><blockquote>To be frank with you, we did not see too much of inventory on the high-end smartphone buildup. So, no.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Charlie Chan<small>Morgan Stanley</small></span>
+        <span class="qa-q">2纳米逻辑密度增加超过20%，这是不是完整节点迁移，摩尔定律是否明显放缓？相对3纳米，每千片资本开支怎么变？背面供电什么时候进入平台？</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill warn">部分回答</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mark Liu（董事长）：2纳米导入时会是业界最先进的半导体技术。从现在起要用平台来看，不只有晶圆缩比，还包括晶体管缩比、新的电源线结构和新的芯粒技术。缩比系数变小，但客户现在真正要的是能效，这是完整节点的能效迁移；控制缩比是为了控成本，同时维持新一代技术的价值。</li><li>C.C. Wei（CEO）：背面供电公司称为超级电源轨，属于2纳米平台，在客户需要的适当时点推出。每千片资本开支和后续资本开支负担，电话会没有回答就转到下一位分析师。</li></ul></div>
+<p class="small">核对：每千片资本开支的追问没有得到回答</p><p class="small">未回答的部分：没有回答2纳米相对3纳米的每千片资本开支，也没有量化摩尔定律放缓的含义。背面供电只说属于平台，在客户需要时推出。</p><blockquote>The scaling factor is smaller, but we really know the customers&#39; needs is -- today is really about the power efficiency. And this will be a full node power efficiency migration.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Laura Chen<small>Citi</small></span>
+        <span class="qa-q">高性能计算未来几年的增长，更多来自ARM架构还是X86？公司在ARM上的敞口已经很高，接下来会不会更多靠X86？</span>
+        <span class="qa-tags">
+<span class="pill">产品结构</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>C.C. Wei（CEO）：高性能计算增长健康。公司给所有人做代工，X86和ARM架构的高性能计算都支持，两边都在显著增长。追问后他说，公司对X86的敞口也很高。准备发言里他已把高性能计算定为长期主引擎。投资者关系主管随后又重复这一句，不记成新的回答。</p>
+<blockquote>Laura, our HPC definitely is growing healthily. And since TSMC is everybody&#39;s foundry, so we support both X86 and ARM-based for what you say for the high-performance computing, both. And both are significantly growing in TSMC.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Laura Chen<small>Citi</small></span>
+        <span class="qa-q">第二季毛利率59.1%已经很高。考虑到资本开支纪律、先进节点交付和价格，长期53%及以上的毛利率目标还有没有上修空间？</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：每年有六项因素影响盈利。剔除公司无法控制的汇率后，考虑其余因素，他有信心长期毛利率做到53%及以上，并且会努力做得更好。他没有把目标数字上调到一个新的点位。</p>
+<blockquote>Excluding the foreign exchange rate, of which we do not have any control on, the other factors taking into consideration, we are confident that a long-term gross margin of 53% and higher is achievable. And we certainly -- we&#39;ll try to work hard to deliver better than that.</blockquote>        <p class="small">新数字：53%及以上（剔除汇率后的长期毛利率目标，本场维持，并说会努力做得更好）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Gokul Hariharan<small>JPMorgan</small></span>
+        <span class="qa-q">美国厂成本高于预期。和亚利桑那政府、和客户怎么谈这个成本差？补贴和填补成本差的进展如何？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Mark Liu（董事长）：他确认美国厂成本高于原先预期，目前仍在建设。过去两年发现美国人工比计划高，疫情对供应链的干扰也超出预期，已经把成本差距的全貌告诉当地政府。美国客户都希望把产品放进这座厂，公司也认为当地有业务机会。成本在上升，但成本不是唯一因素。政府补贴还在谈，降本也会继续，各家公司降本的方法不同，这件事仍在进行。</p>
+<p class="small">未回答的部分：没有给出美国厂相对台湾的成本差距百分比，补贴谈判也没有结果或金额。</p><blockquote>Okay. Gokul, yes. Yes, I did mention that the cost in the fab in the U.S. is higher than we expected. We are still in the construction stage of the fab. And during this past 2 years, we found that the labor cost in the States is higher than we planned.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Charles Shi<small>Needham</small></span>
+        <span class="qa-q">3纳米稀释毛利率2%到3%，是相对长期53%及以上，还是相对目前大约59%的水平？</span>
+        <span class="qa-tags">
+<span class="pill">毛利率与成本</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：稀释的基准是对明年毛利率的预测，既不是53%，也不是59%。谈到53%及以上时，这个长期目标已经包含3纳米稀释的影响。</p>
+<blockquote>Charles, it&#39;s diluting from next year&#39;s gross margin as we forecast. It&#39;s neither 53% nor 59%. Bear in mind that when we talk about 53% and higher, it already included the dilution effects from the N3 dilutions.</blockquote>        <p class="small">新数字：相对明年预测的毛利率（2至3个百分点稀释的比较基准，不是53%也不是59%）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Mehdi Hosseini<small>Susquehanna</small></span>
+        <span class="qa-q">2021年到2023年此前说过的千亿美元资本开支，会不会意味着2023年资本开支下降？今年折旧为何还很平，明年会不会明显跳升？</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill warn">部分回答</span><span class="pill">偏谨慎</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：本场不谈那千亿美元，也不评论2022年以后的资本开支。每年的资本开支都是为未来增长机会，只要认为未来展望好，就会有纪律地继续投。折旧方面，每年有新折旧进来，也有折旧退出。今年折旧同比增幅高于中个位数，但低于年初所说，因为设备交付时程变化。明年给具体数字还太早，但折旧会明显高于今年。</p>
+<p class="small">未回答的部分：不讨论千亿美元框架，也不给2023年资本开支和折旧的具体数字。</p><blockquote>This year, we expect that depreciation will grow above mid single-digits from last year. It is slower -- lower than when we guided at the beginning of the year because of some tool delivery schedule change, as C.C. mentioned earlier. Now for next year, the -- it&#39;s too early to give a specific number, but the depreciation will be much higher than this year.</blockquote>        <p class="small">新数字：高于中个位数（今年折旧相对去年的增幅，且低于年初所说）；明显高于今年（对明年折旧的方向，没有具体数字）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Krish Sankar<small>Cowen</small></span>
+        <span class="qa-q">若全年按35%增长，第四季美元营收是否会环比下降超过10%？其中多少是需求、多少是汇率？资本开支后移是极紫外光刻还是刻蚀设备？</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill warn">部分回答</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Wendell（CFO）：他不认为第四季会下降。他算过，至少是上升，并请对方再算一次。设备类别他不展开，一部分已经推到明年，每年各季的资本开支分布也可以不同。投资者关系主管补充，百分之三十出头的全年指引是美元口径，这句不记成财务长的原话。全年口径公司说的是百分之三十出头，不是分析师口头的正好35%。</p>
+<p class="small">未回答的部分：第四季只说至少上升，没有幅度，也没有拆需求和汇率。设备延迟不说明是哪一类工具。</p><blockquote>No. I don&#39;t think so. We did the calculation. Maybe you can do that again. It&#39;s at least up.</blockquote>        <p class="small">新数字：至少上升（财务长对第四季环比方向的判断，没有幅度）</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Frank Lee<small>HSBC</small></span>
+        <span class="qa-q">今年代工价格上涨，明年似乎还有进一步涨价，同时又可能库存修正。定价是这一轮结构性盈利不同，还是出现了过去周期没有的成本？客户会不会为了涨价把需求提前到今年下半年，从而让明年上半年更弱？</span>
+        <span class="qa-tags">
+<span class="pill">定价与 ASP</span><span class="pill warn">部分回答</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Wendell（CFO）：不评论定价细节，那是和客户之间的私下讨论。定价是策略性的、按价值来定，不是看机会，也不是成本加成。公司与客户密切合作来提供价值，并会让价格反映技术、生态、服务和产能支持所创造的价值。这样做是为了达到长期毛利率53%及以上。原料、公用事业和设备成本确实在上升，但他认为53%及以上仍然做得到。</li><li>C.C. Wei（CEO）：没有看到客户把明年一季度和今年下半年的需求对调。当前产能仍然很紧，公司是在尽力支持客户。</li></ul></div>
+<p class="small">未回答的部分：不评论涨价幅度，也不把涨价拆成周期因素或新增成本的数字。客户提前下单这一点给予了明确否定。</p><blockquote>Yes. We do not comment on our pricing details. These are the private discussion between us and our customers. Having said that, our pricing is strategic and value-driven, not opportunistic or cost plus.</blockquote>      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 3 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：<a href="https://www.sec.gov/Archives/edgar/data/1046179/000156459022025726/" rel="noopener">SEC EDGAR</a> · 文件编号 0001564590-22-025726 · 文字稿：—</p>
+    <p>新闻稿：<a href="https://www.sec.gov/Archives/edgar/data/1046179/000156459022025726/" rel="noopener">SEC EDGAR</a> · 文件编号 0001564590-22-025726 · 文字稿：company_ir</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>历史回补：数字来自 SEC 6-K 新闻稿。只写入写明的美元金额和 US$ per ADR。</li><li>没有美元对照的台币科目留空，不按汇率换算。</li><li>净利润没有美元对照，留空，不按汇率换算</li></ul>  </div>
 </details>
@@ -446,7 +893,7 @@ window.PAGE_CHARTS = {
   "moneyUnit": "十亿美元",
   "epsUnit": "美元",
   "finView": {"by_key": {"cost_of_revenue": {"charts": [{"amount": [3.38, 3.32, 4.04, 3.94, 3.61, 3.47, 4.17, 4.61, 4.2, 4.1, 4.47, 4.92, 4.17, 4.42, 4.93, 5.17, 4.97, 4.88, 5.66, 5.83, 6.15, 6.64, 7.25, 7.45, 7.8, 7.43, 8.01, 7.53, 7.31, 7.2, 7.9, 9.22, 8.85, 9.74, 9.92, 11.02, 10.52, 12.45, 13.41, 12.72, 12.13, 12.98, 15.7], "amount_text": ["$3.38B", "$3.32B", "$4.04B", "$3.94B", "$3.61B", "$3.47B", "$4.17B", "$4.61B", "$4.20B", "$4.10B", "$4.47B", "$4.92B", "$4.17B", "$4.42B", "$4.93B", "$5.17B", "$4.97B", "$4.88B", "$5.66B", "$5.83B", "$6.15B", "$6.64B", "$7.25B", "$7.45B", "$7.80B", "$7.43B", "$8.01B", "$7.53B", "$7.31B", "$7.20B", "$7.90B", "$9.22B", "$8.85B", "$9.74B", "$9.92B", "$11.02B", "$10.52B", "$12.45B", "$13.41B", "$12.72B", "$12.13B", "$12.98B", "$15.70B"], "annual": {"amount": [14.68, 15.86, 17.68, 18.69, 21.34, 27.49, 30.77, 31.62, 39.53, 49.09], "amount_text": ["$14.68B", "$15.86B", "$17.68B", "$18.69B", "$21.34B", "$27.49B", "$30.77B", "$31.62B", "$39.53B", "$49.09B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 8.0, 11.5, 5.7, 14.2, 28.8, 12.0, 2.8, 25.0, 24.2]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业成本", "yoy": [null, null, null, null, 6.8, 4.7, 3.1, 17.0, 16.4, 18.0, 7.1, 6.8, -0.9, 7.8, 10.3, 5.2, 19.2, 10.4, 14.9, 12.7, 23.8, 36.2, 28.1, 27.6, 26.8, 11.8, 10.6, 1.2, -6.3, -3.1, -1.4, 22.4, 21.1, 35.4, 25.6, 19.5, 18.9, 27.8, 35.2, 15.4, 15.4, 4.3, 17.1]}], "note": "营业成本由营业收入减去毛利得到。没有把营业成本再拆开。"}, "gross_margin_gaap": {"charts": [{"amount": [2.76, 3.52, 4.16, 4.31, 3.9, 3.59, 4.15, 4.61, 4.26, 3.75, 4.02, 4.48, 2.93, 3.33, 4.47, 5.22, 5.34, 5.5, 6.48, 6.85, 6.77, 6.64, 7.63, 8.29, 9.77, 10.73, 12.22, 12.4, 9.41, 8.48, 9.38, 10.4, 10.02, 11.08, 13.58, 15.86, 15.01, 17.62, 19.69, 21.01, 23.77, 27.22, 31.02], "amount_text": ["$2.76B", "$3.52B", "$4.16B", "$4.31B", "$3.90B", "$3.59B", "$4.15B", "$4.61B", "$4.26B", "$3.75B", "$4.02B", "$4.48B", "$2.93B", "$3.33B", "$4.47B", "$5.22B", "$5.34B", "$5.50B", "$6.48B", "$6.85B", "$6.77B", "$6.64B", "$7.63B", "$8.29B", "$9.77B", "$10.73B", "$12.22B", "$12.40B", "$9.41B", "$8.48B", "$9.38B", "$10.40B", "$10.02B", "$11.08B", "$13.58B", "$15.86B", "$15.01B", "$17.62B", "$19.69B", "$21.01B", "$23.77B", "$27.22B", "$31.02B"], "annual": {"amount": [14.75, 16.24, 16.52, 15.95, 24.17, 29.34, 45.12, 37.68, 50.54, 73.34], "amount_text": ["$14.75B", "$16.24B", "$16.52B", "$15.95B", "$24.17B", "$29.34B", "$45.12B", "$37.68B", "$50.54B", "$73.34B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 10.1, 1.7, -3.4, 51.5, 21.4, 53.8, -16.5, 34.1, 45.1]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "毛利", "yoy": [null, null, null, null, 41.4, 1.8, -0.1, 6.7, 9.2, 4.6, -3.1, -2.6, -31.1, -11.2, 11.2, 16.3, 82.1, 65.1, 44.9, 31.3, 26.8, 20.8, 17.7, 21.1, 44.3, 61.5, 60.1, 49.4, -3.6, -21.0, -23.2, -16.1, 6.4, 30.6, 44.8, 52.5, 49.8, 59.1, 45.0, 32.5, 58.3, 54.4, 57.5]}], "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。"}, "gross_margin_nongaap": {"charts": [{"amount": [2.76, 3.52, 4.16, 4.31, 3.9, 3.59, 4.15, 4.61, 4.26, 3.75, 4.02, 4.48, 2.93, 3.33, 4.47, 5.22, 5.34, 5.5, 6.48, 6.85, 6.77, 6.64, 7.63, 8.29, 9.77, 10.73, 12.22, 12.4, 9.41, 8.48, 9.38, 10.4, 10.02, 11.08, 13.58, 15.86, 15.01, 17.62, 19.69, 21.01, 23.77, 27.22, 31.02], "amount_text": ["$2.76B", "$3.52B", "$4.16B", "$4.31B", "$3.90B", "$3.59B", "$4.15B", "$4.61B", "$4.26B", "$3.75B", "$4.02B", "$4.48B", "$2.93B", "$3.33B", "$4.47B", "$5.22B", "$5.34B", "$5.50B", "$6.48B", "$6.85B", "$6.77B", "$6.64B", "$7.63B", "$8.29B", "$9.77B", "$10.73B", "$12.22B", "$12.40B", "$9.41B", "$8.48B", "$9.38B", "$10.40B", "$10.02B", "$11.08B", "$13.58B", "$15.86B", "$15.01B", "$17.62B", "$19.69B", "$21.01B", "$23.77B", "$27.22B", "$31.02B"], "annual": {"amount": [14.75, 16.24, 16.52, 15.95, 24.17, 29.34, 45.12, 37.68, 50.54, 73.34], "amount_text": ["$14.75B", "$16.24B", "$16.52B", "$15.95B", "$24.17B", "$29.34B", "$45.12B", "$37.68B", "$50.54B", "$73.34B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 10.1, 1.7, -3.4, 51.5, 21.4, 53.8, -16.5, 34.1, 45.1]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "毛利", "yoy": [null, null, null, null, 41.4, 1.8, -0.1, 6.7, 9.2, 4.6, -3.1, -2.6, -31.1, -11.2, 11.2, 16.3, 82.1, 65.1, 44.9, 31.3, 26.8, 20.8, 17.7, 21.1, 44.3, 61.5, 60.1, 49.4, -3.6, -21.0, -23.2, -16.1, 6.4, 30.6, 44.8, 52.5, 49.8, 59.1, 45.0, 32.5, 58.3, 54.4, 57.5]}], "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。"}, "opex": {"charts": [{"amount": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 2.25, 2.08, null, 2.45, 2.67, 2.59, 2.72, 2.93, 2.84, 2.98, 3.13, 3.64], "amount_text": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "$2.25B", "$2.08B", null, "$2.45B", "$2.67B", "$2.59B", "$2.72B", "$2.93B", "$2.84B", "$2.98B", "$3.13B", "$3.64B"], "annual": {"amount": [11.09], "amount_text": ["$11.09B"], "labels": ["FY2025"], "yoy": [null]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业费用", "yoy": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 19.0, 24.5, null, 19.9, 6.4, 14.9, 15.1, 24.1]}], "note": "营业费用是已披露的合计，没有再拆成研发、销售和管理。不含营业成本。"}, "revenue": {"charts": [{"amount": [6.14, 6.84, 8.2, 8.25, 7.51, 7.06, 8.32, 9.21, 8.46, 7.85, 8.49, 9.4, 7.1, 7.75, 9.4, 10.39, 10.31, 10.38, 12.14, 12.68, 12.92, 13.29, 14.88, 15.74, 17.57, 18.16, 20.23, 19.93, 16.72, 15.68, 17.28, 19.62, 18.87, 20.82, 23.5, 26.88, 25.53, 30.07, 33.1, 33.73, 35.9, 40.2, 46.72], "amount_text": ["$6.14B", "$6.84B", "$8.20B", "$8.25B", "$7.51B", "$7.06B", "$8.32B", "$9.21B", "$8.46B", "$7.85B", "$8.49B", "$9.40B", "$7.10B", "$7.75B", "$9.40B", "$10.39B", "$10.31B", "$10.38B", "$12.14B", "$12.68B", "$12.92B", "$13.29B", "$14.88B", "$15.74B", "$17.57B", "$18.16B", "$20.23B", "$19.93B", "$16.72B", "$15.68B", "$17.28B", "$19.62B", "$18.87B", "$20.82B", "$23.50B", "$26.88B", "$25.53B", "$30.07B", "$33.10B", "$33.73B", "$35.90B", "$40.20B", "$46.72B"], "annual": {"amount": [29.43, 32.1, 34.2, 34.64, 45.51, 56.83, 75.89, 69.3, 90.07, 122.43], "amount_text": ["$29.43B", "$32.10B", "$34.20B", "$34.64B", "$45.51B", "$56.83B", "$75.89B", "$69.30B", "$90.07B", "$122.43B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 9.1, 6.5, 1.3, 31.4, 24.9, 33.5, -8.7, 30.0, 35.9]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业收入", "yoy": [null, null, null, null, 22.3, 3.2, 1.5, 11.6, 12.6, 11.2, 2.0, 2.1, -16.1, -1.3, 10.7, 10.5, 45.2, 33.9, 29.1, 22.0, 25.3, 28.0, 22.6, 24.1, 36.0, 36.6, 36.0, 26.6, -4.8, -13.7, -14.6, -1.6, 12.9, 32.8, 36.0, 37.0, 35.3, 44.4, 40.9, 25.5, 40.6, 33.7, 41.1]}, {"annual": null, "focus": "FY2022Q2", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2016Q1"}, {"gap": true, "items": [], "period": "FY2016Q2"}, {"gap": true, "items": [], "period": "FY2016Q3"}, {"gap": true, "items": [], "period": "FY2016Q4"}, {"gap": true, "items": [], "period": "FY2017Q1"}, {"gap": true, "items": [], "period": "FY2017Q2"}, {"gap": true, "items": [], "period": "FY2017Q3"}, {"gap": true, "items": [], "period": "FY2017Q4"}, {"gap": true, "items": [], "period": "FY2018Q1"}, {"gap": true, "items": [], "period": "FY2018Q2"}, {"gap": true, "items": [], "period": "FY2018Q3"}, {"gap": true, "items": [], "period": "FY2018Q4"}, {"gap": true, "items": [], "period": "FY2019Q1"}, {"gap": true, "items": [], "period": "FY2019Q2"}, {"gap": true, "items": [], "period": "FY2019Q3"}, {"gap": true, "items": [], "period": "FY2019Q4"}, {"gap": true, "items": [], "period": "FY2020Q1"}, {"gap": true, "items": [], "period": "FY2020Q2"}, {"gap": true, "items": [], "period": "FY2020Q3"}, {"gap": true, "items": [], "period": "FY2020Q4"}, {"gap": true, "items": [], "period": "FY2021Q1"}, {"gap": true, "items": [], "period": "FY2021Q2"}, {"gap": true, "items": [], "period": "FY2021Q3"}, {"gap": true, "items": [], "period": "FY2021Q4"}, {"gap": true, "items": [], "period": "FY2022Q1"}, {"gap": true, "items": [], "period": "FY2022Q2"}, {"gap": true, "items": [], "period": "FY2022Q3"}, {"gap": true, "items": [], "period": "FY2022Q4"}, {"gap": true, "items": [], "period": "FY2023Q1"}, {"gap": true, "items": [], "period": "FY2023Q2"}, {"gap": true, "items": [], "period": "FY2023Q3"}, {"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "$14.25B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 53.0, "stack": true, "value": 14246400000.0}, {"amount": "$9.41B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 35.0, "stack": true, "value": 9408000000.0}, {"amount": "$1.34B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1344000000.0}, {"amount": "$1.08B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1075200000.0}, {"amount": "$268.80M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 268800000.0}, {"amount": "$537.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 537600000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "$15.06B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 59.0, "stack": true, "value": 15062700000.0}, {"amount": "$7.15B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 28.0, "stack": true, "value": 7148400000.0}, {"amount": "$1.28B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$1.28B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$255.30M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 255300000.0}, {"amount": "$510.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 510600000.0}], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "$21.90B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 61.0, "stack": true, "value": 21899000000.0}, {"amount": "$9.33B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 26.0, "stack": true, "value": 9334000000.0}, {"amount": "$2.15B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 6.0, "stack": true, "value": 2154000000.0}, {"amount": "$1.44B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1436000000.0}, {"amount": "$359.00M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 359000000.0}, {"amount": "$718.00M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 718000000.0}], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2022Q2", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2016Q1"}, {"gap": true, "items": [], "period": "FY2016Q2"}, {"gap": true, "items": [], "period": "FY2016Q3"}, {"gap": true, "items": [], "period": "FY2016Q4"}, {"gap": true, "items": [], "period": "FY2017Q1"}, {"gap": true, "items": [], "period": "FY2017Q2"}, {"gap": true, "items": [], "period": "FY2017Q3"}, {"gap": true, "items": [], "period": "FY2017Q4"}, {"gap": true, "items": [], "period": "FY2018Q1"}, {"gap": true, "items": [], "period": "FY2018Q2"}, {"gap": true, "items": [], "period": "FY2018Q3"}, {"gap": true, "items": [], "period": "FY2018Q4"}, {"gap": true, "items": [], "period": "FY2019Q1"}, {"gap": true, "items": [], "period": "FY2019Q2"}, {"gap": true, "items": [], "period": "FY2019Q3"}, {"gap": true, "items": [], "period": "FY2019Q4"}, {"gap": true, "items": [], "period": "FY2020Q1"}, {"gap": true, "items": [], "period": "FY2020Q2"}, {"gap": true, "items": [], "period": "FY2020Q3"}, {"gap": true, "items": [], "period": "FY2020Q4"}, {"gap": true, "items": [], "period": "FY2021Q1"}, {"gap": true, "items": [], "period": "FY2021Q2"}, {"gap": true, "items": [], "period": "FY2021Q3"}, {"gap": true, "items": [], "period": "FY2021Q4"}, {"gap": true, "items": [], "period": "FY2022Q1"}, {"gap": true, "items": [], "period": "FY2022Q2"}, {"gap": true, "items": [], "period": "FY2022Q3"}, {"gap": true, "items": [], "period": "FY2022Q4"}, {"gap": true, "items": [], "period": "FY2023Q1"}, {"gap": true, "items": [], "period": "FY2023Q2"}, {"gap": true, "items": [], "period": "FY2023Q3"}, {"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按地区"}], "note": "美元营收取自财报幻灯片「Net Revenue (US$ billions)」当季列；该季白字为空时，用后一份幻灯片的上季或去年同季列，不取指引列。台币营业费用和净利润除以同一列的 Average Exchange Rate--USD/NTD 换成美元。毛利 = 美元营收 × 毛利率，营业利润 = 美元营收 × 营业利润率，营业成本 = 美元营收 − 毛利。1 ADR = 5 股普通股。普通股 EPS 为新台币。ADR 美元只取新闻稿写明的 US$ per ADR，不按当季平均汇率把新台币换算成美元。平台占比只取「nQyy Revenue by Platform」文字且合计约 100% 的季度，金额 = 占比 × 当季美元营收；全年页，以及只有图、文字里没有百分比的季度，不补数。地区收入在已保存文字里没有占比，geo 留空。不使用图像识别，不把新台币当成美元。幻灯片没有覆盖、或当季营收为空时，只用新闻稿写明的美元金额和 US$ per ADR 补上，不按汇率把新台币换算成美元。 已保存的披露文字里没有地区收入，地区柱留空。 FY2016Q1、FY2016Q2、FY2016Q3、FY2016Q4、FY2017Q1、FY2017Q2、FY2017Q3、FY2017Q4、FY2018Q1、FY2018Q2、FY2018Q3、FY2018Q4、FY2019Q1、FY2019Q2、FY2019Q3、FY2019Q4、FY2020Q1、FY2020Q2、FY2020Q3、FY2020Q4、FY2021Q1、FY2021Q2、FY2021Q3、FY2021Q4、FY2022Q1、FY2022Q2、FY2022Q3、FY2022Q4、FY2023Q1、FY2023Q2、FY2023Q3、FY2023Q4、FY2024Q1、FY2024Q2、FY2024Q3、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q2、FY2026Q3 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"}}, "charts": [{"amount": [6.14, 6.84, 8.2, 8.25, 7.51, 7.06, 8.32, 9.21, 8.46, 7.85, 8.49, 9.4, 7.1, 7.75, 9.4, 10.39, 10.31, 10.38, 12.14, 12.68, 12.92, 13.29, 14.88, 15.74, 17.57, 18.16, 20.23, 19.93, 16.72, 15.68, 17.28, 19.62, 18.87, 20.82, 23.5, 26.88, 25.53, 30.07, 33.1, 33.73, 35.9, 40.2, 46.72], "amount_text": ["$6.14B", "$6.84B", "$8.20B", "$8.25B", "$7.51B", "$7.06B", "$8.32B", "$9.21B", "$8.46B", "$7.85B", "$8.49B", "$9.40B", "$7.10B", "$7.75B", "$9.40B", "$10.39B", "$10.31B", "$10.38B", "$12.14B", "$12.68B", "$12.92B", "$13.29B", "$14.88B", "$15.74B", "$17.57B", "$18.16B", "$20.23B", "$19.93B", "$16.72B", "$15.68B", "$17.28B", "$19.62B", "$18.87B", "$20.82B", "$23.50B", "$26.88B", "$25.53B", "$30.07B", "$33.10B", "$33.73B", "$35.90B", "$40.20B", "$46.72B"], "annual": {"amount": [29.43, 32.1, 34.2, 34.64, 45.51, 56.83, 75.89, 69.3, 90.07, 122.43], "amount_text": ["$29.43B", "$32.10B", "$34.20B", "$34.64B", "$45.51B", "$56.83B", "$75.89B", "$69.30B", "$90.07B", "$122.43B"], "labels": ["FY2016", "FY2017", "FY2018", "FY2019", "FY2020", "FY2021", "FY2022", "FY2023", "FY2024", "FY2025"], "yoy": [null, 9.1, 6.5, 1.3, 31.4, 24.9, 33.5, -8.7, 30.0, 35.9]}, "kind": "amount_yoy", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "subtitle": "十亿美元", "title": "营业收入", "yoy": [null, null, null, null, 22.3, 3.2, 1.5, 11.6, 12.6, 11.2, 2.0, 2.1, -16.1, -1.3, 10.7, 10.5, 45.2, 33.9, 29.1, 22.0, 25.3, 28.0, 22.6, 24.1, 36.0, 36.6, 36.0, 26.6, -4.8, -13.7, -14.6, -1.6, 12.9, 32.8, 36.0, 37.0, 35.3, 44.4, 40.9, 25.5, 40.6, 33.7, 41.1]}, {"annual": null, "focus": "FY2022Q2", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2016Q1"}, {"gap": true, "items": [], "period": "FY2016Q2"}, {"gap": true, "items": [], "period": "FY2016Q3"}, {"gap": true, "items": [], "period": "FY2016Q4"}, {"gap": true, "items": [], "period": "FY2017Q1"}, {"gap": true, "items": [], "period": "FY2017Q2"}, {"gap": true, "items": [], "period": "FY2017Q3"}, {"gap": true, "items": [], "period": "FY2017Q4"}, {"gap": true, "items": [], "period": "FY2018Q1"}, {"gap": true, "items": [], "period": "FY2018Q2"}, {"gap": true, "items": [], "period": "FY2018Q3"}, {"gap": true, "items": [], "period": "FY2018Q4"}, {"gap": true, "items": [], "period": "FY2019Q1"}, {"gap": true, "items": [], "period": "FY2019Q2"}, {"gap": true, "items": [], "period": "FY2019Q3"}, {"gap": true, "items": [], "period": "FY2019Q4"}, {"gap": true, "items": [], "period": "FY2020Q1"}, {"gap": true, "items": [], "period": "FY2020Q2"}, {"gap": true, "items": [], "period": "FY2020Q3"}, {"gap": true, "items": [], "period": "FY2020Q4"}, {"gap": true, "items": [], "period": "FY2021Q1"}, {"gap": true, "items": [], "period": "FY2021Q2"}, {"gap": true, "items": [], "period": "FY2021Q3"}, {"gap": true, "items": [], "period": "FY2021Q4"}, {"gap": true, "items": [], "period": "FY2022Q1"}, {"gap": true, "items": [], "period": "FY2022Q2"}, {"gap": true, "items": [], "period": "FY2022Q3"}, {"gap": true, "items": [], "period": "FY2022Q4"}, {"gap": true, "items": [], "period": "FY2023Q1"}, {"gap": true, "items": [], "period": "FY2023Q2"}, {"gap": true, "items": [], "period": "FY2023Q3"}, {"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": false, "items": [{"amount": "$14.25B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 53.0, "stack": true, "value": 14246400000.0}, {"amount": "$9.41B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 35.0, "stack": true, "value": 9408000000.0}, {"amount": "$1.34B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1344000000.0}, {"amount": "$1.08B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1075200000.0}, {"amount": "$268.80M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 268800000.0}, {"amount": "$537.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 537600000.0}], "period": "FY2024Q4"}, {"gap": false, "items": [{"amount": "$15.06B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 59.0, "stack": true, "value": 15062700000.0}, {"amount": "$7.15B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 28.0, "stack": true, "value": 7148400000.0}, {"amount": "$1.28B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$1.28B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 5.0, "stack": true, "value": 1276500000.0}, {"amount": "$255.30M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 255300000.0}, {"amount": "$510.60M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 510600000.0}], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": false, "items": [{"amount": "$21.90B", "key": "hpc", "legend": "高性能计算", "name": "高性能计算", "share": 61.0, "stack": true, "value": 21899000000.0}, {"amount": "$9.33B", "key": "smartphone", "legend": "智能手机", "name": "智能手机", "share": 26.0, "stack": true, "value": 9334000000.0}, {"amount": "$2.15B", "key": "iot", "legend": "物联网", "name": "物联网", "share": 6.0, "stack": true, "value": 2154000000.0}, {"amount": "$1.44B", "key": "auto", "legend": "汽车", "name": "汽车", "share": 4.0, "stack": true, "value": 1436000000.0}, {"amount": "$359.00M", "key": "dce", "legend": "数字消费电子", "name": "数字消费电子", "share": 1.0, "stack": true, "value": 359000000.0}, {"amount": "$718.00M", "key": "other", "legend": "其他", "name": "其他", "share": 2.0, "stack": true, "value": 718000000.0}], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按业务"}, {"annual": null, "focus": "FY2022Q2", "kind": "share", "labels": ["FY2016Q1", "FY2016Q2", "FY2016Q3", "FY2016Q4", "FY2017Q1", "FY2017Q2", "FY2017Q3", "FY2017Q4", "FY2018Q1", "FY2018Q2", "FY2018Q3", "FY2018Q4", "FY2019Q1", "FY2019Q2", "FY2019Q3", "FY2019Q4", "FY2020Q1", "FY2020Q2", "FY2020Q3", "FY2020Q4", "FY2021Q1", "FY2021Q2", "FY2021Q3", "FY2021Q4", "FY2022Q1", "FY2022Q2", "FY2022Q3", "FY2022Q4", "FY2023Q1", "FY2023Q2", "FY2023Q3", "FY2023Q4", "FY2024Q1", "FY2024Q2", "FY2024Q3", "FY2024Q4", "FY2025Q1", "FY2025Q2", "FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2", "FY2026Q3"], "points": [{"gap": true, "items": [], "period": "FY2016Q1"}, {"gap": true, "items": [], "period": "FY2016Q2"}, {"gap": true, "items": [], "period": "FY2016Q3"}, {"gap": true, "items": [], "period": "FY2016Q4"}, {"gap": true, "items": [], "period": "FY2017Q1"}, {"gap": true, "items": [], "period": "FY2017Q2"}, {"gap": true, "items": [], "period": "FY2017Q3"}, {"gap": true, "items": [], "period": "FY2017Q4"}, {"gap": true, "items": [], "period": "FY2018Q1"}, {"gap": true, "items": [], "period": "FY2018Q2"}, {"gap": true, "items": [], "period": "FY2018Q3"}, {"gap": true, "items": [], "period": "FY2018Q4"}, {"gap": true, "items": [], "period": "FY2019Q1"}, {"gap": true, "items": [], "period": "FY2019Q2"}, {"gap": true, "items": [], "period": "FY2019Q3"}, {"gap": true, "items": [], "period": "FY2019Q4"}, {"gap": true, "items": [], "period": "FY2020Q1"}, {"gap": true, "items": [], "period": "FY2020Q2"}, {"gap": true, "items": [], "period": "FY2020Q3"}, {"gap": true, "items": [], "period": "FY2020Q4"}, {"gap": true, "items": [], "period": "FY2021Q1"}, {"gap": true, "items": [], "period": "FY2021Q2"}, {"gap": true, "items": [], "period": "FY2021Q3"}, {"gap": true, "items": [], "period": "FY2021Q4"}, {"gap": true, "items": [], "period": "FY2022Q1"}, {"gap": true, "items": [], "period": "FY2022Q2"}, {"gap": true, "items": [], "period": "FY2022Q3"}, {"gap": true, "items": [], "period": "FY2022Q4"}, {"gap": true, "items": [], "period": "FY2023Q1"}, {"gap": true, "items": [], "period": "FY2023Q2"}, {"gap": true, "items": [], "period": "FY2023Q3"}, {"gap": true, "items": [], "period": "FY2023Q4"}, {"gap": true, "items": [], "period": "FY2024Q1"}, {"gap": true, "items": [], "period": "FY2024Q2"}, {"gap": true, "items": [], "period": "FY2024Q3"}, {"gap": true, "items": [], "period": "FY2024Q4"}, {"gap": true, "items": [], "period": "FY2025Q1"}, {"gap": true, "items": [], "period": "FY2025Q2"}, {"gap": true, "items": [], "period": "FY2025Q3"}, {"gap": true, "items": [], "period": "FY2025Q4"}, {"gap": true, "items": [], "period": "FY2026Q1"}, {"gap": true, "items": [], "period": "FY2026Q2"}, {"gap": true, "items": [], "period": "FY2026Q3"}], "subtitle": "占比", "title": "按地区"}], "default": "revenue", "grain": true, "note": "美元营收取自财报幻灯片「Net Revenue (US$ billions)」当季列；该季白字为空时，用后一份幻灯片的上季或去年同季列，不取指引列。台币营业费用和净利润除以同一列的 Average Exchange Rate--USD/NTD 换成美元。毛利 = 美元营收 × 毛利率，营业利润 = 美元营收 × 营业利润率，营业成本 = 美元营收 − 毛利。1 ADR = 5 股普通股。普通股 EPS 为新台币。ADR 美元只取新闻稿写明的 US$ per ADR，不按当季平均汇率把新台币换算成美元。平台占比只取「nQyy Revenue by Platform」文字且合计约 100% 的季度，金额 = 占比 × 当季美元营收；全年页，以及只有图、文字里没有百分比的季度，不补数。地区收入在已保存文字里没有占比，geo 留空。不使用图像识别，不把新台币当成美元。幻灯片没有覆盖、或当季营收为空时，只用新闻稿写明的美元金额和 US$ per ADR 补上，不按汇率把新台币换算成美元。 已保存的披露文字里没有地区收入，地区柱留空。 FY2016Q1、FY2016Q2、FY2016Q3、FY2016Q4、FY2017Q1、FY2017Q2、FY2017Q3、FY2017Q4、FY2018Q1、FY2018Q2、FY2018Q3、FY2018Q4、FY2019Q1、FY2019Q2、FY2019Q3、FY2019Q4、FY2020Q1、FY2020Q2、FY2020Q3、FY2020Q4、FY2021Q1、FY2021Q2、FY2021Q3、FY2021Q4、FY2022Q1、FY2022Q2、FY2022Q3、FY2022Q4、FY2023Q1、FY2023Q2、FY2023Q3、FY2023Q4、FY2024Q1、FY2024Q2、FY2024Q3、FY2025Q2、FY2025Q3、FY2025Q4、FY2026Q2、FY2026Q3 没有完整的业务分部，柱上留空。 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"},
-  "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。 柱上是新闻稿写明的 US$1.55 per ADR，不是把新台币按平均汇率换算。记分卡若因只有台币引用被清空，仍用这句已披露的美元。", "quarters": [{"actual": 1.08, "basis": "GAAP", "consensus": 1.04, "label": "FQ3 2021", "note": "超预期 $0.04", "note_cls": "beat", "yoy_pct": 20.000000000000004}, {"actual": 1.15, "basis": "GAAP", "consensus": 1.12, "label": "FQ4 2021", "note": "超预期 $0.03", "note_cls": "beat", "yoy_pct": 18.55670103092783}, {"actual": 1.4, "basis": "GAAP", "consensus": 1.27, "label": "FQ1 2022", "note": "超预期 $0.13", "note_cls": "beat", "yoy_pct": 45.83333333333333}, {"actual": 1.55, "basis": "GAAP", "consensus": 1.44, "label": "FQ2 2022", "note": "超预期 $0.11", "note_cls": "beat", "yoy_pct": 66.66666666666666}, {"actual": 1.79, "basis": "GAAP", "consensus": 1.65, "label": "FQ3 2022", "note": "超预期 $0.14", "note_cls": "beat", "yoy_pct": 65.74074074074073}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 05:29 PT。", "quarters": [{"actual": 14.88, "basis": "营收", "consensus": 14.81, "label": "FQ3 2021", "note": "超预期 $68.53M", "note_cls": "beat", "yoy_pct": 22.57001647446458}, {"actual": 15.74, "basis": "营收", "consensus": 15.69, "label": "FQ4 2021", "note": "超预期 $54.71M", "note_cls": "beat", "yoy_pct": 24.13249211356467}, {"actual": 17.57, "basis": "营收", "consensus": 16.73, "label": "FQ1 2022", "note": "超预期 $835.11M", "note_cls": "beat", "yoy_pct": 35.9907120743034}, {"actual": 18.16, "basis": "营收", "consensus": 17.68, "label": "FQ2 2022", "note": "超预期 $479.97M", "note_cls": "beat", "yoy_pct": 36.644093303235515}, {"actual": 20.23, "basis": "营收", "consensus": 19.44, "label": "FQ3 2022", "note": "超预期 $789.34M", "note_cls": "beat", "yoy_pct": 35.954301075268816}], "sides": []}, "sides": []}
+  "epsChart": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 实际，橙线 = 同比", "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 17:54 PT。 柱上是新闻稿写明的 US$1.55 per ADR，不是把新台币按平均汇率换算。记分卡若因只有台币引用被清空，仍用这句已披露的美元。", "quarters": [{"actual": 1.08, "basis": "GAAP", "consensus": 1.04, "label": "FQ3 2021", "note": "超预期 $0.04", "note_cls": "beat", "yoy_pct": 20.000000000000004}, {"actual": 1.15, "basis": "GAAP", "consensus": 1.12, "label": "FQ4 2021", "note": "超预期 $0.03", "note_cls": "beat", "yoy_pct": 18.55670103092783}, {"actual": 1.4, "basis": "GAAP", "consensus": 1.27, "label": "FQ1 2022", "note": "超预期 $0.13", "note_cls": "beat", "yoy_pct": 45.83333333333333}, {"actual": 1.55, "basis": "GAAP", "consensus": 1.44, "label": "FQ2 2022", "note": "超预期 $0.11", "note_cls": "beat", "yoy_pct": 66.66666666666666}, {"actual": 1.79, "basis": "GAAP", "consensus": 1.65, "label": "FQ3 2022", "note": "超预期 $0.14", "note_cls": "beat", "yoy_pct": 65.74074074074073}], "revenue": {"hint": "深灰柱 = street 一致预期，浅蓝柱 = 营收实际，橙线 = 同比", "horizons": [], "note": "深灰柱是已保存的一致预期，浅蓝柱是实际，橙线是同比。没有一致预期的季度不画灰柱。 TradingView scanner · 截止 2026-10-23 17:54 PT。", "quarters": [{"actual": 14.88, "basis": "营收", "consensus": 14.81, "label": "FQ3 2021", "note": "超预期 $68.53M", "note_cls": "beat", "yoy_pct": 22.57001647446458}, {"actual": 15.74, "basis": "营收", "consensus": 15.69, "label": "FQ4 2021", "note": "超预期 $54.71M", "note_cls": "beat", "yoy_pct": 24.13249211356467}, {"actual": 17.57, "basis": "营收", "consensus": 16.73, "label": "FQ1 2022", "note": "超预期 $835.11M", "note_cls": "beat", "yoy_pct": 35.9907120743034}, {"actual": 18.16, "basis": "营收", "consensus": 17.68, "label": "FQ2 2022", "note": "超预期 $479.97M", "note_cls": "beat", "yoy_pct": 36.644093303235515}, {"actual": 20.23, "basis": "营收", "consensus": 19.44, "label": "FQ3 2022", "note": "超预期 $789.34M", "note_cls": "beat", "yoy_pct": 35.954301075268816}], "sides": []}, "sides": []}
 };
 </script>
 <script src="../../static/charts.js"></script>
