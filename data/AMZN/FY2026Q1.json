@@ -9,11 +9,17 @@
     "release_at_utc": "",
     "accession": "",
     "press_release_url": "",
-    "transcript_source": null,
-    "eps_basis": "gaap"
+    "transcript_source": "tickertrends",
+    "eps_basis": "gaap",
+    "transcript_url": "https://tickertrends.io/transcripts/AMZN/Q1-earnings-transcript-2026",
+    "stage2_generation": {
+      "llm_model": "sonnet",
+      "generated_by": "mac-claude-cli",
+      "note": "Historical Stage2 written via local Claude CLI (sonnet medium) from English Obsidian/tickertrends transcript, without OpenRouter."
+    }
   },
   "status": {
-    "stage": "backfill_gaap",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。"
@@ -147,12 +153,343 @@
     }
   },
   "drivers": {
-    "stage": 0,
-    "metrics": [],
-    "status": "历史回补不含变动原因"
+    "stage": 2,
+    "status": "done",
+    "metrics": [
+      {
+        "metric": "revenue",
+        "summary": "收入1815亿美元，同比增17%（剔除汇率增15%）；AWS加速至28%，件量增15%，广告增22%。",
+        "drivers": [
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": true,
+            "description": "零售件量同比增长15%，为疫情末期以来最高；北美收入增12%。",
+            "evidence_quote": "Units grew 15% year-over-year, the highest we've seen since the tail end of COVID lockdowns.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "AWS收入376亿美元，增速加快480个基点至28%，核心与AI服务共同驱动；广告收入172亿美元，增22%。",
+            "evidence_quote": "Revenue was $37.6 billion and growth accelerated 480 basis points to 28% year-over-year, driven by both core and AI services.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "汇率",
+            "direction": "+",
+            "is_primary": false,
+            "description": "汇率带来29亿美元有利影响，剔除后净销售额增长15%。",
+            "evidence_quote": "Excluding the $2.9 billion favorable impact from foreign exchange, net sales increased 15%.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "gross_margin_gaap",
+        "summary": "毛利率51.8%，同比升1.3pp，环比升3.3pp，应与高毛利的AWS与广告占比提升及履约效率改善有关。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AWS与广告增长快于零售，高毛利业务占比提升（推断，电话会未直接讲毛利率）。",
+            "evidence_quote": "",
+            "source": "prepared_remarks",
+            "is_inference": true,
+            "reasoning": "电话会未讨论毛利率，由AWS增28%、广告增22%快于总收入推断。",
+            "quote_unverified": false
+          },
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": false,
+            "description": "履约网络效率提升，件量增长快于运营成本，降低单位服务成本。",
+            "evidence_quote": "Overall unit growth of 15% continues to outpace our cost to operate the fulfillment network",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_margin_gaap",
+        "summary": "营业利润率13.1%，创历史新高，同比升1.3pp；各分部运营更高效。",
+        "drivers": [
+          {
+            "type": "单位成本",
+            "direction": "+",
+            "is_primary": true,
+            "description": "履约成本增速（9%）和出站运费增速（12%）低于件量增速（15%），推动利润率提升。",
+            "evidence_quote": "outbound shipping costs grew 12% year-over-year and fulfillment expense grew 9% year-over-year",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "AWS营业利润142亿美元，随高增长与效率提升放大。",
+            "evidence_quote": "AWS operating income was $14.2 billion and reflects our strong growth, coupled with our focus on driving efficiencies across the business.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_income_gaap",
+        "summary": "营业利润238.5亿美元，同比增30%；北美83亿、国际14亿、AWS142亿。",
+        "drivers": [
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": true,
+            "description": "AWS贡献142亿美元，是营业利润最大来源；北美营业利润率7.9%，国际3.6%。",
+            "evidence_quote": "AWS operating income was $14.2 billion",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "收入增长17%，件量增15%，运营杠杆释放。",
+            "evidence_quote": "Worldwide operating income was $23.9 billion with an operating margin of 13.1%, our highest operating margin ever.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "net_income_gaap",
+        "summary": "净利润302.6亿美元，同比增77%，明显高于营业利润；电话会未解释差额来源。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "净利润超过营业利润，应有非营业收益贡献，电话会未说明，属推断。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "净利润302.6亿美元高于营业利润238.5亿美元，差额来自营业外项目，具体原因文字稿未提供。",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营业利润同比增30%，提供利润基础。",
+            "evidence_quote": "Worldwide operating income was $23.9 billion",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "eps_gaap",
+        "summary": "GAAP每股收益2.78美元，同比增75%，主要随净利润增长。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "EPS增长随净利润增长（同比+77%），电话会未单独讨论EPS，属推断。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "EPS与净利润同向，电话会未对EPS给出说明。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "capex",
+        "summary": "Q1现金资本开支432亿美元，主要用于AWS和生成式AI以满足强劲需求。",
+        "drivers": [
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": true,
+            "description": "资本开支主要用于AWS和生成式AI，支持客户强劲需求。",
+            "evidence_quote": "Our cash CapEx was $43.2 billion in Q1.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "量",
+            "direction": "+",
+            "is_primary": false,
+            "description": "AWS增长越快，短期资本开支越多；土地、电力、芯片等在计费前6至24个月投入。",
+            "evidence_quote": "the faster AWS grows, the more short-term CapEx we will spend.",
+            "source": "prepared_remarks",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "operating_cash_flow",
+        "summary": "经营现金流260.3亿美元，同比增53%，环比降52%；电话会未单独解释。",
+        "drivers": [
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": true,
+            "description": "同比增长应与营业利润增长相关；环比下降应与季节性营运资金变动有关，电话会未说明，属推断。",
+            "evidence_quote": "",
+            "source": "press_release",
+            "is_inference": true,
+            "reasoning": "文字稿未讨论经营现金流驱动因素。",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      }
+    ]
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "Q2净销售额",
+        "period": "FY2026Q2",
+        "type": "numeric",
+        "low_raw": "194 billion",
+        "high_raw": "199 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "预计Q2净销售额在1940亿至1990亿美元之间；假设Prime Day在美国等主要地区移至Q2。",
+        "source": "prepared_remarks",
+        "source_quote": "Q2 net sales are expected to be between $194 billion and $199 billion.",
+        "low": 194000000000.0,
+        "mid": 196500000000.0,
+        "high": 199000000000.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Q2汇率影响",
+        "period": "FY2026Q2",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately 10 basis points headwind",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "-",
+        "statement": "按当前汇率估计，汇率对Q2同比构成约10个基点的逆风。",
+        "source": "prepared_remarks",
+        "source_quote": "which we expect to be a headwind of approximately 10 basis points in the quarter",
+        "low": 10.0,
+        "mid": 10.0,
+        "high": 10.0
+      },
+      {
+        "metric_key": "operating_margin",
+        "metric_label": "Q2营业利润",
+        "period": "FY2026Q2",
+        "type": "numeric",
+        "low_raw": "20 billion",
+        "high_raw": "24 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "预计Q2营业利润在200亿至240亿美元之间，含股权激励季节性上升、Leo成本和燃油通胀影响。",
+        "source": "prepared_remarks",
+        "source_quote": "Q2 operating income is expected to be between $20 billion and $24 billion.",
+        "low": 20000000000.0,
+        "mid": 22000000000.0,
+        "high": 24000000000.0
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Amazon Leo成本",
+        "period": "FY2026Q2",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately $1 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "-",
+        "statement": "北美分部Q2与Amazon Leo相关的成本同比增加约10亿美元；Leo商用服务预计Q3上线，Q4起开始资本化部分成本。",
+        "source": "prepared_remarks",
+        "source_quote": "within the North America segment, we do expect a year-over-year cost increase of approximately $1 billion related to Amazon Leo",
+        "low": 1000000000.0,
+        "mid": 1000000000.0,
+        "high": 1000000000.0
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "Q2股权激励与运输成本",
+        "period": "FY2026Q2",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": "-",
+        "statement": "Q2含年度薪酬周期带来的股权激励季节性上升，运输成本因燃油通胀上升，部分被新的FBA燃油与物流附加费抵消。",
+        "source": "prepared_remarks",
+        "source_quote": "our guidance anticipates higher transportation costs related to fuel inflation, which is partially offset by the recently implemented fuel and logistics-related FBA surcharge.",
+        "low": null,
+        "mid": null,
+        "high": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "资本开支",
+        "period": "FY2026",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "+",
+        "statement": "管理层表示资本开支计划与之前大体一致，将继续大量投入，尤其是AI；AWS增长越快短期资本开支越多。",
+        "source": "qa",
+        "source_quote": "I don't have an update on -- a new update on capital. Our plan is largely the same",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -162,21 +499,433 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": []
+    "industry_outlook": [
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AWS需求处于加速阶段：收入376亿美元，增速28%，为15个季度最高，由核心与AI服务共同驱动，AI收入同比三位数增长。管理层强调AI支出与核心服务需求高度相关，AI工作负载进入生产后会带动核心需求，后训练、强化学习和智能体调用都消耗大量CPU和核心服务。"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "Q1在手订单（backlog）3640亿美元，不含Anthropic超1000亿美元的新协议；管理层称客户有相当广度。",
+              "企业侧AI当前最大成果在降本增效项目（客服、流程自动化、欺诈检测），全新体验类项目也在进入生产。",
+              "内存涨价和供应紧张促使本地部署客户加快上云，因为供应商优先供给最大客户。"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层指出内存等组件成本大幅上涨、整体供给不足，但公司从去年中后期就与战略供应商锁定大量供给，目前未受产能限制，仍在密切观察。Trainium2基本售罄，Trainium3几乎被认购完，Trainium4已有大部分被预订；管理层还提到有潜在向外销售Trainium机架的可能，但需在现有需求与外售之间权衡。"
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "管理层强调自研芯片带来的差异化：Trainium2价格性能比可比GPU约好30%，自研芯片业务年化收入超200亿美元，若按同行方式对外销售则相当于500亿美元，并声称已是全球前三的数据中心芯片业务之一。同时与NVIDIA保持深度合作，仍会大量下单。在模型层，Bedrock引入OpenAI模型和有状态托管智能体，管理层称这是别人没有的。"
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AWS的资本开支需要在计费前6至24个月投入土地、电力、建筑和芯片服务器，数据中心使用寿命30年以上，芯片服务器网络设备为5至6年。管理层承认在资本开支增速明显超过收入增速时，早期自由现金流承压，但认为投入数年后累计自由现金流和投资回报有吸引力。长期看，Trainium预计每年可节省数百亿美元资本开支，并带来数百个基点的营业利润率优势。"
+          }
+        ]
+      },
+      {
+        "title": "公司战略（智能体电商与新业务）",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "零售：件量增15%，生鲜同日达覆盖超2300个城镇，Rufus月活增超115%，管理层计划把Rufus做成最好的购物助手，并与第三方通用智能体沟通改进。",
+              "广告：收入172亿美元，增22%，管理层认为智能体电商带来赞助内容和赞助提示词的新机会。",
+              "Amazon Leo：商用服务预计Q3上线，今年计划超20次发射，Q2会带来约10亿美元同比成本增加，Q4起开始资本化部分成本。"
+            ]
+          }
+        ]
+      }
+    ],
+    "management_eps": {
+      "basis": "GAAP",
+      "next_quarter": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2026Q2",
+        "metric_key": null,
+        "display": "无"
+      },
+      "full_year": {
+        "basis": "GAAP",
+        "provided": false,
+        "source": null,
+        "guidance_origin": null,
+        "source_quote": null,
+        "period": "FY2026",
+        "metric_key": null,
+        "display": "无"
+      }
+    }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "为兑现当前 AWS 在手订单，未来几年需要多大投入来扩充算力和产能？自研芯片和 AI 基础设施路线在竞争中有何优势？",
+        "answer_summary": "Andy（CEO）：AWS 增速 28%，是 15 个季度以来最快，基数为 1500 亿美元年化收入。客户选择 AWS 做 AI，原因是全栈能力、推理要靠近数据和应用，以及安全与运营表现。\n核心业务同样强劲，来自企业上云迁移，也来自 AI 带动的后训练、强化学习和智能体调用。\n公司同时拥有 Graviton CPU 和 Trainium AI 芯片。资本开支没有新的更新，计划与之前大体一致。他预计未来几年会投入大量资本，把握这个“千载难逢”的机会。",
+        "new_numbers": [
+          "AWS 同比增长28%",
+          "年化收入约1500亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出未来几年具体投资金额，只称计划大体不变",
+        "tone": "positive",
+        "answer_quote": "I don't have an update on -- a new update on capital. Our plan is largely the same, but we do view this as truly a once-in-a-lifetime opportunity",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "请更新 AWS 在手订单（backlog）的规模，以及除大型 AI 实验室外的客户广度。",
+        "answer_summary": "Andy（CEO）：Q1 backlog 为 3640 亿美元，不含近期宣布的 Anthropic 超 1000 亿美元新协议。客户有相当的广度，并非只集中在一两家。",
+        "new_numbers": [
+          "Q1 backlog 3640亿美元",
+          "Anthropic 新协议超1000亿美元（未计入）"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "the backlog for Q1 is $364 billion. That does not include the recent deal that we announced with Anthropic for over $100 billion.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "2026 年在 Rufus 和智能体电商方面，公司最关注哪些里程碑，才能保持领先？",
+        "answer_summary": "Andy（CEO）：非常看好智能体电商。Rufus 月活增长超过 115%，互动量增长超过 400%。\n当前第三方通用智能体在价格、商品信息和个性化数据上还做得不好，类似早期搜索引擎的导流阶段。公司在与这些方沟通改进。\n他认为用户会倾向从自己常购的零售商的购物助手开始，所以目标是把 Rufus 做成最好的购物助手。",
+        "new_numbers": [
+          "Rufus 月活增长超115%",
+          "互动量增长超400%"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出 2026 年具体里程碑，只讲方向",
+        "tone": "positive",
+        "answer_quote": "we're aiming to have it be the best shopping assistant anywhere, and I think we're on that path.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "Bedrock 上线全套 OpenAI 模型有多大意义？公司对自研 Nova 模型的重视程度如何？",
+        "answer_summary": "Andy（CEO）：这对客户意义重大，因为客户需要选择，没有一个模型能通吃。5.4 无状态模型已于昨日上线，5.5 将在几周内上线。\n他认为未来是有状态 API，与 OpenAI 合作推出的 Bedrock 托管智能体（预览）是别人没有的。他没有直接回应 Nova。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回答对 Nova 的投入侧重",
+        "tone": "positive",
+        "answer_quote": "I think the future of using these models is a stateful model, a stateful API.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "股东信提到可能出售 Trainium 机架。在产能紧张下，时间表和机会规模如何？",
+        "answer_summary": "Andy（CEO）：这很有可能。但 Trainium 需求极大，需要在现有客户和留作机架销售之间分配。对现有客户，也要权衡是“Trainium 加 AWS 云基础设施”还是只卖芯片。他预计未来几年很可能会出售机架。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出时间点和规模",
+        "tone": "positive",
+        "answer_quote": "I expect over time, there's a good chance we're going to sell racks over the next couple of years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Robert Sanderson",
+        "firm": "Loop Capital Markets",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "请量化 Amazon Leo 未来几年在消费者和企业市场的收入机会、放量的制约因素、Globalstar 带来的新服务，以及长期是否会延伸到轨道数据中心等非通信服务。",
+        "answer_summary": "Andy（CEO）：非常看好 Leo。已有超过250颗卫星在轨，今年计划超过20次发射，2027年超过30次。\n商用后性能预计下行约2倍、上行约6倍优于现有方案，并有成本优势。Delta 承诺从2028年起至少一半机队使用。\n制约增长的主要因素是把星座送上太空。业务有机会成为数十亿美元级收入业务，前期资本密集，类似 AWS。\n收购 Globalstar 获得稀缺频谱和卫星技术，用于直连设备，并与 Apple 建立合作。他没有回答轨道数据中心等问题，也没有给出具体收入数字。",
+        "new_numbers": [
+          "在轨卫星超250颗",
+          "2026年计划超20次发射",
+          "2027年超30次发射",
+          "下行约2倍、上行约6倍优于现有方案"
+        ],
+        "directness": "partial",
+        "evasion_note": "未量化收入，未回应轨道数据中心",
+        "tone": "positive",
+        "answer_quote": "what stops us from growing the business, we have to get the constellation into space. We have over 20 launches planned this year. We have over 30 launches planned in 2027.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Shweta Khajuria",
+        "firm": "Wolfe Research",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "内存和存储涨价及供应链通胀，会如何影响今年及明年的资本开支？",
+        "answer_summary": "Andy（CEO）：内存等组件成本大幅上涨，供需缺口明显。公司从去年中后期就看到趋势，与战略供应商合作获得了大量供应，目前没有受产能限制，但在密切关注。\n供应商优先供给最大的客户（含云厂商），这促使有本地基础设施的企业加快上云。他没有给出对资本开支的量化影响。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未量化对资本开支的影响",
+        "tone": "cautious",
+        "answer_quote": "I think the team has been very scrappy. I think we've done a good job in making sure that we're not capacity constrained there, but we're watching that very closely.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Shweta Khajuria",
+        "firm": "Wolfe Research",
+        "topic": "搜索与广告",
+        "is_new_topic": false,
+        "question_summary": "若由智能体代替用户购物，广告机会如何看待？",
+        "answer_summary": "Andy（CEO）：他认为广告会受益。广告智能体工具让中小商家制作创意和选受众更快更省，会带来更多广告主。\n智能体对话是多轮的，有多个机会展示相关商品，部分是自然结果，部分是赞助内容，还包括赞助提示词（sponsored prompts）。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I actually believe that advertising will do well in a world of agentic commerce.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "早期采用者和大客户的增量 AI 需求，与更广泛企业客户的需求曲线相比如何？",
+        "answer_summary": "Andy（CEO）：AI 实验室在算力上花费巨大，这些公司在 AI 和核心业务上都大量消费。同时企业采用也相当可观。\n企业目前最大的成功仍是降本增效类项目，例如客服自动化、流程自动化和欺诈检测。全新体验和重塑现有体验的项目也在进入生产，数量显著。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "the largest absolute place that we see enterprises having success is in projects that are around cost avoidance and productivities.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Colin Sebastian",
+        "firm": "Baird",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "在亚马逊内部，AI 在产品和运营效率两方面最大的机会在哪里？",
+        "answer_summary": "Andy（CEO）：他认为公司任何业务和工作方式都会受到巨大影响。所有客户体验将被重新发明，每条业务线都要从零设想未来体验。\n内部工作方式也会被改变：智能体编码已在改变产品开发，DevOps、客服、研究、分析和销售也会如此。\n他举例：某服务的引擎替换，通常需要40至50人约一年，而5人借助智能体编码工具在65天内完成。",
+        "new_numbers": [
+          "5人65天完成原需40-50人约一年的工作"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "we took 5 really smart people, AI forward-thinking people building on agentic coding tools and those 5 people rebuilt it in 65 days.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "产能与资本开支": 2,
+      "客户与订单": 1,
+      "AI 产品与模型": 3,
+      "其他": 1,
+      "毛利率与成本": 1,
+      "搜索与广告": 1,
+      "需求与出货": 1
+    },
+    "new_topics": [
+      "AI 产品与模型",
+      "产能与资本开支",
+      "其他",
+      "客户与订单",
+      "搜索与广告",
+      "毛利率与成本",
+      "需求与出货"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "AI 产品与模型",
+      "产能与资本开支",
+      "客户与订单"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "为兑现当前 AWS 在手订单，未来几年需要多大投入来扩充算力和产能？自研芯片和 AI 基础设施路线在竞争中有何优势？",
+        "answer_summary": "Andy（CEO）：AWS 增速 28%，是 15 个季度以来最快，基数为 1500 亿美元年化收入。客户选择 AWS 做 AI，原因是全栈能力、推理要靠近数据和应用，以及安全与运营表现。\n核心业务同样强劲，来自企业上云迁移，也来自 AI 带动的后训练、强化学习和智能体调用。\n公司同时拥有 Graviton CPU 和 Trainium AI 芯片。资本开支没有新的更新，计划与之前大体一致。他预计未来几年会投入大量资本，把握这个“千载难逢”的机会。",
+        "new_numbers": [
+          "AWS 同比增长28%",
+          "年化收入约1500亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出未来几年具体投资金额，只称计划大体不变",
+        "tone": "positive",
+        "answer_quote": "I don't have an update on -- a new update on capital. Our plan is largely the same, but we do view this as truly a once-in-a-lifetime opportunity",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "2026 年在 Rufus 和智能体电商方面，公司最关注哪些里程碑，才能保持领先？",
+        "answer_summary": "Andy（CEO）：非常看好智能体电商。Rufus 月活增长超过 115%，互动量增长超过 400%。\n当前第三方通用智能体在价格、商品信息和个性化数据上还做得不好，类似早期搜索引擎的导流阶段。公司在与这些方沟通改进。\n他认为用户会倾向从自己常购的零售商的购物助手开始，所以目标是把 Rufus 做成最好的购物助手。",
+        "new_numbers": [
+          "Rufus 月活增长超115%",
+          "互动量增长超400%"
+        ],
+        "directness": "partial",
+        "evasion_note": "未给出 2026 年具体里程碑，只讲方向",
+        "tone": "positive",
+        "answer_quote": "we're aiming to have it be the best shopping assistant anywhere, and I think we're on that path.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "AI 产品与模型",
+        "is_new_topic": false,
+        "question_summary": "Bedrock 上线全套 OpenAI 模型有多大意义？公司对自研 Nova 模型的重视程度如何？",
+        "answer_summary": "Andy（CEO）：这对客户意义重大，因为客户需要选择，没有一个模型能通吃。5.4 无状态模型已于昨日上线，5.5 将在几周内上线。\n他认为未来是有状态 API，与 OpenAI 合作推出的 Bedrock 托管智能体（预览）是别人没有的。他没有直接回应 Nova。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未直接回答对 Nova 的投入侧重",
+        "tone": "positive",
+        "answer_quote": "I think the future of using these models is a stateful model, a stateful API.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "股东信提到可能出售 Trainium 机架。在产能紧张下，时间表和机会规模如何？",
+        "answer_summary": "Andy（CEO）：这很有可能。但 Trainium 需求极大，需要在现有客户和留作机架销售之间分配。对现有客户，也要权衡是“Trainium 加 AWS 云基础设施”还是只卖芯片。他预计未来几年很可能会出售机架。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出时间点和规模",
+        "tone": "positive",
+        "answer_quote": "I expect over time, there's a good chance we're going to sell racks over the next couple of years.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Robert Sanderson",
+        "firm": "Loop Capital Markets",
+        "topic": "其他",
+        "is_new_topic": false,
+        "question_summary": "请量化 Amazon Leo 未来几年在消费者和企业市场的收入机会、放量的制约因素、Globalstar 带来的新服务，以及长期是否会延伸到轨道数据中心等非通信服务。",
+        "answer_summary": "Andy（CEO）：非常看好 Leo。已有超过250颗卫星在轨，今年计划超过20次发射，2027年超过30次。\n商用后性能预计下行约2倍、上行约6倍优于现有方案，并有成本优势。Delta 承诺从2028年起至少一半机队使用。\n制约增长的主要因素是把星座送上太空。业务有机会成为数十亿美元级收入业务，前期资本密集，类似 AWS。\n收购 Globalstar 获得稀缺频谱和卫星技术，用于直连设备，并与 Apple 建立合作。他没有回答轨道数据中心等问题，也没有给出具体收入数字。",
+        "new_numbers": [
+          "在轨卫星超250颗",
+          "2026年计划超20次发射",
+          "2027年超30次发射",
+          "下行约2倍、上行约6倍优于现有方案"
+        ],
+        "directness": "partial",
+        "evasion_note": "未量化收入，未回应轨道数据中心",
+        "tone": "positive",
+        "answer_quote": "what stops us from growing the business, we have to get the constellation into space. We have over 20 launches planned this year. We have over 30 launches planned in 2027.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Shweta Khajuria",
+        "firm": "Wolfe Research",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "内存和存储涨价及供应链通胀，会如何影响今年及明年的资本开支？",
+        "answer_summary": "Andy（CEO）：内存等组件成本大幅上涨，供需缺口明显。公司从去年中后期就看到趋势，与战略供应商合作获得了大量供应，目前没有受产能限制，但在密切关注。\n供应商优先供给最大的客户（含云厂商），这促使有本地基础设施的企业加快上云。他没有给出对资本开支的量化影响。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未量化对资本开支的影响",
+        "tone": "cautious",
+        "answer_quote": "I think the team has been very scrappy. I think we've done a good job in making sure that we're not capacity constrained there, but we're watching that very closely.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "AWS增速升至28%，营业利润率13.1%创新高",
+    "key_findings": [
+      {
+        "finding": "收入与利润超预期增长",
+        "text": "收入1815亿美元，同比增17%（剔除汇率15%）；营业利润238.5亿美元，营业利润率13.1%，为公司史上最高。",
+        "evidence": "revenue"
+      },
+      {
+        "finding": "AWS加速且订单充足",
+        "text": "AWS收入376亿美元，增速28%，Q1 backlog 3640亿美元，另有Anthropic超1000亿美元新协议未计入。",
+        "evidence": "qa#2"
+      },
+      {
+        "finding": "自研芯片成为核心优势",
+        "text": "芯片业务年化收入超200亿美元、近40%环比增长；Trainium承诺收入超2250亿美元，Trainium2基本售罄、Trainium3几乎认购完。",
+        "evidence": "qa#1"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "AWS增速是否维持或继续高于Q1的28%",
+        "threshold": "≥28% 同比"
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "condition": "Q2营业利润是否落在指引区间内",
+        "threshold": "200亿至240亿美元"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "Q2现金资本开支是否继续高位，以及管理层是否更新全年资本开支",
+        "threshold": "Q1为432亿美元"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "Q2营收是否落在指引区间内（含Prime Day移至Q2）",
+        "threshold": "1940亿至1990亿美元"
+      },
+      {
+        "metric_key": "other",
+        "condition": "Amazon Leo是否在Q3按计划商用上线，Q4起成本资本化",
+        "threshold": "Q3商用上线"
+      }
+    ]
   },
   "thesis_review": {}
 }

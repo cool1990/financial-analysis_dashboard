@@ -98,7 +98,7 @@
     <a href="#expect">盈利预期</a>
     <a href="#fin">财报分析</a>
     <a href="#guide">指引展望</a>
-    <a href="#qa">问答交流</a>
+    <a href="#qa">问答交流<b>3</b></a>
     <a href="#notes">数据来源<b>1</b></a>
   </div>
 </nav>
@@ -123,11 +123,11 @@
 <details class="ev" id="fin" open>
   <summary>
     <span class="ev-t">财报分析</span>
-    <span class="ev-meta">9 项指标 · 点指标看图</span>
+    <span class="ev-meta">8 项指标 · 点指标看图</span>
   </summary>
   <div class="ev-body">
   <p class="layer-sub">点一行指标，图出现在这一行下面；再点同一行就收起。金额和占比可以切「季度」或「年度」。营业收入给出金额、同比和业务占比；有地区拆分时再给地区占比。营业成本给出金额和同比；有成本拆分时再给占比。标「推测」的是模型推断，标「引文未核实」的在原文中没找到对应句子。</p>
-<p class="pending-note">历史回补不含变动原因</p>  <div class="card rows" id="finRows">
+  <div class="card rows" id="finRows">
     <div class="mrow-head"><span>指标</span><span>本季</span><span>同比</span><span>环比</span><span>对比预期</span><span>原因</span></div>
     <button type="button" class="mrow" data-fin-metric="revenue" aria-pressed="true" aria-controls="fin-panel-revenue">
       <span class="m-name">营业收入</span>
@@ -135,7 +135,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+20.6%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+11.6%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">营收 191.8 亿美元，同比 +20.6%。OCI 收入增长 93% 是主要拉动，云应用增长约 10%。</span>
     </button>
     <div class="fin-panel" id="fin-panel-revenue" data-fin-panel="revenue">
       <div class="fin-chart-bar" data-fin-grain-bar>
@@ -158,7 +158,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note>营收、营业成本、研发、销售、管理费用来自 SEC companyfacts 的单季 us-gaap。毛利为营收减营业成本，申报没有单独的毛利科目，也没有把营业成本再拆开。地区收入来自 10-Q/10-K XBRL 的地区轴。第四季没有单季事实时用全年减前九个月；地区口径对不上时留空。 已保存的披露文字里没有地区收入，地区柱留空。</p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>云基础设施收入同比增长 93%，由 AI 工作负载和数据库服务需求驱动。</p>
+<blockquote>Cloud infrastructure revenue grew 93%, reflecting strong demand for both AI workloads and our database services</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">产品或客户结构</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>云应用收入约 41 亿美元，保持两位数增长。</p>
+<blockquote>cloud apps was up double digits at +10%</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="opex" aria-pressed="false" aria-controls="fin-panel-opex">
       <span class="m-name">营业费用</span>
@@ -185,7 +195,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-down">-0.2pp</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+0.2pp</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">GAAP 营业利润率 32.0%，同比小幅 -0.16pp，环比 +0.18pp；毛利下降大体被费用压缩抵消。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_margin_gaap" data-fin-panel="operating_margin_gaap" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -198,70 +208,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
-      <span class="m-name">营业利润（GAAP）</span>
-      <span class="m-val num">$6.13B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+20.0%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+12.2%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_margin_gaap" aria-pressed="false" aria-controls="fin-panel-net_margin_gaap">
-      <span class="m-name">净利润率（GAAP）</span>
-      <span class="m-val num">21.9%</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+0.3pp</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+0.3pp</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_margin_gaap" data-fin-panel="net_margin_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
-    </div>
-    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
-      <span class="m-name">净利润（GAAP）</span>
-      <span class="m-val num">$4.20B</span>
-      <span class="num"><i class="m-label">同比</i><span class="c-up">+22.6%</span></span>
-      <span class="num"><i class="m-label">环比</i><span class="c-up">+12.9%</span></span>
-      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
-    </button>
-    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
-      <div class="fin-chart-bar" data-fin-grain-bar hidden>
-        <div class="fin-grain" role="group" aria-label="时间粒度">
-          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
-          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
-        </div>
-      </div>
-      <div class="charts fin-charts" data-fin-charts data-cols="0">
-      </div>
-      <p class="small muted mix-note" data-fin-note hidden></p>
-      <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">单位成本</span><span class="pill alert">负贡献</span><span>管理层发言</span>          </div>
+          <p>数据中心爬坡和基础设施收入加速使毛利率下降。</p>
+<blockquote>with our gross margin declining, driven by impacts from ramping up our data centers and the acceleration in our infrastructure revenue</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>运营费用下降，抵消毛利率下滑。</p>
+<blockquote>This was more than offset in the quarter by a reduction in operating costs</blockquote>        </div>
+<p class="conflict">冲突：管理层称 non-GAAP 营业利润率同比小幅上升，而提供的 GAAP 口径同比下降约 0.16pp，口径存在差异。</p>      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="operating_cash_flow" aria-pressed="false" aria-controls="fin-panel-operating_cash_flow">
       <span class="m-name">经营现金流</span>
@@ -269,7 +226,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+137.5%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+104.4%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">经营现金流 146.2 亿美元，同比 +137%，环比 +104%；客户预付款是主要支撑，此为推断。</span>
     </button>
     <div class="fin-panel" id="fin-panel-operating_cash_flow" data-fin-panel="operating_cash_flow" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -282,7 +239,12 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>需求使公司得以收取客户预付款并采用自带硬件结构。</p>
+<blockquote>this demand is allowing us to garner customer prepayments and bring your own hardware</blockquote><p class="small muted">依据：原文说明预付款机制，但未直接将其与 Q4 经营现金流增幅挂钩，此处为推断。</p>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="capex" aria-pressed="false" aria-controls="fin-panel-capex">
       <span class="m-name">资本开支</span>
@@ -290,7 +252,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+81.6%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-down">-11.5%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">资本开支 164.9 亿美元，同比 +81.6%，环比 -11.5%；投入服务于已签约的数据中心建设。</span>
     </button>
     <div class="fin-panel" id="fin-panel-capex" data-fin-panel="capex" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -303,7 +265,17 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>为兑现增长机会持续投入数据中心基础设施建设。</p>
+<blockquote>We did continue with our program of capital investments tied to unlocking the strong growth opportunities in front of us.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span>问答环节</span>          </div>
+          <p>管理层称本季资本开支增加主要是时间节奏而非组件价格上涨。</p>
+<blockquote>any increase in CapEx that is not due to component prices from our perspective, that&#39;s largely around timing.</blockquote>        </div>
+      </div>
     </div>
     <button type="button" class="mrow" data-fin-metric="fcf" aria-pressed="false" aria-controls="fin-panel-fcf">
       <span class="m-name">自由现金流</span>
@@ -311,7 +283,7 @@
       <span class="num"><i class="m-label">同比</i><span class="c-up">+35.9%</span></span>
       <span class="num"><i class="m-label">环比</i><span class="c-up">+83.7%</span></span>
       <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
-      <span class="m-sum"><span class="muted">变动原因待生成</span></span>
+      <span class="m-sum">自由现金流 -18.7 亿美元，同比改善 36%，环比改善 84%；资本开支仍高于经营现金流。</span>
     </button>
     <div class="fin-panel" id="fin-panel-fcf" data-fin-panel="fcf" hidden>
       <div class="fin-chart-bar" data-fin-grain-bar hidden>
@@ -324,39 +296,349 @@
       </div>
       <p class="small muted mix-note" data-fin-note hidden></p>
       <div class="fin-drivers">
-<p class="muted">历史回补不含变动原因</p>      </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill alert">负贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>资本开支 164.9 亿美元超过经营现金流 146.2 亿美元，使自由现金流为负。</p>
+<p class="small muted">依据：由给定财务数字相减得出，原文没有直接说明。</p>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">其他</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>客户预付款使经营现金流大幅增长，缩小缺口，此为推断。</p>
+<blockquote>this demand is allowing us to garner customer prepayments</blockquote><p class="small muted">依据：原文未直接联系到 Q4 自由现金流改善。</p>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="operating_income_gaap" aria-pressed="false" aria-controls="fin-panel-operating_income_gaap">
+      <span class="m-name">营业利润（GAAP）</span>
+      <span class="m-val num">$6.13B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+20.0%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+12.2%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">GAAP 营业利润 61.3 亿美元，同比 +20.0%，主要来自营收增长，费用压缩部分抵消毛利下降。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-operating_income_gaap" data-fin-panel="operating_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>营收增长是营业利润增长的主要来源，管理层口径为 non-GAAP 营业利润增长 22%。</p>
+<blockquote>Our non-GAAP operating income increased 22% in US dollars to $8.6 billion, driven by our strong revenue progression.</blockquote>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">费用投入</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>效率措施降低运营费用，从销售与市场费用开始。</p>
+<blockquote>This was more than offset in the quarter by a reduction in operating costs</blockquote>        </div>
+      </div>
+    </div>
+    <button type="button" class="mrow" data-fin-metric="net_income_gaap" aria-pressed="false" aria-controls="fin-panel-net_income_gaap">
+      <span class="m-name">净利润（GAAP）</span>
+      <span class="m-val num">$4.20B</span>
+      <span class="num"><i class="m-label">同比</i><span class="c-up">+22.6%</span></span>
+      <span class="num"><i class="m-label">环比</i><span class="c-up">+12.9%</span></span>
+      <span class="num"><i class="m-label">对比预期</i><span class="c-na">—</span></span>
+      <span class="m-sum">GAAP 净利润 42.0 亿美元，同比 +22.6%，随营业利润增长，并含一次性投资收益的影响。</span>
+    </button>
+    <div class="fin-panel" id="fin-panel-net_income_gaap" data-fin-panel="net_income_gaap" hidden>
+      <div class="fin-chart-bar" data-fin-grain-bar hidden>
+        <div class="fin-grain" role="group" aria-label="时间粒度">
+          <button type="button" data-fin-grain="quarter" aria-pressed="true">季度</button>
+          <button type="button" data-fin-grain="year" aria-pressed="false">年度</button>
+        </div>
+      </div>
+      <div class="charts fin-charts" data-fin-charts data-cols="0">
+      </div>
+      <p class="small muted mix-note" data-fin-note hidden></p>
+      <div class="fin-drivers">
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">量</span><span class="pill ok">正贡献</span><span class="pill warn">推测</span><span>管理层发言</span>          </div>
+          <p>营业利润增长带动净利润增长。</p>
+<p class="small muted">依据：净利润增速（22.6%）与营业利润增速（20.0%）接近，推断营业利润增长是主因。</p>        </div>
+        <div class="drv">
+          <div class="drv-meta">
+<span class="pill">一次性项目</span><span class="pill ok">正贡献</span><span>管理层发言</span>          </div>
+          <p>本季有一次性投资净收益，抬高了 non-GAAP EPS 增速；原文口径为 non-GAAP。</p>
+<blockquote>partly due to a one-time net gain on investment</blockquote>        </div>
+      </div>
     </div>
   </div>
   </div>
 </details>
 
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 · 行业展望 无</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引 3 项 · 行业展望 6 题</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
       <h3>业绩指引</h3>
-      <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
+      <p class="layer-sub">点一行看历史指引和后来的实际，再点同一行收起。</p>
+      <div class="table-wrap">
+      <table class="data guide-table">
+        <thead><tr><th>指标</th><th>数值</th><th>隐含环比</th><th>隐含同比</th><th>较共识</th></tr></thead>
+        <tbody id="guideRows">
+          <tr class="guide-hit" data-guide-key="revenue" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-revenue">
+            <td>营收<small class="basis">下季</small></td>
+            <td>$27.00 – $29.00</td>
+            <td class="c-na"></td>
+            <td class="c-na"></td>
+            <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-revenue" data-guide-panel="revenue" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+<p class="guide-empty">实际还没进季度文件，这张图先空着。</p>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>2027财年Q1<small class="basis">2026财年Q4给出</small></td>
+                      <td>$27.00 – $29.00</td>
+                      <td>$28.00</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="guide-hit" data-guide-key="eps" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-eps">
+            <td>调整后摊薄 EPS<small class="basis">下季</small></td>
+            <td>$1.72 – $1.76</td>
+            <td class="c-na"></td>
+            <td class="c-na"></td>
+            <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-eps" data-guide-panel="eps" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+<p class="guide-empty">实际还没进季度文件，这张图先空着。</p>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>2027财年Q1<small class="basis">2026财年Q4给出</small></td>
+                      <td>$1.72 – $1.76</td>
+                      <td>$1.74</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="guide-hit" data-guide-key="capex" tabindex="0" role="button" aria-expanded="false" aria-controls="guide-panel-capex">
+            <td>资本开支<small class="basis">FY2027全年</small></td>
+            <td>$70.00B</td>
+            <td class="c-na"></td>
+            <td class="c-up">+25.8%</td>
+            <td class="c-na"></td>
+          </tr>
+          <tr class="guide-detail" id="guide-panel-capex" data-guide-panel="capex" hidden>
+            <td colspan="5">
+              <div class="guide-detail-body">
+<p class="layer-sub">每一期用业绩披露前最后一次数字指引，对照后来的实际。相对中值 =（实际 − 指引中值）/ 指引中值。</p>
+<p class="guide-empty">实际还没进季度文件，这张图先空着。</p>
+                <div class="table-wrap">
+                <table class="data guide-hist">
+                  <thead><tr><th>期间</th><th>当时指引</th><th>指引中值</th><th>实际</th><th>相对中值</th><th>相对区间</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>FY2027全年<small class="basis">2026财年Q4给出</small></td>
+                      <td>$70.00B</td>
+                      <td>$70.00B</td>
+                      <td>尚未披露</td>
+                      <td class="c-na"></td>
+                      <td class="c-na"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </section>
     <section class="guide-part">
       <h3>行业展望</h3>
-      <p class="guide-empty">电话会正文里没有可归入这些题目的表述。</p>
+      <div class="outlook-list">
+        <article class="outlook-block">
+          <h4>外部环境</h4>
+          <div class="outlook-copy">
+            <p>存储、SSD、硬盘等组件价格上涨是行业共性压力。Clay 的应对是在成本已锁定时签固定价格合同，成本不确定时采用浮动机制，以避免利润率被压缩，并称本季资本开支增加并非组件涨价所致。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>需求变化（AI 基础设施）</h4>
+          <div class="outlook-copy">
+            <p>管理层认为 AI 基础设施需求远超供给。Clay 称相关市场规模是“每年数万亿美元”，并以 RPO 达 6380 亿美元（同比 +363%）和本季签下 670 亿美元 AI 基础设施合同作为佐证。GPU 的续约和再销售数据也支持这一判断。</p>
+            <ul><li>Q4 到期的 35,000 块 GPU 中，49% 的客户续约，占 92% 的 GPU，其余多数当季转售给其他客户。</li><li>全球 GPU 利用率 97.5%。</li><li>Clay 称智能体编程是当前 AI 价值最清晰的领域，Oracle 自身需求也没有放缓。</li><li>四家客户本季合同额均超过 80 亿美元，客户进一步分散。</li></ul>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>供给变化（产能交付）</h4>
+          <div class="outlook-copy">
+            <p>FY2026 共向客户交付超过 1.2 GW，FY2027 Q1 的交付量接近 1 GW，几乎等于此前四个季度的总和。五大站点按计划推进，后续站点的客户交付集中在 2027 日历年。</p>
+            <ul><li>Abilene：已交付总容量的 42%，未来 90 天再交付 35%，余下部分在之后一个季度。</li><li>Shackelford 和 Doña Ana County：2027 日历年上半年开始交付，前者 115 MW 电力已提前一个多月上线。</li><li>Saline 和 Port Washington：2027 日历年下半年开始交付。</li></ul>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>竞争变化</h4>
+          <div class="outlook-copy">
+            <p>面对 Neocloud 等新进入者，Clay 的立场是新进入者会越来越多，但需求仍远大于供给，公司不担心，重点是以合理利润率满足需求。他认为续约主要取决于长期服务质量，Oracle 的差异化来自全栈能力、运维能力和灵活的供应链。他还表示，随着研发提高效率，公司可以在提高利润率的同时降低客户价格，这一点属于管理层判断，未给出量化路径。</p>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>商业模式</h4>
+          <div class="outlook-copy">
+            <p>商业模式在两条线上演进。基础设施方面，预付和自带硬件合同合计达 750 亿美元，管理层称其利润率不低于其他合同；应用方面，推出 token 包和基于结果的定价。</p>
+            <ul><li>Q4 签署的 670 亿美元 AI 基础设施合同中，多数为自带硬件或预付。</li><li>token 包限量推出，33 家客户预购，例如 Aon Services Corporation 和 Liberty Energy。</li><li>结果导向定价例子：按筛选候选人数量定价的面试智能体，按终端消费者追加销售交易比例定价的酒店智能体。</li><li>多云数据库收入同比增长 404%，预订量增长 325%。</li></ul>
+          </div>
+        </article>
+        <article class="outlook-block">
+          <h4>公司战略（资本配置与融资）</h4>
+          <div class="outlook-copy">
+            <p>FY2027 净现金资本开支约 700 亿美元，报告资本开支还要再加客户预付款及时间差的 200-250 亿美元。融资方面，计划全年筹集约 400 亿美元债务和股权，包括已公布的 200 亿美元 ATM，2026 日历年不再新增债务。CFO 强调保持投资级评级和审慎配置资本，并将净现金资本开支作为衡量融资需求的重要口径。</p>
+            <p>回报方面，项目层面稳态 ROIC 在 20% 高位，自带硬件结构的回报更高；毛利率在 FY2027 因数据中心爬坡和产品组合下降，管理层预期在达到合同满额收入后快速恢复。</p>
+          </div>
+        </article>
+      </div>
     </section>
   </div>
   </div>
 </details>
 
 <details class="ev" id="qa">
-  <summary><span class="ev-t">问答交流</span><span class="ev-meta">等待文字稿</span></summary>
+  <summary><span class="ev-t">问答交流</span><span class="ev-meta">8 轮 · 部分回答 / 回避 3</span></summary>
   <div class="ev-body">
-  <div class="card placeholder">等待电话会文字稿。</div>
+  <p class="layer-sub">每轮问答一行，点开看回答摘要与原话。部分回答 / 回避的问题值得重点看。</p>
+  <div class="qa-stats">
+    <span>共 <b>8</b> 轮</span>
+<span>热门话题：<b>产能与资本开支、指引与展望、定价与 ASP</b></span><span>新出现：<b>定价与 ASP、客户与订单、指引与展望</b></span>    <span class="seg" role="group" aria-label="筛选">
+      <button type="button" aria-pressed="true" data-qa="all">全部</button>
+      <button type="button" aria-pressed="false" data-qa="evasive">部分回答 / 回避 3</button>
+    </span>
+  </div>
+  <div class="card" id="qa-list">
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">John DiFucci<small>Guggenheim Securities</small></span>
+        <span class="qa-q">本季资本开支略高于市场预期，而存储等组件成本大幅上涨。问管理层长期合同在客户和供应商两端如何设计，才能避免成本上涨冲击利润。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Clay（CEO）：Q4 资本开支的增加主要是节奏问题，与组件价格无关，他的职责之一就是加快支出以更早放量收入。</li><li>定价方式：成本已锁定或产能已部署、确定性高时签固定价格合同；成本在远期、供应链风险大时不签固定价格，成本按浮动机制传导，因此公司有较完善的机制避免毛利被压缩。</li></ul></div>
+<blockquote>When we know those costs, we will then do fixed price contracts.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">John DiFucci<small>Guggenheim Securities</small></span>
+        <span class="qa-q">请新任 CFO 评论公司已公布的长期目标。</span>
+        <span class="qa-tags">
+<span class="pill">指引与展望</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <p class="qa-answer"><b>答：</b>Hilary（CFO）：幻灯片中列出的 CAGR 目标全部重申，并指出 RPO 的积累使人们有理由相信这些长期目标。</p>
+<blockquote>Full reconfirmation from my side on the long-term targets.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Brad Zelnick<small>Deutsche Bank</small></span>
+        <span class="qa-q">在重资本投入阶段，投资者应如何评估 Oracle 的投资进展与回报。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Hilary（CFO）：基础设施（CPU/GPU）业务回报较强。</li><li>粗略口径：项目层面稳态下投入资本回报率（ROIC）在 20% 高位（high 20s），ROIC 按税后营业利润加折旧除以项目层面的总资本开支计算。</li><li>自带硬件（BYOH）等结构能保持或提高利润率，ROIC 会更高。</li><li>该测算未计入 GPU 日后无需更换等潜在上行。</li></ul></div>
+<blockquote>What we see is return on invested capital in the high 20s at a steady state, once the revenues have ramped for large projects at the project level.</blockquote>        <p class="small">新数字：稳态 ROIC 高 20% 区间</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Mark Moerdler<small>Bernstein</small></span>
+        <span class="qa-q">Neocloud、SpaceX 等众多新进入者提供 AI 数据中心，Oracle 如何看自身竞争位置，以及对留存与续约、获取新客户和利润率的影响。</span>
+        <span class="qa-tags">
+<span class="pill">竞争格局</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Clay（CEO）：公司专注客户。高利用率和到期容量立即被抢订，说明客户关系和价格都获认可。</li><li>供需：几年下来需求仍远大于供给，更多参与者入场他并不担心，重点是以合理利润率满足尽可能多的需求。</li><li>续约：取决于长期服务关系，客户依赖 Oracle 运营大规模集群。</li><li>利润率：随研发投入提高效率，Oracle 可以在提高利润率的同时给客户更低价格。</li></ul></div>
+<p class="small">未回答的部分：未给出对利润率的量化影响，主要是定性表述。</p><blockquote>I think there&#39;s clearly, several years in, there&#39;s still a massively higher demand than there is supply.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Keith Bachman<small>Bank of Montreal</small></span>
+        <span class="qa-q">为什么推出基于结果的商业定价和 token 包，会涉及哪些应用模块，以及对增长有何影响。</span>
+        <span class="qa-tags">
+<span class="pill">定价与 ASP</span><span class="pill warn">部分回答</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mike（CEO）：结果导向定价并非全新，已在建筑、酒店、医疗等业务中使用；新的是推广到包括 Fusion 在内的整个应用产品线。</li><li>公司全栈投资使其容易衡量并为客户创造结果，也帮助客户把 AI 预算与价值对齐。</li><li>许多 AI 功能仍无额外收费，需要高级推理的客户可购买 token 包。</li><li>目前仍处早期，客户反响好，预期对增长有帮助，但没有量化。</li></ul></div>
+<p class="small">未回答的部分：对增长影响只给出方向性判断，未量化。</p><blockquote>What is new is that we&#39;re now expanding that offering across our entire fleet</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Raimo Lenschow<small>Barclays</small></span>
+        <span class="qa-q">经典的数据库和应用业务现状如何：应用增速有所放缓，市场对软件也有担忧，数据库动能怎样。</span>
+        <span class="qa-tags">
+<span class="pill">云业务</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Mike（CEO）：应用季度收入 41 亿美元并保持两位数增长，递延收入增长 16%，高于收入增速，增强信心。</li><li>几个季度前确有决策周期延迟，但在关键业务系统领域客户已经转向。</li><li>云数据库增长 29%，多云收入 4 倍增长，多云仍处很早期，将持续新增区域与合作伙伴；数据库内的向量搜索等 AI 功能也是客户 AI 策略的一部分。</li></ul></div>
+<blockquote>we think double-digit growth on an in-quarter run rate of $4.1 billion is pretty good</blockquote>        <p class="small">新数字：云应用季度收入 41 亿美元；递延收入增长 16%；云数据库增长 29%</p>
+      </div>
+    </details>
+    <details class="qa" data-evasive="true">
+      <summary>
+        <span class="qa-who">Kirk Materne<small>Evercore ISI</small></span>
+        <span class="qa-q">自带硬件和预付类合同在 RPO 中占比约 12%，管线中这一占比最终可能到多少，与含 GPU 的合同相比价值差异在哪。</span>
+        <span class="qa-tags">
+<span class="pill">客户与订单</span><span class="pill alert">回避</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Clay（CEO）：目前无法给出自带硬件、预付和公司出资三种模式的具体比例。</li><li>他强调客户选择 Oracle 的价值不只是提前出资，还包括建设数据中心、设计网络、提供云服务和长期运维，因此预期商业模式会继续演进。</li></ul></div>
+<p class="small">未回答的部分：明确表示无法给出各模式未来占比。</p><blockquote>I can&#39;t tell you exactly the mixture of when we do bring your own hardware versus when we do prepay versus when we bring the capital.</blockquote>      </div>
+    </details>
+    <details class="qa" data-evasive="false">
+      <summary>
+        <span class="qa-who">Kirk Materne<small>Evercore ISI</small></span>
+        <span class="qa-q">请澄清 FY2027 资本开支指引：约 700 亿美元是否不含来自预付合同的 200-250 亿美元，两者如何影响资本开支展望。</span>
+        <span class="qa-tags">
+<span class="pill">产能与资本开支</span><span class="pill">偏积极</span>        </span>
+      </summary>
+      <div class="qa-body">
+        <div class="qa-answer"><b>答：</b><ul class="qa-speakers"><li>Hilary（CFO）：FY2027 净现金资本开支约 700 亿美元，不含约 200-250 亿美元的预付款与时间差，二者之和为报告口径资本开支。</li><li>这类结构使现金资本开支需求降低，因为公司预先收款，用于支付资本开支的外部融资需求也更少，资本回报因而更好。</li><li>该款项与第三方制造商相关，不是供应商融资。</li></ul></div>
+<blockquote>Indeed, for 2027, fiscal year 2027, we expect around $70 billion in net cash outlay for capital expenditures.</blockquote>        <p class="small">新数字：FY2027 净现金资本开支约 700 亿美元；预付款及时间差约 200-250 亿美元</p>
+      </div>
+    </details>
+  </div>
   </div>
 </details>
 
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿 · 数据提示 1 条</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：— · 文件编号 — · 文字稿：—</p>
+    <p>新闻稿：— · 文件编号 — · 文字稿：tickertrends</p>
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±$0.01 以内为「符合预期」。</p>
 <ul class="warn-list"><li>历史回补：GAAP 来自 SEC companyfacts（data.sec.gov/api/xbrl/companyfacts）。收入和利润优先用 80–100 天的单季事实；没有单季事实时用同一财年起点的累计值相减。经营现金流和资本开支多为年初至今，单季由相邻累计相减。自由现金流 = 经营现金流 − 资本开支（购建固定资产，取绝对值）。毛利率 =（营收 − 营业成本）/ 营收，营业成本用 CostOfRevenue。第四季稀释每股收益没有单季 XBRL 事实，未用全年减九个月倒挤。</li></ul>  </div>
 </details>
