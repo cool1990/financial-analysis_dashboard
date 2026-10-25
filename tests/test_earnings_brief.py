@@ -47,12 +47,15 @@ def test_parse_brief_from_note(tmp_path: Path):
     assert brief is not None
     assert brief["data_date"] == "2026-10-24"
     assert brief["revision_empty"] is False
-    assert "MU：少数上修——强上修" in brief["revision_text"]
+    assert brief["revision_lines"] == ["MU：少数上修——强上修"]
+    assert brief["revision_text"] == "MU：少数上修——强上修"
+    assert "（" not in brief["revision_text"] and "EPS" not in brief["revision_text"]
     assert brief["rsi_low"] == ["SNDK"]
     assert brief["rsi_high"] == []
-    assert "低于30 SNDK" in brief["rsi_text"]
+    assert brief["rsi_low_line"] == "低于30：SNDK"
+    assert brief["rsi_high_line"] == "高于70：无"
     assert brief["valuation_names"] == ["MU", "SNDK", "AVGO"]
-    assert "是否触发：MU、SNDK、AVGO。" == brief["valuation_text"]
+    assert brief["valuation_text"] == "触发：MU、SNDK、AVGO"
 
 
 def test_parse_brief_empty_revision(tmp_path: Path):
@@ -64,7 +67,8 @@ def test_parse_brief_empty_revision(tmp_path: Path):
     brief = eb.parse_brief_from_note(path)
     assert brief is not None
     assert brief["revision_empty"] is True
-    assert brief["revision_text"] == "今日修正：无。"
+    assert brief["revision_text"] == "无"
+    assert brief["revision_lines"] == []
 
 
 def test_find_latest_note(tmp_path: Path):
@@ -90,7 +94,7 @@ def test_load_market_brief_prefers_fresh_note(tmp_path: Path, monkeypatch: pytes
     monkeypatch.setattr(eb, "repo_path", fake_repo_path)
     brief = eb.load_market_brief(tickers=["MU"], today=date(2026, 10, 24), persist=True)
     assert brief["source"] == "note"
-    assert "MU：少数上修——强上修" in brief["revision_text"]
+    assert brief["revision_text"] == "MU：少数上修——强上修"
     assert out.exists()
 
 
@@ -128,8 +132,12 @@ def test_homepage_includes_signal_blocks(tmp_path: Path):
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert "今日修正" in index and "RSI 信号" in index and "是否触发" in index
     assert "pool-signals" in index
-    assert "今日修正：" in index and "RSI信号：" in index and "是否触发：" in index
+    assert "pool-signal-grid" in index
+    assert "低于30：" in index and "高于70：" in index
+    assert "数据日" in index and "美港股盈利跟踪" in index
     assert "目标PE" in index
+    # 紧凑文案：正文不再重复「今日修正：/RSI信号：」前缀；触发用「触发：」或「无」
+    assert "今日修正：" not in index and "RSI信号：" not in index
     row = re.search(
         r'<tr data-status="(\w+)"[^>]*>\s*<td[^>]*>\s*<a[^>]*>闪迪 \(SNDK\)',
         index,
@@ -156,3 +164,34 @@ def test_pe_targets_loaded_from_stock_pool():
     assert targets["META"] == 18
     assert pe_target_for("AVGO") == 20
     assert pe_target_for("MSFT") is None  # 池里空着
+
+
+def test_compact_revision_strips_parentheticals():
+    lines = eb.compact_revision_lines(
+        "MU：少数上修——强上修（当前季EPS 38.28，30日+7.3%，上/下修30日 26/2，覆盖30）；AVGO：中性——强上修（当前季EPS 1.2，30日+6%，上/下修30日 3/0，覆盖10）"
+    )
+    assert lines == ["MU：少数上修——强上修", "AVGO：中性——强上修"]
+    assert eb.compact_revision_lines("无") == []
+    assert eb.compact_revision_lines("今日修正：无。") == []
+
+
+def test_compact_rsi_and_valuation_copy():
+    low, high = eb.compact_rsi_lines("低于30 SNDK；高于70 无")
+    assert low == "低于30：SNDK"
+    assert high == "高于70：无"
+    low2, high2 = eb.compact_rsi_lines("", low=[], high=["MU", "NVDA"])
+    assert low2 == "低于30：无"
+    assert high2 == "高于70：MU、NVDA"
+    assert eb.compact_valuation_text(["MU", "SNDK"]) == "触发：MU、SNDK"
+    assert eb.compact_valuation_text([]) == "无"
+
+
+def test_note_search_roots_repo_local_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("EARNINGS_TRACKER_NOTES", raising=False)
+    monkeypatch.setattr(eb, "load_settings", lambda: {"paths": {"earnings_tracker_notes": str(tmp_path / "vault")}})
+    roots = eb.note_search_roots()
+    joined = " ".join(str(r) for r in roots)
+    assert "Obsidian" not in joined
+    assert "美港股盈利指标跟踪" not in joined
+    assert any(str(r).endswith("data/earnings_tracker") or str(r).endswith("data\\earnings_tracker") for r in roots)
+
