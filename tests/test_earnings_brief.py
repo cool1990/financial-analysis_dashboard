@@ -19,7 +19,7 @@ data_date: 2026-10-24
 ## 简要总结
 1、今日修正：MU：少数上修——强上修（当前季EPS 38.28，30日+7.3%，上/下修30日 26/2，覆盖30）。
 2、RSI信号：低于30 SNDK；高于70 无。
-3、估值触发：MU（5.03<6）。
+3、估值触发：MU（5.03<6）, SNDK（5.82<6）, AVGO（18.53<20）。
 
 |ticker|收盘价|
 |---|---|
@@ -51,6 +51,8 @@ def test_parse_brief_from_note(tmp_path: Path):
     assert brief["rsi_low"] == ["SNDK"]
     assert brief["rsi_high"] == []
     assert "低于30 SNDK" in brief["rsi_text"]
+    assert brief["valuation_names"] == ["MU", "SNDK", "AVGO"]
+    assert "是否触发：MU、SNDK、AVGO。" == brief["valuation_text"]
 
 
 def test_parse_brief_empty_revision(tmp_path: Path):
@@ -124,12 +126,33 @@ def test_homepage_includes_signal_blocks(tmp_path: Path):
 
     pages = build_site(out_dir=tmp_path)
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
-    assert "今日修正" in index and "RSI 信号" in index
+    assert "今日修正" in index and "RSI 信号" in index and "是否触发" in index
     assert "pool-signals" in index
-    assert "今日修正：" in index and "RSI信号：" in index
+    assert "今日修正：" in index and "RSI信号：" in index and "是否触发：" in index
+    assert "目标PE" in index
     row = re.search(
         r'<tr data-status="(\w+)"[^>]*>\s*<td[^>]*>\s*<a[^>]*>闪迪 \(SNDK\)',
         index,
     )
     assert row is not None and row.group(1) == "watch"
     assert any(p.name == "index.html" for p in pages)
+
+
+def test_valuation_triggered_uses_le():
+    assert eb.valuation_triggered(5.03, 6) is True
+    assert eb.valuation_triggered(6.0, 6) is True  # Hermes ≤
+    assert eb.valuation_triggered(6.01, 6) is False
+    assert eb.valuation_triggered(None, 6) is False
+    assert eb.valuation_triggered(5.0, None) is False
+
+
+def test_pe_targets_loaded_from_stock_pool():
+    from pipeline.config import load_pe_targets, pe_target_for
+
+    load_pe_targets.cache_clear()
+    targets = load_pe_targets()
+    assert targets["MU"] == 6
+    assert targets["SNDK"] == 6
+    assert targets["META"] == 18
+    assert pe_target_for("AVGO") == 20
+    assert pe_target_for("MSFT") is None  # 池里空着

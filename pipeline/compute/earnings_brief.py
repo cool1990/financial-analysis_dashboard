@@ -3,8 +3,9 @@
 权威来源：~/.hermes/scripts/us_hk_earnings_tracker.py 的 build_brief /
 revision_signal_current_q。不是投资日报里的标普 RSI。
 
-优先解析最新 ``盈利跟踪_YYYY-MM-DD.md`` 的「## 简要总结」第 1–2 条；
-笔记不可用时，用仓库内 TradingView / Alpha Vantage 缓存按同口径现算。
+优先解析最新 ``盈利跟踪_YYYY-MM-DD.md`` 的「## 简要总结」第 1–3 条
+（今日修正 / RSI信号 / 估值触发）；笔记不可用时，用仓库内 TradingView /
+Alpha Vantage / 股票池 pe_target 按同口径现算。
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from pipeline.sources.av_estimates import load_earnings_record
 _NOTE_NAME = re.compile(r"^盈利跟踪_(\d{4}-\d{2}-\d{2})\.md$")
 _BRIEF_REVISION = re.compile(r"^1[、.．]\s*今日修正[：:]\s*(.+)$")
 _BRIEF_RSI = re.compile(r"^2[、.．]\s*RSI信号[：:]\s*(.+)$")
+_BRIEF_VALUATION = re.compile(r"^3[、.．]\s*估值触发[：:]\s*(.+)$")
 _SIGNAL_BASE = re.compile(r"^([^/]+)")
 
 
@@ -154,6 +156,7 @@ def parse_brief_from_note(path: Path) -> dict[str, Any] | None:
         data_date = fm.group(1)
     revision_body = ""
     rsi_body = ""
+    valuation_body = ""
     in_brief = False
     for line in text.splitlines():
         stripped = line.strip()
@@ -174,21 +177,53 @@ def parse_brief_from_note(path: Path) -> dict[str, Any] | None:
         if rsi:
             rsi_body = rsi.group(1).rstrip("。").strip()
             continue
-    if not revision_body and not rsi_body:
+        val = _BRIEF_VALUATION.match(stripped)
+        if val:
+            valuation_body = val.group(1).rstrip("。").strip()
+            continue
+    if not revision_body and not rsi_body and not valuation_body:
         return None
+    names = _parse_valuation_names(valuation_body)
     return {
         "data_date": data_date,
         "source": "note",
         "source_path": str(path),
         "revision_body": revision_body or "无",
         "rsi_body": rsi_body or "低于30 无；高于70 无",
+        "valuation_body": valuation_body or "无",
         "revision_text": f"今日修正：{(revision_body or '无')}。",
         "rsi_text": f"RSI信号：{(rsi_body or '低于30 无；高于70 无')}。",
+        "valuation_text": ("是否触发：" + ("、".join(names) if names else "无") + "。"),
         "revision_empty": (revision_body or "无") in {"无", "无。", ""},
+        "valuation_empty": not names,
         "rsi_low": _parse_rsi_side(rsi_body, "低于30"),
         "rsi_high": _parse_rsi_side(rsi_body, "高于70"),
+        "valuation_names": names,
     }
 
+
+
+def _parse_valuation_names(body: str) -> list[str]:
+    """从「MU（5.03<6）, SNDK（5.82<6）」抽出 ticker 列表。"""
+    text = (body or "").strip()
+    if not text or text in {"无", "无。"}:
+        return []
+    names: list[str] = []
+    for part in re.split(r"[,，;；]", text):
+        part = part.strip()
+        if not part:
+            continue
+        m = re.match(r"^([A-Za-z0-9.\-]+)", part)
+        if m:
+            names.append(m.group(1).upper() if m.group(1) != "0700.HK" else "0700.HK")
+    return names
+
+
+def valuation_triggered(forward_pe: float | None, target: float | None) -> bool:
+    """Hermes：Fwd PE ≤ 目标PE。"""
+    if forward_pe is None or target is None:
+        return False
+    return float(forward_pe) <= float(target)
 
 def _parse_rsi_side(body: str, label: str) -> list[str]:
     if not body:
@@ -205,6 +240,26 @@ def _parse_rsi_side(body: str, label: str) -> list[str]:
         return [t.strip() for t in re.split(r"[,，、\s]+", rest) if t.strip() and t.strip() != "无"]
     return []
 
+
+
+def _tv_forward_pe(ticker: str) -> float | None:
+    """与建站一致：close / eps_estimate_ntm（同币种直接相除）。"""
+    path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
+    if not path.exists():
+        return None
+    try:
+        snap = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    cols = ((snap.get("quote") or {}).get("columns") or {})
+    try:
+        close = float(cols.get("close"))
+        ntm = float(cols.get("eps_estimate_ntm"))
+    except (TypeError, ValueError):
+        return None
+    if ntm == 0 or close != close or ntm != ntm:
+        return None
+    return close / ntm
 
 def _tv_rsi(ticker: str) -> float | None:
     path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
@@ -337,17 +392,30 @@ def compute_brief_from_pool(
         f"低于30 {', '.join(low_rsi) if low_rsi else '无'}；"
         f"高于70 {', '.join(high_rsi) if high_rsi else '无'}"
     )
+    from pipeline.config import pe_target_for
+
+    valuation_names: list[str] = []
+    for t in tickers:
+        pe = _tv_forward_pe(t)
+        target = pe_target_for(t)
+        if valuation_triggered(pe, target):
+            valuation_names.append(t)
+    valuation_body = "、".join(valuation_names) if valuation_names else "无"
     return {
         "data_date": today.isoformat(),
         "source": "compute",
         "source_path": "",
         "revision_body": revision_body,
         "rsi_body": rsi_body,
+        "valuation_body": valuation_body,
         "revision_text": f"今日修正：{revision_body}。",
         "rsi_text": f"RSI信号：{rsi_body}。",
+        "valuation_text": f"是否触发：{valuation_body}。",
         "revision_empty": revision_empty,
+        "valuation_empty": not valuation_names,
         "rsi_low": low_rsi,
         "rsi_high": high_rsi,
+        "valuation_names": valuation_names,
         "signals": signals,
     }
 
@@ -399,6 +467,8 @@ def load_market_brief(
             "source_path": brief.get("source_path") or "",
             "revision_body": brief.get("revision_body"),
             "rsi_body": brief.get("rsi_body"),
+            "valuation_body": brief.get("valuation_body"),
+            "valuation_names": brief.get("valuation_names") or [],
             "signals": brief.get("signals") or {},
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -414,19 +484,29 @@ def brief_for_template(brief: dict[str, Any] | None) -> dict[str, Any]:
             "data_date": "",
             "revision_text": "今日修正：无。",
             "rsi_text": "RSI信号：低于30 无；高于70 无。",
+            "valuation_text": "是否触发：无。",
             "revision_empty": True,
+            "valuation_empty": True,
             "rsi_low": [],
             "rsi_high": [],
+            "valuation_names": [],
             "source": "empty",
         }
+    names = list(brief.get("valuation_names") or [])
+    valuation_text = brief.get("valuation_text")
+    if not valuation_text:
+        valuation_text = "是否触发：" + ("、".join(names) if names else "无") + "。"
     return {
         "data_date": brief.get("data_date") or "",
         "revision_text": brief.get("revision_text")
         or f"今日修正：{brief.get('revision_body') or '无'}。",
         "rsi_text": brief.get("rsi_text")
         or f"RSI信号：{brief.get('rsi_body') or '低于30 无；高于70 无'}。",
+        "valuation_text": valuation_text,
         "revision_empty": bool(brief.get("revision_empty")),
+        "valuation_empty": bool(brief.get("valuation_empty", not names)),
         "rsi_low": list(brief.get("rsi_low") or []),
         "rsi_high": list(brief.get("rsi_high") or []),
+        "valuation_names": names,
         "source": brief.get("source") or "",
     }
