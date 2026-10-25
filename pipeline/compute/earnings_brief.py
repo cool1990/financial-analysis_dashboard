@@ -1,0 +1,432 @@
+"""首页「今日修正」「RSI信号」：对齐 Hermes 美港股盈利跟踪简要总结。
+
+权威来源：~/.hermes/scripts/us_hk_earnings_tracker.py 的 build_brief /
+revision_signal_current_q。不是投资日报里的标普 RSI。
+
+优先解析最新 ``盈利跟踪_YYYY-MM-DD.md`` 的「## 简要总结」第 1–2 条；
+笔记不可用时，用仓库内 TradingView / Alpha Vantage 缓存按同口径现算。
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+from datetime import date, datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from pipeline import ROOT
+from pipeline.compute.revision_signal import (
+    chg_30d_pct,
+    choose_current_estimate,
+    earnings_drive_tag,
+)
+from pipeline.config import list_tickers, load_settings, load_ticker_config, repo_path
+from pipeline.sources.av_estimates import load_earnings_record
+
+_NOTE_NAME = re.compile(r"^盈利跟踪_(\d{4}-\d{2}-\d{2})\.md$")
+_BRIEF_REVISION = re.compile(r"^1[、.．]\s*今日修正[：:]\s*(.+)$")
+_BRIEF_RSI = re.compile(r"^2[、.．]\s*RSI信号[：:]\s*(.+)$")
+_SIGNAL_BASE = re.compile(r"^([^/]+)")
+
+
+def _signal_base(label: str | None) -> str:
+    text = str(label or "").strip()
+    if not text:
+        return ""
+    # 表列可能是「强上修/财报驱动」；今日修正对比只看基标签
+    return text.split("/", 1)[0].strip()
+
+
+def hermes_revision_signal(
+    eps: Any,
+    coverage: Any,
+    chg: Any,
+    up: Any,
+    down: Any,
+) -> str:
+    """Hermes revision_signal_current_q（不含 /财报驱动 后缀）。
+
+    顺序：无数据 → eps低基数 → 样本不足 → 强上/强下 → 少数上/下 → 中性。
+    少数：|chg|≥5% 且 |净修正人数| < 2（与站点表列 revision_signal 的 ≥2 口径不同）。
+    chg 为小数比例（0.05 = 5%）。
+    """
+    if eps is None:
+        return "无数据"
+    try:
+        eps_f = float(eps)
+    except (TypeError, ValueError):
+        return "无数据"
+    up_f = 0.0 if up is None else float(up)
+    down_f = 0.0 if down is None else float(down)
+    if coverage is None:
+        return "样本不足"
+    try:
+        cov_f = float(coverage)
+    except (TypeError, ValueError):
+        return "样本不足"
+    net = up_f - down_f
+    net_over = (net / cov_f) if cov_f else None
+    if abs(eps_f) < 0.1:
+        return "eps低基数"
+    if cov_f < 3 or (up_f + down_f) == 0:
+        return "样本不足"
+    chg_f: float | None
+    try:
+        chg_f = None if chg is None else float(chg)
+    except (TypeError, ValueError):
+        chg_f = None
+    if chg_f is not None and chg_f >= 0.05 and net_over is not None and net_over > 0.10:
+        return "强上修"
+    if chg_f is not None and chg_f <= -0.05 and net_over is not None and (-net / cov_f) > 0.10:
+        return "强下修"
+    if chg_f is not None and abs(chg_f) >= 0.05 and abs(net) < 2:
+        return "少数上修" if chg_f > 0 else "少数下修"
+    return "中性"
+
+
+def note_search_roots() -> list[Path]:
+    """笔记目录候选：环境变量、settings、仓库 data、Hermes 本地路径。"""
+    roots: list[Path] = []
+    env = (os.environ.get("EARNINGS_TRACKER_NOTES") or "").strip()
+    if env:
+        roots.append(Path(env).expanduser())
+    settings = load_settings() or {}
+    configured = ((settings.get("paths") or {}).get("earnings_tracker_notes") or "").strip()
+    if configured:
+        roots.append(Path(configured).expanduser())
+    roots.extend(
+        [
+            repo_path("data", "earnings_tracker"),
+            ROOT.parent / "美港股盈利指标跟踪" / "notes",
+            Path("/workspace/美港股盈利指标跟踪/notes"),
+            Path.home() / "Obsidian" / "收集箱" / "外部" / "Hermes" / "日更",
+        ]
+    )
+    seen: set[Path] = set()
+    out: list[Path] = []
+    for root in roots:
+        try:
+            resolved = root.resolve()
+        except OSError:
+            resolved = root
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        out.append(root)
+    return out
+
+
+def find_latest_note(roots: list[Path] | None = None) -> Path | None:
+    best: tuple[date, Path] | None = None
+    for root in roots or note_search_roots():
+        if not root.is_dir():
+            continue
+        try:
+            entries = list(root.iterdir())
+        except OSError:
+            continue
+        for path in entries:
+            match = _NOTE_NAME.match(path.name)
+            if not match or not path.is_file():
+                continue
+            try:
+                day = date.fromisoformat(match.group(1))
+            except ValueError:
+                continue
+            if best is None or day > best[0] or (day == best[0] and path.stat().st_mtime > best[1].stat().st_mtime):
+                best = (day, path)
+    return best[1] if best else None
+
+
+def parse_brief_from_note(path: Path) -> dict[str, Any] | None:
+    """解析笔记开头简要总结第 1–2 条。失败返回 None。"""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    match = _NOTE_NAME.match(path.name)
+    data_date = match.group(1) if match else ""
+    # frontmatter data_date 优先
+    fm = re.search(r"^data_date:\s*[\"']?(\d{4}-\d{2}-\d{2})", text, re.M)
+    if fm:
+        data_date = fm.group(1)
+    revision_body = ""
+    rsi_body = ""
+    in_brief = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("## ") and "简要总结" in stripped:
+            in_brief = True
+            continue
+        if in_brief and stripped.startswith("## "):
+            break
+        if in_brief and stripped.startswith("|"):
+            break
+        if not in_brief:
+            continue
+        rev = _BRIEF_REVISION.match(stripped)
+        if rev:
+            revision_body = rev.group(1).rstrip("。").strip()
+            continue
+        rsi = _BRIEF_RSI.match(stripped)
+        if rsi:
+            rsi_body = rsi.group(1).rstrip("。").strip()
+            continue
+    if not revision_body and not rsi_body:
+        return None
+    return {
+        "data_date": data_date,
+        "source": "note",
+        "source_path": str(path),
+        "revision_body": revision_body or "无",
+        "rsi_body": rsi_body or "低于30 无；高于70 无",
+        "revision_text": f"今日修正：{(revision_body or '无')}。",
+        "rsi_text": f"RSI信号：{(rsi_body or '低于30 无；高于70 无')}。",
+        "revision_empty": (revision_body or "无") in {"无", "无。", ""},
+        "rsi_low": _parse_rsi_side(rsi_body, "低于30"),
+        "rsi_high": _parse_rsi_side(rsi_body, "高于70"),
+    }
+
+
+def _parse_rsi_side(body: str, label: str) -> list[str]:
+    if not body:
+        return []
+    # 「低于30 MU, SNDK；高于70 无」
+    parts = re.split(r"[；;]", body)
+    for part in parts:
+        part = part.strip()
+        if not part.startswith(label):
+            continue
+        rest = part[len(label) :].strip()
+        if not rest or rest == "无":
+            return []
+        return [t.strip() for t in re.split(r"[,，、\s]+", rest) if t.strip() and t.strip() != "无"]
+    return []
+
+
+def _tv_rsi(ticker: str) -> float | None:
+    path = ROOT / "data" / ticker / "consensus" / "tradingview_scan.json"
+    if not path.exists():
+        return None
+    try:
+        snap = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    cols = ((snap.get("quote") or {}).get("columns") or {})
+    raw = cols.get("RSI")
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    if value != value:  # NaN
+        return None
+    return value
+
+
+def _current_signal_row(ticker: str, today: date) -> dict[str, Any] | None:
+    try:
+        cfg = load_ticker_config(ticker)
+    except (FileNotFoundError, OSError):
+        return None
+    fye = int(cfg.get("fiscal_year_end_month") or 12)
+    record = load_earnings_record(ticker, fetch=False)
+    row = choose_current_estimate(
+        record.get("estimates"),
+        reported_period=None,
+        fiscal_year_end_month=fye,
+        today=today,
+    ) or {}
+    avg = row.get("eps_estimate_average")
+    ago = row.get("eps_estimate_average_30_days_ago")
+    up = row.get("eps_estimate_revision_up_trailing_30_days")
+    down = row.get("eps_estimate_revision_down_trailing_30_days")
+    cov = row.get("eps_estimate_analyst_count")
+    chg = chg_30d_pct(avg, ago)
+    signal = hermes_revision_signal(avg, cov, chg, up, down)
+    drive = earnings_drive_tag(None, today)  # dates optional; brief base ignores drive
+    return {
+        "ticker": ticker,
+        "signal": signal,
+        "drive": drive,
+        "eps": avg,
+        "chg": chg,
+        "up": up,
+        "down": down,
+        "coverage": cov,
+        "period": row.get("fiscal_period") or row.get("date") or "",
+    }
+
+
+def _fmt_q_clause(row: dict[str, Any]) -> str:
+    eps = row.get("eps")
+    chg = row.get("chg")
+    up = row.get("up")
+    down = row.get("down")
+    cov = row.get("coverage")
+    try:
+        eps_s = f"{float(eps):.2f}" if eps is not None else "—"
+    except (TypeError, ValueError):
+        eps_s = "—"
+    if chg is None:
+        chg_s = "—"
+    else:
+        chg_s = f"{float(chg) * 100:+.1f}%"
+    try:
+        up_s = str(int(float(up))) if up is not None else "—"
+    except (TypeError, ValueError):
+        up_s = "—"
+    try:
+        down_s = str(int(float(down))) if down is not None else "—"
+    except (TypeError, ValueError):
+        down_s = "—"
+    try:
+        cov_s = str(int(float(cov))) if cov is not None else "—"
+    except (TypeError, ValueError):
+        cov_s = "—"
+    return f"当前季EPS {eps_s}，30日{chg_s}，上/下修30日 {up_s}/{down_s}，覆盖{cov_s}"
+
+
+def _load_prev_signals(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def compute_brief_from_pool(
+    tickers: list[str] | None = None,
+    *,
+    today: date | None = None,
+    prev_path: Path | None = None,
+) -> dict[str, Any]:
+    """用 TV RSI + AV 当前季按 Hermes 口径现算简要总结第 1–2 条。"""
+    today = today or datetime.now(timezone.utc).astimezone().date()
+    tickers = tickers or list_tickers()
+    prev_path = prev_path or repo_path("data", "market_brief.json")
+    prev = _load_prev_signals(prev_path)
+
+    rows = [r for t in tickers if (r := _current_signal_row(t, today)) is not None]
+    signals = {r["ticker"]: r["signal"] for r in rows}
+
+    change_bits: list[str] = []
+    prev_signals = (prev or {}).get("signals") if isinstance(prev, dict) else None
+    prev_date = str((prev or {}).get("data_date") or "")
+    # 仅当昨日快照存在且日期不同，才列基标签变动（对齐 Hermes「昨日 vs 今日」）
+    if isinstance(prev_signals, dict) and prev_date and prev_date != today.isoformat():
+        for r in rows:
+            old = _signal_base(prev_signals.get(r["ticker"]))
+            new = _signal_base(r["signal"])
+            if not old or old == new:
+                continue
+            change_bits.append(f"{r['ticker']}：{old}——{new}（{_fmt_q_clause(r)}）")
+
+    if change_bits:
+        revision_body = "；".join(change_bits)
+        revision_empty = False
+    else:
+        revision_body = "无"
+        revision_empty = True
+
+    low_rsi = [t for t in tickers if (rsi := _tv_rsi(t)) is not None and rsi < 30]
+    high_rsi = [t for t in tickers if (rsi := _tv_rsi(t)) is not None and rsi > 70]
+    rsi_body = (
+        f"低于30 {', '.join(low_rsi) if low_rsi else '无'}；"
+        f"高于70 {', '.join(high_rsi) if high_rsi else '无'}"
+    )
+    return {
+        "data_date": today.isoformat(),
+        "source": "compute",
+        "source_path": "",
+        "revision_body": revision_body,
+        "rsi_body": rsi_body,
+        "revision_text": f"今日修正：{revision_body}。",
+        "rsi_text": f"RSI信号：{rsi_body}。",
+        "revision_empty": revision_empty,
+        "rsi_low": low_rsi,
+        "rsi_high": high_rsi,
+        "signals": signals,
+    }
+
+
+def _note_is_fresh(data_date: str, today: date, *, max_age_days: int = 3) -> bool:
+    try:
+        day = date.fromisoformat(str(data_date)[:10])
+    except ValueError:
+        return False
+    return 0 <= (today - day).days <= max_age_days
+
+
+def load_market_brief(
+    *,
+    tickers: list[str] | None = None,
+    today: date | None = None,
+    prefer_note: bool = True,
+    persist: bool = True,
+) -> dict[str, Any]:
+    """首页用：优先新鲜笔记简要总结，否则现算；可选写回 data/market_brief.json。"""
+    today = today or datetime.now(timezone.utc).astimezone().date()
+    brief: dict[str, Any] | None = None
+    if prefer_note:
+        note = find_latest_note()
+        if note is not None:
+            parsed = parse_brief_from_note(note)
+            if parsed and _note_is_fresh(str(parsed.get("data_date") or ""), today):
+                brief = parsed
+    if brief is None:
+        brief = compute_brief_from_pool(tickers, today=today)
+    # 笔记路径补一份当前信号，供次日「今日修正」对比
+    if "signals" not in brief:
+        try:
+            computed = compute_brief_from_pool(
+                tickers,
+                today=today,
+                prev_path=repo_path("data", "market_brief.json.missing"),
+            )
+            brief["signals"] = computed.get("signals") or {}
+            if not brief.get("data_date"):
+                brief["data_date"] = computed.get("data_date")
+        except Exception:
+            brief.setdefault("signals", {})
+    if persist:
+        out = repo_path("data", "market_brief.json")
+        payload = {
+            "data_date": brief.get("data_date"),
+            "source": brief.get("source"),
+            "source_path": brief.get("source_path") or "",
+            "revision_body": brief.get("revision_body"),
+            "rsi_body": brief.get("rsi_body"),
+            "signals": brief.get("signals") or {},
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return brief
+
+
+def brief_for_template(brief: dict[str, Any] | None) -> dict[str, Any]:
+    """Jinja 友好视图。"""
+    if not brief:
+        return {
+            "data_date": "",
+            "revision_text": "今日修正：无。",
+            "rsi_text": "RSI信号：低于30 无；高于70 无。",
+            "revision_empty": True,
+            "rsi_low": [],
+            "rsi_high": [],
+            "source": "empty",
+        }
+    return {
+        "data_date": brief.get("data_date") or "",
+        "revision_text": brief.get("revision_text")
+        or f"今日修正：{brief.get('revision_body') or '无'}。",
+        "rsi_text": brief.get("rsi_text")
+        or f"RSI信号：{brief.get('rsi_body') or '低于30 无；高于70 无'}。",
+        "revision_empty": bool(brief.get("revision_empty")),
+        "rsi_low": list(brief.get("rsi_low") or []),
+        "rsi_high": list(brief.get("rsi_high") or []),
+        "source": brief.get("source") or "",
+    }
