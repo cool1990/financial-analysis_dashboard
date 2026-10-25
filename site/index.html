@@ -36,7 +36,7 @@
     </div>
   </header>
   <main>
-<section class="pool-signals" aria-label="今日修正与 RSI 信号">
+<section class="pool-signals" aria-label="今日修正、RSI 信号与是否触发">
   <div class="pool-signal-grid">
     <article class="card pool-signal-card" data-signal="revision">
       <h2>今日修正</h2>
@@ -46,6 +46,11 @@
       <h2>RSI 信号</h2>
       <p class="pool-signal-body">RSI信号：低于30 无；高于70 无。</p>
       <p class="pool-signal-meta muted">TradingView RSI(14) · 低于30 / 高于70</p>
+    </article>
+    <article class="card pool-signal-card" data-signal="valuation">
+      <h2>是否触发</h2>
+      <p class="pool-signal-body">是否触发：MU、SNDK、AVGO、ORCL、TSM、MCD。</p>
+      <p class="pool-signal-meta muted">Fwd PE ≤ 目标PE · 美港股盈利跟踪</p>
     </article>
   </div>
 </section>
@@ -88,7 +93,7 @@
             <th scope="col" class="num">涨跌</th>
             <th scope="col" class="num">RSI</th>
             <th scope="col" class="num">Forward PE</th>
-            <th scope="col" class="num">目标估值</th>
+            <th scope="col" class="num">目标PE</th>
             <th scope="col" class="mid">是否触发</th>
             <th scope="col" class="mid">评价</th>
             <th scope="col" class="mid">最近财报</th>
@@ -134,8 +139,8 @@
             <td class="num c-down">-1.7%</td>
             <td class="num">57.7</td>
             <td class="num">18.9×</td>
-            <td class="num muted">—</td>
-            <td class="mid trig-cell t-na">—</td>
+            <td class="num">20</td>
+            <td class="mid trig-cell t-yes">✔️</td>
             <td class="mid sig c-flat">中性/非财报</td>
             <td class="mid when" title="2026-08-04 07:00 美东">2026-08-04</td>
             <td class="num"><span class="muted">—</span></td>
@@ -156,7 +161,7 @@
             <td class="num c-down">-1.0%</td>
             <td class="num">43.2</td>
             <td class="num">26.5×</td>
-            <td class="num muted">—</td>
+            <td class="num">20</td>
             <td class="mid trig-cell t-na">—</td>
             <td class="mid sig c-flat">中性/非财报</td>
             <td class="mid when" title="2026-07-30 16:00 美东">2026-07-30</td>
@@ -178,8 +183,8 @@
             <td class="num c-down">-0.5%</td>
             <td class="num">34.2</td>
             <td class="num">18.5×</td>
-            <td class="num muted">—</td>
-            <td class="mid trig-cell t-na">—</td>
+            <td class="num">20</td>
+            <td class="mid trig-cell t-yes">✔️</td>
             <td class="mid sig c-na">无数据/非财报</td>
             <td class="mid when" title="2026-09-02 16:00 美东">2026-09-02</td>
             <td class="num"><span class="muted">—</span></td>
@@ -244,7 +249,7 @@
             <td class="num c-down">-1.2%</td>
             <td class="num">31.3</td>
             <td class="num">23.8×</td>
-            <td class="num muted">—</td>
+            <td class="num">20</td>
             <td class="mid trig-cell t-na">—</td>
             <td class="mid sig c-flat">中性/非财报</td>
             <td class="mid when" title="2026-07-22 16:00 美东">2026-07-22</td>
@@ -354,7 +359,7 @@
             <td class="num c-down">-1.0%</td>
             <td class="num">35.7</td>
             <td class="num">20.0×</td>
-            <td class="num muted">—</td>
+            <td class="num">18</td>
             <td class="mid trig-cell t-na">—</td>
             <td class="mid sig c-flat">中性/财报驱动</td>
             <td class="mid when" title="2026-10-21 16:03 美东（北京 10-22 04:03）">2026-10-21</td>
@@ -398,8 +403,8 @@
             <td class="num c-up">+2.5%</td>
             <td class="num">38.2</td>
             <td class="num">5.0×</td>
-            <td class="num muted">—</td>
-            <td class="mid trig-cell t-na">—</td>
+            <td class="num">6</td>
+            <td class="mid trig-cell t-yes">✔️</td>
             <td class="mid sig c-up">强上修/财报驱动</td>
             <td class="mid when" title="2026-09-30 16:02 美东（北京 10-01 04:02）">2026-09-30</td>
             <td class="num"><b class="v-unknown">待核对</b></td>
@@ -420,7 +425,7 @@
             <td class="num c-down">-2.7%</td>
             <td class="num">55.1</td>
             <td class="num">29.2×</td>
-            <td class="num muted">—</td>
+            <td class="num">20</td>
             <td class="mid trig-cell t-na">—</td>
             <td class="mid sig c-down">少数下修/财报驱动</td>
             <td class="mid when" title="2026-10-01 16:00 美东">2026-10-01</td>
@@ -442,7 +447,7 @@
             <td class="num c-down">-0.6%</td>
             <td class="num">38.1</td>
             <td class="num">17.5×</td>
-            <td class="num muted">—</td>
+            <td class="num">15</td>
             <td class="mid trig-cell t-na">—</td>
             <td class="mid sig c-flat">中性/非财报</td>
             <td class="mid when" title="2026-08-26 16:00 美东">2026-08-26</td>
@@ -464,8 +469,8 @@
             <td class="num c-up">+0.5%</td>
             <td class="num">39.1</td>
             <td class="num">14.8×</td>
-            <td class="num muted">—</td>
-            <td class="mid trig-cell t-na">—</td>
+            <td class="num">15</td>
+            <td class="mid trig-cell t-yes">✔️</td>
             <td class="mid sig c-flat">中性/非财报</td>
             <td class="mid when" title="2026-09-10 16:00 美东">2026-09-10</td>
             <td class="num"><span class="muted">—</span></td>
@@ -486,8 +491,8 @@
             <td class="num c-down">-1.8%</td>
             <td class="num">30.4</td>
             <td class="num">5.8×</td>
-            <td class="num muted">—</td>
-            <td class="mid trig-cell t-na">—</td>
+            <td class="num">6</td>
+            <td class="mid trig-cell t-yes">✔️</td>
             <td class="mid sig c-flat">中性/非财报</td>
             <td class="mid when" title="2026-08-05 16:00 美东">2026-08-05</td>
             <td class="num"><span class="muted">—</span></td>
@@ -530,8 +535,8 @@
             <td class="num c-up">+1.5%</td>
             <td class="num">41.4</td>
             <td class="num">19.2×</td>
-            <td class="num muted">—</td>
-            <td class="mid trig-cell t-na">—</td>
+            <td class="num">20</td>
+            <td class="mid trig-cell t-yes">✔️</td>
             <td class="mid sig c-flat">中性/财报驱动</td>
             <td class="mid when" title="2026-10-15 10:40 美东（北京 10-15 22:40）">2026-10-15</td>
             <td class="num"><b class="v-unknown">待核对</b></td>

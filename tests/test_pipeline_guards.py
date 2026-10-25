@@ -1935,7 +1935,7 @@ def test_review_position_filters_and_checks_quotes(monkeypatch):
 
 
 def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
-    """首页列只读已有配置和 scorecard。缺目标估值、涨跌、分组时留空，不拿营收指引充数。"""
+    """首页列只读已有配置和 scorecard。目标PE 来自股票池 pe_target；缺涨跌、分组时留空。"""
     import builder.build as build
     from pipeline.config import load_position, load_ticker_config
 
@@ -1991,7 +1991,7 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     row = build._index_row("META", load_ticker_config("META"), "FY2026Q3", meta, today=date(2026, 10, 23))
     assert row["status_label"] == "观察" and row["status_key"] == "watch"
     assert row["group"] == "软件与云" and row["kind"] == "软件与云"
-    assert row["target"] == "—" and row["triggered"]["text"] == "—"
+    assert row["target"] == "18" and row["triggered"]["text"] == "—"  # Fwd 20 > 目标 18
     assert row["quote_price"] == "$100.00" and row["rsi"] == "47.4" and row["forward_pe"] == "20.0×"
     meta_shares, _note = build._stored_shares("META", "FY2026Q3")
     assert meta_shares and row["market_cap"] == build._fmt_cap(100 * meta_shares)
@@ -2034,7 +2034,7 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
         mu,
         today=date(2026, 10, 23),
     )
-    assert labeled["group"] == "存储" and labeled["kind"] == "AI硬件" and labeled["target"] == "12×"
+    assert labeled["group"] == "存储" and labeled["kind"] == "AI硬件" and labeled["target"] == "6"  # 池 pe_target，忽略 yaml 目标估值
 
     sndk = load_position("SNDK")
     assert build._trigger_view(sndk, {})["text"] == "—"
@@ -2053,7 +2053,7 @@ def test_watchlist_row_uses_saved_fields_and_eps_guidance(monkeypatch):
     assert build._trigger_view(load_position("MU"), reviewed)["text"] == "—"
 
     quote = build._quote_view({"close": 100, "eps_estimate_ntm": 5, "RSI": 47.35, "day_change_pct": 0.012})
-    assert quote["price"] == "$100.00" and quote["pe"] == "20.0×" and quote["rsi"] == "47.4"
+    assert quote["price"] == "$100.00" and quote["pe"] == "20.0×" and quote["pe_value"] == 20.0 and quote["rsi"] == "47.4"
     assert quote["change"]["text"] == "+1.2%"
     assert build._next_text("", "盘后") == "下次财报日待定"
 

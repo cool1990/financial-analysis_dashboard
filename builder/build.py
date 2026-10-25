@@ -3629,29 +3629,49 @@ def _quote_view(
     else:
         shown = _change(pct)
         change = {"text": shown["text"], "cls": shown["cls"]}
-    return {"price": price, "pe": pe, "pe_fx": multiple["fx"], "rsi": rsi_text, "change": change}
+    return {
+        "price": price,
+        "pe": pe,
+        "pe_value": multiple.get("pe"),
+        "pe_fx": multiple["fx"],
+        "rsi": rsi_text,
+        "change": change,
+    }
 
 
-def _pool_labels(cfg: dict[str, Any], pos: dict[str, Any] | None) -> dict[str, str]:
-    """分组、类型、目标估值。股票配置优先，仓位档案兜底。两处都没有就空。"""
+def _pool_labels(cfg: dict[str, Any], pos: dict[str, Any] | None, ticker: str | None = None) -> dict[str, Any]:
+    """分组、类型、目标PE。目标PE 只认 Hermes 股票池 pe_target，不手填。"""
+    from pipeline.config import pe_target_for
+
     pos = pos or {}
     group = _plain_cfg(cfg.get("分组") or cfg.get("group") or pos.get("group"))
     kind = _plain_cfg(cfg.get("类型") or cfg.get("type") or cfg.get("category") or pos.get("kind"))
-    if "目标估值" in cfg:
-        target = _plain_cfg(cfg.get("目标估值"))
-    elif cfg.get("target_valuation") is not None:
-        target = _plain_cfg(cfg.get("target_valuation"))
-    else:
-        target = ""
-    if not target:
-        target = pos.get("target_value") or ""
+    pe_target = pe_target_for(ticker) if ticker else None
+    target = _format_pe_target(pe_target) if pe_target is not None else "—"
     # 只写了一种分类时，筛选和分组列用同一个名字
     if not kind and group:
         kind = group
     if not group and kind:
         group = kind
-    return {"group": group, "kind": kind, "target": target}
+    return {"group": group, "kind": kind, "target": target, "pe_target": pe_target}
 
+
+
+def _valuation_trigger_view(forward_pe: float | None, target: float | None) -> dict[str, Any]:
+    """Hermes：Fwd PE ≤ 目标PE → 触发。缺一侧不判。"""
+    if forward_pe is None or target is None:
+        return {"text": "—", "cls": "na", "hit": False}
+    if forward_pe <= target:
+        return {"text": "✔️", "cls": "yes", "hit": True}
+    return {"text": "—", "cls": "na", "hit": False}
+
+
+def _format_pe_target(value: float | None) -> str:
+    if value is None:
+        return "—"
+    if float(value).is_integer():
+        return str(int(value))
+    return f"{value:g}"
 
 def _trigger_view(pos: dict[str, Any] | None, doc: dict[str, Any] | None) -> dict[str, str]:
     """买卖条件是否触发。没有条件，或这季还没评估，都显示「—」，不把未评估写成否。"""
@@ -3846,7 +3866,7 @@ def _index_row(
     today = today or datetime.now(ET).date()
     sc = {c["metric"]: c for c in doc.get("scorecard") or []}
     pos = load_position(t)
-    labels = _pool_labels(cfg, pos)
+    labels = _pool_labels(cfg, pos, ticker=t)
     saved = _saved_quote(t)
     quote_ccy = price_currency(cfg)
     eps_ccy = eps_currency(cfg)
@@ -3895,7 +3915,9 @@ def _index_row(
         "forward_pe": quote["pe"],
         "forward_pe_fx": quote.get("pe_fx") or "",
         "target": labels["target"] or "—",
-        "triggered": _trigger_view(pos, doc),
+        "pe_target": labels.get("pe_target"),
+        "forward_pe_value": quote.get("pe_value"),
+        "triggered": _valuation_trigger_view(quote.get("pe_value"), labels.get("pe_target")),
         "reported": _release_view(doc, t, today),
         "price": _price_view(doc) if doc else {"text": "—", "cls": "na", "detail": ""},
         "stage": _stage_label((doc.get("status") or {}).get("stage") if doc else "scheduled"),

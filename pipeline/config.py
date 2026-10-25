@@ -157,3 +157,35 @@ def alphavantage_api_key() -> str | None:
     from pipeline.sources.alpha_vantage import alphavantage_api_key as _key
 
     return _key()
+
+
+@lru_cache(maxsize=1)
+def load_pe_targets() -> dict[str, float]:
+    """Hermes 股票池 pe_target → {TICKER: float}。空单元格不收录。
+
+    权威文件：config/stock_pool.csv（从 /workspace/stock_pool/master_stock_pool.csv 同步，勿手填）。
+    """
+    import csv
+
+    path = repo_path("config", "stock_pool.csv")
+    if not path.exists():
+        return {}
+    out: dict[str, float] = {}
+    with path.open(encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            ticker = str(row.get("ticker") or "").strip().upper()
+            raw = str(row.get("pe_target") or "").strip()
+            if not ticker or not raw:
+                continue
+            try:
+                value = float(raw)
+            except ValueError:
+                continue
+            out[ticker] = value
+    return out
+
+
+def pe_target_for(ticker: str) -> float | None:
+    """单票目标 Forward PE；没有配置返回 None。"""
+    return load_pe_targets().get(ticker.upper())
+
