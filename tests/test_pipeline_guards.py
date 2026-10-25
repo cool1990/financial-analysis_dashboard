@@ -1843,7 +1843,7 @@ def test_load_position_stages():
     meta = load_position("META")
     assert (mu["stage"], mu["stage_label"]) == ("watch", "观察仓") and mu["questions"] and not mu["theses"]
     assert meta["stage"] == "watch" and len(meta["questions"]) == 3 and not meta["theses"] and not meta["draft"]
-    assert sndk["stage"] == "hold" and len(sndk["theses"]) == 2 and {t["name"] for t in sndk["triggers"]} == {"加仓", "卖出"}
+    assert sndk["stage"] == "watch" and len(sndk["theses"]) == 2 and {t["name"] for t in sndk["triggers"]} == {"加仓", "卖出"}
     assert mcd["stage"] == "wait" and mcd["triggers"][0]["name"] == "买入"
     assert sndk["draft"] and not mu["draft"]  # 还有「【请填写】」的档案提示未定稿
     assert load_position("NOPE") is None

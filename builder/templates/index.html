@@ -2,7 +2,22 @@
 {% block title %}观察池{% endblock %}
 {% block body_class %} class="pool-page"{% endblock %}
 {% block content %}
+<section class="pool-signals" aria-label="今日修正与 RSI 信号">
+  <div class="pool-signal-grid">
+    <article class="card pool-signal-card" data-signal="revision">
+      <h2>今日修正</h2>
+      <p class="pool-signal-body{% if market_brief.revision_empty %} muted{% endif %}">{{ market_brief.revision_text }}</p>
+      {% if market_brief.data_date %}<p class="pool-signal-meta muted">数据日 {{ market_brief.data_date }} · 美港股盈利跟踪</p>{% endif %}
+    </article>
+    <article class="card pool-signal-card" data-signal="rsi">
+      <h2>RSI 信号</h2>
+      <p class="pool-signal-body">{{ market_brief.rsi_text }}</p>
+      <p class="pool-signal-meta muted">TradingView RSI(14) · 低于30 / 高于70</p>
+    </article>
+  </div>
+</section>
 <div class="page-head pool-head">
+
   <div>
     <h1>观察池</h1>
     <div class="sub"><span data-pool-count>{{ rows|length }}</span> 只股票{% if as_of %} · 数据截至 {{ as_of }} 北京{% endif %}</div>

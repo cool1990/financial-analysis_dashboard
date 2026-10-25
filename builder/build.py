@@ -6391,11 +6391,15 @@ def build_site(ticker: str | None = None, out_dir: Path | None = None) -> list[P
 
     _REPORTING_CCY.set("USD")
     av_note = _pool_source_note(tickers, index_rows)
+    from pipeline.compute.earnings_brief import brief_for_template, load_market_brief
+
+    market_brief = brief_for_template(load_market_brief(tickers=tickers, today=today))
     index_html = env.get_template("index.html").render(
         rows=index_rows,
         kinds=_kind_filters(index_rows),
         as_of=_pool_as_of(tickers),
         av_note=av_note,
+        market_brief=market_brief,
         nav=nav,
         active=None,
         root="",
