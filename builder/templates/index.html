@@ -6,20 +6,29 @@
   <div class="pool-signal-grid">
     <article class="card pool-signal-card" data-signal="revision">
       <h2>今日修正</h2>
-      <p class="pool-signal-body{% if market_brief.revision_empty %} muted{% endif %}">{{ market_brief.revision_text }}</p>
-      {% if market_brief.data_date %}<p class="pool-signal-meta muted">数据日 {{ market_brief.data_date }} · 美港股盈利跟踪</p>{% endif %}
+      <div class="pool-signal-body{% if market_brief.revision_empty %} muted{% endif %}">
+        {% if market_brief.revision_lines %}
+          {% for line in market_brief.revision_lines %}<div>{{ line }}</div>{% endfor %}
+        {% else %}
+          <div>无</div>
+        {% endif %}
+      </div>
     </article>
     <article class="card pool-signal-card" data-signal="rsi">
       <h2>RSI 信号</h2>
-      <p class="pool-signal-body">{{ market_brief.rsi_text }}</p>
-      <p class="pool-signal-meta muted">TradingView RSI(14) · 低于30 / 高于70</p>
+      <div class="pool-signal-body">
+        <div>{{ market_brief.rsi_low_line }}</div>
+        <div>{{ market_brief.rsi_high_line }}</div>
+      </div>
     </article>
     <article class="card pool-signal-card" data-signal="valuation">
       <h2>是否触发</h2>
-      <p class="pool-signal-body{% if market_brief.valuation_empty %} muted{% endif %}">{{ market_brief.valuation_text }}</p>
-      <p class="pool-signal-meta muted">Fwd PE ≤ 目标PE · 美港股盈利跟踪</p>
+      <div class="pool-signal-body{% if market_brief.valuation_empty %} muted{% endif %}">{{ market_brief.valuation_text }}</div>
     </article>
   </div>
+  {% if market_brief.data_date %}
+  <p class="pool-signal-meta muted">数据日 {{ market_brief.data_date }} · 美港股盈利跟踪</p>
+  {% endif %}
 </section>
 <div class="page-head pool-head">
 

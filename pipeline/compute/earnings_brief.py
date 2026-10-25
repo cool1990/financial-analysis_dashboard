@@ -1,11 +1,13 @@
-"""首页「今日修正」「RSI信号」：对齐 Hermes 美港股盈利跟踪简要总结。
+"""首页「今日修正」「RSI信号」「是否触发」：对齐 Hermes 美港股盈利跟踪简要总结。
 
-权威来源：~/.hermes/scripts/us_hk_earnings_tracker.py 的 build_brief /
-revision_signal_current_q。不是投资日报里的标普 RSI。
+权威逻辑：Hermes ``us_hk_earnings_tracker.py`` 的 build_brief /
+revision_signal_current_q / Fwd PE≤目标PE。不是投资日报里的标普 RSI。
 
-优先解析最新 ``盈利跟踪_YYYY-MM-DD.md`` 的「## 简要总结」第 1–3 条
-（今日修正 / RSI信号 / 估值触发）；笔记不可用时，用仓库内 TradingView /
-Alpha Vantage / 股票池 pe_target 按同口径现算。
+数据只读本仓库：``data/earnings_tracker/盈利跟踪_*.md``、
+``data/market_brief.json``、``config/stock_pool.csv``、各票 TV/AV JSON。
+不读 Mac Obsidian vault。笔记缺失或过期时，用仓库内 TV/AV/pe_target 现算。
+
+首页展示为紧凑三栏（每票短句 / RSI 两行 / 触发名单），脚注保留数据日来源。
 """
 
 from __future__ import annotations
@@ -89,7 +91,10 @@ def hermes_revision_signal(
 
 
 def note_search_roots() -> list[Path]:
-    """笔记目录候选：环境变量、settings、仓库 data、Hermes 本地路径。"""
+    """笔记目录：仅仓库内 data/earnings_tracker（可测时用 EARNINGS_TRACKER_NOTES 覆盖）。
+
+    不读 Mac Obsidian vault / Hermes 工作区；日更需同步进仓库后再建站。
+    """
     roots: list[Path] = []
     env = (os.environ.get("EARNINGS_TRACKER_NOTES") or "").strip()
     if env:
@@ -97,15 +102,14 @@ def note_search_roots() -> list[Path]:
     settings = load_settings() or {}
     configured = ((settings.get("paths") or {}).get("earnings_tracker_notes") or "").strip()
     if configured:
-        roots.append(Path(configured).expanduser())
-    roots.extend(
-        [
-            repo_path("data", "earnings_tracker"),
-            ROOT.parent / "美港股盈利指标跟踪" / "notes",
-            Path("/workspace/美港股盈利指标跟踪/notes"),
-            Path.home() / "Obsidian" / "收集箱" / "外部" / "Hermes" / "日更",
-        ]
-    )
+        # 仅允许仓库内相对路径，避免运行时扫 vault
+        cfg_path = Path(configured).expanduser()
+        try:
+            cfg_path.resolve().relative_to(ROOT.resolve())
+            roots.append(cfg_path)
+        except ValueError:
+            pass
+    roots.append(repo_path("data", "earnings_tracker"))
     seen: set[Path] = set()
     out: list[Path] = []
     for root in roots:
@@ -184,21 +188,21 @@ def parse_brief_from_note(path: Path) -> dict[str, Any] | None:
     if not revision_body and not rsi_body and not valuation_body:
         return None
     names = _parse_valuation_names(valuation_body)
+    rsi_fallback = rsi_body or "低于30 无；高于70 无"
+    display = _display_texts(
+        revision_body=revision_body or "无",
+        rsi_body=rsi_fallback,
+        valuation_body=valuation_body or "无",
+        valuation_names=names,
+    )
     return {
         "data_date": data_date,
         "source": "note",
         "source_path": str(path),
         "revision_body": revision_body or "无",
-        "rsi_body": rsi_body or "低于30 无；高于70 无",
+        "rsi_body": rsi_fallback,
         "valuation_body": valuation_body or "无",
-        "revision_text": f"今日修正：{(revision_body or '无')}。",
-        "rsi_text": f"RSI信号：{(rsi_body or '低于30 无；高于70 无')}。",
-        "valuation_text": ("是否触发：" + ("、".join(names) if names else "无") + "。"),
-        "revision_empty": (revision_body or "无") in {"无", "无。", ""},
-        "valuation_empty": not names,
-        "rsi_low": _parse_rsi_side(rsi_body, "低于30"),
-        "rsi_high": _parse_rsi_side(rsi_body, "高于70"),
-        "valuation_names": names,
+        **display,
     }
 
 
@@ -228,18 +232,95 @@ def valuation_triggered(forward_pe: float | None, target: float | None) -> bool:
 def _parse_rsi_side(body: str, label: str) -> list[str]:
     if not body:
         return []
-    # 「低于30 MU, SNDK；高于70 无」
-    parts = re.split(r"[；;]", body)
+    # 「低于30 MU, SNDK；高于70 无」或「低于30：MU、SNDK」
+    parts = re.split(r"[；;\n]", body)
     for part in parts:
         part = part.strip()
         if not part.startswith(label):
             continue
-        rest = part[len(label) :].strip()
+        rest = part[len(label) :].strip().lstrip("：:").strip()
         if not rest or rest == "无":
             return []
         return [t.strip() for t in re.split(r"[,，、\s]+", rest) if t.strip() and t.strip() != "无"]
     return []
 
+
+
+
+
+def _strip_revision_detail(line: str) -> str:
+    """去掉「（当前季EPS …）」括号细节，只留 TICKER：旧——新。"""
+    s = (line or "").strip().rstrip("。").strip()
+    if not s or s in {"无", "无。"}:
+        return ""
+    # 全角/半角括号细节
+    s = re.sub(r"[（(][^）)]*[）)]", "", s).strip()
+    return s.rstrip("，,；;").strip()
+
+
+def compact_revision_lines(body: str) -> list[str]:
+    """笔记或现算的修正正文 → 每票一行短句。"""
+    text = (body or "").strip().rstrip("。").strip()
+    text = re.sub(r"^今日修正[：:]\s*", "", text).strip()
+    if not text or text in {"无", "无。"}:
+        return []
+    parts = re.split(r"[；;\n]", text)
+    out: list[str] = []
+    for part in parts:
+        short = _strip_revision_detail(part)
+        if short and short not in {"无"}:
+            out.append(short)
+    return out
+
+
+def compact_rsi_lines(body: str = "", *, low: list[str] | None = None, high: list[str] | None = None) -> tuple[str, str]:
+    """返回 (低于30行, 高于70行)，形如「低于30：无」「高于70：MU」。"""
+    if low is None:
+        low = _parse_rsi_side(body, "低于30")
+    if high is None:
+        high = _parse_rsi_side(body, "高于70")
+    low_s = "、".join(low) if low else "无"
+    high_s = "、".join(high) if high else "无"
+    return f"低于30：{low_s}", f"高于70：{high_s}"
+
+
+def compact_valuation_text(names: list[str] | None = None, body: str = "") -> str:
+    """触发名单 → 「触发：A、B」或「无」。"""
+    names = list(names or [])
+    if not names and body:
+        names = _parse_valuation_names(body)
+    if not names:
+        return "无"
+    return "触发：" + "、".join(names)
+
+
+def _display_texts(
+    *,
+    revision_body: str,
+    rsi_body: str,
+    valuation_body: str,
+    valuation_names: list[str] | None = None,
+    rsi_low: list[str] | None = None,
+    rsi_high: list[str] | None = None,
+) -> dict[str, Any]:
+    """首页紧凑展示字段（标题已在 h2，正文不再重复前缀）。"""
+    rev_lines = compact_revision_lines(revision_body)
+    rsi_low_line, rsi_high_line = compact_rsi_lines(rsi_body, low=rsi_low, high=rsi_high)
+    names = list(valuation_names) if valuation_names is not None else _parse_valuation_names(valuation_body)
+    valuation_text = compact_valuation_text(names, valuation_body)
+    return {
+        "revision_lines": rev_lines,
+        "revision_text": "\n".join(rev_lines) if rev_lines else "无",
+        "rsi_low_line": rsi_low_line,
+        "rsi_high_line": rsi_high_line,
+        "rsi_text": f"{rsi_low_line}\n{rsi_high_line}",
+        "valuation_text": valuation_text,
+        "revision_empty": not rev_lines,
+        "valuation_empty": not names,
+        "rsi_low": list(rsi_low) if rsi_low is not None else _parse_rsi_side(rsi_body, "低于30"),
+        "rsi_high": list(rsi_high) if rsi_high is not None else _parse_rsi_side(rsi_body, "高于70"),
+        "valuation_names": names,
+    }
 
 
 def _tv_forward_pe(ticker: str) -> float | None:
@@ -377,7 +458,7 @@ def compute_brief_from_pool(
             new = _signal_base(r["signal"])
             if not old or old == new:
                 continue
-            change_bits.append(f"{r['ticker']}：{old}——{new}（{_fmt_q_clause(r)}）")
+            change_bits.append(f"{r['ticker']}：{old}——{new}")
 
     if change_bits:
         revision_body = "；".join(change_bits)
@@ -389,8 +470,8 @@ def compute_brief_from_pool(
     low_rsi = [t for t in tickers if (rsi := _tv_rsi(t)) is not None and rsi < 30]
     high_rsi = [t for t in tickers if (rsi := _tv_rsi(t)) is not None and rsi > 70]
     rsi_body = (
-        f"低于30 {', '.join(low_rsi) if low_rsi else '无'}；"
-        f"高于70 {', '.join(high_rsi) if high_rsi else '无'}"
+        f"低于30：{'、'.join(low_rsi) if low_rsi else '无'}；"
+        f"高于70：{'、'.join(high_rsi) if high_rsi else '无'}"
     )
     from pipeline.config import pe_target_for
 
@@ -401,6 +482,14 @@ def compute_brief_from_pool(
         if valuation_triggered(pe, target):
             valuation_names.append(t)
     valuation_body = "、".join(valuation_names) if valuation_names else "无"
+    display = _display_texts(
+        revision_body=revision_body,
+        rsi_body=rsi_body,
+        valuation_body=valuation_body,
+        valuation_names=valuation_names,
+        rsi_low=low_rsi,
+        rsi_high=high_rsi,
+    )
     return {
         "data_date": today.isoformat(),
         "source": "compute",
@@ -408,14 +497,7 @@ def compute_brief_from_pool(
         "revision_body": revision_body,
         "rsi_body": rsi_body,
         "valuation_body": valuation_body,
-        "revision_text": f"今日修正：{revision_body}。",
-        "rsi_text": f"RSI信号：{rsi_body}。",
-        "valuation_text": f"是否触发：{valuation_body}。",
-        "revision_empty": revision_empty,
-        "valuation_empty": not valuation_names,
-        "rsi_low": low_rsi,
-        "rsi_high": high_rsi,
-        "valuation_names": valuation_names,
+        **display,
         "signals": signals,
     }
 
@@ -478,13 +560,17 @@ def load_market_brief(
 
 
 def brief_for_template(brief: dict[str, Any] | None) -> dict[str, Any]:
-    """Jinja 友好视图。"""
+    """Jinja 友好视图（紧凑三栏，无冗长前缀/括号细节）。"""
     if not brief:
+        low_line, high_line = compact_rsi_lines("")
         return {
             "data_date": "",
-            "revision_text": "今日修正：无。",
-            "rsi_text": "RSI信号：低于30 无；高于70 无。",
-            "valuation_text": "是否触发：无。",
+            "revision_text": "无",
+            "revision_lines": [],
+            "rsi_text": f"{low_line}\n{high_line}",
+            "rsi_low_line": low_line,
+            "rsi_high_line": high_line,
+            "valuation_text": "无",
             "revision_empty": True,
             "valuation_empty": True,
             "rsi_low": [],
@@ -492,21 +578,21 @@ def brief_for_template(brief: dict[str, Any] | None) -> dict[str, Any]:
             "valuation_names": [],
             "source": "empty",
         }
-    names = list(brief.get("valuation_names") or [])
-    valuation_text = brief.get("valuation_text")
-    if not valuation_text:
-        valuation_text = "是否触发：" + ("、".join(names) if names else "无") + "。"
+    display = _display_texts(
+        revision_body=str(brief.get("revision_body") or brief.get("revision_text") or "无"),
+        rsi_body=str(brief.get("rsi_body") or ""),
+        valuation_body=str(brief.get("valuation_body") or ""),
+        valuation_names=list(brief.get("valuation_names") or []) or None,
+        rsi_low=list(brief.get("rsi_low") or []) if "rsi_low" in brief else None,
+        rsi_high=list(brief.get("rsi_high") or []) if "rsi_high" in brief else None,
+    )
+    # 若上游已给紧凑 revision_lines，优先用
+    if isinstance(brief.get("revision_lines"), list) and brief.get("revision_lines"):
+        display["revision_lines"] = [str(x) for x in brief["revision_lines"]]
+        display["revision_text"] = "\n".join(display["revision_lines"])
+        display["revision_empty"] = False
     return {
         "data_date": brief.get("data_date") or "",
-        "revision_text": brief.get("revision_text")
-        or f"今日修正：{brief.get('revision_body') or '无'}。",
-        "rsi_text": brief.get("rsi_text")
-        or f"RSI信号：{brief.get('rsi_body') or '低于30 无；高于70 无'}。",
-        "valuation_text": valuation_text,
-        "revision_empty": bool(brief.get("revision_empty")),
-        "valuation_empty": bool(brief.get("valuation_empty", not names)),
-        "rsi_low": list(brief.get("rsi_low") or []),
-        "rsi_high": list(brief.get("rsi_high") or []),
-        "valuation_names": names,
+        **display,
         "source": brief.get("source") or "",
     }

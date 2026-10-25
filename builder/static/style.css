@@ -312,19 +312,22 @@ body.pool-page .topbar-inner,
 body.pool-page footer { max-width: 1960px; }
 .pool-head { margin-bottom: 12px; }
 
-.pool-signals { margin: 0 0 16px; }
+.pool-signals { margin: 0 0 14px; }
 .pool-signal-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
-.pool-signal-card { padding: 14px 16px; }
-.pool-signal-card h2 { font-size: 15px; margin: 0 0 8px; }
-.pool-signal-body { font-size: 13.5px; line-height: 1.55; word-break: break-word; }
-.pool-signal-meta { margin-top: 8px; font-size: 12px; }
+.pool-signal-card { padding: 10px 12px; min-width: 0; }
+.pool-signal-card h2 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
+.pool-signal-body { font-size: 12.5px; line-height: 1.4; word-break: break-word; }
+.pool-signal-body > div + div { margin-top: 2px; }
+.pool-signal-meta { margin: 6px 2px 0; font-size: 11.5px; }
 .stage-badge.s-watch { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--ink-2); }
-@media (max-width: 800px) {
-  .pool-signal-grid { grid-template-columns: 1fr; }
+@media (max-width: 720px) {
+  .pool-signal-grid { gap: 8px; }
+  .pool-signal-card { padding: 8px 10px; }
+  .pool-signal-body { font-size: 12px; }
 }
 
 .pool-filters {
