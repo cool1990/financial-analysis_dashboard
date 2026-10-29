@@ -9,16 +9,31 @@
     "release_at_utc": "2026-10-28T20:04:44.000Z",
     "accession": "0001193125-26-436122",
     "press_release_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526436122/",
-    "transcript_source": null,
+    "transcript_source": "motley_fool",
     "eps_basis": "non_gaap",
     "sec_form": "8-K",
-    "reporting_currency": "USD"
+    "reporting_currency": "USD",
+    "consensus_sources": {
+      "alpha_vantage": {
+        "function": "EARNINGS_ESTIMATES",
+        "symbol": "MSFT",
+        "called": true,
+        "status": "ok",
+        "reason": ""
+      }
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q1/transcript.txt 后重跑 Stage2"
+      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q1/transcript.txt 后重跑 Stage2",
+      "电话会与新闻稿数值指引不一致：Second Quarter Revenue（fiscal Q2 2027）新闻稿中值 96550000000.0 vs 电话会 49.5",
+      "电话会与新闻稿数值指引不一致：Second Quarter Revenue（fiscal Q2 2027）新闻稿中值 96550000000.0 vs 电话会 19.0",
+      "电话会与新闻稿数值指引不一致：Second Quarter Revenue（fiscal Q2 2027）新闻稿中值 96550000000.0 vs 电话会 16150000000.0",
+      "电话会与新闻稿数值指引不一致：Second Quarter Revenue（fiscal Q2 2027）新闻稿中值 96550000000.0 vs 电话会 -30.0",
+      "这一轮至少有 4 个问题，摘要只有 2 条（exchange 4）",
+      "这一轮至少有 3 个问题，摘要只有 2 条（exchange 8）"
     ]
   },
   "scorecard": [
@@ -310,29 +325,18 @@
     }
   },
   "drivers": {
-    "stage": 1,
+    "stage": 2,
     "metrics": [
       {
         "metric": "revenue",
-        "summary": "总收入增长19%，主要由Azure和Microsoft Cloud强劲增长驱动，Agents and Infra收入增长25%。",
+        "summary": "收入增长19%，主要由微软云平台强劲需求推动，Azure和M365商业云为主要增长引擎。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "Azure收入增长48%，Microsoft Cloud收入增长30%，推动Agents and Infra收入增长25%。",
-            "evidence_quote": "Azure revenue increased 48%",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          },
-          {
-            "type": "产品或客户结构",
-            "direction": "+",
-            "is_primary": false,
-            "description": "Agents and Infra收入增长25%，而Devices and Consumer收入下降3%，产品结构向云服务倾斜。",
-            "evidence_quote": "Revenue in Agents and Infra was $76.8 billion and increased 25%",
+            "description": "微软云平台需求强劲，Azure收入增长48%，M365商业云收入增长18%，推动整体收入增长。",
+            "evidence_quote": "Revenue was $92.3 billion and increased 19%",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -342,8 +346,19 @@
             "type": "价",
             "direction": "+",
             "is_primary": false,
-            "description": "Microsoft 365 commercial cloud revenue增长17%，可能包含价格或产品组合改善。",
-            "evidence_quote": "Microsoft 365 commercial cloud revenue increased 18% (up 19% in constant currency) on an adjusted basis",
+            "description": "搜索和广告收入增长12%，受Bing和Edge的量和率提升驱动。",
+            "evidence_quote": "Search and advertising revenue excluding traffic acquisition costs increased 12%",
+            "source": "press_release",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "Azure和M365商业云等云产品占比提升，推动收入结构向高增长云业务倾斜。",
+            "evidence_quote": "Microsoft Cloud revenue was $63.9 billion and increased 30% (up 31% in constant currency)",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -354,25 +369,25 @@
       },
       {
         "metric": "gross_margin_gaap",
-        "summary": "毛利率同比下降1.25个百分点，主要因服务成本上升，但环比小幅改善。",
+        "summary": "毛利率同比下降1.25个百分点，主要因AI基础设施投入增加导致成本上升，但环比有所改善。",
         "drivers": [
           {
             "type": "单位成本",
             "direction": "-",
             "is_primary": true,
-            "description": "服务成本从21,121百万美元增至27,249百万美元，增速快于服务收入，拖累毛利率。",
-            "evidence_quote": "Service and other 77,648 61,751",
+            "description": "AI基础设施投入增加，导致服务成本上升，毛利率同比下降。",
+            "evidence_quote": "Total cost of revenue 29,720 24,043",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "产品或客户结构",
+            "type": "产品结构",
             "direction": "-",
             "is_primary": false,
-            "description": "低毛利产品收入下降，高毛利服务收入占比上升，但服务成本增速更快。",
-            "evidence_quote": "Product $14,631 $15,922",
+            "description": "云业务占比提升，但云业务毛利率通常低于传统软件业务，拉低整体毛利率。",
+            "evidence_quote": "Service and other 77,648 61,751",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -383,25 +398,25 @@
       },
       {
         "metric": "operating_margin_gaap",
-        "summary": "营业利润率同比提升0.88个百分点，主要因运营费用控制良好，收入增长快于费用增长。",
+        "summary": "营业利润率同比提升0.88个百分点，主要因收入增长带来的规模效应和运营效率提升。",
         "drivers": [
           {
-            "type": "费用投入",
+            "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "研发费用增长11%，销售和营销费用持平，运营费用增速低于收入增速。",
-            "evidence_quote": "Research and development 9,047 8,146",
+            "description": "收入增长19%，运营费用增长相对较慢，带来经营杠杆效应。",
+            "evidence_quote": "Operating income was $45.9 billion and increased 21% (up 22% in constant currency)",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "量",
+            "type": "费用投入",
             "direction": "+",
             "is_primary": false,
-            "description": "收入增长19%，规模效应摊薄固定成本。",
-            "evidence_quote": "Revenue was $92.3 billion and increased 19%",
+            "description": "研发费用增长11%，但低于收入增速，费用率下降。",
+            "evidence_quote": "Research and development 9,047 8,146",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -412,14 +427,14 @@
       },
       {
         "metric": "eps_gaap",
-        "summary": "GAAP每股收益增长32%，主要受OpenAI投资净收益同比改善和收入增长驱动。",
+        "summary": "GAAP每股收益增长32%，主要受OpenAI投资净收益影响，去年同期为净亏损。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "+",
             "is_primary": true,
-            "description": "OpenAI投资净收益同比增加3.3亿美元，对每股收益贡献0.44美元。",
-            "evidence_quote": "Impact from OpenAI adjusts for the impact from investments in OpenAI",
+            "description": "OpenAI投资净收益增加，去年同期为净亏损，导致GAAP每股收益大幅增长。",
+            "evidence_quote": "In the first quarter of fiscal year 2027, net income and diluted earnings per share were impacted by net gains from investments in OpenAI, which resulted in an increase in net income and diluted earnings per share of $207 million and $0.03, respectively.",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -441,13 +456,13 @@
       },
       {
         "metric": "eps_nongaap",
-        "summary": "非GAAP每股收益增长18%，主要受收入增长和运营利润率提升驱动。",
+        "summary": "非GAAP每股收益增长18%，主要受收入增长和平台效率提升驱动。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入增长19%，推动非GAAP净利润增长18%。",
+            "description": "收入增长19%，推动非GAAP净利润增长。",
             "evidence_quote": "Revenue was $92.3 billion and increased 19%",
             "source": "press_release",
             "is_inference": false,
@@ -458,9 +473,9 @@
             "type": "费用投入",
             "direction": "+",
             "is_primary": false,
-            "description": "运营费用增速低于收入增速，提升利润率。",
-            "evidence_quote": "Operating income $45,915 $37,961",
-            "source": "press_release",
+            "description": "平台效率提升，运营费用率下降。",
+            "evidence_quote": "Non-GAAP EPS -- $4.89, an 18% increase reflecting platform efficiency gains and revenue growth, adjusted for investments in OpenAI.",
+            "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -470,26 +485,15 @@
       },
       {
         "metric": "operating_cash_flow",
-        "summary": "经营现金流增长29%，主要因净利润增长和营运资本改善。",
+        "summary": "经营现金流增长29%，主要受云业务强劲的账单和收款驱动。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "净利润从27,747百万美元增至36,629百万美元，增长32%。",
-            "evidence_quote": "Net income $36,629 $27,747",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          },
-          {
-            "type": "其他",
-            "direction": "+",
-            "is_primary": false,
-            "description": "应收账款减少17,104百万美元，释放现金。",
-            "evidence_quote": "Accounts receivable 17,104 16,490",
-            "source": "press_release",
+            "description": "云业务强劲的账单和收款推动经营现金流增长。",
+            "evidence_quote": "Cash Flow from Operations -- $58 billion, a 29% increase resulting from strong cloud billings and collections.",
+            "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -499,15 +503,15 @@
       },
       {
         "metric": "capex",
-        "summary": "资本支出增长103%，主要因云和AI基础设施投资大幅增加。",
+        "summary": "资本支出增长103%，主要因AI基础设施投资大幅增加，包括CPU和GPU等短期资产。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "+",
             "is_primary": true,
-            "description": "物业和设备增加从19,394百万美元增至39,367百万美元。",
-            "evidence_quote": "Additions to property and equipment (39,367) (19,394)",
-            "source": "press_release",
+            "description": "AI基础设施投资大幅增加，75%的支出用于CPU和GPU等短期资产。",
+            "evidence_quote": "Capital Expenditures -- $45.2 billion, with 75% of spend allocated to short-lived assets like CPUs and GPUs for AI infrastructure.",
+            "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -517,25 +521,14 @@
       },
       {
         "metric": "fcf",
-        "summary": "自由现金流下降27%，主要因资本支出翻倍，抵消了经营现金流增长。",
+        "summary": "自由现金流下降27%，主要因资本支出大幅增加，抵消了经营现金流的增长。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "-",
             "is_primary": true,
-            "description": "资本支出从19,394百万美元增至39,367百万美元，增长103%。",
+            "description": "资本支出增长103%，远超经营现金流增长，导致自由现金流下降。",
             "evidence_quote": "Additions to property and equipment (39,367) (19,394)",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          },
-          {
-            "type": "量",
-            "direction": "+",
-            "is_primary": false,
-            "description": "经营现金流增长29%，部分抵消资本支出增加。",
-            "evidence_quote": "Net cash from operations 58,000 45,057",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -546,14 +539,14 @@
       },
       {
         "metric": "net_income_gaap",
-        "summary": "GAAP净利润增长32%，主要受OpenAI投资净收益同比改善和收入增长驱动。",
+        "summary": "GAAP净利润增长32%，主要受OpenAI投资净收益影响，去年同期为净亏损。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "+",
             "is_primary": true,
-            "description": "OpenAI投资净收益同比增加3.3亿美元。",
-            "evidence_quote": "Impact from OpenAI adjusts for the impact from investments in OpenAI",
+            "description": "OpenAI投资净收益增加，去年同期为净亏损，导致GAAP净利润大幅增长。",
+            "evidence_quote": "In the first quarter of fiscal year 2027, net income and diluted earnings per share were impacted by net gains from investments in OpenAI, which resulted in an increase in net income and diluted earnings per share of $207 million and $0.03, respectively.",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -577,7 +570,367 @@
     "status": null
   },
   "guidance": {
-    "items": [],
+    "items": [
+      {
+        "metric_key": "revenue",
+        "metric_label": "Second Quarter Revenue",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": "$96 billion",
+        "high_raw": "$97.1 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "管理层预计第二季度营收在960亿至971亿美元之间，同比增长18%至19%。",
+        "source": "prepared_remarks",
+        "source_quote": "revenue should be between USD 96 billion and USD 97.1 billion or growth of 18% to 19%.",
+        "low": 96000000000.0,
+        "mid": 96550000000.0,
+        "high": 97100000000.0,
+        "call_variant": {
+          "metric_key": "revenue",
+          "metric_label": "Windows OEM and Devices Revenue",
+          "period": "fiscal Q2 2027",
+          "type": "numeric",
+          "low_raw": null,
+          "high_raw": null,
+          "point_raw": "mid-30s decline",
+          "plus_minus_raw": null,
+          "basis": "unspecified",
+          "direction": null,
+          "statement": "管理层预计第二季度Windows OEM和设备营收下降30%左右。",
+          "source": "prepared_remarks",
+          "source_quote": "Windows OEM and devices revenue should decline in the mid-30s",
+          "low": -30.0,
+          "mid": -30.0,
+          "high": -30.0,
+          "call_variant": null,
+          "change_vs_prior": null
+        },
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "revenue",
+        "metric_label": "M365 Consumer Cloud Revenue Growth",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "low teens",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计第二季度M365消费者云营收增长在低双位数。",
+        "source": "prepared_remarks",
+        "source_quote": "M365 Consumer Cloud revenue should grow in the low teens",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "metric_label": "Microsoft Cloud Gross Margin Percentage",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "65%",
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "管理层预计第二季度微软云毛利率约为65%。",
+        "source": "prepared_remarks",
+        "source_quote": "Microsoft Cloud gross margin percentage should be roughly 65%",
+        "low": 65.0,
+        "mid": 65.0,
+        "high": 65.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "opex_gaap",
+        "metric_label": "Operating Expense",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": "$18.5 billion",
+        "high_raw": "$18.6 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "管理层预计第二季度运营费用在185亿至186亿美元之间。",
+        "source": "prepared_remarks",
+        "source_quote": "operating expense of USD 18.5 billion to USD 18.6 billion",
+        "low": 18500000000.0,
+        "mid": 18550000000.0,
+        "high": 18600000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "tax_rate",
+        "metric_label": "Effective Tax Rate",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "20%",
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "管理层预计第二季度有效税率约为20%。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect our Q2 effective tax rate to be approximately 20%",
+        "low": 20.0,
+        "mid": 20.0,
+        "high": 20.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "Capital Expenditures",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "over $50 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计第二季度资本支出将超过500亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect CapEx spend will be over $50 billion",
+        "low": 50000000000.0,
+        "mid": 50000000000.0,
+        "high": 50000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "Calendar Year CapEx",
+        "period": "calendar 2026",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$170 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计2026日历年资本支出约为1700亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "for the calendar year, spend should be approximately $170 billion",
+        "low": 170000000000.0,
+        "mid": 170000000000.0,
+        "high": 170000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Free Cash Flow",
+        "period": "fiscal 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计2027财年自由现金流保持为正。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect to continue to remain free cash flow positive in FY '27",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "CapEx Acceleration",
+        "period": "fiscal H2 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计2027财年下半年资本支出将加速。",
+        "source": "prepared_remarks",
+        "source_quote": "we currently expect CapEx spend to accelerate primarily from CPUs",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Azure Customer Demand vs Supply",
+        "period": "fiscal Q2 2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层表示客户需求继续超过可用供应。",
+        "source": "prepared_remarks",
+        "source_quote": "Customer demand continues to exceed available supply.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "M365 Commercial Cloud Revenue Growth Trajectory",
+        "period": "fiscal 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计M365商业云营收增长将在本财年内加速。",
+        "source": "prepared_remarks",
+        "source_quote": "we continue to expect revenue growth to accelerate through the year",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Xbox Content and Services Growth Pattern",
+        "period": "fiscal 2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计Xbox内容与服务增长在第二季度最强，第三季度减速，第四季度进一步放缓。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect growth to be the strongest in the second quarter with some deceleration in Q3 and further moderation in Q4",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Windows OEM Trends",
+        "period": "fiscal 2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计Windows OEM的疲软趋势将在本财年剩余时间持续。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect these trends to continue through the rest of the fiscal year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Operating Margin",
+        "period": "fiscal Q2 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "down",
+        "statement": "管理层预计第二季度运营利润率同比略有下降。",
+        "source": "prepared_remarks",
+        "source_quote": "Operating margins should be down slightly year-over-year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Other Income and Expense",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "negative $300 million",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计第二季度其他收入与支出约为负3亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "other income expense is expected to be roughly negative $300 million",
+        "low": 300000000.0,
+        "mid": 300000000.0,
+        "high": 300000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "COGS",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": "$32.7 billion",
+        "high_raw": "$32.9 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "管理层预计第二季度销售成本在327亿至329亿美元之间。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect COGS of USD 32.7 billion to USD 32.9 billion",
+        "low": 32700000000.000004,
+        "mid": 32800000000.0,
+        "high": 32900000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Agents and Infra Revenue",
+        "period": "fiscal Q2 2027",
+        "type": "numeric",
+        "low_raw": "$80.1 billion",
+        "high_raw": "$80.7 billion",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "管理层预计第二季度代理与基础设施业务营收在801亿至807亿美元之间。",
+        "source": "prepared_remarks",
+        "source_quote": "we expect revenue from Agents and Infra of USD 80.1 billion to USD 80.7 billion",
+        "low": 80100000000.0,
+        "mid": 80400000000.0,
+        "high": 80700000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      }
+    ],
     "prior_guidance_review": [],
     "vs_consensus": [],
     "analyst_revisions": {
@@ -587,7 +940,119 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": [],
+    "industry_outlook": [
+      {
+        "title": "外部环境（技术变化）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Satya 认为 AI 正在从追逐单个新模型转向企业真正把智能体系统落到业务流程里。他说过去那种“闪亮新东西”的热度在减弱，企业更关心能不能自己建系统、掌握权重、管理成本、保证可靠性和安全。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他把这比作过去企业建设数据库应用的阶段，认为现在企业 AI 应用正在进入类似的长期建设周期。Satya 强调这不是几个季度的事，而是十年维度的事，他更看重企业客户的广度，而不是少数几家大客户买大量算力带来的短期增长。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Satya 说客户对 AI 服务的需求继续超过可用供给，这也是公司计划在第二季度把资本开支提高到 500 亿美元以上的原因。Amy 也确认，客户需求仍然大于供给，工程团队提升效率后，公司会尽量把新增容量优先分配给 Foundry。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "需求正在从消费级尝鲜转向企业级智能体部署。Satya 举例说，联合利华在用全自动智能体系统处理订单和贸易券争议，劳斯莱斯用智能体管理包含 3 万个零部件的喷气发动机维护和供应链，奥地利银行 RBI 已经有 20 多个端到端业务流程在跑。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "企业客户越来越倾向于多模型方案。Satya 提到，很多客户从前沿模型起步，但联合利华已经换上了用微软轨迹训练的 MAI 模型，说明客户在做模型优化、工作负载优化和 token 优化。过去一年，用多个模型构建智能体解决方案的客户数量增长了 5 倍。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "供给端的主要变化是工程效率提升和第三方交付延迟同时发生。Amy 说，第一季度工程团队在平台层做了很好的效率优化，不只是 GPU，还包括应用层、Foundry 和 Azure 平台本身，这让公司能把更多容量分配给 Foundry。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "但她也说，一些原本预计第一季度到货的第三方容量被推迟，影响了资本开支和供给节奏。第二季度原本指望的部分供给也移到了下半年，所以公司需要继续靠工程效率来补上缺口。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Satya 强调公司把算力看成一个可灵活调配的池子，目标是让这个池子尽可能高效和 fungible。他说数据中心建设、上架速度、工作负载优化都围绕这个目标，然后根据需求信号决定把容量分配给 Copilot、Foundry、数据还是其他业务。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Satya 没有直接点名竞争对手，但他把竞争焦点放在成本效率和模型选择上。他说微软的目标是推进“成本到结果”的前沿，也就是在领先模型发布后 3 到 6 个月内，用低得多的训练成本提供可比能力，再把成本优势转给客户。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他举例说，MAI-Base-2 在测试中比其他开放权重模型的训练计算效率高 4 到 12 倍；MAI-Cyber 已经支撑超过 40% 的代码扫描，每次扫描成本低 18%；MAI-Transcribe 自称是世界上最准确、最便宜的转录模型。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在芯片层面，Maia 200 在 Teams 和 Copilot 的 AI 体验中每瓦 token 产出是之前系统的 1.7 倍，Maia 300 还会再提升 40%。这些效率提升被用来支撑 Azure 的供给和价格竞争力。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Satya 说微软的商业模式正在从按席位订阅扩展到按用量计费，这会扩大总可寻址市场和每用户平均收入。订阅部分让每个用户都能用上越来越强的日常智能，通常由 IT 部门统一采购；而当智能体承担更高价值工作时，用量计费会打开由业务部门直接付费的需求。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他给出一个具体信号：通过用量计费积极消耗额度的 Copilot 客户数量在本季度增长了超过 75%。在 GitHub 上，智能体功能带来的额度消耗自用量计费生效以来已经翻了一倍多。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Satya 还解释了这种模式背后的逻辑：订阅把前沿能力普及到整个组织，用量计费则把支出和智能体实际创造的价值直接挂钩。他说这比只靠少数大客户买算力更像一门真正的生意。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "ol",
+            "text": "",
+            "items": [
+              "把 Copilot 打造成“新的工作操作系统”，把 Chat、Cowork、Autopilot 和 Code 统一到一个体验里，并内置 Office，目标是让用户真正用它完成工作。",
+              "围绕 Foundry 和 Fabric 构建企业智能体平台，让客户在数据旁边直接构建智能体，并用 Agent 365 做可观测性、用 Perception 做安全治理。",
+              "推进第一方模型和自研芯片，用 MAI 系列和 Maia 芯片降低训练和推理成本，把节省下来的成本转给客户，同时保持对 OpenAI 等前沿模型的支持。",
+              "把基础设施建成一个可灵活调配的算力池，加快数据中心上架速度，提升 GPU、CPU、存储和内存的整体效率，以应对需求大于供给的局面。",
+              "在 Windows 和设备端推动混合智能，让 PC 成为“安全的智能体盒子”，通过 MXC 执行容器和 Agent 365 把智能体治理延伸到端侧。"
+            ]
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -613,18 +1078,326 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
+    "items": [
+      {
+        "exchange_id": "2",
+        "analyst": "Adam Wood",
+        "firm": "Morgan Stanley",
+        "topic": "AI",
+        "is_new_topic": false,
+        "question_summary": "随着增量 AI 产能上线，未来几年 Azure 回报的主要驱动因素更可能是提高利用率和单位成本，还是通过 Fabric、Foundry、Copilot 变现工作负载的更多层次？",
+        "answer_summary": "Satya（CEO）：两者都重要，但公司把它们看作同一个算力池，目标是让这个池子尽可能高效、可互换。这包括数据中心的建设方式、产能上线的运营纪律，以及如何在该基础设施上运行优化后的工作负载。做到这些后，就根据需求信号来分配算力。\n新的分部报告也能体现这一点：Copilot 底下的有状态数据库是 WorkIQ，它被用于 Foundry，人们可以在 Foundry 里构建跨非结构化和结构化数据的供应链多智能体系统，同时使用 Azure 中的 Postgres 数据库；所有智能体工作都在 Agent 365 中注册，并由 Perception 管理安全。\n所以公司认为这些都是同一套基础设施，只是按不同产品向外界报告。利润率或经营杠杆不会只来自某一块，而是来自每一块，并且当它们协同运作时会产生复利效应。\nAmy（CFO）：我可能漏掉了你问题前半部分，但至少听到了后半部分。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "It's not going to come from any -- it's going to come from every one of them, and it compounds when we work them across.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Karl Keirstead",
+        "firm": "UBS",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师想了解 Azure 12 月季度恒定汇率下 49% 至 50% 增长指引背后的关键驱动因素，包括产能、第三方客户分配和 OpenAI 需求等。",
+        "answer_summary": "Amy（CFO）：Azure 12 月季度 49% 至 50% 的恒定汇率增长指引主要来自几个方面。第一，工程团队在平台层持续提升效率，不只是 GPU 效率，还包括应用、Foundry 和 Azure 平台每一层的效率，这些效率提升让公司能把更多算力分配给 Foundry，因为目前需求仍大于供给。第二，代币定价高于预期，高质量模型带来良好利润率，对当季有正面贡献。第三，效率提升也覆盖 GPU、CPU、存储和内存等整个工作负载，使现有算力能更快转化为额外产能。进入 12 月季度，这些效率收益会延续，但公司还需要继续找到新的效率提升，因为部分原计划在 12 月季度到货的供给推迟到了下半年，同时代币定价仍有不确定性。",
+        "new_numbers": [
+          {
+            "value": "49% to 50%",
+            "meaning": "Azure 12 月季度恒定汇率增长指引"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "In Q1, I would say the engineering teams have really delivered very, very good work in terms of improving efficiency at the platform layer. That is not just a statement around the efficiency of GPUs. It's a statement around the efficiency of every layer, how the app utilizes the platform and how Foundry utilizes the platform as well as the Azure platform itself.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Moerdler",
+        "firm": "Bernstein Research",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "Azure AI 的增长驱动力中，企业客户与数字原生/AI 原生客户的占比如何？",
+        "answer_summary": "Satya（CEO）：企业级 AI 工作负载正在广泛铺开。上周在欧洲看到很多 Agentic 系统落地，例如联合利华用全自动无接触系统处理自动下单和贸易优惠券争议管理，劳斯莱斯用 Foundry 和 Agentic 系统管理 3 万个零部件的喷气发动机维护、规划、执行和库存，奥地利银行 RBI 展示了 20 多个端到端业务流程。这些系统普遍采用多模型方式，从前沿模型起步，联合利华还部署了用我们 trace 训练的 MAI 模型，模型优化、工作负载优化和 token 优化都很成熟。企业 AI 工作负载的兴起就像过去企业建数据库应用一样，现在真正开始发生。一些追逐热点的东西在退潮，企业更关心能不能建系统、掌控权重、管理成本、可靠性和安全。企业级扩展是十年维度的事，不是几个季度。我们更看重广度，而不是只有 4 个大客户买很多容量。我们有能力服务大客户，但如果价格不合适，我们会耐心地先把企业业务的广度做起来。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": null,
+        "tone": "positive",
+        "answer_quote": "So the breadth is starting. Finally, it does feel like the enterprise workloads. They feel like to me, like the database applications enterprises built in the past that I grew up with is happening now when it comes to AI.",
+        "review_flags": [
+          "这一轮至少有 4 个问题，摘要只有 2 条（exchange 4）"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Moerdler",
+        "firm": "Bernstein Research",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "Azure AI 平台产品增长强劲，主要驱动力是企业客户还是数字原生客户？",
+        "answer_summary": "Satya（CEO）：Azure AI 平台产品的增长主要来自企业客户。企业正在把 AI 当作过去建数据库应用一样来构建系统，关注的是能否自己掌控模型权重、管理成本、保证可靠性和安全。企业级扩展是十年维度的事情，不是几个季度就能完成的。我们更看重企业业务的广度，而不是只有少数几个大客户买大量容量。大客户想买我们愿意卖，但如果价格不合适，我们会耐心地先把企业业务的广度做起来。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": null,
+        "tone": "positive",
+        "answer_quote": "I want the breadth. We are well positioned on the breadth. And we have large customers who want to buy from us, and we're open for business with it.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Gabriela Borges",
+        "firm": "Goldman Sachs",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "分析师想了解管理层对前沿模型、MAI 模型和企业客户自研模型之间 token 组合与 token 价值将如何演变的看法。",
+        "answer_summary": "Satya（CEO）：可以把任何工作负载的工具箱想成三件事。第一，新模型发布后如果性能很好，客户应该直接用它来评估对自己重要的结果；上季度一些 OpenAI 模型就带来了不错的需求。第二，客户可以把多个前沿模型放在一起，因为价格差异很大；今天 Artificial Analysis 的编码代理基准里，我们用 fusion 排到第 2 或第 3，能以快 45%、便宜 75% 拿到前沿性能，所以编码代理用户会希望 Anthropic 和 OpenAI 为每个任务竞争，而不是一个季度才竞争一次。第三，很多客户最终会拿前沿模型跑过的痕迹去训练自己的模型，可能是开放权重，也可能是 MAI 模型。这些选项都要提供，客户会根据价格和需求来选择，而且工作负载是动态的，可能从前沿模型开始，再转到开放权重或 MAI，之后又回到前沿模型。所以我们在 Foundry、Fabric、Copilot 和 GitHub Copilot 上想构建一个持续为客户创造价值的模型系统，而不是让客户被锁死在任何一个模型里。",
+        "new_numbers": [
+          {
+            "value": "45% faster, 75% cheaper",
+            "meaning": "使用 fusion 路由获得前沿性能时，速度比前沿模型快 45%，成本低 75%"
+          },
+          {
+            "value": "#2 or #3",
+            "meaning": "Artificial Analysis 编码代理基准中，使用 fusion 的排名为第 2 或第 3"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "you can now get frontier performance 45% faster, 75% cheaper. Like why -- who would want to not take that, right, which is like if you're a coding agent user, you want, in fact, Anthropic and OpenAI, by the way, to compete for your workload, not like once a quarter, but for every task.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Brent Thill",
+        "firm": "Jefferies",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "Azure 收入增速接近 50%，营业利润率也接近 50%，管理层如何通过运营改善维持这么高的利润率水平？",
+        "answer_summary": "Amy（CFO）：维持高利润率的关键首先是收入增长，应该从利润表顶部开始往下看。公司改变业务分部是因为产品和服务的交付方式在变化，新产品集成度更高、价值更大，收入加速增长会健康地贡献利润率。其次是效率提升，效率的最终结果是降低成本，但真正的好处是稳定性、安全性和可靠性，即以最低成本交付最高质量的单位，这是运营卓越。公司还主动把运营费用聚焦在建设新业务和提供安全与质量上。本季度在实现收入增长的同时没有增加额外成本，因此利润率受益，而背后是聚焦正确杠杆的结果。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "The right answer is you always start at the top of the P&L and work down. And so what we've been focused on, and I think really, it's almost inherent in all of the commentary is we changed segments because we're changing how we deliver products and services to customers.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Brad Reback",
+        "firm": "Stifel",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "M365 核心客户转向按用量付费模式，能否像 GitHub 从按席位转向按用量那样快速、无需太多销售投入地实现增长？",
+        "answer_summary": "Satya（CEO）：在编程场景会更快，因为市场已经习惯按用量付费（PayGo），而且 GitHub Universe 上发布的 Fusion 让客户买积分后能更高效地使用，所以对这块进展很乐观。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think on the coding side, it will be faster just because I think people are used to paying on this PayGo as the sort of the general market and how it works.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Brad Reback",
+        "firm": "Stifel",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "M365 核心客户转向按用量付费模式，能否像 GitHub 从按席位转向按用量那样快速、无需太多销售投入地实现增长？",
+        "answer_summary": "Satya（CEO）：对于 Copilot 本身，公司希望每次模型更新都把更多价值放进订阅里，让前沿能力广泛部署，同时保留按用量付费的选项，让客户理解两种选择并最优地组合使用，避免过度购买或觉得在凑 token。\nAmy（CFO）：这也是公司投资前沿公司并调整销售动作的原因，需要让客户既用满 Copilot 订阅、又理解按用量计费的价值；在编程之外，推进会更慢，但仍看到令人鼓舞的信号。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "And then when it comes to Copilot itself, right, we are trying to make sure that we, in some sense, are driving more and more value into the subscription with every model drop and essentially consolidating the frontier gains for broad deployment.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Tal Liani",
+        "firm": "Bank of America",
+        "topic": "Copilot 数字披露",
+        "is_new_topic": false,
+        "question_summary": "分析师想确认公司本季度是否披露了 Copilot 的具体数字。",
+        "answer_summary": "Amy（CFO）：本季度没有更新 Copilot 的具体数字，只谈到了收入和使用的增长势头。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "We did not disclose to answer your direct question, an update on the Copilot number this quarter. We talked about momentum in revenue and usage.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 8）"
+        ]
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Tal Liani",
+        "firm": "Bank of America",
+        "topic": "资本策略与融资方式",
+        "is_new_topic": false,
+        "question_summary": "分析师想了解公司未来如果需要融资，在债务、股权和其他来源之间的资本策略。",
+        "answer_summary": "Amy（CFO）：公司有很强的融资灵活性，已经使用租赁作为融资工具，也有债务市场渠道但尚未使用，还有其他选项。公司自由现金流为正，对每一美元资本开支的回报有信心，因此可以在市场条件合适时选择融资方式。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We feel good that the return on every dollar of CapEx we're spending, we're confident in that. And therefore, we feel like we have lots of options to be able to tap the financing markets when they make sense and they're attractive.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "AI": 1,
+      "指引与展望": 1,
+      "客户与订单": 2,
+      "产品结构": 3,
+      "费用与运营": 1,
+      "Copilot 数字披露": 1,
+      "资本策略与融资方式": 1
+    },
+    "new_topics": [
+      "AI",
+      "Copilot 数字披露",
+      "产品结构",
+      "客户与订单",
+      "指引与展望",
+      "费用与运营",
+      "资本策略与融资方式"
+    ],
+    "dropped_topics": [
+      "AI 产品与模型",
+      "云业务",
+      "产能与资本开支",
+      "定价与 ASP",
+      "毛利率与成本",
+      "生产力与商业流程"
+    ],
+    "hot_topics": [
+      "产品结构",
+      "客户与订单",
+      "AI"
+    ],
     "evasive_list": []
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
-    "prior_watchlist_review": [],
-    "next_watchlist": []
+    "headline": "营收与EPS双超预期，但资本开支激增导致自由现金流同比下滑27%。",
+    "key_findings": [
+      {
+        "finding": "Non-GAAP EPS 4.89美元，超市场一致预期4.72美元，同比增31.5%。",
+        "evidence": "eps_nongaap"
+      },
+      {
+        "finding": "Azure收入同比增长48%，微软云收入增长30%，AI需求继续超过可用供给。",
+        "evidence": "azure_growth"
+      },
+      {
+        "finding": "资本开支同比增103%至393.67亿美元，自由现金流同比降27.4%至186.33亿美元。",
+        "evidence": "capex"
+      }
+    ],
+    "prior_watchlist_review": [
+      {
+        "metric_key": "revenue",
+        "status": "confirmed",
+        "evidence": "FY2027Q1总营收922.79亿美元，高于指引区间上限90.95亿美元。"
+      },
+      {
+        "metric_key": "other",
+        "status": "confirmed",
+        "evidence": "Azure恒定汇率增速48%，高于约45%的跟踪阈值。"
+      },
+      {
+        "metric_key": "capex",
+        "status": "refuted",
+        "evidence": "FY2027Q1资本开支393.67亿美元，未超过500亿美元。"
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "status": "confirmed",
+        "evidence": "微软云毛利率约65%，环比保持稳定。"
+      },
+      {
+        "metric_key": "other",
+        "status": "pending",
+        "evidence": "M365商业云收入增长18%，但未提供调整后恒定汇率增速，无法验证约16%的阈值。"
+      },
+      {
+        "metric_key": "other",
+        "status": "pending",
+        "evidence": "Windows OEM与Devices营收降幅未披露具体数值，无法验证是否处于低20%区间。"
+      }
+    ],
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FY2027Q2总营收是否达到指引中值965.5亿美元",
+        "threshold": "≥96.55 billion USD"
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "condition": "FY2027Q2微软云毛利率是否达到指引约65%",
+        "threshold": "≈65%"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "FY2027Q2资本开支是否超过500亿美元",
+        "threshold": ">50 billion USD"
+      },
+      {
+        "metric_key": "other",
+        "condition": "FY2027Q2 Azure恒定汇率增速是否达到49%-50%",
+        "threshold": "49%-50% cc"
+      },
+      {
+        "metric_key": "other",
+        "condition": "FY2027Q2 Windows OEM与Devices营收降幅是否达到中30%区间",
+        "threshold": "decline mid-30s"
+      }
+    ]
   },
-  "thesis_review": {}
+  "thesis_review": {
+    "stage": "watch",
+    "theses": [],
+    "answers": [
+      {
+        "index": 0,
+        "answered": true,
+        "answer": "Azure 及其他云服务收入增长 33%，其中 AI 贡献 13 个百分点；Azure 恒定汇率下预计下季度增长 49% 至 50%。",
+        "quote": "Azure and other cloud services revenue grew 33% with AI contributing 13 points of growth",
+        "source": "prepared_remarks",
+        "quote_unverified": true
+      },
+      {
+        "index": 1,
+        "answered": true,
+        "answer": "资本开支指引上调：下季度超 500 亿美元，2026 日历年约 1700 亿美元；营业利润率指引为同比略有下降。",
+        "quote": "we expect CapEx spend will be over $50 billion",
+        "source": "prepared_remarks",
+        "quote_unverified": false
+      }
+    ],
+    "triggers": [],
+    "new_concerns": [
+      {
+        "concern": "部分原计划在 12 月季度到货的供给推迟到了下半年，可能影响 Azure 短期增长兑现。",
+        "raised_by": "Karl Keirstead, UBS",
+        "why": "供给延迟可能造成 Azure 增速与市场预期之间的节奏错配。"
+      },
+      {
+        "concern": "代币定价存在不确定性，可能影响 Azure 收入与利润率。",
+        "raised_by": "Karl Keirstead, UBS",
+        "why": "代币定价是 Azure 增长的重要变量，波动会直接影响财务表现。"
+      },
+      {
+        "concern": "公司未更新 Copilot 具体数字，只谈收入和使用的增长势头，透明度不足。",
+        "raised_by": "Tal Liani, Bank of America",
+        "why": "Copilot 是市场关注的核心 AI 变现指标，缺乏量化数据难以验证进展。"
+      }
+    ],
+    "fingerprint": "757af22a76e95b0a",
+    "reviewed_at": "2026-10-29T05:37:13+00:00",
+    "model": "deepseek/deepseek-v4-pro-0813"
+  }
 }
