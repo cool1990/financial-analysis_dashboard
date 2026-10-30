@@ -9,19 +9,33 @@
     "release_at_utc": "2026-10-29T20:05:27.000Z",
     "accession": "0001018724-26-000038",
     "press_release_url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000038/",
-    "transcript_source": null,
+    "transcript_source": "motley_fool",
     "eps_basis": "gaap",
     "sec_form": "8-K",
-    "reporting_currency": "USD"
+    "reporting_currency": "USD",
+    "consensus_sources": {
+      "alpha_vantage": {
+        "function": "EARNINGS_ESTIMATES",
+        "symbol": "AMZN",
+        "called": true,
+        "status": "ok",
+        "reason": ""
+      }
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": false,
     "warnings": [
       "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2026Q3/transcript.txt 后重跑 Stage2",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2026Q3/transcript.txt 后重跑 Stage2",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2026Q3/transcript.txt 后重跑 Stage2",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2026Q3/transcript.txt 后重跑 Stage2"
+      "电话会指引抽取失败: LLM 输出被 max_tokens=4096 截断（completion_tokens=4096，content 14349 字符）",
+      "问答摘要漏了原文中的数字或时间：5 years、10 years（exchange 2）",
+      "问答摘要漏了原文中的数字或时间：5 years、10 years（exchange 3）",
+      "这一轮至少有 5 个问题，摘要只有 2 条（exchange 3）",
+      "这一轮至少有 6 个问题，摘要只有 3 条（exchange 4）",
+      "问答摘要漏了原文中的数字或时间：3 years、6 years（exchange 5）",
+      "问答摘要漏了原文中的数字或时间：1 years、2 years、25 years（exchange 6）",
+      "这一轮至少有 2 个问题，摘要只有 1 条（exchange 7）"
     ]
   },
   "scorecard": [
@@ -303,29 +317,29 @@
     }
   },
   "drivers": {
-    "stage": 1,
+    "stage": 2,
     "metrics": [
       {
         "metric": "revenue",
-        "summary": "营收同比增长12%，主要受AWS强劲增长和零售业务扩张推动，但Prime Day时间错位及汇率拖累增速。",
+        "summary": "营收增长12%，主要由AWS增长39%和零售销量增长推动，但Prime Day时间从Q3移至Q2拖累了约4个百分点。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "AWS净销售额同比增长39%，是整体营收增长的主要驱动力。",
-            "evidence_quote": "AWS segment sales increased 39% year-over-year to $46.0 billion.",
+            "description": "AWS和零售销量增长推动营收增长，但Prime Day时间从Q3移至Q2拖累了约4个百分点。",
+            "evidence_quote": "Net sales increased 12% to $201.9 billion in the third quarter, compared with $180.2 billion in third quarter 2025.",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "一次性项目",
-            "direction": "-",
+            "type": "产品或客户结构",
+            "direction": "+",
             "is_primary": false,
-            "description": "Prime Day时间从Q3移至Q2，对Q3同比增速产生约400个基点的负面影响。",
-            "evidence_quote": "As a reminder, Prime Day timing shifted this year, with the event occurring in Q2 for most large countries. In 2025, Prime Day occurred entirely in Q3. Excluding this shift, third quarter year-over-year growth would have been approximately 400 basis points higher.",
+            "description": "AWS收入占比提升，AWS收入增长39%远高于整体增速。",
+            "evidence_quote": "AWS segment sales increased 39% year-over-year to $46.0 billion.",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -335,7 +349,7 @@
             "type": "汇率",
             "direction": "-",
             "is_primary": false,
-            "description": "汇率变动对净销售额产生9亿美元的不利影响。",
+            "description": "汇率变动对净销售额产生0.9亿美元的不利影响。",
             "evidence_quote": "Excluding the $0.9 billion unfavorable impact from year-over-year changes in foreign exchange rates throughout the quarter, net sales increased 13% compared with third quarter 2025.",
             "source": "press_release",
             "is_inference": false,
@@ -347,14 +361,14 @@
       },
       {
         "metric": "operating_margin_gaap",
-        "summary": "营业利润率同比提升4.2个百分点至13.9%，创历史新高，主要受AWS利润率扩张和北美零售利润率改善推动。",
+        "summary": "营业利润率升至13.9%，创历史新高，主要受AWS营业利润增长55%和北美营业利润增长82%推动。",
         "drivers": [
           {
-            "type": "产品结构",
+            "type": "产品或客户结构",
             "direction": "+",
             "is_primary": true,
-            "description": "AWS营业利润率从34.6%提升至38.7%，且AWS在总营收中占比从18%提升至23%，高利润率业务占比提升拉动整体营业利润率。",
-            "evidence_quote": "AWS segment operating income was $17.8 billion, compared with $11.4 billion in third quarter 2025.",
+            "description": "AWS营业利润增长55%，北美营业利润增长82%，推动整体营业利润率提升。",
+            "evidence_quote": "Operating income was $28.1 billion and operating margin was 13.9%—Amazon’s highest operating margin ever",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -364,9 +378,9 @@
             "type": "单位成本",
             "direction": "+",
             "is_primary": false,
-            "description": "北美营业利润率从4.5%提升至7.7%，反映零售业务成本效率改善。",
-            "evidence_quote": "North America segment operating income was $8.7 billion, compared with $4.8 billion in third quarter 2025.",
-            "source": "press_release",
+            "description": "公司连续第四年降低单位服务成本，支持利润率提升。",
+            "evidence_quote": "We're on track to reduce cost to serve per unit for the fourth consecutive year",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -376,13 +390,13 @@
       },
       {
         "metric": "eps_gaap",
-        "summary": "摊薄每股收益同比下降3%，主要因去年同期包含Anthropic投资带来的95亿美元税前收益，今年无此一次性收益。",
+        "summary": "每股收益下降3%，主要因去年同期包含Anthropic投资带来的95亿美元税前收益，今年无此一次性项目。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "-",
             "is_primary": true,
-            "description": "去年同期非经营收入中包含95亿美元Anthropic投资税前收益，今年无此收益，导致净利润和每股收益同比下降。",
+            "description": "去年同期包含Anthropic投资带来的95亿美元税前收益，今年无此一次性项目。",
             "evidence_quote": "This decrease is driven primarily by pre-tax gains of $9.5 billion in third quarter 2025 included in non-operating income (expense) from our investments in Anthropic.",
             "source": "press_release",
             "is_inference": false,
@@ -394,43 +408,14 @@
       },
       {
         "metric": "operating_cash_flow",
-        "summary": "TTM经营现金流同比增长19%，主要受净利润增长和营运资金改善推动。",
+        "summary": "经营现金流TTM增长29%，主要受净收入增长和折旧摊销增加推动。",
         "drivers": [
-          {
-            "type": "量",
-            "direction": "+",
-            "is_primary": true,
-            "description": "TTM净利润从764.82亿美元增长至1347.79亿美元，是经营现金流增长的主要来源。",
-            "evidence_quote": "Net income 21,187 20,685 56,478 113,587",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          },
           {
             "type": "其他",
             "direction": "+",
-            "is_primary": false,
-            "description": "折旧摊销等非现金调整增加，对经营现金流形成支撑。",
-            "evidence_quote": "Depreciation and amortization of property and equipment and capitalized content costs, operating lease assets, and other 16,796 20,949 46,285 59,882 61,916 79,353",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          }
-        ],
-        "conflicts": []
-      },
-      {
-        "metric": "capex",
-        "summary": "资本开支大幅增加，主要反映对人工智能基础设施的持续投资。",
-        "drivers": [
-          {
-            "type": "费用投入",
-            "direction": "+",
             "is_primary": true,
-            "description": "资本开支增加主要反映对人工智能的投资。",
-            "evidence_quote": "This increase primarily reflects investments in artificial intelligence.",
+            "description": "净收入增长和折旧摊销增加推动经营现金流增长。",
+            "evidence_quote": "Operating cash flow increased 29% to $168.3 billion for the trailing twelve months, compared with $130.7 billion for the trailing twelve months ended September 30, 2025.",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -441,13 +426,13 @@
       },
       {
         "metric": "fcf",
-        "summary": "自由现金流转为大幅流出，主要因资本开支大幅增加，尤其是AI相关投资。",
+        "summary": "自由现金流TTM转为流出424亿美元，主要因资本开支大幅增加，特别是AI基础设施投资。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "-",
             "is_primary": true,
-            "description": "TTM物业和设备购买净额同比增加948亿美元，主要反映AI投资，导致自由现金流大幅流出。",
+            "description": "资本开支大幅增加，特别是AI基础设施投资，导致自由现金流为负。",
             "evidence_quote": "Free cash flow decreased to an outflow of $42.4 billion for the trailing twelve months, driven primarily by a year-over-year increase of $94.8 billion in purchases of property and equipment, net of proceeds from sales and incentives.",
             "source": "press_release",
             "is_inference": false,
@@ -459,13 +444,13 @@
       },
       {
         "metric": "net_income_gaap",
-        "summary": "净利润同比下降2%，主要因去年同期包含Anthropic投资带来的95亿美元一次性税前收益。",
+        "summary": "净利润下降2%，主要因去年同期包含Anthropic投资带来的95亿美元税前收益，今年无此一次性项目。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "-",
             "is_primary": true,
-            "description": "去年同期非经营收入中包含95亿美元Anthropic投资税前收益，今年无此收益。",
+            "description": "去年同期包含Anthropic投资带来的95亿美元税前收益，今年无此一次性项目。",
             "evidence_quote": "This decrease is driven primarily by pre-tax gains of $9.5 billion in third quarter 2025 included in non-operating income (expense) from our investments in Anthropic.",
             "source": "press_release",
             "is_inference": false,
@@ -477,14 +462,14 @@
       },
       {
         "metric": "aws_revenue",
-        "summary": "AWS营收同比增长39%，为近五年最快增速，主要受AI功能和基础设施投资推动。",
+        "summary": "AWS收入增长39%，为近五年最快增速，受AI和核心云需求强劲推动。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "AWS在功能和基础设施上的投资推动营收增长，年化收入运行率达到1840亿美元。",
-            "evidence_quote": "Our AWS investment in functionality and infrastructure is working, with over 39% year-over-year revenue growth in Q3 ($184 billion revenue run rate)",
+            "description": "AI和核心云需求强劲推动AWS收入增长。",
+            "evidence_quote": "AWS net sales increased 39.3%—its fastest growth in nearly five years—to a $184 billion annualized revenue run rate",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -495,13 +480,13 @@
       },
       {
         "metric": "aws_operating_income",
-        "summary": "AWS营业利润同比增长55%，主要受营收强劲增长和规模效应推动。",
+        "summary": "AWS营业利润增长55%，主要受收入增长和运营效率提升推动。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "AWS营收同比增长39%，推动营业利润增长。",
+            "description": "AWS收入增长39%推动营业利润增长。",
             "evidence_quote": "AWS segment sales increased 39% year-over-year to $46.0 billion.",
             "source": "press_release",
             "is_inference": false,
@@ -512,7 +497,7 @@
             "type": "单位成本",
             "direction": "+",
             "is_primary": false,
-            "description": "AWS营业利润率从34.6%提升至38.7%，反映成本效率改善。",
+            "description": "AWS运营效率提升，营业利润率从34.6%升至38.7%。",
             "evidence_quote": "AWS Operating income $11,434 $17,773 $33,141 $48,555",
             "source": "press_release",
             "is_inference": false,
@@ -544,26 +529,6 @@
         "low": 240000000000.0,
         "mid": 243500000000.0,
         "high": 247000000000.0,
-        "call_variant": null,
-        "change_vs_prior": null
-      },
-      {
-        "metric_key": "revenue",
-        "metric_label": "Net sales growth",
-        "period": "fourth quarter 2026",
-        "type": "numeric",
-        "low_raw": "12%",
-        "high_raw": "16%",
-        "point_raw": null,
-        "plus_minus_raw": null,
-        "basis": "GAAP",
-        "direction": null,
-        "statement": "管理层预计第四季度净销售额同比增长12%至16%。",
-        "source": "press_release",
-        "source_quote": "Net sales are expected to be between $240.0 billion and $247.0 billion, or to grow between 12% and 16% compared with fourth quarter 2025.",
-        "low": 12.0,
-        "mid": 14.0,
-        "high": 16.0,
         "call_variant": null,
         "change_vs_prior": null
       },
@@ -697,7 +662,155 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": [],
+    "industry_outlook": [
+      {
+        "title": "外部环境（技术变化）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Andy 认为全球 IT 支出大约 85% 仍然在本地部署，云化迁移会是一个 10 到 20 年的长周期。过去大家认为大型机、存储区域网络这类关键负载永远不会上云，但现在 AWS 已经做出云替代方案和 AI 驱动的迁移能力，这些负载正在加速上云。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在 AI 方面，Andy 强调企业把推理大规模用于生产应用还非常早期。限制因素包括企业里懂得如何操作 AI、做后训练和微调模型的人还不够多，以及推理成本仍然偏高。AWS 把持续降低推理成本当作重要任务，这也是自研 Trainium 芯片的核心原因之一。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Andy 还提到，随着前沿模型能力变强，它们正在以人类过去没有的速度发现软件漏洞。有人预计未来一两年内，安全场景可能占全部 token 用量的相当比例，甚至可能达到 20%。这是继编程、AI 助手之后新出现的大规模使用场景。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AWS 需求非常强劲。Andy 说公司大约每 14 秒就安装一台 AI 加速器，而且几乎刚装好就被客户用满。AWS 积压订单达到 5780 亿美元，同比增长三位数，并且分布很广。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "AI 推理需求增长很快，推理已经占 AWS AI 收入的一半以上，而且还在增长。Andy 认为企业生产应用未来几乎都会被改写成具备智能体能力，这会带来大量新的 AI 用量。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "零售端，Andy 指出全球零售仍有近 80% 发生在实体店，未来会逐步转向电商。亚马逊正在通过更快的配送网络推动这一转变。日用必需品和生鲜需求增长明显，Q3 生鲜和 Everyday Essentials 增速大约是其他品类的三倍，占全部销量约一半。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Alexa for Shopping 过去 12 个月有超过 4 亿客户使用，互动量同比增长 570%。美国使用该助手的客户每单消费比不用的人高 50%。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AWS 在持续大量增加算力供给，但每个季度新增容量并不均匀。Andy 说大客户会提前锁定数百兆瓦甚至高达 1 吉瓦的容量，因此公司对 2027、2028 年以及部分 2029 年的大块容量需求有很好的可见度。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "自研芯片供给能力在增强。Graviton 和 Trainium 的收入承诺同比都增长超过 20 倍。客户使用自研芯片在 Q3 节省了超过 20 亿美元。Graviton5 发布后，上一代 Graviton 实例的积压订单环比仍翻了一倍多；上一代 Trainium 实例的短期容量价格也比上半年更高。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Andy 表示，由于 Trainium 需求太强，客户一直鼓励亚马逊把它卖到 AWS 之外，公司计划在 2027 年底开始对外销售 Trainium 芯片。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "零售履约方面，亚马逊 2026 年把 Cardinal、Sparrow 等机械臂数量翻了一倍，并正在开发机器人基础模型，目标是更快编程、让机器人学会更复杂的物理任务，最终规模化部署。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Andy 认为 AWS 的模式不同于主要靠托管 GPU 或短期出租数据中心容量的做法。AWS 是长期平台策略，靠领先的功能、安全和运营表现吸引客户，客户把应用和数据放在 AWS 后，又会带动 AI 需求，AI 再带动核心计算、存储需求，形成飞轮。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在芯片价格性能上，Andy 说 Graviton 比 x86 方案有 30% 到 40% 的价格性能优势，Trainium 相对其他 AI 加速器也有明显价格性能优势。随着企业开始大规模部署推理，客户对节省成本非常敏感，这成为 AWS 的竞争抓手。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "零售方面，Andy 说亚马逊的增长明显快于其他零售竞争对手，在美国每季度新增的毛销售额大约是第二大竞争对手的两倍，并持续抢占零售市场份额。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在购物智能体上，Andy 认为外部横向智能体对亚马逊广告影响不大，因为目前很少有客户这样购物，体验还不够好，也不比直接到零售商那里研究或一键下单更方便。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "AWS 的商业模式是平台型长期收费，而不是单纯卖算力。客户在 AWS 上运行应用、存储数据，随后使用 Bedrock 做推理、用 AgentCore 构建智能体，再带动核心计算、存储和网络消费。Andy 说这种模式无论供给是否紧缺，都能带来有吸引力的长期经济回报。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Bedrock 是 AWS 历史上增长最快的数十亿美元级服务。Fortune 500 公司在 Bedrock 上的支出同比增长近 7 倍，Bedrock 总 token 量同比增长近 17 倍。Bedrock 的卖点包括安全：输入和输出不会共享给模型提供商，也不会被用来训练基础模型。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "自研芯片也是商业模式的一部分。客户使用 Graviton 和 Trainium 可以显著降低成本，AWS 还计划在 2027 年底把 Trainium 卖到 AWS 之外，开辟芯片外销收入。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "零售端，Andy 强调生鲜和 Everyday Essentials 是提升客户钱包份额的关键。购买生鲜同日达的客户，购买 Everyday Essentials 的数量是其他人的近 7 倍；活跃生鲜客户购买非生鲜品类的频率是其他人的近 4 倍，支出是 2 倍以上。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "广告方面，亚马逊推出 Amazon Ads Agent，把赞助广告、展示广告、视频和流媒体电视整合到一个 AI 优先平台里。广告主提供预算和时长，AI 负责规划、执行和持续优化。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Andy 把 AWS 的战略描述为一个飞轮：领先的功能、安全和运营表现，驱动客户把应用和数据放到 AWS；客户数据和应用靠近生产推理，又驱动 AWS AI 需求；AI 使用核心服务做强化学习、后训练和工具调用，再驱动核心 AWS 需求；核心增长又反过来支持继续投资 AWS 功能。",
+            "items": []
+          },
+          {
+            "type": "ol",
+            "text": "",
+            "items": [
+              "继续扩大 AI 和核心服务功能：Bedrock 加入 OpenAI、Kimi、GLM、SpaceX 等模型，推出 AWS Continuum 安全服务，并把它集成到 Claude Code、OpenAI Codex 和 AWS Kiro 中，目标是让客户在 AWS 内完成从开发到安全的全部工作。",
+              "用自研芯片降低客户成本并形成差异化：Graviton 主打 CPU 价格性能，Trainium 主打 AI 训练和推理价格性能，并开源 TorchNeuron，让开发者不用改写现有 PyTorch 代码就能在 Trainium 上运行。",
+              "把 Trainium 卖到 AWS 之外：计划 2027 年底开始外销，满足市场对高价格性能 AI 芯片的需求，同时扩大芯片业务的收入来源。",
+              "在零售端继续投资提速和降本：扩大当日达网络、Amazon Now 和 Prime Air，Q3 向 Prime 客户交付了超过 15 亿件当日达或次日达商品；同时连续第四年降低单件服务成本，以便继续匹配或低于竞争对手价格。",
+              "用生鲜和药房提高客户粘性：Amazon Now 已覆盖超过 450 个城镇，订单量同比增长 10 倍；Amazon Pharmacy 客户数同比增长超过 60%，并在超过 350 个城市提供三小时处方配送。",
+              "把 Alexa for Shopping 打造成主要购物智能体：利用客户历史购买、地址和支付信息，提供研究、比价、价格历史和降价跟踪，目标是成为客户在亚马逊购物的主要入口。"
+            ]
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -723,18 +836,651 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
-    "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "items": [
+      {
+        "exchange_id": "2",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "云业务环比增速放缓，分析师想知道客户侧、token 成本或其他因素是否导致了这一变化，以及管理层如何看待第四季度的产能增加。",
+        "answer_summary": "Andy（CEO）：我们对增长非常满意。在年化收入运行率 1840 亿美元的业务上实现 39.3% 的增长，这是约五年来最快增速，也是连续六个季度加速。我们每个季度都在增加大量产能，但每季度增加的量并不相同。\n增长由几方面驱动：AI 方面，我们拥有从底层到顶层的完整技术栈，无论是用 SageMaker AI 自建模型，还是通过 Bedrock 使用领先的前沿模型，客户都能获得高安全性和很强的性价比。在代理方面，我们有 Strands 和 AgentCore 来安全、可扩展地构建和运行代理，也有 Kiro、Amazon Connect、AWS Transform 和 Amazon Quick 等现成代理，采用速度非常快。\n芯片方面，随着企业开始将更多推理部署到生产环境，他们非常渴望节省性价比。Trainium 相比其他替代方案在性价比上有显著优势，非常有吸引力。Graviton 作为领先的 CPU 芯片，比 x86 供应商的性价比高约 30%-40%。这些因素共同推动了显著增长。\n我们每季度增加的产能会有所波动，但在这种规模下，预计 2027 年和 2028 年每年同比增长超过 40%，并且我们相信这项业务在五到十年内可以成为万亿美元收入业务，这是一个非凡且不寻常的机会。",
+        "new_numbers": [
+          {
+            "value": "39.3%",
+            "meaning": "云业务同比增长率"
+          },
+          {
+            "value": "$184 billion",
+            "meaning": "云业务年化收入运行率"
+          },
+          {
+            "value": "five years",
+            "meaning": "约五年来最快增速"
+          },
+          {
+            "value": "six quarters",
+            "meaning": "连续六个季度加速"
+          },
+          {
+            "value": "30%-40%",
+            "meaning": "Graviton 相比 x86 供应商的性价比优势"
+          },
+          {
+            "value": "40%",
+            "meaning": "预计 2027 年和 2028 年每年同比增长超过 40%"
+          },
+          {
+            "value": "five to 10 years",
+            "meaning": "云业务成为万亿美元收入业务的时间范围"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We are really pleased with the growth. 39.3% on a business that has got a $184 billion annual revenue run rate is quite unusual. Our fastest growth in about five years or six quarters consecutively of acceleration.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：5 years、10 years（exchange 2）"
+        ]
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道燃油成本对第四季度指引的影响。",
+        "answer_summary": "Brian（CFO）：关于燃油和干线运输通胀，我没有确切数字，但第四季度比第三季度更高。我们在年初对 FBA 卖家实施了燃油附加费，可以收回部分但并非全部燃油成本，剩余部分体现在零售入站和出站运输中。所以成本确实存在，且略高于第三季度。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有提供燃油成本的具体数字。",
+        "tone": "cautious",
+        "answer_quote": "I don't have an exact number for you, but it is higher in Q4 than it was in Q3.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师问 Andy 为什么有信心 AWS 能在未来 5 到 10 年达到 1 万亿美元收入，是自上而下还是自下而上的测算。",
+        "answer_summary": "Andy（CEO）：AWS 的增长可以从现有收入增速和 2027、2028 年的预测来看。大客户会提前锁定几百兆瓦甚至 1 吉瓦的算力，所以公司对 2027、2028 年以及部分 2029 年的大块容量需求已经有很好的可见度。按当前收入基数和增速推算，收入会很快滚到很高的数字。\nAndy（CEO）：现在的 AI 使用还不会很快减弱，企业把推理用到生产应用里也才刚刚开始。限制因素包括企业里懂 AI、会做后训练和微调的人还不够，以及推理成本还太高。AWS 的重要任务就是继续把推理成本降下来，这也是自研 Trainium 芯片的关键原因。过去几年推理成本已经降了很多，未来还会明显下降。\nAndy（CEO）：从用例看，安全领域里模型已经能发现人类发现不了的漏洞，未来一两年可能有相当比例、甚至 20% 的 token 会用在安全上。再加上编程、消费端和工作场景里的 AI 助手，以及未来几乎所有现代企业生产应用都会被改造成具备智能体能力，AI 需求会非常大。5 到 10 年后虽然无法精确预测，但 AWS 成为超过 1 万亿美元的业务并不是不现实。",
+        "new_numbers": [
+          {
+            "number": "trillion dollars",
+            "meaning": "AWS 未来 5 到 10 年可能达到的收入规模"
+          },
+          {
+            "number": "5 to 10 years",
+            "meaning": "AWS 达到 1 万亿美元收入的时间范围"
+          },
+          {
+            "number": "hundreds of megawatts or sometimes up to a gigawatt",
+            "meaning": "大客户提前锁定的算力容量规模"
+          },
+          {
+            "number": "2027 and 2028 and some of 2029",
+            "meaning": "AWS 对大块容量需求已有较好可见度的时间范围"
+          },
+          {
+            "number": "20%",
+            "meaning": "未来一两年安全用例可能占 token 使用量的比例"
+          },
+          {
+            "number": "over 1 million robots",
+            "meaning": "亚马逊履约网络中机器人数量"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "It's not a stretch for us to imagine that this could be over a trillion-dollar business.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：5 years、10 years（exchange 3）",
+          "这一轮至少有 5 个问题，摘要只有 2 条（exchange 3）"
+        ]
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Brian Nowak",
+        "firm": "Morgan Stanley",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "分析师问 2027 年零售业务在机器人方面有哪些关键里程碑。",
+        "answer_summary": "Andy（CEO）：机器人领域进展很快，亚马逊履约网络里已经有超过 100 万台机器人，对成本结构、生产力和安全都有很大影响。履约网络的安全数据处于历史最低水平，过去四到五年进步很大，机器人是重要原因。\nAndy（CEO）：目前仍处于早期阶段。履约中心会保留大量员工，但很多重复性工作会由机器人完成。公司正在投资各种形态的机器人，也有机会参与最后 100 码的送货上门。衡量标准是能否带来相当或更好的生产力、安全、成本结构和配送时间。当经济性合适时，就会在履约网络中大规模部署。新的履约中心设计，包括当日达设施的扩张，都大量使用机器人。过去五年影响已经很大，但未来五年会更大。",
+        "new_numbers": [
+          {
+            "number": "over 1 million robots",
+            "meaning": "亚马逊履约网络中机器人数量"
+          },
+          {
+            "number": "last four to five years",
+            "meaning": "履约网络安全和机器人进步的时间范围"
+          },
+          {
+            "number": "last 100 yards",
+            "meaning": "机器人可能参与的送货上门距离"
+          },
+          {
+            "number": "next five years",
+            "meaning": "机器人影响进一步扩大的时间范围"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We have over 1 million robots now in our fulfillment network, and while they're having very significant impact on our cost structure and on our productivity and on safety.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "AWS 营业利润率展望",
+        "is_new_topic": false,
+        "question_summary": "分析师请管理层展望 AWS 未来两年的营业利润率，想知道当前 38%-40% 左右的利润率结构是否相对稳定。",
+        "answer_summary": "Brian（CFO）：AWS 本季度营业利润率 38.7%，表现很强，但公司不对 AWS 利润率做指引。近期盈利不是偶然结果，而是来自持续的效率提升、产能优化、固定成本管理和越来越多自研芯片进入成本结构。不过 AI 增长过快会给整体利润率带来压力，因为 AI 业务利润率更低；核心业务和 AI 业务的利润率都在改善，AI 利润率在类似阶段已高于当年核心业务，但仍偏低，所以会有产品结构上的拖累。此外还有零部件价格上涨的逆风。公司无法预测具体走势，但会继续在成本和效率端努力，同时应对新业务投资和产品爬坡带来的利润率影响。",
+        "new_numbers": [
+          {
+            "number": "38.7%",
+            "meaning": "AWS 本季度营业利润率"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出未来两年 AWS 利润率是否稳定的明确判断或指引，只解释了当前利润率的驱动因素和压力。",
+        "tone": "neutral",
+        "answer_quote": "We are not guiding at all on our margin for AWS, but I can give you my color on it. It seems very strong op margin, 38.7% this quarter.",
+        "review_flags": [
+          "这一轮至少有 6 个问题，摘要只有 3 条（exchange 4）"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "生鲜配送覆盖范围",
+        "is_new_topic": false,
+        "question_summary": "分析师询问生鲜配送的覆盖范围，即有多少 Prime 家庭可以使用生鲜配送。",
+        "answer_summary": "Brian（CFO）：公司对生鲜配送也很兴奋。亚马逊的食品杂货业务已经做了很久，但过去主要覆盖超市中间货架的商品，比如日用品、罐头、药品和美容产品。Whole Foods Market 是有机食品超市，收入和利润增速都快于其他食品杂货业务，并且正在用新店型和城市 Daily Shop 扩张。公司一直认为，要按客户期望的方式服务他们，就必须提供大众化商品，而生鲜是起点。从家庭总支出看，客户在亚马逊能提供的商品上的总支出与他们在亚马逊实际消费之间的最大差距就是食品杂货，而很多购物从生鲜开始。公司通过当日达设施配送生鲜，找到了可行路径。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答有多少 Prime 家庭被生鲜配送覆盖。",
+        "tone": "positive",
+        "answer_quote": "On the perishables checkout, Mark, I share your enthusiasm about it. As you know, we have had a big grocery business for a while, and it has mostly been in the middle aisles of what you would find in a grocery store, consumables, canned goods, pharmaceutical items, beauty products.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "生鲜配送对消费的拉动",
+        "is_new_topic": false,
+        "question_summary": "分析师询问使用生鲜配送后，每个 Prime 家庭的消费提升幅度，想知道是提升 20%、50% 还是 100%。",
+        "answer_summary": "Brian（CFO）：Everyday Essentials 的增长速度是其他商品的三倍，目前已占公司总销量的一半左右。通过当日达购买生鲜的客户，其 Everyday Essentials 的购买量是未购买生鲜客户的约七倍。食品杂货客户在非食品杂货品类上的购买量是未使用食品杂货客户的约四倍，消费金额约为两倍。公司认为生鲜和食品杂货的进展最终会提升客户在更多购物场景中的相关性。",
+        "new_numbers": [
+          {
+            "number": "three times faster",
+            "meaning": "Everyday Essentials 增长速度是其他商品的三倍"
+          },
+          {
+            "number": "about half of our units",
+            "meaning": "Everyday Essentials 占公司总销量约一半"
+          },
+          {
+            "number": "seven time more",
+            "meaning": "购买生鲜的客户 Everyday Essentials 购买量是未购买生鲜客户的约七倍"
+          },
+          {
+            "number": "four times more",
+            "meaning": "食品杂货客户在非食品杂货品类上的购买量是未使用食品杂货客户的约四倍"
+          },
+          {
+            "number": "two time more",
+            "meaning": "食品杂货客户在非食品杂货品类上的消费金额是未使用食品杂货客户的约两倍"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出每个 Prime 家庭消费提升的具体百分比，只提供了购买量和消费金额的倍数数据。",
+        "tone": "positive",
+        "answer_quote": "What we find is customers who shop perishables through our same-day delivery, they buy about seven time more Everyday Essential units than those that do not.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "关于 AWS 内 Bedrock 的市场机会，管理层有哪些关键认知，未来几年会如何继续扩大规模？",
+        "answer_summary": "Andy（CEO）：客户不会只用一种模型，未来两到三年会有 6 到 8 个能力相近、足以覆盖 95% 以上工作负载的模型，各有擅长，比如推理、编程、视觉、低延迟或低成本。客户真正需要的是一个能提供广泛前沿模型选择、价格性能好、安全和访问控制强的服务，这样他们可以按应用需求组合和切换模型。Bedrock 正是这样的服务，既有闭源模型，也有 Kimi、GLM 等开源模型，西方市场还很需要更多西方开源模型。我们认为 Bedrock 的机会非常大，有可能成为像 EC2 一样大的服务。",
+        "new_numbers": [
+          {
+            "value": "6-8 models",
+            "meaning": "未来两到三年内能力相近、足以覆盖 95% 以上工作负载的模型数量"
+          },
+          {
+            "value": "95%+",
+            "meaning": "这些模型足以覆盖的工作负载比例"
+          },
+          {
+            "value": "two to three years",
+            "meaning": "出现 6-8 个能力相近模型的时间范围"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "In the next two to three years, I think there are going to be 6-8 models that are about as good as each other, or at least good enough for 95%+ of the workloads.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：3 years、6 years（exchange 5）"
+        ]
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Eric Sheridan",
+        "firm": "Goldman Sachs",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "在对外销售 Trainium 芯片与 AWS 内部使用之间，管理层如何平衡外部销售机会和内部算力需求？",
+        "answer_summary": "Andy（CEO）：同时拥有大规模云业务和足够强、可以对外销售的芯片的公司实际上只有两家，所以很少有公司需要在这样的规模上处理这种权衡。目前大家的先进芯片都来自同一家供应商，每年能供应的芯片有限，各家只能拿到一定配额，因此必须决定多少对外销售、多少用于自己的云。对外销售可以在短期确认更多收入，因为芯片离开库存就能确认收入；但如果把芯片用于云里的 EC2 实例或 Bedrock，可以在五到六年内持续产生收入，最终带来更高的绝对收入和自由现金流。我们目前的做法和另一家面临同样权衡的公司不同。我们相信对外销售芯片会是非常大的业务，计划从 2027 年底开始。我们会每年重新考虑这个平衡，但内部使用和外部销售都会很重要。能够做出价格、性能、可扩展性好的芯片，对我们自己的成本结构以及建立独立的外部芯片业务都会是重要的战略优势。对外销售芯片和云基础设施业务是非常不同的业务。",
+        "new_numbers": [
+          {
+            "value": "five to six years",
+            "meaning": "芯片用于云内 EC2 实例或 Bedrock 时产生收入的持续年限"
+          },
+          {
+            "value": "late 2027",
+            "meaning": "公司计划开始对外销售芯片的时间"
+          },
+          {
+            "value": "two",
+            "meaning": "同时拥有大规模云业务和足够强、可对外销售芯片的公司数量"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "If you decide to use it inside your cloud in the form of EC2 instances or Bedrock, you actually will end up driving more absolute revenue and free cash flow from those chips because you get to use them over five to six years and drive revenue for a longer period of time.",
+        "review_flags": [
+          "原文中未出现单独的 3 years 或 6 years 数字，只有 two to three years 和 five to six years，摘要已包含这两个时间范围，无需补充。"
+        ]
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Doug Anmuth",
+        "firm": "JPMorgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "在 AWS 未来两年每年 40%+ 增长及更长期的路径下，需要多少资本开支来支撑？",
+        "answer_summary": "Andy（CEO）：支撑这种增长所需的资本开支是相当大的。\nAndy（CEO）：我们认为这是一生一次的机会，AI 是我们这辈子最大的变革。在 1840 亿美元年化收入基础上增长 39%，未来两年每年再增长 40%，最终成为万亿美元以上业务，我们会持续投资以保持领先地位。今天我们在基础设施和 AI 领域已经是领导者。\nAndy（CEO）：如果这种加速和机会能分散在 25 年里、资本开支也能摊到 25 年，那当然更方便，但现实不是这样。我们有能力为这个计划提供资金，它会永久改变亚马逊的规模、收入和自由现金流，我们会继续投资并保持今天的领先地位。",
+        "new_numbers": [
+          {
+            "number": "39%",
+            "meaning": "AWS 当前增长率"
+          },
+          {
+            "number": "$184 billion",
+            "meaning": "AWS 年化收入"
+          },
+          {
+            "number": "40%",
+            "meaning": "未来两年每年增长率"
+          },
+          {
+            "number": "2 years",
+            "meaning": "未来两年"
+          },
+          {
+            "number": "25 years",
+            "meaning": "假设机会分散的时间跨度"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出具体的资本开支金额或量化指引，只定性说明投入会很大。",
+        "tone": "positive",
+        "answer_quote": "We can fund this plan. I think it will forever change the size of Amazon. It will forever change our revenue, it will forever change our free cash flow, and we're going to invest, and we're going to pursue it to continue to be the significant leader like we are today.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：1 years、2 years、25 years（exchange 6）"
+        ]
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Doug Anmuth",
+        "firm": "JPMorgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "Andy 对服务器、网络设备和数据中心的回报周期有什么最新看法？",
+        "answer_summary": "Andy（CEO）：关于基础设施的盈亏平衡时间，我们正在继续把它缩短、往左移。不同资产类别略有不同，AI 的算力资产和融资方式也略有不同，具体取决于你讨论的是哪一类。我们历史上在 AWS 上一直擅长延长资产使用寿命、让盈亏平衡更早到来，现在在这方面也进展良好。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出服务器、网络设备和数据中心各自的具体回报年限或量化数据，只定性说明在缩短。",
+        "tone": "positive",
+        "answer_quote": "On the break even on our infrastructure, as I mentioned in my opening comments, we're continuing to move that left. We're continuing to make that shorter.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Ross Sandler",
+        "firm": "Barclays",
+        "topic": "收入增长与利润率",
+        "is_new_topic": false,
+        "question_summary": "Bedrock 的 token marketplace 大部分跑在 Trainium 上，随着 AWS 从卖裸金属转向卖推理即服务，这对 AWS 的收入增长、尤其是利润率会有什么影响？",
+        "answer_summary": "Andy（CEO）：Bedrock 今天大部分确实跑在 Trainium 上，主要因为我们很满意它的性价比，这让我们既能尽量压低客户价格，也喜欢它带来的利润率。看云厂商利润率时，数据中心是自购或长租，还是用 colo 或 neocloud，差别很大：neocloud 的营业利润率比长租大约差 3500 个基点。硬件也一样，用和别人一样的硬件，成本结构就和大家差不多；能用不同的硬件，就有优势。我们大部分容量是自有或长租，营业利润率好于主要用 colo 或 neo 的厂商；再加上跑在自研芯片上，性价比有优势、成本也更低，这给 AWS 带来结构性成本优势，既能让利给客户，也有利于 AWS 整体经济性。",
+        "new_numbers": [
+          {
+            "value": "3,500 basis points",
+            "meaning": "neocloud 的营业利润率比长租大约差 3500 个基点"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "Neoclouds are about 3,500 basis points worse in operating margin than if you long lease them. If you have the ability to use hardware that is different, you will have an advantage.",
+        "review_flags": [
+          "这一轮至少有 2 个问题，摘要只有 1 条（exchange 7）"
+        ]
+      }
+    ],
+    "topic_stats": {
+      "需求与出货": 1,
+      "费用与运营": 1,
+      "指引与展望": 1,
+      "产能与资本开支": 4,
+      "AWS 营业利润率展望": 1,
+      "生鲜配送覆盖范围": 1,
+      "生鲜配送对消费的拉动": 1,
+      "产品结构": 1,
+      "收入增长与利润率": 1
+    },
+    "new_topics": [
+      "AWS 营业利润率展望",
+      "产品结构",
+      "指引与展望",
+      "收入增长与利润率",
+      "生鲜配送对消费的拉动",
+      "生鲜配送覆盖范围",
+      "费用与运营",
+      "需求与出货"
+    ],
+    "dropped_topics": [
+      "AI 产品与模型",
+      "定价与 ASP",
+      "客户与订单",
+      "毛利率与成本",
+      "零售与电商"
+    ],
+    "hot_topics": [
+      "需求与出货",
+      "费用与运营",
+      "指引与展望"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "2",
+        "analyst": "Justin Post",
+        "firm": "Bank of America",
+        "topic": "费用与运营",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道燃油成本对第四季度指引的影响。",
+        "answer_summary": "Brian（CFO）：关于燃油和干线运输通胀，我没有确切数字，但第四季度比第三季度更高。我们在年初对 FBA 卖家实施了燃油附加费，可以收回部分但并非全部燃油成本，剩余部分体现在零售入站和出站运输中。所以成本确实存在，且略高于第三季度。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有提供燃油成本的具体数字。",
+        "tone": "cautious",
+        "answer_quote": "I don't have an exact number for you, but it is higher in Q4 than it was in Q3.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "AWS 营业利润率展望",
+        "is_new_topic": false,
+        "question_summary": "分析师请管理层展望 AWS 未来两年的营业利润率，想知道当前 38%-40% 左右的利润率结构是否相对稳定。",
+        "answer_summary": "Brian（CFO）：AWS 本季度营业利润率 38.7%，表现很强，但公司不对 AWS 利润率做指引。近期盈利不是偶然结果，而是来自持续的效率提升、产能优化、固定成本管理和越来越多自研芯片进入成本结构。不过 AI 增长过快会给整体利润率带来压力，因为 AI 业务利润率更低；核心业务和 AI 业务的利润率都在改善，AI 利润率在类似阶段已高于当年核心业务，但仍偏低，所以会有产品结构上的拖累。此外还有零部件价格上涨的逆风。公司无法预测具体走势，但会继续在成本和效率端努力，同时应对新业务投资和产品爬坡带来的利润率影响。",
+        "new_numbers": [
+          {
+            "number": "38.7%",
+            "meaning": "AWS 本季度营业利润率"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出未来两年 AWS 利润率是否稳定的明确判断或指引，只解释了当前利润率的驱动因素和压力。",
+        "tone": "neutral",
+        "answer_quote": "We are not guiding at all on our margin for AWS, but I can give you my color on it. It seems very strong op margin, 38.7% this quarter.",
+        "review_flags": [
+          "这一轮至少有 6 个问题，摘要只有 3 条（exchange 4）"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "生鲜配送覆盖范围",
+        "is_new_topic": false,
+        "question_summary": "分析师询问生鲜配送的覆盖范围，即有多少 Prime 家庭可以使用生鲜配送。",
+        "answer_summary": "Brian（CFO）：公司对生鲜配送也很兴奋。亚马逊的食品杂货业务已经做了很久，但过去主要覆盖超市中间货架的商品，比如日用品、罐头、药品和美容产品。Whole Foods Market 是有机食品超市，收入和利润增速都快于其他食品杂货业务，并且正在用新店型和城市 Daily Shop 扩张。公司一直认为，要按客户期望的方式服务他们，就必须提供大众化商品，而生鲜是起点。从家庭总支出看，客户在亚马逊能提供的商品上的总支出与他们在亚马逊实际消费之间的最大差距就是食品杂货，而很多购物从生鲜开始。公司通过当日达设施配送生鲜，找到了可行路径。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答有多少 Prime 家庭被生鲜配送覆盖。",
+        "tone": "positive",
+        "answer_quote": "On the perishables checkout, Mark, I share your enthusiasm about it. As you know, we have had a big grocery business for a while, and it has mostly been in the middle aisles of what you would find in a grocery store, consumables, canned goods, pharmaceutical items, beauty products.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Mahaney",
+        "firm": "Evercore ISI",
+        "topic": "生鲜配送对消费的拉动",
+        "is_new_topic": false,
+        "question_summary": "分析师询问使用生鲜配送后，每个 Prime 家庭的消费提升幅度，想知道是提升 20%、50% 还是 100%。",
+        "answer_summary": "Brian（CFO）：Everyday Essentials 的增长速度是其他商品的三倍，目前已占公司总销量的一半左右。通过当日达购买生鲜的客户，其 Everyday Essentials 的购买量是未购买生鲜客户的约七倍。食品杂货客户在非食品杂货品类上的购买量是未使用食品杂货客户的约四倍，消费金额约为两倍。公司认为生鲜和食品杂货的进展最终会提升客户在更多购物场景中的相关性。",
+        "new_numbers": [
+          {
+            "number": "three times faster",
+            "meaning": "Everyday Essentials 增长速度是其他商品的三倍"
+          },
+          {
+            "number": "about half of our units",
+            "meaning": "Everyday Essentials 占公司总销量约一半"
+          },
+          {
+            "number": "seven time more",
+            "meaning": "购买生鲜的客户 Everyday Essentials 购买量是未购买生鲜客户的约七倍"
+          },
+          {
+            "number": "four times more",
+            "meaning": "食品杂货客户在非食品杂货品类上的购买量是未使用食品杂货客户的约四倍"
+          },
+          {
+            "number": "two time more",
+            "meaning": "食品杂货客户在非食品杂货品类上的消费金额是未使用食品杂货客户的约两倍"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出每个 Prime 家庭消费提升的具体百分比，只提供了购买量和消费金额的倍数数据。",
+        "tone": "positive",
+        "answer_quote": "What we find is customers who shop perishables through our same-day delivery, they buy about seven time more Everyday Essential units than those that do not.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Doug Anmuth",
+        "firm": "JPMorgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "在 AWS 未来两年每年 40%+ 增长及更长期的路径下，需要多少资本开支来支撑？",
+        "answer_summary": "Andy（CEO）：支撑这种增长所需的资本开支是相当大的。\nAndy（CEO）：我们认为这是一生一次的机会，AI 是我们这辈子最大的变革。在 1840 亿美元年化收入基础上增长 39%，未来两年每年再增长 40%，最终成为万亿美元以上业务，我们会持续投资以保持领先地位。今天我们在基础设施和 AI 领域已经是领导者。\nAndy（CEO）：如果这种加速和机会能分散在 25 年里、资本开支也能摊到 25 年，那当然更方便，但现实不是这样。我们有能力为这个计划提供资金，它会永久改变亚马逊的规模、收入和自由现金流，我们会继续投资并保持今天的领先地位。",
+        "new_numbers": [
+          {
+            "number": "39%",
+            "meaning": "AWS 当前增长率"
+          },
+          {
+            "number": "$184 billion",
+            "meaning": "AWS 年化收入"
+          },
+          {
+            "number": "40%",
+            "meaning": "未来两年每年增长率"
+          },
+          {
+            "number": "2 years",
+            "meaning": "未来两年"
+          },
+          {
+            "number": "25 years",
+            "meaning": "假设机会分散的时间跨度"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出具体的资本开支金额或量化指引，只定性说明投入会很大。",
+        "tone": "positive",
+        "answer_quote": "We can fund this plan. I think it will forever change the size of Amazon. It will forever change our revenue, it will forever change our free cash flow, and we're going to invest, and we're going to pursue it to continue to be the significant leader like we are today.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：1 years、2 years、25 years（exchange 6）"
+        ]
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Doug Anmuth",
+        "firm": "JPMorgan",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "Andy 对服务器、网络设备和数据中心的回报周期有什么最新看法？",
+        "answer_summary": "Andy（CEO）：关于基础设施的盈亏平衡时间，我们正在继续把它缩短、往左移。不同资产类别略有不同，AI 的算力资产和融资方式也略有不同，具体取决于你讨论的是哪一类。我们历史上在 AWS 上一直擅长延长资产使用寿命、让盈亏平衡更早到来，现在在这方面也进展良好。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出服务器、网络设备和数据中心各自的具体回报年限或量化数据，只定性说明在缩短。",
+        "tone": "positive",
+        "answer_quote": "On the break even on our infrastructure, as I mentioned in my opening comments, we're continuing to move that left. We're continuing to make that shorter.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
-    "prior_watchlist_review": [],
-    "next_watchlist": []
+    "headline": "AWS 加速增长难掩 EPS 不及预期，资本开支激增致自由现金流大幅流出",
+    "key_findings": [
+      {
+        "finding": "AWS 收入同比增长 39.3%，为近五年最快增速，年化收入运行率达 1840 亿美元，是支撑股价的核心增长引擎。",
+        "evidence": "aws_revenue"
+      },
+      {
+        "finding": "GAAP EPS 为 1.89 美元，低于市场一致预期 1.96 美元，主要因去年同期 Anthropic 投资带来 95 亿美元一次性收益，今年无此项目。",
+        "evidence": "eps_gaap"
+      },
+      {
+        "finding": "自由现金流 TTM 转为流出 424 亿美元，资本开支同比增加 948 亿美元，AI 基础设施投入对现金流形成显著压力。",
+        "evidence": "fcf"
+      }
+    ],
+    "prior_watchlist_review": [
+      {
+        "metric_key": "revenue",
+        "condition": "AWS 收入增速是否继续加速或维持在 36.7% 以上",
+        "threshold": "≥36.7% 同比",
+        "status": "confirmed",
+        "evidence": "AWS 收入同比增长 39.3%，高于 36.7% 的阈值。"
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "condition": "三季度营业利润是否落在指引区间内",
+        "threshold": "225亿至265亿美元",
+        "status": "confirmed",
+        "evidence": "三季度营业利润为 281 亿美元，高于指引区间上限 265 亿美元。"
+      },
+      {
+        "metric_key": "revenue",
+        "condition": "三季度营收是否落在指引区间内（Prime Day 移至二季度，汇率拖累约80bp）",
+        "threshold": "1970亿至2020亿美元",
+        "status": "confirmed",
+        "evidence": "三季度营收为 2019.44 亿美元，落在指引区间内。"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "三季度现金资本开支是否维持高位，全年约2200亿美元是否再次调整",
+        "threshold": "全年约2200亿美元；Q2为531亿美元",
+        "status": "confirmed",
+        "evidence": "管理层继续预计 2026 年现金资本支出约为 2200 亿美元，未作调整。"
+      },
+      {
+        "metric_key": "other",
+        "condition": "Amazon Leo 是否按计划在今年开始初始卫星互联网服务",
+        "threshold": "2026年内启动初始服务",
+        "status": "pending",
+        "evidence": "本季财报及电话会未提供 Amazon Leo 初始服务启动的明确更新。"
+      }
+    ],
+    "next_watchlist": [
+      {
+        "metric_key": "revenue",
+        "condition": "FQ4 2026 净销售额是否达到指引中值 2435 亿美元",
+        "threshold": "≥2435 亿美元"
+      },
+      {
+        "metric_key": "operating_income_gaap",
+        "condition": "FQ4 2026 营业利润是否达到指引中值 310 亿美元",
+        "threshold": "≥310 亿美元"
+      },
+      {
+        "metric_key": "aws_revenue",
+        "condition": "FQ4 2026 AWS 收入同比增速是否维持在 39% 以上",
+        "threshold": "≥39% 同比"
+      },
+      {
+        "metric_key": "capex",
+        "condition": "2026 全年现金资本开支是否仍为约 2200 亿美元",
+        "threshold": "≈2200 亿美元"
+      },
+      {
+        "metric_key": "fcf",
+        "condition": "FQ4 2026 自由现金流是否较 TTM 流出 424 亿美元收窄",
+        "threshold": "TTM FCF 流出 <424 亿美元"
+      }
+    ]
   },
-  "thesis_review": {}
+  "thesis_review": {
+    "stage": "watch",
+    "theses": [],
+    "answers": [
+      {
+        "index": 0,
+        "answered": true,
+        "answer": "AWS 收入同比增长 39.3%，为近五年最快增速；营业利润率 38.7%，管理层未给出利润率指引，但表示 AI 业务利润率偏低会带来结构性拖累。",
+        "quote": "AWS net sales increased 39.3%—its fastest growth in nearly five years—to a $184 billion annualized revenue run rate",
+        "source": "press_release",
+        "quote_unverified": false
+      },
+      {
+        "index": 1,
+        "answered": true,
+        "answer": "零售营业利润未单独披露，但北美营业利润增长 82%；2026 年现金资本支出预计约 2200 亿美元，自由现金流 TTM 为流出 424 亿美元。",
+        "quote": "We continue to expect 2026 cash capital expenditures to be approximately $220 billion.",
+        "source": "press_release",
+        "quote_unverified": false
+      }
+    ],
+    "triggers": [],
+    "new_concerns": [
+      {
+        "concern": "AI 业务利润率偏低，可能对 AWS 整体营业利润率形成结构性拖累",
+        "raised_by": "Mark Mahaney, Evercore ISI",
+        "why": "AWS 当前 38.7% 的营业利润率可能因 AI 收入占比上升而承压，影响长期盈利质量。"
+      },
+      {
+        "concern": "零部件价格上涨对利润率的逆风影响",
+        "raised_by": "Mark Mahaney, Evercore ISI",
+        "why": "管理层明确提到零部件价格上涨是利润率的不利因素，可能持续侵蚀盈利。"
+      },
+      {
+        "concern": "Trainium 芯片对外销售与内部使用的平衡可能影响短期收入确认和长期现金流",
+        "raised_by": "Eric Sheridan, Goldman Sachs",
+        "why": "管理层计划从 2027 年底开始对外销售芯片，这一战略选择会改变收入确认节奏和资本回报周期。"
+      }
+    ],
+    "fingerprint": "4323de33dd0ad298",
+    "reviewed_at": "2026-10-30T16:40:02+00:00",
+    "model": "deepseek/deepseek-v4-pro-0813"
+  }
 }

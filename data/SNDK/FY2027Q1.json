@@ -9,21 +9,41 @@
     "release_at_utc": "2026-10-29T20:13:53.000Z",
     "accession": "0001628280-26-068243",
     "press_release_url": "https://www.sec.gov/Archives/edgar/data/2023554/000162828026068243/",
-    "transcript_source": null,
+    "transcript_source": "motley_fool",
     "eps_basis": "unknown",
     "sec_form": "8-K",
-    "reporting_currency": "USD"
+    "reporting_currency": "USD",
+    "consensus_sources": {
+      "alpha_vantage": {
+        "function": "EARNINGS_ESTIMATES",
+        "symbol": "SNDK",
+        "called": true,
+        "status": "ok",
+        "reason": ""
+      }
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": true,
     "warnings": [
       "LLM has_nongaap_eps 与正则不一致，以正则为准",
       "eps_basis=unknown，记分卡待核对",
       "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q1/transcript.txt 后重跑 Stage2",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q1/transcript.txt 后重跑 Stage2",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q1/transcript.txt 后重跑 Stage2",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q1/transcript.txt 后重跑 Stage2"
+      "电话会与新闻稿数值指引不一致：Diluted Net Income Per Share（fiscal Q2 2027）新闻稿中值 56.0 vs 电话会 7.005",
+      "问答摘要漏了原文中的数字或时间：1 years（exchange 2）",
+      "这一轮至少有 4 个问题，摘要只有 2 条（exchange 2）",
+      "问答摘要漏了原文中的数字或时间：1 years（exchange 3）",
+      "这一轮至少有 4 个问题，摘要只有 2 条（exchange 3）",
+      "这一轮至少有 6 个问题，摘要只有 3 条（exchange 4）",
+      "这一轮至少有 3 个问题，摘要只有 2 条（exchange 5）",
+      "这一轮至少有 5 个问题，摘要只有 3 条（exchange 6）",
+      "这一轮至少有 3 个问题，摘要只有 2 条（exchange 7）",
+      "这一轮至少有 3 个问题，摘要只有 2 条（exchange 8）",
+      "这一轮至少有 3 个问题，摘要只有 2 条（exchange 9）",
+      "这一轮至少有 3 个问题，摘要只有 2 条（exchange 10）",
+      "这一轮至少有 5 个问题，摘要只有 3 条（exchange 11）",
+      "这一轮至少有 7 个问题，摘要只有 3 条（exchange 12）"
     ]
   },
   "scorecard": [
@@ -305,30 +325,41 @@
     }
   },
   "drivers": {
-    "stage": 1,
+    "stage": 2,
     "metrics": [
       {
         "metric": "revenue",
-        "summary": "收入同比增3.8%，主因数据中心需求强劲，但消费业务下滑形成拖累。",
+        "summary": "收入超指引，主要受数据中心需求强劲推动，量价齐升，其中量增贡献约60%，价增贡献约40%。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "数据中心产品需求强劲，带动收入增长。",
-            "evidence_quote": "robust and growing demand for our products driving outpaced growth in our data center business",
-            "source": "press_release",
+            "description": "数据中心需求强劲，出货量增长是收入增长的主要驱动，约60%的环比增长来自量增。",
+            "evidence_quote": "Both volume growth and higher pricing contributed to revenue growth, with approximately 60% of the increase attributable to volume growth and 40% to higher pricing.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "平均售价上升贡献约40%的环比收入增长。",
+            "evidence_quote": "Both volume growth and higher pricing contributed to revenue growth, with approximately 60% of the increase attributable to volume growth and 40% to higher pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
             "type": "产品或客户结构",
-            "direction": "-",
+            "direction": "+",
             "is_primary": false,
-            "description": "消费业务收入同比下滑39%，部分抵消数据中心增长。",
-            "evidence_quote": "Consumer $397 $556 down 29% $652 down 39%",
-            "source": "press_release",
+            "description": "数据中心收入占比提升，该业务环比增长61%，远高于整体收入增速，结构向高增长市场倾斜。",
+            "evidence_quote": "Data center revenue was $4.8 billion, up 61% sequentially, outpacing estimated market growth for the quarter.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -338,26 +369,37 @@
       },
       {
         "metric": "gross_margin_gaap",
-        "summary": "毛利率同比大幅提升55.2个百分点，主要受收入结构变化和成本改善推动。",
+        "summary": "毛利率同比大幅提升55.2个百分点，环比提升0.4个百分点，主要受量价齐升及产品结构向数据中心倾斜推动。",
         "drivers": [
           {
-            "type": "产品或客户结构",
+            "type": "价",
             "direction": "+",
             "is_primary": true,
-            "description": "高毛利数据中心收入占比大幅提升，推动整体毛利率上升。",
-            "evidence_quote": "Datacenter $4,802 $2,977 up 61% $269 *",
-            "source": "press_release",
+            "description": "管理层明确表示毛利率提升受更高定价推动。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "单位成本",
+            "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "收入大幅增长而成本基本持平，单位成本下降。",
-            "evidence_quote": "Revenue $11,031 $2,308 up 378% $11,031 $2,308 up 378%",
-            "source": "press_release",
+            "description": "出货量增长带来规模效应，摊薄固定成本，支撑毛利率。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "高毛利的数据中心业务占比提升，对毛利率有正向结构性影响。",
+            "evidence_quote": "Data center revenue was $4.8 billion, up 61% sequentially, outpacing estimated market growth for the quarter.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -367,26 +409,37 @@
       },
       {
         "metric": "gross_margin_nongaap",
-        "summary": "Non-GAAP毛利率同比提升55.2个百分点，驱动因素与GAAP一致。",
+        "summary": "Non-GAAP毛利率环比提升0.5个百分点至85.1%，主要受量价齐升推动，数据中心结构优化亦有贡献。",
         "drivers": [
           {
-            "type": "产品或客户结构",
+            "type": "价",
             "direction": "+",
             "is_primary": true,
-            "description": "高毛利数据中心收入占比大幅提升。",
-            "evidence_quote": "Datacenter $4,802 $2,977 up 61% $269 *",
-            "source": "press_release",
+            "description": "管理层明确表示毛利率提升受更高定价推动。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "单位成本",
+            "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "收入大幅增长而成本基本持平，单位成本下降。",
-            "evidence_quote": "Revenue $11,031 $2,308 up 378% $11,031 $2,308 up 378%",
-            "source": "press_release",
+            "description": "出货量增长带来规模效应，摊薄固定成本，支撑毛利率。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "高毛利的数据中心业务占比提升，对毛利率有正向结构性影响。",
+            "evidence_quote": "Data center revenue was $4.8 billion, up 61% sequentially, outpacing estimated market growth for the quarter.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -396,26 +449,26 @@
       },
       {
         "metric": "operating_margin_gaap",
-        "summary": "营业利润率同比提升72个百分点，主因毛利率大幅改善，费用率下降。",
+        "summary": "GAAP营业利润率环比提升1.1个百分点至79.6%，主要受毛利率提升和经营杠杆效应推动。",
         "drivers": [
           {
-            "type": "单位成本",
+            "type": "价",
             "direction": "+",
             "is_primary": true,
-            "description": "毛利率大幅提升带动营业利润率上升。",
-            "evidence_quote": "Gross Margin 85.0% 29.8% up 55.2 ppt 85.1% 29.9% up 55.2 ppt",
-            "source": "press_release",
+            "description": "毛利率提升是营业利润率改善的主要驱动，而毛利率提升主要来自更高定价。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "费用投入",
+            "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "运营费用增速低于收入增速，费用率下降。",
-            "evidence_quote": "Operating Expenses $598 $511 up 17% $513 $446 up 15%",
-            "source": "press_release",
+            "description": "收入规模扩大带来经营杠杆，费用率下降。",
+            "evidence_quote": "Non-GAAP operating expenses were $513 million, representing 4.7% of revenue.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -425,26 +478,26 @@
       },
       {
         "metric": "operating_margin_nongaap",
-        "summary": "Non-GAAP营业利润率同比提升69.8个百分点，主因毛利率改善和费用率下降。",
+        "summary": "Non-GAAP营业利润率环比提升1.2个百分点至80.4%，主要受毛利率提升和经营杠杆效应推动。",
         "drivers": [
           {
-            "type": "单位成本",
+            "type": "价",
             "direction": "+",
             "is_primary": true,
-            "description": "毛利率大幅提升带动营业利润率上升。",
-            "evidence_quote": "Gross Margin 85.0% 29.8% up 55.2 ppt 85.1% 29.9% up 55.2 ppt",
-            "source": "press_release",
+            "description": "毛利率提升是营业利润率改善的主要驱动，而毛利率提升主要来自更高定价。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "费用投入",
+            "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "运营费用增速低于收入增速，费用率下降。",
-            "evidence_quote": "Operating Expenses $598 $511 up 17% $513 $446 up 15%",
-            "source": "press_release",
+            "description": "收入规模扩大带来经营杠杆，费用率下降。",
+            "evidence_quote": "Non-GAAP operating expenses were $513 million, representing 4.7% of revenue.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -454,15 +507,26 @@
       },
       {
         "metric": "eps_gaap",
-        "summary": "GAAP每股收益同比增69.1%，主因净利大增，含一次性股权投资收益。",
+        "summary": "GAAP EPS环比增长20%至52.60美元，主要受营业利润增长及股权投资收益推动。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "+",
             "is_primary": true,
-            "description": "本季确认5.13亿美元股权证券收益，显著推高GAAP净利。",
-            "evidence_quote": "Gain on equity securities, net 513 —",
-            "source": "press_release",
+            "description": "GAAP净利润包含5.13亿美元的股权证券收益，主要来自对Nanya的投资，显著推高EPS。",
+            "evidence_quote": "Key GAAP to non-GAAP reconciliation includes $91 million in stock-based compensation, representing 0.8% of revenue and $513 million gain on equity securities, primarily attributable to our investment in Nanya.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营业利润增长受毛利率提升推动，而毛利率提升主要来自更高定价。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -471,9 +535,9 @@
             "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "收入增长带动经营利润提升。",
-            "evidence_quote": "Revenue $11,031 $2,308 up 378% $11,031 $2,308 up 378%",
-            "source": "press_release",
+            "description": "收入规模扩大带来经营杠杆，支撑营业利润增长。",
+            "evidence_quote": "Both volume growth and higher pricing contributed to revenue growth, with approximately 60% of the increase attributable to volume growth and 40% to higher pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -483,26 +547,26 @@
       },
       {
         "metric": "eps_nongaap",
-        "summary": "Non-GAAP每股收益为49.51美元，同比大幅增长，主因经营利润改善。",
+        "summary": "Non-GAAP EPS环比增长26%至49.51美元，主要受营业利润增长推动，量价齐升是核心驱动。",
         "drivers": [
           {
-            "type": "量",
+            "type": "价",
             "direction": "+",
             "is_primary": true,
-            "description": "收入大幅增长带动Non-GAAP净利提升。",
-            "evidence_quote": "Revenue $11,031 $2,308 up 378% $11,031 $2,308 up 378%",
-            "source": "press_release",
+            "description": "毛利率提升是EPS增长的主要驱动，而毛利率提升主要来自更高定价。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
           },
           {
-            "type": "单位成本",
+            "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "毛利率大幅提升，增强盈利能力。",
-            "evidence_quote": "Gross Margin 85.0% 29.8% up 55.2 ppt 85.1% 29.9% up 55.2 ppt",
-            "source": "press_release",
+            "description": "收入规模扩大带来经营杠杆，支撑营业利润增长。",
+            "evidence_quote": "Both volume growth and higher pricing contributed to revenue growth, with approximately 60% of the increase attributable to volume growth and 40% to higher pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -512,14 +576,25 @@
       },
       {
         "metric": "operating_cash_flow",
-        "summary": "经营现金流同比增12%，主因净利大幅增长，但应收和库存增加部分抵消。",
+        "summary": "经营现金流同比大幅增长，主要受净利润增长和营运资本变动推动，但环比下降因上季度基数较高。",
         "drivers": [
           {
-            "type": "量",
+            "type": "一次性项目",
             "direction": "+",
             "is_primary": true,
-            "description": "净利大幅增长带动经营现金流增加。",
-            "evidence_quote": "Net income $8,101 $112",
+            "description": "净利润大幅增长是经营现金流同比改善的主要驱动，其中包含股权证券收益等一次性项目。",
+            "evidence_quote": "Net income $8,101 $6,903 up 17% $7,624 $6,162 up 24%",
+            "source": "press_release",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "其他",
+            "direction": "+",
+            "is_primary": false,
+            "description": "合同负债增加2.87亿美元，反映客户预付款增加，对现金流有正向贡献。",
+            "evidence_quote": "Contract liabilities 287 (3)",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -529,7 +604,7 @@
             "type": "其他",
             "direction": "-",
             "is_primary": false,
-            "description": "应收账款和库存增加占用现金。",
+            "description": "应收账款增加18.77亿美元，对现金流有负向影响。",
             "evidence_quote": "Accounts receivable, net (1,877) (125)",
             "source": "press_release",
             "is_inference": false,
@@ -541,13 +616,42 @@
       },
       {
         "metric": "capex",
-        "summary": "资本开支同比降2.1%，基本持平，无重大变化。",
+        "summary": "资本开支同比和环比均小幅下降，管理层表示全年资本开支将占收入中个位数百分比。",
         "drivers": [
           {
             "type": "费用投入",
             "direction": "-",
             "is_primary": true,
-            "description": "资本开支小幅下降。",
+            "description": "资本开支同比下降2.08%，环比下降2.26%，管理层表示全年资本开支将占收入中个位数百分比。",
+            "evidence_quote": "We expect gross capital spending to increase during the balance of the year and represent mid-single-digit percentage of revenue for fiscal year 2027.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          }
+        ],
+        "conflicts": []
+      },
+      {
+        "metric": "fcf",
+        "summary": "自由现金流同比大幅增长，主要受经营现金流增长推动，资本开支保持低位。",
+        "drivers": [
+          {
+            "type": "一次性项目",
+            "direction": "+",
+            "is_primary": true,
+            "description": "经营现金流同比大幅增长是自由现金流改善的主要驱动，其中净利润增长是核心。",
+            "evidence_quote": "Net income $8,101 $6,903 up 17% $7,624 $6,162 up 24%",
+            "source": "press_release",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "费用投入",
+            "direction": "+",
+            "is_primary": false,
+            "description": "资本开支保持低位，对自由现金流有正向贡献。",
             "evidence_quote": "Purchases of property, plant and equipment (54) (50)",
             "source": "press_release",
             "is_inference": false,
@@ -558,45 +662,27 @@
         "conflicts": []
       },
       {
-        "metric": "fcf",
-        "summary": "自由现金流同比增13.4%，主因经营现金流增加，资本开支基本持平。",
-        "drivers": [
-          {
-            "type": "量",
-            "direction": "+",
-            "is_primary": true,
-            "description": "经营现金流增加带动自由现金流增长。",
-            "evidence_quote": "Cash flow from operating activities $6,363 $7,126 $488",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          },
-          {
-            "type": "费用投入",
-            "direction": "+",
-            "is_primary": false,
-            "description": "资本开支小幅下降，对自由现金流有正面影响。",
-            "evidence_quote": "Purchases of property, plant and equipment, net (54) (43) (50)",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          }
-        ],
-        "conflicts": []
-      },
-      {
         "metric": "net_income_gaap",
-        "summary": "GAAP净利同比大增，主因经营利润提升及一次性股权投资收益。",
+        "summary": "GAAP净利润环比增长17%至81.01亿美元，主要受营业利润增长和股权证券收益推动。",
         "drivers": [
           {
             "type": "一次性项目",
             "direction": "+",
             "is_primary": true,
-            "description": "本季确认5.13亿美元股权证券收益。",
-            "evidence_quote": "Gain on equity securities, net 513 —",
-            "source": "press_release",
+            "description": "GAAP净利润包含5.13亿美元的股权证券收益，主要来自对Nanya的投资，显著推高净利润。",
+            "evidence_quote": "Key GAAP to non-GAAP reconciliation includes $91 million in stock-based compensation, representing 0.8% of revenue and $513 million gain on equity securities, primarily attributable to our investment in Nanya.",
+            "source": "qa",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "价",
+            "direction": "+",
+            "is_primary": false,
+            "description": "营业利润增长受毛利率提升推动，而毛利率提升主要来自更高定价。",
+            "evidence_quote": "Non-GAAP gross margin for the first quarter was 85.1%, up from 84.6% in the prior quarter, driven by higher volumes and pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -605,45 +691,9 @@
             "type": "量",
             "direction": "+",
             "is_primary": false,
-            "description": "收入大幅增长带动经营利润提升。",
-            "evidence_quote": "Revenue $11,031 $2,308 up 378% $11,031 $2,308 up 378%",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          }
-        ],
-        "conflicts": []
-      },
-      {
-        "metric": "kpis.datacenter_revenue",
-        "summary": "数据中心收入同比增61%，主因AI相关需求强劲。",
-        "drivers": [
-          {
-            "type": "量",
-            "direction": "+",
-            "is_primary": true,
-            "description": "数据中心产品需求强劲，带动收入增长。",
-            "evidence_quote": "robust and growing demand for our products driving outpaced growth in our data center business",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          }
-        ],
-        "conflicts": []
-      },
-      {
-        "metric": "kpis.consumer_revenue",
-        "summary": "消费业务收入同比降39%，主因需求疲软。",
-        "drivers": [
-          {
-            "type": "量",
-            "direction": "-",
-            "is_primary": true,
-            "description": "消费业务收入同比下滑39%。",
-            "evidence_quote": "Consumer $397 $556 down 29% $652 down 39%",
-            "source": "press_release",
+            "description": "收入规模扩大带来经营杠杆，支撑营业利润增长。",
+            "evidence_quote": "Both volume growth and higher pricing contributed to revenue growth, with approximately 60% of the increase attributable to volume growth and 40% to higher pricing.",
+            "source": "qa",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -674,7 +724,8 @@
         "mid": 12400000000.0,
         "high": 12600000000.0,
         "call_variant": null,
-        "change_vs_prior": null
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "gross_margin_gaap",
@@ -694,27 +745,8 @@
         "mid": 84.9,
         "high": 85.4,
         "call_variant": null,
-        "change_vs_prior": null
-      },
-      {
-        "metric_key": "gross_margin_nongaap",
-        "metric_label": "Gross Margin",
-        "period": "fiscal Q2 2027",
-        "type": "numeric",
-        "low_raw": "84.5%",
-        "high_raw": "85.5%",
-        "point_raw": null,
-        "plus_minus_raw": null,
-        "basis": "non-GAAP",
-        "direction": null,
-        "statement": "管理层预计2027财年第二季度非GAAP毛利率在84.5%至85.5%之间。",
-        "source": "press_release",
-        "source_quote": "Gross Margin 84.5% - 85.5%",
-        "low": 84.5,
-        "mid": 85.0,
-        "high": 85.5,
-        "call_variant": null,
-        "change_vs_prior": null
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "opex_gaap",
@@ -733,26 +765,6 @@
         "low": 677.0,
         "mid": 711.0,
         "high": 745.0,
-        "call_variant": null,
-        "change_vs_prior": null
-      },
-      {
-        "metric_key": "opex_nongaap",
-        "metric_label": "Operating Expenses",
-        "period": "fiscal Q2 2027",
-        "type": "numeric",
-        "low_raw": "$540",
-        "high_raw": "$560",
-        "point_raw": null,
-        "plus_minus_raw": null,
-        "basis": "non-GAAP",
-        "direction": null,
-        "statement": "管理层预计2027财年第二季度非GAAP运营费用在5.40亿至5.60亿美元之间。",
-        "source": "press_release",
-        "source_quote": "Operating Expenses $540 - $560",
-        "low": 540.0,
-        "mid": 550.0,
-        "high": 560.0,
         "call_variant": null,
         "change_vs_prior": null
       },
@@ -793,8 +805,28 @@
         "low": 55.0,
         "mid": 56.0,
         "high": 57.0,
-        "call_variant": null,
-        "change_vs_prior": null
+        "call_variant": {
+          "metric_key": "eps_nongaap",
+          "metric_label": "Non-GAAP EPS (split-adjusted)",
+          "period": "second quarter of fiscal year 2027",
+          "type": "numeric",
+          "low_raw": "$6.88",
+          "high_raw": "$7.13",
+          "point_raw": null,
+          "plus_minus_raw": null,
+          "basis": "non-GAAP",
+          "direction": null,
+          "statement": "管理层预计2027财年第二季度非GAAP每股收益在6.88至7.13美元之间（8比1拆股调整后），假设约12.08亿摊薄股数。",
+          "source": "prepared_remarks",
+          "source_quote": "On an 8-for-1 split-adjusted basis, this equates to non-GAAP EPS between $6.88 and $7.13, assuming approximately 1,208 million fully diluted shares.",
+          "low": 6.88,
+          "mid": 7.005,
+          "high": 7.13,
+          "call_variant": null,
+          "change_vs_prior": null
+        },
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "share_count",
@@ -835,6 +867,306 @@
         "high": null,
         "call_variant": null,
         "change_vs_prior": null
+      },
+      {
+        "metric_key": "capex",
+        "metric_label": "Gross capital expenditures",
+        "period": "fiscal 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "mid-single-digit percentage of revenue",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计2027财年全年资本支出将占营收的中个位数百分比。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect gross capital spending to increase during the balance of the year and represent mid-single-digit percentage of revenue for fiscal year 2027.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Data center bit demand",
+        "period": "calendar 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately 40% year over year",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计2027日历年数据中心位元需求同比增长约40%。",
+        "source": "prepared_remarks",
+        "source_quote": "Data center is expected to be, again, the engine of growth and represent over 55% of the market with bit demand growing about 40% year-on-year",
+        "low": 40.0,
+        "mid": 40.0,
+        "high": 40.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Data center market share",
+        "period": "calendar 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "over 55% of the market",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计2027日历年数据中心将占NAND市场的55%以上。",
+        "source": "prepared_remarks",
+        "source_quote": "Data center is expected to be, again, the engine of growth and represent over 55% of the market",
+        "low": 55.0,
+        "mid": 55.0,
+        "high": 55.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "NBM commitments",
+        "period": "fiscal 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "50% of bits",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层表示2027财年50%的位元已通过长期协议锁定。",
+        "source": "prepared_remarks",
+        "source_quote": "50% of bits for fiscal year 2027 and two-thirds of bits for fiscal year 2028 are under long-term agreements.",
+        "low": 50.0,
+        "mid": 50.0,
+        "high": 50.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "NBM commitments",
+        "period": "fiscal 2028",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "two-thirds of bits",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层表示2028财年三分之二的位元已通过长期协议锁定。",
+        "source": "prepared_remarks",
+        "source_quote": "50% of bits for fiscal year 2027 and two-thirds of bits for fiscal year 2028 are under long-term agreements.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "NBM pipeline",
+        "period": "through end of decade",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层表示NBM管道需求超过供应，持续到本十年末。",
+        "source": "prepared_remarks",
+        "source_quote": "Our NBM pipeline exceeds our supply throughout the end of the decade.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "HBF samples",
+        "period": "next calendar year",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计明年日历年度交付首批HBF产品样品。",
+        "source": "prepared_remarks",
+        "source_quote": "we remain on track to deliver samples of our first HBF-based products next calendar year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "KV cache share of AI data center flash market",
+        "period": "by end of decade",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately 1/3",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "管理层预计到本十年末，KV缓存将占AI数据中心闪存市场的约三分之一。",
+        "source": "prepared_remarks",
+        "source_quote": "supporting our view that KV cache will represent approximately 1/3 of the AI data center flash market by the end of the decade",
+        "low": 1.0,
+        "mid": 1.0,
+        "high": 1.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "PC exabytes growth",
+        "period": "next year",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计明年PC exabytes将增长，因每设备内容量增加。",
+        "source": "qa",
+        "source_quote": "we expect the PC exabytes to grow next year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Sequential growth into fiscal Q3",
+        "period": "fiscal Q3 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "down",
+        "statement": "管理层提醒投资者对进入2027财年第三季度的环比增长保持保守，因为该季度通常是环比最弱的季度。",
+        "source": "qa",
+        "source_quote": "investors should be conservative about sequential growth into fiscal Q3 because it \"is normally our weakest sequential quarter.\"",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Pricing trend",
+        "period": "throughout fiscal 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计整个财年价格将继续温和上涨。",
+        "source": "qa",
+        "source_quote": "we expect pricing to continue to increase modestly throughout the year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "NBM percentage of bits",
+        "period": "next couple of quarters",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计未来几个季度NBM锁定的位元比例将继续上升。",
+        "source": "qa",
+        "source_quote": "I expect that the percent of the portfolio committed to continue to go up over the next couple of quarters.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "NBM bits for fiscal 2028",
+        "period": "fiscal 2028",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计2028财年NBM位元比例将从三分之二继续小幅上升。",
+        "source": "qa",
+        "source_quote": "We had shared with you that about 50% of our bits are under NBM for '27 and about 2/3 for '28. And we expect that number to continue to go a little bit higher from the 2/3.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Data center mix",
+        "period": "throughout calendar 2027",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层预计2027日历年数据中心业务占比将继续提升。",
+        "source": "qa",
+        "source_quote": "We're going to continue to make progress throughout calendar year '27.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Bit growth",
+        "period": "long-term",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "管理层表示维持中高双位数的位元增长目标，无加速计划。",
+        "source": "qa",
+        "source_quote": "we're committed to the bit growth we talked about, mid- to high teens.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
       }
     ],
     "prior_guidance_review": [],
@@ -846,7 +1178,133 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": [],
+    "industry_outlook": [
+      {
+        "title": "外部环境（技术变化）",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "David 认为 AI 推理正在推动 NAND 需求发生结构性增长。推理时每个生成的 token 都要引用前面的上下文，形成不断扩大的 KV cache，相当于模型的“工作内存”。更长的提示、更复杂的推理、多模态输入和持续的用户上下文都会明显增加存储需求。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他判断这是长期趋势，正在扩大 NAND 在整个 AI 技术栈中的作用。HBM 和 DRAM 负责最高性能层，而闪存负责以高效方式保留更广泛的上下文，避免昂贵的重复计算。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "David 还提到，AI 推理架构正在被持续优化以改善经济性。这会把 NAND 拉进架构的更多部分，因为 NAND 是可扩展性最强的半导体技术。过去重点是提高密度，从 TLC 转向 QLC；现在也出现反向需求，客户在特定架构位置追求更高耐久性，希望用 NAND 替代更难获取、更贵的 DRAM。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "David 表示，数据中心需求仍然强劲并持续增长。他估计数据中心占行业 bit 的比例已从本十年初的约 20% 上升到目前约一半。公司预计 2027 日历年数据中心将占 NAND 市场 55% 以上，bit 需求同比增长约 40%，这是在 2026 年翻倍以上的基础上。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在 AI 实验室对比中，使用 SSD 的系统 token 吞吐量约为仅依赖易失性内存系统的 3 倍，能耗约低 75%。David 认为，随着推理成本下降，采用和使用会扩大，到本十年末 KV cache 将占 AI 数据中心闪存市场约三分之一，AI 数据中心机会将接近今天整个 NAND 行业的规模。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "客户需求信号也在拉长。David 说，NBM 管道已经延伸到 2030 年以后，客户越来越愿意提供长期需求信号和财务承诺来锁定供应。他还提到，多个客户回来谈第二轮 NBM，因为客户普遍低估了运行基础设施所需的 NAND 数量。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在 PC 市场，David 承认今年出货量下降，明年出货量预计仍会小幅下降，低个位数。当前两个日历季度是同比最差的阶段。但他预计明年 PC 的 exabyte 会增长，因为每台设备的内容量继续上升，部分原因是向高端产品混合。他说公司内部模型显示，明年 NAND 市场每个细分领域——PC、智能手机、数据中心——都会因单设备内容量增加而实现正增长。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "David 表示，公司对 bit 增长仍维持此前说的中高双位数目标，没有因为需求强劲而加速 BiCS8 到 BiCS9、BiCS10 的节点转换。节点转换需要大量规划、设备采购和产线设置，目前没有改变计划的打算。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在供应分配上，David 说从晶圆厂出来的 TLC、QLC 和 die 组合是固定的，短期很难调整，因为生产一片晶圆大约需要 120 天。把正确产品送到正确客户是一个持续的匹配过程，涉及库存、晶圆厂产出、产品组合和销售团队之间的协调。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "关于 SLC，David 说现在下结论还太早。有客户在给出 SLC 需求信号，但主要是架构讨论和客户想更好理解技术如何适配推理架构。如果 SLC 用量增加，会以 3:1 或 4:1 的比例替代 TLC 或 QLC，从而影响市场整体供应，但目前还无法给出具体预测。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "David 把公司在数据中心的快速增长归因于几个因素：BiCS8 是很强的节点，CBA 带来非常干净的 CMOS 和很好的接口速度；公司几年前就推出了 TLC 产品，几个季度前开始销售 QLC 产品，现在 QLC 正在按预期放量。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "他说客户对 NAND 的使用正变得更加精细，会在 KV cache、staging、快速数据湖等不同阶段分别使用 TLC 和 QLC。有些客户甚至把 QLC 用于 KV cache，而另一端 SLC 也被拉进架构讨论，重点不是性能，而是 agentic 工作负载下的耐久性。David 认为，一旦客户完成从 DRAM 到 NAND 的替代，这种架构会因为价格差异而非常具有粘性。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在数据中心收入占比上，David 说公司正在努力让自身产品组合的 mix 赶上市场 bit 结构。他预计整个 2027 日历年会继续取得进展，mix 会比 2026 财年明显提高，但没有给出具体份额目标，因为他不想为了份额目标做出扭曲产品组合的选择。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "David 说 NBM 已经成为公司与客户打交道的主要方式。公司已经签了第二轮 NBM 中的一个，并正在与其他客户讨论更多。他预计未来几个季度 NBM 覆盖的产品组合比例会继续上升。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "Luis 补充，公司对 NBM 伙伴保持耐心和选择性。当前 95% 的 NBM 协议是与投资级公司签订的，这些公司合计产生约 1300 亿美元经营现金流。公司预计 NBM 覆盖的 bit 比例会从 2028 财年的三分之二继续小幅提高。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "David 还提到，NBM 让公司能与客户进行更深层次的战略对话，包括工程师之间讨论如何用公司产品解决不同用例。这种深度合作正在带来对产品组合的巨大拉动。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "David 把公司的长期信心建立在三个持久优势上：技术领先、深度客户合作和严格的财务管理。这三者又得到 AI 驱动的 NAND 需求结构性增长和 NBM 合作的支持。",
+            "items": []
+          },
+          {
+            "type": "ol",
+            "text": "",
+            "items": [
+              "技术路线：BiCS8 是当前生产组合的骨干，也是 TLC 和 QLC 的行业性能和密度基准。BiCS9 把 BiCS8 的 cell array 与下一代 CMOS 配对，提高接口性能。BiCS10 推进全节点架构，1-terabit TLC die 面向性能密集型工作负载，2-terabit QLC die 提供行业领先密度和 BiCS8 两倍的读写带宽。",
+              "HBF：公司完成了首个 HBF 内存 die 的 tape-out，制造已经开始。HBF 面向推理，目标是 HBM 级读带宽和更大容量，以支持更大模型、更长上下文和不断增长的 KV cache。公司计划明年日历年交付首批 HBF 产品样品。HBF 尚未纳入长期财务模型。",
+              "NBM 扩展：公司正在平衡老客户回来要更多供应和新客户进入组合。NBM 管道已经超过 2030 年前的供应能力，公司会继续耐心、有选择地签约，并预计未来几个季度继续推进。",
+              "资本配置：公司坚持把 100% 的超额现金返还给股东。过去两个季度回购了约 4% 的流通股，本季度回购 50 亿美元。公司会继续积极、适当地执行回购计划。"
+            ]
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -872,18 +1330,854 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "2",
+        "analyst": "Benjamin Reitzes",
+        "firm": "Melius",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "公司已经签了两份 NBM，想知道后续是否会签更多，以及未来几年签约锁定的 bit 占比是否有变化。",
+        "answer_summary": "David（CEO）：NBM 的储备项目非常强，而且还在增长，已经成为我们与客户打交道的主要方式。本财年约一半 bit、下一财年约三分之二 bit 已被签约锁定，接下来要在已签约客户和新增客户之间做匹配。我们上季度说过会保持耐心、挑选下一批客户，现在仍是这个做法，预计未来几个月到几个季度会签更多 NBM，签约占比还会继续上升。\nLuis（CFO）：我们对 NBM 进展很满意。签约对象经过严格挑选，95% 的 NBM 客户是投资级公司，这些公司合计产生约 1300 亿美元经营现金流。我们会继续保持耐心和选择性，储备项目很好，预计会继续取得进展。此前披露约 50% 的 bit 在 2027 年已由 NBM 锁定，2028 年约三分之二，我们预计这个比例还会比三分之二略高一些。\nDavid（CEO）：我们还在平衡两类需求：一类是回来要更多产能的现有客户，另一类是想进入组合的新客户。客户普遍反馈他们低估了运行基础设施所需的 NAND 用量，所以有多家客户回来谈第二轮。这些协议规模大、结构复杂，但我们对储备项目、产品组合和产品反响都很有信心，未来几个季度会继续更新进展。",
+        "new_numbers": [
+          {
+            "number": "95%",
+            "meaning": "NBM 客户中投资级公司占比"
+          },
+          {
+            "number": "$130 billion",
+            "meaning": "NBM 客户合计经营现金流"
+          },
+          {
+            "number": "50%",
+            "meaning": "2027 年 bit 由 NBM 锁定的比例"
+          },
+          {
+            "number": "2/3",
+            "meaning": "2028 年 bit 由 NBM 锁定的比例"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We've got a very strong pipeline of NBMs, and you kind of hit on all the issues there. As the portfolio gets more subscribed and more committed and we're at half the bits for this fiscal year and 2/3 for next year, it's a fitting exercise to get the next tranche of them in there.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：1 years（exchange 2）",
+          "这一轮至少有 4 个问题，摘要只有 2 条（exchange 2）"
+        ]
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Benjamin Reitzes",
+        "firm": "Melius",
+        "topic": "客户与订单",
+        "is_new_topic": true,
+        "question_summary": "Intel 因 PC 市场下调了下季度指引，分析师想知道 PC 设备厂商是否会对 NBM 更感兴趣，以及这类客户是否愿意支付更高价格。",
+        "answer_summary": "Luis（CFO）：我们不能谈论具体客户。过去我们说过，NBM 主要集中在数据中心业务，但边缘侧也有客户。我们向任何有需求的客户提供这种合作模式，只要条件合适就可以启动，不会刻意限制某类客户，我们对所有客户开放。\nDavid（CEO）：我们在内部评估中也关注这个市场。今年 PC 出货量下降，明年预计还会小幅下降，降幅为低个位数。当前这两个日历季度是同比最差的阶段，单位出货量同比压力最大。不过我们预计明年 PC 的 exabyte 需求会增长。实际上，我们内部模型显示，明年 NAND 各细分市场，包括 PC、智能手机和数据中心，都会实现正增长，因为单机容量继续提升，其中一部分来自向高端产品的切换。所以市场确实在调整，从单位出货量看，我们现在正处于同比最困难的阶段，但之后会逐步改善。",
+        "new_numbers": [
+          {
+            "number": "low single digits",
+            "meaning": "明年 PC 单位出货量预计同比降幅"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "cautious",
+        "answer_quote": "We know that units were down this year. They're going to be slightly down next year, low single digits. I mean these 2 calendar quarters right now are really the trough of the year-over-year compares where they're the most negative.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Joseph Moore",
+        "firm": "Morgan Stanley",
+        "topic": "数据中心增长原因",
+        "is_new_topic": true,
+        "question_summary": "数据中心业务同比增长近 20 倍、环比增长 61%，分析师想知道公司数据中心份额提升的原因，是 BiCS8 还是市场变化，以及是什么让公司达到这样的渗透率。",
+        "answer_summary": "David（CEO）：数据中心增长是技术、产品和市场共同作用的结果。基础是 BiCS8 节点，CBA 带来很干净的 CMOS，接口速度等表现好；公司也做出了合适的产品，TLC 产品已经在市场上卖了几年，几个季度前 QLC 产品开始产生收入，并且正在按预期放量。\nDavid（CEO）：过去一个季度左右，客户对 AI 推理架构里 NAND 的使用变得更精细，TLC、QLC 分别用在 KV cache、staging、快速数据湖等不同环节，推理、agent 编排、模型预训练和后训练等场景都在用。QLC 被用在合适的地方，有些客户甚至把 QLC 用到 KV cache；另一端 SLC 也被拉进架构讨论，目前还不是销售，更多是架构层面的交流，重点不是性能而是 agentic 工作负载下的耐久性，也就是看哪些地方能用 NAND 替代 DRAM。公司认为这类架构一旦切换，会因为价格差异而长期保持粘性。\nDavid（CEO）：这些变化让公司能和客户进行更深、更战略性的讨论，和工程师深入交流如何用公司产品解决不同用例，给整个产品组合带来很强拉动。最大客户里已经签了一个 NBM 的第二批，其他客户也在谈。整体布局很强，公司对数据中心表现满意。",
+        "new_numbers": [
+          "20x year-on-year",
+          "61% sequentially"
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We feel very good about where we're at in data center. I mean anything where you see the kind of numbers we posted year-over-year is a combination of things. It starts with the fundamental NAND node. BiCS8 is a very good node.",
+        "review_flags": [
+          "问答摘要漏了原文中的数字或时间：1 years（exchange 3）",
+          "这一轮至少有 4 个问题，摘要只有 2 条（exchange 3）"
+        ]
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Joseph Moore",
+        "firm": "Morgan Stanley",
+        "topic": "数据中心占公司产品组合比例",
+        "is_new_topic": true,
+        "question_summary": "分析师追问，如果数据中心占市场总比特数的一半，公司自身产品组合中数据中心的比例能否达到市场水平。",
+        "answer_summary": "David（CEO）：公司正在努力追赶，让自身产品组合中数据中心的比例与市场出货量占比一致，并且会在 2027 日历年继续取得进展。到季度末能否真正追平还要看情况，但相比 2026 财年，公司产品组合中数据中心的比例会明显提高。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We're working hard to catch up to have our portfolio mix equal what the market bits are. And we're going to continue to make progress throughout calendar year '27.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Newman",
+        "firm": "Bernstein",
+        "topic": "定价与销量贡献",
+        "is_new_topic": false,
+        "question_summary": "分析师询问管理层对下一季度指引中价格与销量贡献比例的预期，以及定价改善的更多细节。",
+        "answer_summary": "Luis（CFO）：你记得没错，第一财季约60%的收入增长来自销量，40%来自价格。我们通常不把下一季度的贡献拆开，但预计两者都会对增长有贡献。我们预计价格会像准备好的发言里说的那样温和改善，并且全年价格会继续小幅上升。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出下一季度价格与销量贡献的具体比例。",
+        "tone": "neutral",
+        "answer_quote": "We normally don't break this, Mark, into its pieces, but we do expect some modest pricing as we put in our prepared remarks. So we do expect both to contribute during the quarter, and we expect pricing to continue to increase modestly throughout the year.",
+        "review_flags": [
+          "这一轮至少有 6 个问题，摘要只有 3 条（exchange 4）"
+        ]
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Newman",
+        "firm": "Bernstein",
+        "topic": "HBF 进展",
+        "is_new_topic": false,
+        "question_summary": "分析师询问 HBF 与客户和合作伙伴的进展，以及相关讨论情况。",
+        "answer_summary": "David（CEO）：关于 HBF，我们与潜在客户的讨论很活跃，接下来会把产品样品交到他们手中，让他们开始使用并理解它如何融入系统。我们会持续更新进展，这类对话基本是持续进行的。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "The conversations with potential customers on HBF are robust and continue to be -- we'll continue to have those conversations as we go into putting product samples in their hands so they can start to use and understand how it's going to fit in their system.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Newman",
+        "firm": "Bernstein",
+        "topic": "数据中心新型 NAND 技术",
+        "is_new_topic": false,
+        "question_summary": "分析师询问 Storage-Next、CMX 等数据中心新型 NAND 技术的定位、相互关系、SanDisk 的参与方式与时间表。",
+        "answer_summary": "David（CEO）：关于新型 NAND 技术，这对 AI 推理的规模化是健康的，因为架构会为了经济性不断优化。经济性越好，越有利于规模化，这会把 NAND 拉进架构的更多部分，因为 NAND 是最具可扩展性的半导体技术。前几年重点是继续提高密度，从 TLC 转向 QLC，这仍是战略的重要部分。但现在有些方向反过来，比如在架构的特定部分追求更高的耐久性，看 NAND 的耐久性和性能是否足以解决该用例，从而替代可能更贵、更难获取的竞争技术。这个讨论非常动态，桌上有很多想法，我认为这些想法都会被推进。最重要的是贴近那些花钱扩展基础设施的人，因为最终他们会根据自己的用例和投入方向做决定。我们深度参与这些对话，预计会继续非常活跃，并出现很多关于如何把我们的技术向不同方向延伸以适配更多用例的想法。做产品始终是同一件事：在正确的时间、以正确的强度、正确的成本提供正确的技术，不多也不少，这样才能以合适的价格交付并获得合理回报。这个过程正在 AI 推理架构中与客户全面展开。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think this is like very, very healthy for where AI inference is, which is as it scales out, it needs to be -- the architecture is just being relentlessly refined for economics.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "David Gibson",
+        "firm": "MST Financial",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "公司是否会加快 BiCS 从 8 代向 9 代、10 代等节点迁移，以在短期内加速位元增长并满足强劲的客户需求？",
+        "answer_summary": "David（CEO）：不会。公司仍坚持此前所说的中高双位数位元增长目标。节点迁移需要大量规划、设备采购和产线布局，目前的晶圆厂计划就是围绕长期以来的位元增长目标制定的，现阶段没有改变计划的打算。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "No. I mean we're committed to the bit growth we talked about, mid- to high teens. Those nodal transitions require a lot of planning and tool purchases and where lines are set up.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 5）"
+        ]
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "David Gibson",
+        "firm": "MST Financial",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "公司提到一季度会向数据中心分配更多供应，那么把更多位元分配给数据中心是否存在限制？",
+        "answer_summary": "David（CEO）：在某种程度上是有限制的。晶圆厂产出时会形成一定的 TLC、QLC 和晶粒组合，因此需要不断把合适的产品匹配给合适的客户。这需要组织内部大量协调，Luis 的团队与销售团队要一起判断可用库存、晶圆厂产出、产品组合以及这些产品最终流向哪里。\nLuis（CFO）：补充一点，这取决于时间跨度。短期内几乎无法调整，因为生产一片晶圆大约需要 120 天；但把时间拉长来看，可调整的空间会更大。",
+        "new_numbers": [
+          {
+            "number": "120 days",
+            "meaning": "生产一片晶圆大约需要 120 天，因此短期内几乎无法调整供应分配"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "It takes 120 days or so to produce a wafer. But obviously, as you look further out, there are more degrees of freedom.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Christopher Muse",
+        "firm": "Cantor Fitzgerald",
+        "topic": "NBM 管道与供给",
+        "is_new_topic": true,
+        "question_summary": "分析师问，幻灯片里说 NBM 管道到 2030 年都超过供给，能否详细说明，以及这是否改变公司对未来几年行业位元供给的看法。",
+        "answer_summary": "David（CEO）：这个流程正在起作用。两三个季度前我们才刚开始建立这种业务模式，现在已经有一些志同道合的客户，进展很好。投资者日之后，有客户主动来找我们谈 NBM。它不是我们唯一的做生意方式，我们仍会按客户不同的量和产品来配合。\n现在到 2030 年的管道很强，甚至更远，客户愿意给出需求信号和财务承诺。这些将来可能让我们选择去改变供需，但现在还没到那一步，还要完成谈判、拿到承诺、把所有事情对齐。\n流程进展很好，给了我们更多规划可见度，但仍在进行中，接下来几个季度会继续更新进展。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出具体的行业位元供给预测，只说明流程仍在推进。",
+        "tone": "positive",
+        "answer_quote": "But it's very good to see that we have a robust pipeline now through the end -- through 2030, and we're even getting beyond that, as we talked about, of customers that are really willing to give us their demand signals and financial commitments.",
+        "review_flags": [
+          "这一轮至少有 5 个问题，摘要只有 3 条（exchange 6）"
+        ]
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Christopher Muse",
+        "firm": "Cantor Fitzgerald",
+        "topic": "资本开支计划",
+        "is_new_topic": true,
+        "question_summary": "分析师问，公司是否调整资本开支计划，并提到之前说的中个位数增长，大约对应 25 亿到 30 亿美元的总资本开支，这个数字相当低。",
+        "answer_summary": "David（CEO）：这些客户给出的需求信号和财务承诺，将来可能让我们选择去改变供需，但现在还没到那一步，还要完成谈判、拿到承诺、把所有事情对齐。流程进展很好，给了我们更多规划可见度，但仍在进行中，接下来几个季度会继续更新进展。",
+        "new_numbers": [
+          "25 亿到 30 亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "没有直接回答是否调整资本开支计划，只说明流程仍在推进。",
+        "tone": "neutral",
+        "answer_quote": "And to the question earlier, those kinds of things will allow us, if we choose to, to eventually start changing supply and demand and all those kinds of things. But we're just not there yet, right? We got to go through negotiations on all of those. We've got to get commitments. We've got to get everything all aligned.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Christopher Muse",
+        "firm": "Cantor Fitzgerald",
+        "topic": "存款与回购",
+        "is_new_topic": true,
+        "question_summary": "分析师追问，这些 NBM 合同里有些含存款，公司能否用这些存款做回购，还是现金受到限制。",
+        "answer_summary": "Luis（CFO）：理论上可以。但正如我们在分析师日解释的，绝大多数是财务担保，由第三方金融机构持有，不在我们资产负债表上。资产负债表里只有预付款，而且那部分远小于其他部分。不过这些钱没有法律上的使用限制。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "The vast majority are financial guarantees, which are held by third-party financial institutions. So they are not in my balance sheet. The only thing that's in the balance sheet is prepayments, and we -- that's, by far, the smallest amount. But there is no legal restriction on that.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Karl Ackerman",
+        "firm": "BNP Paribas",
+        "topic": "NAND",
+        "is_new_topic": false,
+        "question_summary": "在 agentic AI 普及的背景下，2027 年企业级 SSD 每台服务器的容量会如何变化？",
+        "answer_summary": "David（CEO）：在推理和 agent 编排场景中，我们的产品需求与 CPU 需求紧密相关，目前看到每颗 CPU 大约对应 60 到 90 GB 的 NAND 需求。我还没有把服务器 TAM 和这个弹性关系做完整测算，后续可以跟进。\nDavid（CEO）：我们继续看到更多 NAND 被拉进推理架构的各个环节，而且方式很多样，包括 TLC、QLC，以及现在客户在寻找高耐久方案，用这类 NAND 替代部分原本要用 DRAM 的工作负载。整体趋势很积极，我们会继续跟踪，并进一步分析两个 TAM 之间的权衡。",
+        "new_numbers": [
+          {
+            "value": "60 to 90 gigabytes per CPU",
+            "meaning": "推理和 agent 编排应用中每颗 CPU 对应的 NAND 需求"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出 2027 年企业级 SSD 每台服务器容量的具体预测，只说明了当前每 CPU 的 NAND 需求范围，并表示尚未完成服务器 TAM 与弹性关系的测算。",
+        "tone": "positive",
+        "answer_quote": "I mean we know at a pretty granular level the amount of demand that we expect per CPU, something 60 to 90 gigabytes per CPU is what we see in those kind of applications.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 7）"
+        ]
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Karl Ackerman",
+        "firm": "BNP Paribas",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "企业级 SSD 市场份额目标是否有更新？2027 年能否达到低双位数到中双位数的份额？",
+        "answer_summary": "David（CEO）：我们过去很多年前曾公布过份额目标，但后来尽量避免再设份额目标，因为有时会导致组合选择上的偏差。我们希望在近、中、长期都最大化组合价值，保持一定平衡。\nDavid（CEO）：我们显然会继续向数据中心倾斜，今年同比增长了 17 倍，这种规模下很少见。我预计进入 2027 年后还会继续提升。平衡点会逐季取决于我们看到的情况以及签下的 NBM，这些会给我们未来几年的组合走向提供很多可见性。所以方向是向上的，但我不会给出具体目标。",
+        "new_numbers": [
+          {
+            "value": "17x growth year-over-year",
+            "meaning": "数据中心业务同比增长 17 倍"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有直接回答 2027 年能否达到低双位数到中双位数的企业级 SSD 份额，也没有给出具体份额目标。",
+        "tone": "positive",
+        "answer_quote": "Clearly, we're going to mix higher into data center. I mean you see that. We talked about that earlier. I think 17x growth year-over-year. You don't see a 17x very often in a business at this scale.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Vijay Rakesh",
+        "firm": "Mizuho",
+        "topic": "NAND",
+        "is_new_topic": false,
+        "question_summary": "分析师问 BiCS8、BiCS9、BiCS10 的节点过渡能否帮助公司满足 2027 年数据中心 40% 的需求位元增长，以及供应端情况如何。",
+        "answer_summary": "David（CEO）：BiCS8 和 BiCS9 是数据中心战略的重要组成部分，能在相同存储单元上实现更快的接口速度，这正是 CBA 带来的灵活性。TLC 产品表现一直很好，现在 QLC 正在放量，BiCS9 也会有一些爬坡，但 BiCS10 还需要一段时间。公司已经发布了 BiCS10，但目前仍在爬坡 BiCS8，距离未来那些 BiCS 节点还有一段路要走。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "BiCS9 is a big part of a data center strategy of being able to get faster interface speeds with the same cell and kind of what CBA gives us that flexibility we talked about at Investor Day. So in that sense, yes, those are big parts of the strategy.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 8）"
+        ]
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Vijay Rakesh",
+        "firm": "Mizuho",
+        "topic": "NAND",
+        "is_new_topic": false,
+        "question_summary": "分析师问同行提到的 SLC NAND 明年会如何发展，以及这是否会进一步收紧 NAND 市场供应。",
+        "answer_summary": "David（CEO）：现在对 SLC 形成很强的判断还为时过早。公司正在与一些客户沟通，他们给出了 SLC 需求的信号。如果开始混入 SLC，会有一个明确的 3:1 或 4:1 的替换比例，无论是对 TLC 还是 QLC，因此会根据 SLC 的使用量和实际部署量影响市场整体供应。但目前还太早给出具体预测。\nDavid（CEO）：这是一个架构层面的讨论，客户希望更好地理解这项技术，以及它在构建推理架构时如何适配部分使用场景。公司会在未来几个季度持续更新进展，看事情如何发展，但确实值得关注。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "管理层表示现在给出 SLC 的具体预测还为时过早，没有提供明年 SLC 对 NAND 市场供应影响的具体数字或判断。",
+        "tone": "cautious",
+        "answer_quote": "I think it's a little early to have a very strong view on that, right? We are talking to some customers that are giving us some signals of demand for SLC. I mean, clearly, you start mixing SLC and you're going to take away -- there's a clear trade ratio of 3:1, 4:1, whether it's TLC or QLC.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "James Schneider",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师询问基于当前可见度，3月财季（Q3）营收环比大致是上升、下降还是持平。",
+        "answer_summary": "Luis（CFO）：从历史看，Q3通常是我们环比最弱的季度，例如上个季度位元出货量环比下降19%。我们不对Q3给出指引，但为了建模，建议对Q2到Q3的环比增长保持保守。",
+        "new_numbers": [
+          {
+            "number": "19%",
+            "meaning": "上个季度位元出货量环比下降幅度"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出Q3环比方向的具体判断，只建议保守建模。",
+        "tone": "cautious",
+        "answer_quote": "So if you look at historically, right, our Q3 is normally our weakest sequential quarter. So last quarter, for example, our bits were down 19% sequentially. So if I -- we're not guiding Q3. But for modeling purposes, I would be conservative in your sequential growth from Q2 to Q3.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 9）"
+        ]
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "James Schneider",
+        "firm": "Goldman Sachs",
+        "topic": "资本回报与回购",
+        "is_new_topic": false,
+        "question_summary": "分析师询问随着回购授权逐步用完，董事会是否会按季度重新授权，以及公司如何考虑在股价较低时执行回购。",
+        "answer_summary": "David（CEO）：我们有非常清晰的策略，100%的超额现金都会返还给股东，并且会积极、适当地执行。我们每个季度都与董事会开会，所以不认为执行上会有障碍。我们会继续忠实于这一策略。过去几个季度开局良好，已经回购了起始市值的4%的流通股，接下来会继续适当执行该计划。",
+        "new_numbers": [
+          {
+            "number": "4%",
+            "meaning": "已回购的流通股市值比例"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "So we're -- we have a very clear strategy. 100% of excess cash is going to go back to shareholders. We're going to execute that aggressively or appropriately. And we know how to get a hold of the Board. We have meetings every quarter. And so I don't expect any impedance on that side of the -- from us about how we execute. I expect us to continue to be -- I don't expect us to be, we will be, continue to be faithful to our strategy, which is we're going to return 100% of excess cash to shareholders. We're off to a good start, I think, over the last couple of quarters. I think we bought back 4% of the market cap of the shares outstanding of where we started, and we're going to continue to execute that program appropriately.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Kinney Chin",
+        "firm": "TD Cowen",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道目前 CSP 客户对 TLC 和 QLC 的需求比例，以及未来几年随着 NBM 落地，这个比例是否会明显变化。",
+        "answer_summary": "David（CEO）：目前 TLC 和 QLC 的比例大约是 70 比 30，TLC 一直是产品组合的重要驱动力。最近更多客户提到 QLC 在不同使用场景中重新加速，但本财年剩余时间预计仍会维持 70-30 左右，季度之间会有小幅波动。QLC 产品 Stargate 已经完成全部客户认证，客户正在上量，市场接受度很高，是产品组合中非常关键的一部分。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We're still like at that 70-30 number on TLC to QLC. TLC has been a big driver of the portfolio. We are hearing more from our customers about a reacceleration of QLC in different use cases.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 10）"
+        ]
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Kinney Chin",
+        "firm": "TD Cowen",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道，在移动端市场今年出现两位数单位下滑、且下滑集中在入门和中端机型的情况下，公司明年的移动端 bit 出货量是否仍能增长。",
+        "answer_summary": "David（CEO）：从市场整体看，低端确实承压，导致手机出货量下降，但单机存储容量在增加，所以明年移动端市场的 exabyte 总量预计仍会增长，尽管手机出货量会小幅下降。至于公司自身的移动端产品组合，他不愿像数据中心那样对单一市场做预测，公司会灵活管理产品组合，在短期、中期和长期之间优化财务结果，后续再更新移动端的占比情况。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答公司明年移动端 bit 出货量是否增长，只给出了市场整体判断，并表示不对单一市场做预测。",
+        "tone": "neutral",
+        "answer_quote": "So when you add it all up, we expect growth of exabytes in that market next year on a slightly declining unit count. As far as our portfolio, I mean, we don't -- it's kind of like data center. I don't want to make projections on individual markets.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Wamsi Mohan",
+        "firm": "Bank of America",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "分析师问，幻灯片里说的“领先 AI 公司”是指 AI 实验室还是新云厂商，以及新云厂商的信用问题是否已经对公司产生影响。",
+        "answer_summary": "Luis（CFO）：我们没有看到任何信用问题的影响。相反，客户需求非常强劲。我们最大的客户基本都是投资级公司，现金流很强。所以市场上即使存在信用问题，我们也没有受到任何冲击。客户需求相比一个季度前还在增强。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We haven't seen any of that. To the contrary, we're seeing very strong demand from our customers. And as I said, if I look at our largest customers, they're basically all investment-grade companies, right, generating very strong cash. So we're not seeing any impacts from any credit issues whatsoever if they are out in the market. And demand from our customers is, if anything, strengthening versus what it was a quarter ago.",
+        "review_flags": [
+          "这一轮至少有 5 个问题，摘要只有 3 条（exchange 11）"
+        ]
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Wamsi Mohan",
+        "firm": "Bank of America",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "分析师追问，当管理层说“领先 AI 公司”时，是否指的是 AI 实验室。",
+        "answer_summary": "Luis（CFO）：我们的业务面向所有客户。我们卖给超大规模云厂商，也卖给模型厂商，卖给所有人。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "We sell to everybody in our business. We sell to hyperscalers. We sell to model makers. We sell to everybody.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "11",
+        "analyst": "Wamsi Mohan",
+        "firm": "Bank of America",
+        "topic": "库存与供需",
+        "is_new_topic": false,
+        "question_summary": "分析师问，本季度应收账款似乎有所上升，是否因为更多产品采用 NBM 后付款条件变化，还是季度内有其他因素。",
+        "answer_summary": "Luis（CFO）：不是付款条件的问题。主要是客户结构发生了一点变化，这对我们的应收账款和季度内收入节奏都有一点影响，但主要是客户结构造成的。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "We basically saw a little bit of a change in customer mix, and that has a little bit of an impact on our receivables, a little bit on linearity, but it's mostly customer mix.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Amit Daryanani",
+        "firm": "Evercore",
+        "topic": "资本结构与股东回报",
+        "is_new_topic": true,
+        "question_summary": "随着公司转向更可预测的 NBM 驱动模式、周期性减弱，是否会改变资本结构策略，愿意加杠杆并加速资本回报，还是继续维持每季度 50 亿美元回购的节奏？",
+        "answer_summary": "David（CEO）：公司已在分析师日公布了到 2030 年的财务模型，并计划坚定执行。管理层对保持无债务、强健资产负债表的策略非常满意，会优先投资于增长业务和内部创新，包括 HBF、3D Matrix Memory 以及 BiCS 路线图等产品。在完成这些投资后，公司会把 100% 的现金流返还给股东。这一计划在可预见的未来不会改变，短期内也不预期会调整。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "We're very comfortable with the strategy we have of staying debt-free, very strong balance sheet and then returning -- investing in our business. And after we do that, we're going to return 100% of the cash flow to shareholders.",
+        "review_flags": [
+          "这一轮至少有 7 个问题，摘要只有 3 条（exchange 12）"
+        ]
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Amit Daryanani",
+        "firm": "Evercore",
+        "topic": "HBF 产能增长与 GPU 算力的关系",
+        "is_new_topic": false,
+        "question_summary": "HBF 的规模扩张变量是什么？随着推理模型和上下文窗口扩大，HBF 产能增长是否会与 GPU 算力同步或更快？",
+        "answer_summary": "David（CEO）：现在回答这个问题还为时过早。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "未回答 HBF 产能增长是否会与 GPU 算力同步或更快，仅表示现在回答为时过早。",
+        "tone": "cautious",
+        "answer_quote": "Well, I mean -- so it's a little early for your first question.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Amit Daryanani",
+        "firm": "Evercore",
+        "topic": "HBF 从送样到收入爬坡的关键里程碑",
+        "is_new_topic": false,
+        "question_summary": "从 2027 年开始初步送样后，到实现有意义收入爬坡的关键里程碑有哪些？",
+        "answer_summary": "David（CEO）：公司会先拿回晶粒，完成基础晶粒（控制器）的流片，再把它们组装起来交给客户。客户随后会看到产品在其基础设施中的实际表现。公司已经做了大量建模，但只有拿到实际产品并完成集成工作后，才能根据客户反馈开始回答市场机会、发展速度、TAM 以及架构定位等问题。关键一步是把真实产品交到客户手中，这会开启新一轮对话，从模拟转向观察产品在客户基础设施中的实际表现，并验证是否达到预期。同时，这也有助于扩展使用场景。目前开发阶段不宜过度接触太多客户，以免工程团队被大量想法淹没。拿到实际设备后，可以扩大这类对话，从而带来更多使用场景，但这些仍有待确定。很多进展都要等到下一个里程碑——拥有真实产品供客户使用并理解其对构建高性价比世界级推理架构的影响。公司认为 HBF 是很好的技术，但最终结果要等产品落地后才能验证。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出具体时间节点或量化里程碑，仅描述产品开发流程。",
+        "tone": "cautious",
+        "answer_quote": "The big step is to actually put a product in their hands, and then that leads to a whole another set of conversations with them where we actually have the device that we're -- instead of running simulations, we're seeing exactly how it performs in their infrastructure and does it deliver the results of what they're expecting.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "13",
+        "analyst": "Mehdi Hosseini",
+        "firm": "SIG",
+        "topic": "产品结构",
+        "is_new_topic": false,
+        "question_summary": "AI 推理对 SLC 的需求是否会影响 TLC 的增长，还是 SLC 对 TLC/QLC 的位元需求是增量？",
+        "answer_summary": "David（CEO）：不会蚕食其他 NAND 产品，而是扩大了可服务市场。SLC 模式能提供不同的耐久性和性能，我们的产品可以从晶圆厂以 SLC 模式运行，灵活性很高。这是对架构更精细的理解，不是替代 TLC/QLC。甚至可能替代部分 DRAM 的使用场景，因为成本差距巨大，达到 20 到 40 倍。NAND 是最具可扩展性的半导体技术，可扩展技术会吸引更多市场机会。",
+        "new_numbers": [
+          {
+            "number": "20 to 40x",
+            "meaning": "NAND 以 SLC 模式运行与 DRAM 的成本差距"
+          }
+        ],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "No, I don't think it's a cannibalization of other NAND products. I think it's an expansion of the TAM into areas that you need different attributes of the technology.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "13",
+        "analyst": "Mehdi Hosseini",
+        "firm": "SIG",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "在客户等待 HBF 商业化期间，合资公司是否有灵活性增加 SLC 产能来满足短期需求？",
+        "answer_summary": "David（CEO）：我们不会把它看作 SLC 产能，因为我们的晶圆单元足够灵活，可以按 SLC、MLC、TLC 任意模式运行，所以可以用现有晶圆供应市场。现在讨论供应问题还为时过早，目前只是客户在探索如何使用这项技术，并开始了解如果这样使用，他们的需求会是多少。SLC 对市场会有影响，因为一点 SLC 就相当于大量 QLC，但更多信息还要等后续。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出具体的产能调整计划或量化数据，只表示现有晶圆可以灵活运行不同模式，且目前为时过早。",
+        "tone": "neutral",
+        "answer_quote": "I wouldn't think of it as SLC capacity. You can take any -- our cells are flexible enough that we can run them in whatever mode we want, SLC, MLC, TLC.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "客户与订单": 5,
+      "数据中心增长原因": 1,
+      "数据中心占公司产品组合比例": 1,
+      "定价与销量贡献": 1,
+      "HBF 进展": 1,
+      "数据中心新型 NAND 技术": 1,
+      "产品结构": 4,
+      "NBM 管道与供给": 1,
+      "资本开支计划": 1,
+      "存款与回购": 1,
+      "NAND": 3,
+      "指引与展望": 1,
+      "资本回报与回购": 1,
+      "需求与出货": 1,
+      "库存与供需": 1,
+      "资本结构与股东回报": 1,
+      "HBF 产能增长与 GPU 算力的关系": 1,
+      "HBF 从送样到收入爬坡的关键里程碑": 1,
+      "产能与资本开支": 1
+    },
+    "new_topics": [
+      "HBF 产能增长与 GPU 算力的关系",
+      "HBF 从送样到收入爬坡的关键里程碑",
+      "HBF 进展",
+      "NAND",
+      "NBM 管道与供给",
+      "产品结构",
+      "产能与资本开支",
+      "存款与回购",
+      "定价与销量贡献",
+      "客户与订单",
+      "库存与供需",
+      "指引与展望",
+      "数据中心占公司产品组合比例",
+      "数据中心增长原因",
+      "数据中心新型 NAND 技术",
+      "资本回报与回购",
+      "资本开支计划",
+      "资本结构与股东回报",
+      "需求与出货"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "客户与订单",
+      "产品结构",
+      "NAND"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "4",
+        "analyst": "Mark Newman",
+        "firm": "Bernstein",
+        "topic": "定价与销量贡献",
+        "is_new_topic": false,
+        "question_summary": "分析师询问管理层对下一季度指引中价格与销量贡献比例的预期，以及定价改善的更多细节。",
+        "answer_summary": "Luis（CFO）：你记得没错，第一财季约60%的收入增长来自销量，40%来自价格。我们通常不把下一季度的贡献拆开，但预计两者都会对增长有贡献。我们预计价格会像准备好的发言里说的那样温和改善，并且全年价格会继续小幅上升。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出下一季度价格与销量贡献的具体比例。",
+        "tone": "neutral",
+        "answer_quote": "We normally don't break this, Mark, into its pieces, but we do expect some modest pricing as we put in our prepared remarks. So we do expect both to contribute during the quarter, and we expect pricing to continue to increase modestly throughout the year.",
+        "review_flags": [
+          "这一轮至少有 6 个问题，摘要只有 3 条（exchange 4）"
+        ]
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Christopher Muse",
+        "firm": "Cantor Fitzgerald",
+        "topic": "NBM 管道与供给",
+        "is_new_topic": true,
+        "question_summary": "分析师问，幻灯片里说 NBM 管道到 2030 年都超过供给，能否详细说明，以及这是否改变公司对未来几年行业位元供给的看法。",
+        "answer_summary": "David（CEO）：这个流程正在起作用。两三个季度前我们才刚开始建立这种业务模式，现在已经有一些志同道合的客户，进展很好。投资者日之后，有客户主动来找我们谈 NBM。它不是我们唯一的做生意方式，我们仍会按客户不同的量和产品来配合。\n现在到 2030 年的管道很强，甚至更远，客户愿意给出需求信号和财务承诺。这些将来可能让我们选择去改变供需，但现在还没到那一步，还要完成谈判、拿到承诺、把所有事情对齐。\n流程进展很好，给了我们更多规划可见度，但仍在进行中，接下来几个季度会继续更新进展。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出具体的行业位元供给预测，只说明流程仍在推进。",
+        "tone": "positive",
+        "answer_quote": "But it's very good to see that we have a robust pipeline now through the end -- through 2030, and we're even getting beyond that, as we talked about, of customers that are really willing to give us their demand signals and financial commitments.",
+        "review_flags": [
+          "这一轮至少有 5 个问题，摘要只有 3 条（exchange 6）"
+        ]
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Christopher Muse",
+        "firm": "Cantor Fitzgerald",
+        "topic": "资本开支计划",
+        "is_new_topic": true,
+        "question_summary": "分析师问，公司是否调整资本开支计划，并提到之前说的中个位数增长，大约对应 25 亿到 30 亿美元的总资本开支，这个数字相当低。",
+        "answer_summary": "David（CEO）：这些客户给出的需求信号和财务承诺，将来可能让我们选择去改变供需，但现在还没到那一步，还要完成谈判、拿到承诺、把所有事情对齐。流程进展很好，给了我们更多规划可见度，但仍在进行中，接下来几个季度会继续更新进展。",
+        "new_numbers": [
+          "25 亿到 30 亿美元"
+        ],
+        "directness": "partial",
+        "evasion_note": "没有直接回答是否调整资本开支计划，只说明流程仍在推进。",
+        "tone": "neutral",
+        "answer_quote": "And to the question earlier, those kinds of things will allow us, if we choose to, to eventually start changing supply and demand and all those kinds of things. But we're just not there yet, right? We got to go through negotiations on all of those. We've got to get commitments. We've got to get everything all aligned.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Karl Ackerman",
+        "firm": "BNP Paribas",
+        "topic": "NAND",
+        "is_new_topic": false,
+        "question_summary": "在 agentic AI 普及的背景下，2027 年企业级 SSD 每台服务器的容量会如何变化？",
+        "answer_summary": "David（CEO）：在推理和 agent 编排场景中，我们的产品需求与 CPU 需求紧密相关，目前看到每颗 CPU 大约对应 60 到 90 GB 的 NAND 需求。我还没有把服务器 TAM 和这个弹性关系做完整测算，后续可以跟进。\nDavid（CEO）：我们继续看到更多 NAND 被拉进推理架构的各个环节，而且方式很多样，包括 TLC、QLC，以及现在客户在寻找高耐久方案，用这类 NAND 替代部分原本要用 DRAM 的工作负载。整体趋势很积极，我们会继续跟踪，并进一步分析两个 TAM 之间的权衡。",
+        "new_numbers": [
+          {
+            "value": "60 to 90 gigabytes per CPU",
+            "meaning": "推理和 agent 编排应用中每颗 CPU 对应的 NAND 需求"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出 2027 年企业级 SSD 每台服务器容量的具体预测，只说明了当前每 CPU 的 NAND 需求范围，并表示尚未完成服务器 TAM 与弹性关系的测算。",
+        "tone": "positive",
+        "answer_quote": "I mean we know at a pretty granular level the amount of demand that we expect per CPU, something 60 to 90 gigabytes per CPU is what we see in those kind of applications.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 7）"
+        ]
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Karl Ackerman",
+        "firm": "BNP Paribas",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "企业级 SSD 市场份额目标是否有更新？2027 年能否达到低双位数到中双位数的份额？",
+        "answer_summary": "David（CEO）：我们过去很多年前曾公布过份额目标，但后来尽量避免再设份额目标，因为有时会导致组合选择上的偏差。我们希望在近、中、长期都最大化组合价值，保持一定平衡。\nDavid（CEO）：我们显然会继续向数据中心倾斜，今年同比增长了 17 倍，这种规模下很少见。我预计进入 2027 年后还会继续提升。平衡点会逐季取决于我们看到的情况以及签下的 NBM，这些会给我们未来几年的组合走向提供很多可见性。所以方向是向上的，但我不会给出具体目标。",
+        "new_numbers": [
+          {
+            "value": "17x growth year-over-year",
+            "meaning": "数据中心业务同比增长 17 倍"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有直接回答 2027 年能否达到低双位数到中双位数的企业级 SSD 份额，也没有给出具体份额目标。",
+        "tone": "positive",
+        "answer_quote": "Clearly, we're going to mix higher into data center. I mean you see that. We talked about that earlier. I think 17x growth year-over-year. You don't see a 17x very often in a business at this scale.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Vijay Rakesh",
+        "firm": "Mizuho",
+        "topic": "NAND",
+        "is_new_topic": false,
+        "question_summary": "分析师问同行提到的 SLC NAND 明年会如何发展，以及这是否会进一步收紧 NAND 市场供应。",
+        "answer_summary": "David（CEO）：现在对 SLC 形成很强的判断还为时过早。公司正在与一些客户沟通，他们给出了 SLC 需求的信号。如果开始混入 SLC，会有一个明确的 3:1 或 4:1 的替换比例，无论是对 TLC 还是 QLC，因此会根据 SLC 的使用量和实际部署量影响市场整体供应。但目前还太早给出具体预测。\nDavid（CEO）：这是一个架构层面的讨论，客户希望更好地理解这项技术，以及它在构建推理架构时如何适配部分使用场景。公司会在未来几个季度持续更新进展，看事情如何发展，但确实值得关注。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "管理层表示现在给出 SLC 的具体预测还为时过早，没有提供明年 SLC 对 NAND 市场供应影响的具体数字或判断。",
+        "tone": "cautious",
+        "answer_quote": "I think it's a little early to have a very strong view on that, right? We are talking to some customers that are giving us some signals of demand for SLC. I mean, clearly, you start mixing SLC and you're going to take away -- there's a clear trade ratio of 3:1, 4:1, whether it's TLC or QLC.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "9",
+        "analyst": "James Schneider",
+        "firm": "Goldman Sachs",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师询问基于当前可见度，3月财季（Q3）营收环比大致是上升、下降还是持平。",
+        "answer_summary": "Luis（CFO）：从历史看，Q3通常是我们环比最弱的季度，例如上个季度位元出货量环比下降19%。我们不对Q3给出指引，但为了建模，建议对Q2到Q3的环比增长保持保守。",
+        "new_numbers": [
+          {
+            "number": "19%",
+            "meaning": "上个季度位元出货量环比下降幅度"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "没有给出Q3环比方向的具体判断，只建议保守建模。",
+        "tone": "cautious",
+        "answer_quote": "So if you look at historically, right, our Q3 is normally our weakest sequential quarter. So last quarter, for example, our bits were down 19% sequentially. So if I -- we're not guiding Q3. But for modeling purposes, I would be conservative in your sequential growth from Q2 to Q3.",
+        "review_flags": [
+          "这一轮至少有 3 个问题，摘要只有 2 条（exchange 9）"
+        ]
+      },
+      {
+        "exchange_id": "10",
+        "analyst": "Kinney Chin",
+        "firm": "TD Cowen",
+        "topic": "需求与出货",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道，在移动端市场今年出现两位数单位下滑、且下滑集中在入门和中端机型的情况下，公司明年的移动端 bit 出货量是否仍能增长。",
+        "answer_summary": "David（CEO）：从市场整体看，低端确实承压，导致手机出货量下降，但单机存储容量在增加，所以明年移动端市场的 exabyte 总量预计仍会增长，尽管手机出货量会小幅下降。至于公司自身的移动端产品组合，他不愿像数据中心那样对单一市场做预测，公司会灵活管理产品组合，在短期、中期和长期之间优化财务结果，后续再更新移动端的占比情况。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答公司明年移动端 bit 出货量是否增长，只给出了市场整体判断，并表示不对单一市场做预测。",
+        "tone": "neutral",
+        "answer_quote": "So when you add it all up, we expect growth of exabytes in that market next year on a slightly declining unit count. As far as our portfolio, I mean, we don't -- it's kind of like data center. I don't want to make projections on individual markets.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Amit Daryanani",
+        "firm": "Evercore",
+        "topic": "HBF 产能增长与 GPU 算力的关系",
+        "is_new_topic": false,
+        "question_summary": "HBF 的规模扩张变量是什么？随着推理模型和上下文窗口扩大，HBF 产能增长是否会与 GPU 算力同步或更快？",
+        "answer_summary": "David（CEO）：现在回答这个问题还为时过早。",
+        "new_numbers": [],
+        "directness": "evasive",
+        "evasion_note": "未回答 HBF 产能增长是否会与 GPU 算力同步或更快，仅表示现在回答为时过早。",
+        "tone": "cautious",
+        "answer_quote": "Well, I mean -- so it's a little early for your first question.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "12",
+        "analyst": "Amit Daryanani",
+        "firm": "Evercore",
+        "topic": "HBF 从送样到收入爬坡的关键里程碑",
+        "is_new_topic": false,
+        "question_summary": "从 2027 年开始初步送样后，到实现有意义收入爬坡的关键里程碑有哪些？",
+        "answer_summary": "David（CEO）：公司会先拿回晶粒，完成基础晶粒（控制器）的流片，再把它们组装起来交给客户。客户随后会看到产品在其基础设施中的实际表现。公司已经做了大量建模，但只有拿到实际产品并完成集成工作后，才能根据客户反馈开始回答市场机会、发展速度、TAM 以及架构定位等问题。关键一步是把真实产品交到客户手中，这会开启新一轮对话，从模拟转向观察产品在客户基础设施中的实际表现，并验证是否达到预期。同时，这也有助于扩展使用场景。目前开发阶段不宜过度接触太多客户，以免工程团队被大量想法淹没。拿到实际设备后，可以扩大这类对话，从而带来更多使用场景，但这些仍有待确定。很多进展都要等到下一个里程碑——拥有真实产品供客户使用并理解其对构建高性价比世界级推理架构的影响。公司认为 HBF 是很好的技术，但最终结果要等产品落地后才能验证。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "未给出具体时间节点或量化里程碑，仅描述产品开发流程。",
+        "tone": "cautious",
+        "answer_quote": "The big step is to actually put a product in their hands, and then that leads to a whole another set of conversations with them where we actually have the device that we're -- instead of running simulations, we're seeing exactly how it performs in their infrastructure and does it deliver the results of what they're expecting.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "13",
+        "analyst": "Mehdi Hosseini",
+        "firm": "SIG",
+        "topic": "产能与资本开支",
+        "is_new_topic": false,
+        "question_summary": "在客户等待 HBF 商业化期间，合资公司是否有灵活性增加 SLC 产能来满足短期需求？",
+        "answer_summary": "David（CEO）：我们不会把它看作 SLC 产能，因为我们的晶圆单元足够灵活，可以按 SLC、MLC、TLC 任意模式运行，所以可以用现有晶圆供应市场。现在讨论供应问题还为时过早，目前只是客户在探索如何使用这项技术，并开始了解如果这样使用，他们的需求会是多少。SLC 对市场会有影响，因为一点 SLC 就相当于大量 QLC，但更多信息还要等后续。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有给出具体的产能调整计划或量化数据，只表示现有晶圆可以灵活运行不同模式，且目前为时过早。",
+        "tone": "neutral",
+        "answer_quote": "I wouldn't think of it as SLC capacity. You can take any -- our cells are flexible enough that we can run them in whatever mode we want, SLC, MLC, TLC.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "数据中心收入环比增61%驱动业绩超预期，但Q3环比指引偏弱形成核心矛盾。",
+    "key_findings": [
+      {
+        "finding": "数据中心收入环比增长61%，成为本季业绩超预期的主要驱动力。",
+        "evidence": "datacenter_revenue"
+      },
+      {
+        "finding": "Non-GAAP EPS为49.51美元，较市场一致预期46.41美元高出6.7%。",
+        "evidence": "eps"
+      },
+      {
+        "finding": "管理层提示Q3通常是环比最弱季度，建议对Q2至Q3环比增长保持保守。",
+        "evidence": "Q&A 9"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "question": "FQ2 2027 Non-GAAP毛利率是否达到指引中值84.9%？",
+        "metric_key": "gross_margin_nongaap",
+        "condition": "FQ2 2027 Non-GAAP毛利率",
+        "threshold": "≥84.9%"
+      },
+      {
+        "question": "FQ2 2027 Non-GAAP EPS是否达到指引中值56.00美元？",
+        "metric_key": "eps_nongaap",
+        "condition": "FQ2 2027 Non-GAAP EPS",
+        "threshold": "≥56.00美元"
+      },
+      {
+        "question": "FQ2 2027收入是否达到指引中值124亿美元？",
+        "metric_key": "revenue",
+        "condition": "FQ2 2027收入",
+        "threshold": "≥124亿美元"
+      },
+      {
+        "question": "FQ2 2027 GAAP毛利率是否达到指引中值84.9%？",
+        "metric_key": "gross_margin_gaap",
+        "condition": "FQ2 2027 GAAP毛利率",
+        "threshold": "≥84.9%"
+      },
+      {
+        "question": "FQ2 2027 GAAP运营费用是否处于指引区间6.77亿至7.45亿美元内？",
+        "metric_key": "opex_gaap",
+        "condition": "FQ2 2027 GAAP运营费用",
+        "threshold": "6.77亿至7.45亿美元"
+      }
+    ]
   },
-  "thesis_review": {}
+  "thesis_review": {
+    "stage": "watch",
+    "theses": [
+      {
+        "index": 0,
+        "status": "strengthened",
+        "evidence": "数据中心收入环比增长61%，管理层预计2027日历年数据中心位元需求同比增长约40%，NAND价格全年温和上涨。",
+        "quote": "Data center revenue was $4.8 billion, up 61% sequentially, outpacing estimated market growth for the quarter.",
+        "source": "press_release",
+        "falsified": false,
+        "quote_unverified": false
+      },
+      {
+        "index": 1,
+        "status": "strengthened",
+        "evidence": "数据中心收入同比增长17倍，管理层表示将继续向数据中心倾斜，产品组合中数据中心占比将明显提高。",
+        "quote": "I think 17x growth year-over-year. You don't see a 17x very often in a business at this scale.",
+        "source": "qa",
+        "falsified": false,
+        "quote_unverified": false
+      }
+    ],
+    "answers": [],
+    "triggers": [
+      {
+        "name": "加仓",
+        "state": "unknown",
+        "reason": "A中加仓条件未填写具体标准，且B未提供持仓成本或实时股价，无法判断是否触发。"
+      },
+      {
+        "name": "卖出",
+        "state": "not_triggered",
+        "reason": "本季毛利率环比上升0.4个百分点，管理层未表示NAND价格转跌，数据中心收入环比增长61%，证伪条件均未出现。"
+      }
+    ],
+    "new_concerns": [
+      {
+        "concern": "管理层提醒投资者对进入2027财年第三季度的环比增长保持保守，因为该季度通常是环比最弱的季度。",
+        "raised_by": "James Schneider, Goldman Sachs",
+        "why": "可能影响短期业绩预期和股价表现，需跟踪后续指引与实际数据。"
+      },
+      {
+        "concern": "SLC NAND需求若开始放量，可能以3:1或4:1的比例替代TLC/QLC位元，影响整体供应格局。",
+        "raised_by": "Vijay Rakesh, Mizuho",
+        "why": "可能改变NAND供需平衡和产品结构，影响公司位元增长与利润率。"
+      },
+      {
+        "concern": "HBF产品从送样到收入爬坡的关键里程碑尚不明确，管理层表示现在回答规模扩张变量为时过早。",
+        "raised_by": "Amit Daryanani, Evercore",
+        "why": "HBF是公司长期增长故事的一部分，商业化进度不确定可能影响估值。"
+      }
+    ],
+    "fingerprint": "7b55ebe79a39b643",
+    "reviewed_at": "2026-10-30T16:47:22+00:00",
+    "model": "deepseek/deepseek-v4-pro-0813"
+  }
 }
