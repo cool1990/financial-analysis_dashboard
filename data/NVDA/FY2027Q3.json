@@ -9,17 +9,29 @@
     "release_at_utc": "2026-11-17T21:20:51.000Z",
     "accession": "0001045810-26-000088",
     "press_release_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000088/",
-    "transcript_source": null,
+    "transcript_source": "stockanalysis",
     "eps_basis": "unknown",
     "sec_form": "8-K",
-    "reporting_currency": "USD"
+    "reporting_currency": "USD",
+    "transcript_url": "https://stockanalysis.com/stocks/nvda/transcripts/739383-q3-2027/",
+    "consensus_sources": {
+      "alpha_vantage": {
+        "function": "EARNINGS_ESTIMATES",
+        "symbol": "NVDA",
+        "called": true,
+        "status": "ok",
+        "reason": ""
+      }
+    }
   },
   "status": {
-    "stage": "stage1_done",
+    "stage": "stage2_done",
     "needs_review": true,
     "warnings": [
       "eps_basis=unknown，记分卡待核对",
-      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q3/transcript.txt 后重跑 Stage2"
+      "文字稿未取得（已试 Motley Fool / IR / manual）。可手动放入 raw/FY2027Q3/transcript.txt 后重跑 Stage2",
+      "电话会与新闻稿数值指引不一致：GAAP operating expenses（fourth quarter of fiscal 2027）新闻稿中值 11000000000.0 vs 电话会 10700000000.0",
+      "电话会与新闻稿数值指引不一致：Physical AI revenue（fiscal 2027）新闻稿中值 25000000000.0 vs 电话会 15.0"
     ]
   },
   "scorecard": [
@@ -322,17 +334,17 @@
     }
   },
   "drivers": {
-    "stage": 1,
+    "stage": 2,
     "metrics": [
       {
         "metric": "revenue",
-        "summary": "收入同比翻倍，主要受数据中心Rubin架构、Vera CPU及Blackwell Ultra持续增长驱动。",
+        "summary": "收入同比翻倍，主因数据中心需求强劲，Rubin平台快速放量，Blackwell Ultra持续增长。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "Data Center收入同比增长110%，由Rubin基础设施、Vera CPU和Blackwell Ultra出货增长驱动。",
+            "description": "数据中心收入同比增长110%，Rubin平台首个季度出货即贡献近200亿美元收入，Blackwell Ultra持续增长。",
             "evidence_quote": "Data Center revenue for the third quarter was a record $107.6 billion, up 110% from a year ago and up 21% sequentially. Our Hyperscale and AI Clouds, Industrial, & Enterprise platforms both grew substantially, driven by the introduction of our Rubin infrastructure, our fastest architecture ramp ever, standalone Vera CPUs and the continued growth of Blackwell Ultra.",
             "source": "press_release",
             "is_inference": false,
@@ -340,12 +352,12 @@
             "quote_unverified": false
           },
           {
-            "type": "产品结构",
+            "type": "价",
             "direction": "+",
             "is_primary": false,
-            "description": "Compute & Networking收入同比增长108%，占比提升，推动整体收入增长。",
-            "evidence_quote": "Compute & Networking $106.0 $88.3 $50.9 20% 108%",
-            "source": "press_release",
+            "description": "GPU租赁价格上涨，Hopper GPU重新签约价格最高达原价两倍，B300价格自推出以来上涨超60%。",
+            "evidence_quote": "Hopper GPUs have recontracted at up to twice their original price under the multi-year agreements, while the B300 rates have risen more than 60% since their introduction.",
+            "source": "prepared_remarks",
             "is_inference": false,
             "reasoning": "",
             "quote_unverified": false
@@ -355,13 +367,13 @@
       },
       {
         "metric": "gross_margin_gaap",
-        "summary": "毛利率同比提升1.4个百分点，主因Blackwell Ultra产品组合改善；环比小幅下降反映Rubin初期爬坡。",
+        "summary": "毛利率同比提升1.4个百分点，主因Blackwell Ultra产品组合改善；环比微降反映Rubin初期爬坡。",
         "drivers": [
           {
-            "type": "产品结构",
+            "type": "产品或客户结构",
             "direction": "+",
             "is_primary": true,
-            "description": "Blackwell Ultra带来的产品组合改善推动毛利率同比上升。",
+            "description": "Blackwell Ultra带来的产品组合改善推动毛利率同比提升。",
             "evidence_quote": "GAAP and non-GAAP gross margins for the third quarter increased from a year ago on improved mix from Blackwell Ultra.",
             "source": "press_release",
             "is_inference": false,
@@ -384,13 +396,13 @@
       },
       {
         "metric": "gross_margin_nongaap",
-        "summary": "非GAAP毛利率同比提升1.4个百分点，主因Blackwell Ultra产品组合改善；环比小幅下降反映Rubin初期爬坡。",
+        "summary": "非GAAP毛利率同比提升1.4个百分点，主因Blackwell Ultra产品组合改善；环比微降反映Rubin初期爬坡。",
         "drivers": [
           {
-            "type": "产品结构",
+            "type": "产品或客户结构",
             "direction": "+",
             "is_primary": true,
-            "description": "Blackwell Ultra带来的产品组合改善推动非GAAP毛利率同比上升。",
+            "description": "Blackwell Ultra带来的产品组合改善推动毛利率同比提升。",
             "evidence_quote": "GAAP and non-GAAP gross margins for the third quarter increased from a year ago on improved mix from Blackwell Ultra.",
             "source": "press_release",
             "is_inference": false,
@@ -401,7 +413,7 @@
             "type": "单位成本",
             "direction": "-",
             "is_primary": false,
-            "description": "Rubin初期爬坡导致非GAAP毛利率环比小幅下降。",
+            "description": "Rubin初期爬坡导致毛利率环比小幅下降。",
             "evidence_quote": "GAAP and non-GAAP gross margins decreased slightly sequentially, reflecting the initial Rubin ramp.",
             "source": "press_release",
             "is_inference": false,
@@ -413,14 +425,14 @@
       },
       {
         "metric": "operating_margin_gaap",
-        "summary": "经营利润率同比提升3.7个百分点，主因收入高增长带来的经营杠杆，但费用投入增加部分抵消。",
+        "summary": "营业利润率同比提升3.7个百分点，主因收入大幅增长带来的经营杠杆效应，部分被费用增长抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入同比增长103%，经营杠杆推动经营利润率提升。",
-            "evidence_quote": "Revenue for the third quarter was a record $115.8 billion, up 103% from a year ago and up 20% sequentially.",
+            "description": "收入同比增长103%，远超费用增速，带来显著经营杠杆。",
+            "evidence_quote": "Revenue $115,844 $57,006 $293,681 $147,811",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -430,7 +442,7 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": false,
-            "description": "运营费用同比增长57%，主要受计算基础设施和员工薪酬成本增加影响。",
+            "description": "运营费用同比增长57%，主要受计算基础设施和员工薪酬福利成本增加驱动。",
             "evidence_quote": "GAAP operating expenses for the third quarter were up 57% from a year ago and up 9% sequentially, and non-GAAP operating expenses were up 52% from a year ago and up 7% sequentially. These increases were driven by higher compute infrastructure and employee compensation and benefits costs.",
             "source": "press_release",
             "is_inference": false,
@@ -442,14 +454,14 @@
       },
       {
         "metric": "operating_margin_nongaap",
-        "summary": "非GAAP经营利润率同比提升3.9个百分点，主因收入高增长带来的经营杠杆，但费用投入增加部分抵消。",
+        "summary": "非GAAP营业利润率同比提升3.9个百分点，主因收入大幅增长带来的经营杠杆效应，部分被费用增长抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入同比增长103%，经营杠杆推动非GAAP经营利润率提升。",
-            "evidence_quote": "Revenue for the third quarter was a record $115.8 billion, up 103% from a year ago and up 20% sequentially.",
+            "description": "收入同比增长103%，远超费用增速，带来显著经营杠杆。",
+            "evidence_quote": "Revenue $115,844 $57,006 $293,681 $147,811",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -459,7 +471,7 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": false,
-            "description": "非GAAP运营费用同比增长52%，主要受计算基础设施和员工薪酬成本增加影响。",
+            "description": "非GAAP运营费用同比增长52%，主要受计算基础设施和员工薪酬福利成本增加驱动。",
             "evidence_quote": "GAAP operating expenses for the third quarter were up 57% from a year ago and up 9% sequentially, and non-GAAP operating expenses were up 52% from a year ago and up 7% sequentially. These increases were driven by higher compute infrastructure and employee compensation and benefits costs.",
             "source": "press_release",
             "is_inference": false,
@@ -471,13 +483,13 @@
       },
       {
         "metric": "eps_gaap",
-        "summary": "GAAP每股收益同比翻倍，主因净收入增长105%，部分被股本回购带来的摊薄减少所抵消。",
+        "summary": "GAAP每股收益同比翻倍，主因净收入增长105%，部分被股本回购带来的摊薄效应抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "净收入同比增长105%，推动每股收益增长。",
+            "description": "净收入同比增长105%，推动每股收益大幅增长。",
             "evidence_quote": "Net income $65,287 $31,910 $183,297 $77,107",
             "source": "press_release",
             "is_inference": false,
@@ -488,7 +500,7 @@
             "type": "一次性项目",
             "direction": "+",
             "is_primary": false,
-            "description": "GAAP其他收入净额包含权益证券收益，对净收入有正面影响。",
+            "description": "权益证券净收益1.8亿美元对净收入有正面贡献。",
             "evidence_quote": "Net gains from equity securities for the third quarter were $1.8 billion, comprised of net gains of $2.8 billion from our publicly held equity securities and a net loss of $1.0 billion from our non-marketable equity securities, including impairment of $1.8 billion.",
             "source": "press_release",
             "is_inference": false,
@@ -500,14 +512,14 @@
       },
       {
         "metric": "eps_nongaap",
-        "summary": "非GAAP每股收益同比增长111%，主因净收入增长109%，部分被股本回购带来的摊薄减少所抵消。",
+        "summary": "非GAAP每股收益同比增长111%，主因净收入增长109%，部分被股本回购带来的摊薄效应抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "非GAAP净收入同比增长109%，推动每股收益增长。",
-            "evidence_quote": "Non-GAAP net income* $64,870 $53,954 $30,979 $164,374 $74,836",
+            "description": "非GAAP净收入同比增长109%，推动每股收益大幅增长。",
+            "evidence_quote": "Non-GAAP* $2.68 $2.22 $1.27 $6.77 $3.05",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -518,13 +530,13 @@
       },
       {
         "metric": "operating_cash_flow",
-        "summary": "经营现金流同比翻倍，主因收入增长带来的净收入增加，但应收账款和库存增加部分抵消。",
+        "summary": "经营现金流同比翻倍，主因收入增长和净收入提升，部分被营运资金变动抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
-            "description": "收入同比增长103%，推动经营现金流增长。",
+            "description": "收入同比增长103%，净收入增长105%，推动经营现金流增长。",
             "evidence_quote": "Cash flow from operating activities was $48.3 billion, up from $23.8 billion a year ago and up from $24.1 billion a quarter ago. The year-on-year increases reflect growth in revenue, while the sequential increase was also impacted by the timing of federal cash tax payments.",
             "source": "press_release",
             "is_inference": false,
@@ -535,8 +547,8 @@
             "type": "其他",
             "direction": "-",
             "is_primary": false,
-            "description": "应收账款和库存增加对经营现金流产生负面影响。",
-            "evidence_quote": "Accounts receivable (18,052) (5,583) (42,642) (10,325)\nInventories (8,148) (4,823) (18,352) (9,703)",
+            "description": "应收账款和库存增加对现金流产生负面影响。",
+            "evidence_quote": "Accounts receivable (18,052) (5,583) (42,642) (10,325)",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -553,7 +565,7 @@
             "type": "费用投入",
             "direction": "+",
             "is_primary": true,
-            "description": "资本开支同比增长170%，反映对数据中心基础设施和产能扩张的投资增加。",
+            "description": "资本开支同比增长170%，主要用于数据中心基础设施和产能扩张。",
             "evidence_quote": "Purchases related to property and equipment and intangible assets (4,422) (1,637) (8,856) (4,758)",
             "source": "press_release",
             "is_inference": false,
@@ -571,7 +583,7 @@
             "type": "费用投入",
             "direction": "-",
             "is_primary": true,
-            "description": "资本开支同比增长170%，抵消了经营现金流的增长。",
+            "description": "资本开支同比增长170%，拖累自由现金流。",
             "evidence_quote": "Purchases related to property and equipment and intangible assets (4,422) (1,637) (8,856) (4,758)",
             "source": "press_release",
             "is_inference": false,
@@ -594,14 +606,25 @@
       },
       {
         "metric": "net_income_gaap",
-        "summary": "净收入同比翻倍，主因收入增长和经营杠杆，但费用投入增加部分抵消。",
+        "summary": "净收入同比翻倍，主因收入增长和毛利率提升，部分被运营费用增长抵消。",
         "drivers": [
           {
             "type": "量",
             "direction": "+",
             "is_primary": true,
             "description": "收入同比增长103%，推动净收入增长。",
-            "evidence_quote": "Revenue for the third quarter was a record $115.8 billion, up 103% from a year ago and up 20% sequentially.",
+            "evidence_quote": "Revenue $115,844 $57,006 $293,681 $147,811",
+            "source": "press_release",
+            "is_inference": false,
+            "reasoning": "",
+            "quote_unverified": false
+          },
+          {
+            "type": "产品或客户结构",
+            "direction": "+",
+            "is_primary": false,
+            "description": "毛利率同比提升1.4个百分点，改善盈利能力。",
+            "evidence_quote": "GAAP and non-GAAP gross margins for the third quarter increased from a year ago on improved mix from Blackwell Ultra.",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -612,43 +635,7 @@
             "direction": "-",
             "is_primary": false,
             "description": "运营费用同比增长57%，部分抵消收入增长。",
-            "evidence_quote": "GAAP operating expenses for the third quarter were up 57% from a year ago and up 9% sequentially, and non-GAAP operating expenses were up 52% from a year ago and up 7% sequentially.",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          }
-        ],
-        "conflicts": []
-      },
-      {
-        "metric": "data_center_revenue",
-        "summary": "数据中心收入同比翻倍，主因Rubin架构、Vera CPU和Blackwell Ultra出货增长。",
-        "drivers": [
-          {
-            "type": "量",
-            "direction": "+",
-            "is_primary": true,
-            "description": "Rubin基础设施、Vera CPU和Blackwell Ultra出货增长推动数据中心收入增长。",
-            "evidence_quote": "Data Center revenue for the third quarter was a record $107.6 billion, up 110% from a year ago and up 21% sequentially. Our Hyperscale and AI Clouds, Industrial, & Enterprise platforms both grew substantially, driven by the introduction of our Rubin infrastructure, our fastest architecture ramp ever, standalone Vera CPUs and the continued growth of Blackwell Ultra.",
-            "source": "press_release",
-            "is_inference": false,
-            "reasoning": "",
-            "quote_unverified": false
-          }
-        ],
-        "conflicts": []
-      },
-      {
-        "metric": "edge_computing_revenue",
-        "summary": "边缘计算收入同比增长42%，主因Blackwell工作站销售和物理AI边缘计算需求强劲。",
-        "drivers": [
-          {
-            "type": "量",
-            "direction": "+",
-            "is_primary": true,
-            "description": "Blackwell工作站销售和物理AI边缘计算需求推动边缘计算收入增长。",
-            "evidence_quote": "Edge Computing revenue for the third quarter was $8.2 billion, up 42% from a year ago and up 14% sequentially. Strong Blackwell workstation sales and edge compute for Physical AI applications drove the increases, while higher memory and system prices continue to affect consumer PC demand.",
+            "evidence_quote": "GAAP operating expenses for the third quarter were up 57% from a year ago and up 9% sequentially",
             "source": "press_release",
             "is_inference": false,
             "reasoning": "",
@@ -680,7 +667,8 @@
         "mid": 130000000000.0,
         "high": 133000000000.0,
         "call_variant": null,
-        "change_vs_prior": null
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "gross_margin_gaap",
@@ -700,27 +688,8 @@
         "mid": 71.5,
         "high": 72.0,
         "call_variant": null,
-        "change_vs_prior": null
-      },
-      {
-        "metric_key": "gross_margin_nongaap",
-        "metric_label": "non-GAAP gross margin",
-        "period": "fourth quarter of fiscal 2027",
-        "type": "numeric",
-        "low_raw": "71.0%",
-        "high_raw": "72.0%",
-        "point_raw": null,
-        "plus_minus_raw": null,
-        "basis": "non-GAAP",
-        "direction": null,
-        "statement": "管理层预计第四财季非GAAP毛利率在71.0%至72.0%之间。",
-        "source": "press_release",
-        "source_quote": "GAAP and non-GAAP gross margins are expected to be between 71.0% and 72.0%.",
-        "low": 71.0,
-        "mid": 71.5,
-        "high": 72.0,
-        "call_variant": null,
-        "change_vs_prior": null
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "opex_gaap",
@@ -739,28 +708,28 @@
         "low": 11000000000.0,
         "mid": 11000000000.0,
         "high": 11000000000.0,
-        "call_variant": null,
-        "change_vs_prior": null
-      },
-      {
-        "metric_key": "opex_nongaap",
-        "metric_label": "non-GAAP operating expenses",
-        "period": "fourth quarter of fiscal 2027",
-        "type": "numeric",
-        "low_raw": null,
-        "high_raw": null,
-        "point_raw": "$10.7 billion",
-        "plus_minus_raw": null,
-        "basis": "non-GAAP",
-        "direction": null,
-        "statement": "管理层预计第四财季非GAAP运营费用约为107亿美元。",
-        "source": "press_release",
-        "source_quote": "GAAP and non-GAAP operating expenses are expected to be approximately $11.0 billion and $10.7 billion, respectively.",
-        "low": 10700000000.0,
-        "mid": 10700000000.0,
-        "high": 10700000000.0,
-        "call_variant": null,
-        "change_vs_prior": null
+        "call_variant": {
+          "metric_key": "opex_nongaap",
+          "metric_label": "Non-GAAP operating expenses",
+          "period": "fiscal Q4 2027",
+          "type": "numeric",
+          "low_raw": null,
+          "high_raw": null,
+          "point_raw": "approximately $10.7 billion",
+          "plus_minus_raw": null,
+          "basis": "non-GAAP",
+          "direction": null,
+          "statement": "预计第四财季非GAAP运营费用约为107亿美元。",
+          "source": "prepared_remarks",
+          "source_quote": "GAAP and non-GAAP operating expenses are expected to be approximately $11 billion and $10.7 billion respectively",
+          "low": 10700000000.0,
+          "mid": 10700000000.0,
+          "high": 10700000000.0,
+          "call_variant": null,
+          "change_vs_prior": null
+        },
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "tax_rate",
@@ -780,7 +749,8 @@
         "mid": 17.0,
         "high": 18.0,
         "call_variant": null,
-        "change_vs_prior": null
+        "change_vs_prior": null,
+        "confirmed_by": "prepared_remarks"
       },
       {
         "metric_key": "other",
@@ -841,6 +811,425 @@
         "high": null,
         "call_variant": null,
         "change_vs_prior": null
+      },
+      {
+        "metric_key": "revenue",
+        "metric_label": "Revenue growth",
+        "period": "fiscal 2028",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "approximately 75%",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "预计2028财年收入同比增长约75%。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect revenue to grow approximately 75% year-over-year, up from 70%, and off what is now a higher fiscal 2027 base.",
+        "low": 75.0,
+        "mid": 75.0,
+        "high": 75.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "gross_margin_gaap",
+        "metric_label": "GAAP gross margin",
+        "period": "fiscal 2028",
+        "type": "numeric",
+        "low_raw": "72%",
+        "high_raw": "73%",
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "GAAP",
+        "direction": null,
+        "statement": "预计2028财年GAAP毛利率改善至72%-73%区间。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect Q4 to mark the bottom of gross margins before improving to the 72%-73% range in fiscal year 2028.",
+        "low": 72.0,
+        "mid": 72.5,
+        "high": 73.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "revenue",
+        "metric_label": "CPU revenue",
+        "period": "fiscal 2028",
+        "type": "directional",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": "up",
+        "statement": "预计2028财年CPU收入将增长一倍以上。",
+        "source": "prepared_remarks",
+        "source_quote": "We continue to see very strong demand for Vera and expect total CPU revenue to more than double in fiscal year 2028.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "revenue",
+        "metric_label": "Physical AI revenue",
+        "period": "fiscal 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "exceed $25 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "预计2027财年Physical AI收入将超过250亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Physical AI revenue nearly tripled year-over-year in Q3 and is now on track to exceed $25 billion for the full year.",
+        "low": 25000000000.0,
+        "mid": 25000000000.0,
+        "high": 25000000000.0,
+        "call_variant": {
+          "metric_key": "revenue",
+          "metric_label": "Frontier labs data center revenue contribution",
+          "period": "fiscal 2027",
+          "type": "numeric",
+          "low_raw": null,
+          "high_raw": null,
+          "point_raw": "approximately 15%",
+          "plus_minus_raw": null,
+          "basis": "unspecified",
+          "direction": null,
+          "statement": "预计主要前沿实验室今年将贡献约15%的数据中心收入。",
+          "source": "prepared_remarks",
+          "source_quote": "We expect the major frontier labs to contribute approximately 15% of our data center revenue this year.",
+          "low": 15.0,
+          "mid": 15.0,
+          "high": 15.0,
+          "call_variant": null,
+          "change_vs_prior": null
+        },
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Cloud industry backlog",
+        "period": "fiscal Q3 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$2.5 trillion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "云行业积压订单目前为2.5万亿美元，较三个月前的2万亿美元有所上升。",
+        "source": "prepared_remarks",
+        "source_quote": "Cloud industry backlog now sits at $2.5 trillion, up from $2 trillion just three months ago",
+        "low": 2.5,
+        "mid": 2.5,
+        "high": 2.5,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Purchase commitments",
+        "period": "fiscal Q3 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$390 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "第三财季采购承诺增至3900亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "In Q3, our purchase commitments increased to $390 billion",
+        "low": 390000000000.0,
+        "mid": 390000000000.0,
+        "high": 390000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Data center lease and cloud service commitments",
+        "period": "fiscal Q3 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "a little over $100 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "数据中心租赁和云服务承诺合计略高于1000亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Together, our data center lease and cloud service commitments increased to a little over $100 billion",
+        "low": 100000000000.0,
+        "mid": 100000000000.0,
+        "high": 100000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Neocloud agreement commitments",
+        "period": "fiscal Q3 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$32 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "与neocloud协议相关的承诺在第三财季末为320亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Commitments associated with our neocloud agreements totaled $32 billion at the end of Q3.",
+        "low": 32000000000.0,
+        "mid": 32000000000.0,
+        "high": 32000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Total guarantees",
+        "period": "fiscal Q3 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$118 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "第三财季末总担保为1180亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "Total guarantees were $118 billion at the end of Q3",
+        "low": 118000000000.0,
+        "mid": 118000000000.0,
+        "high": 118000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Credit support for PORTS-Pike campus",
+        "period": "fiscal Q3 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "$105 billion",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "为PORTS-Pike园区土地、电力和外壳容量提供的信用支持为1050亿美元。",
+        "source": "prepared_remarks",
+        "source_quote": "including the $105 billion in credit support for land, power, and shell capacity for the PORTS-Pike campus",
+        "low": 105000000000.0,
+        "mid": 105000000000.0,
+        "high": 105000000000.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "SB Energy capacity",
+        "period": "calendar 2028",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "SB Energy计划按进度推进，容量预计从2028日历年开始分阶段上线。",
+        "source": "prepared_remarks",
+        "source_quote": "SB Energy plans are on track, with capacity expected to come online in phases beginning in calendar 2028.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "DSX POD shipment",
+        "period": "early next year",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "计划明年初向美国和欧洲中部的客户交付首批DSX POD。",
+        "source": "prepared_remarks",
+        "source_quote": "We plan to ship our first pods to customers in the U.S. and Central Europe early next year.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Vera Rubin Ultra launch",
+        "period": "next year",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "按计划明年推出Vera Rubin Ultra，2028年推出Feynman。",
+        "source": "prepared_remarks",
+        "source_quote": "We remain on track to launch Vera Rubin Ultra next year and Feynman in 2028.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Australia collaboration capacity",
+        "period": "calendar 2027",
+        "type": "numeric",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": "2 GW",
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "与澳大利亚多家NVIDIA云合作伙伴合作，到2027日历年底开发最多2吉瓦的土地、电力和外壳容量。",
+        "source": "prepared_remarks",
+        "source_quote": "we announced a collaboration with multiple NVIDIA cloud partners in Australia to develop up a 2 GW of land, power, and shell capacity by the end of calendar 2027",
+        "low": 2.0,
+        "mid": 2.0,
+        "high": 2.0,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Share repurchase program",
+        "period": "fiscal 2028",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "计划在2028财年末前执行完回购授权。",
+        "source": "prepared_remarks",
+        "source_quote": "We continue to plan to execute our buyback authorization by the end of fiscal 2028.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Shareholder returns",
+        "period": "fiscal Q4 2027 and going forward",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "打算将扣除战略用途后的所有超额自由现金流返还给股东。",
+        "source": "prepared_remarks",
+        "source_quote": "Going forward, we intend to return all excess free cash flow, net of strategic uses, to shareholders during this last quarter and going forward.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Demand vs supply",
+        "period": "fiscal 2028",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "需求继续超过供应，管理层对实现75%增长有信心。",
+        "source": "qa",
+        "source_quote": "We feel confident in terms of both the demand that we have in front of us, as well as the supply and additional supply that we can do the 75%.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Gross margin trajectory",
+        "period": "fiscal Q4 2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "第四财季毛利率预计为底部，之后在2028财年改善。",
+        "source": "prepared_remarks",
+        "source_quote": "We expect Q4 to mark the bottom of gross margins before improving to the 72%-73% range in fiscal year 2028.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "Export controls impact",
+        "period": "fiscal Q4 2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "尽管本周发布了新的出口管制，但需求远超供应，预计业绩保持强劲。",
+        "source": "prepared_remarks",
+        "source_quote": "New export controls were released by the U.S. Commerce Department this week. However, with demand far exceeding supply, we expect our performance to remain strong.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
+      },
+      {
+        "metric_key": "other",
+        "metric_label": "China licensed Hopper data center products",
+        "period": "fiscal Q4 2027",
+        "type": "qualitative",
+        "low_raw": null,
+        "high_raw": null,
+        "point_raw": null,
+        "plus_minus_raw": null,
+        "basis": "unspecified",
+        "direction": null,
+        "statement": "指引中不再包含向中国销售许可Hopper数据中心产品，且已停止向中国发货。",
+        "source": "prepared_remarks",
+        "source_quote": "Our guidance does not have any licensed Hopper data center products included, and we are no longer shipping licensed Hopper data center products to China.",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "call_variant": null,
+        "change_vs_prior": null
       }
     ],
     "prior_guidance_review": [],
@@ -852,7 +1241,129 @@
       "t_plus_7": {},
       "gap_closure": null
     },
-    "industry_outlook": [],
+    "industry_outlook": [
+      {
+        "title": "需求变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Colette 认为需求仍在加速，而且明显超过供给。她提到，即使在过去一周，大客户还在不断追问怎么能拿到更多供给，以满足眼前的 agentic 解决方案和新模型需求。她判断这种需求不会只停留在 2027 年，还会延续到 2028 年，因为积压的需求会继续往后滚动。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "需求来源很分散，包括超大规模云厂商、前沿实验室、AI 原生公司、企业和政府。前沿实验室今年预计贡献约 15% 的数据中心收入。Anthropic 的年化收入到 10 月底已经达到 810 亿美元，说明前沿模型商业化在快速放量。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "开放模型和 agentic 工作负载在明显拉动需求。OpenRouter 的每周 token 量同比增长 35 倍，仅过去三个月又增长 3.5 倍，其中约 80% 是 agentic 工作负载。Meta 的 Muse agent 在 NVIDIA 基础设施上推出后，六周内在美国和加拿大就超过 1000 万次设置。Colette 说 agentic AI 对 CPU 的需求也远超供给，Vera CPU 已经被 CoreWeave、Meta、Nscale 和 OpenAI 采用，预计 2028 财年 CPU 收入会翻倍以上。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "需求还体现在价格和利用率上。token 价格自 5 月以来下降近 60%，反而加速了 token 使用和对算力的需求。Hopper GPU 在多年协议下重新签约的价格最高达到原价两倍，B300 的价格自推出以来上涨超过 60%。NVIDIA 计算资源在所有服务的超大规模云厂商和 neocloud 中都保持满负荷利用。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "供给变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Colette 明确说需求继续超过供给，公司正在和供应商一起加速扩产，重点是晶圆、基板和先进封装。本季度新增了与 Kinsus、三星电机在基板方面的协议，以及与 SPIL 在先进封装方面的协议，此前还宣布了与 Amkor、KYEC 和 Unimicron 的合作。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "供给扩张的信心也反映在采购承诺上。Q3 采购承诺增加到 3900 亿美元，Colette 说这代表公司对 NVIDIA 基础设施长期需求可持续性的信心。数据中心租赁和云服务承诺合计略超 1000 亿美元，主要来自长期租赁。与 neocloud 协议相关的承诺到 Q3 末为 320 亿美元。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在产能落地方面，SB Energy 的计划按轨道推进，容量预计从 2028 年开始分阶段上线。PORTS-Pike 园区将独家承载 NVIDIA 基础设施，并通过 20 年租约提供给 OpenAI。Colette 强调，公司会继续和基础设施资本伙伴合作搭建融资平台，但在未来投资、承诺和担保上会更加严格评估。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "供给约束也影响分配。Colette 说分配时会优先看客户的 land、power and shell 是否已经准备好，以及资本是否到位。所有客户拿到的价格相同，不会因为类型不同而区别定价。公司会继续在供给增加后加快分配。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "竞争变化",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Colette 没有把竞争描述成份额压力，而是强调 NVIDIA 的差异化来自全栈协同设计。她说公司在计算、网络、系统、算法和软件上的协同设计能力无人能及，能够按年度节奏带来每瓦性能和每美元性能的跨越式提升。在 MLPerf Endpoints 基准上，Vera Rubin 相比 GB300 每瓦 token 数提升 10 倍。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "网络和光学技术也被她用来证明竞争壁垒。Q3 网络收入超过 210 亿美元，共封装光学路线按计划推进，CPO 规模出货已进入量产。Lambda 在 Supercomputing 26 上宣布首个 NVIDIA Photonics CPO 交换机生产部署，连接超过 1 万个 GB300 GPU。与可插拔光模块相比，NVIDIA Photonics 交换机功耗效率提升 5 倍，可靠性提升 15 倍，延迟降低 10%。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在客户自研 ASIC 的问题上，Colette 回应毛利率和定价时表示，NVIDIA 的系统和路线图是世界级的，系统里所承载的能力非常重要，定价经过深思熟虑。她没有承认需要靠大幅压缩毛利率来防守竞争，而是说 2028 财年的毛利率预期与上季度沟通一致，目前没有变化。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "商业模式",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "NVIDIA 的收入模式仍然以出售基础设施为主，同时通过 neocloud 协议参与租赁收入的上行。Colette 解释，在 neocloud 协议下，公司先从基础设施的前期销售中获得收入，并在超过最低承诺的租赁收入中参与分成。Q3 末与 neocloud 协议相关的承诺为 320 亿美元。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "公司还在扩大开放模型生态，把它作为带动算力需求的手段。9 月宣布收购 Hugging Face，该平台服务超过 1800 万开发者和 20 万家公司。Colette 说 Nemotron 已经成为 OpenRouter 上使用最广泛的美国开放模型，也是开发者构建自有智能的起点。微软、Salesforce、Palantir、CrowdStrike、Cadence 和 Synopsys 等企业软件和安全公司都发布了基于后训练开放模型的领域专用产品。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "在安全与 agent 控制方面，NVIDIA 推出了 Open Agent Safety Platform，并与 100 多家伙伴一起发布。OpenShell 通过限制 agent 对文件和工具的访问来约束行为，NVIDIA Sentry 运行在 BlueField-4 上，在芯片层面监控行为，能在毫秒级阻止 agent 越界。Anthropic、AWS、CoreWeave、CrowdStrike、Dell、Google Cloud、HPE、IREN、JPMorgan Chase、Lenovo、Microsoft、Nebius、OpenAI 和 SpaceX AI 等公司都在合作名单中。",
+            "items": []
+          },
+          {
+            "type": "p",
+            "text": "DSX POD 是新的模块化 AI 工厂参考架构，把整集群部署时间从几个月缩短到几周。Colette 用数字说明商业价值：一个 1 吉瓦 AI 工厂年收入接近 500 亿美元，如果能提前一个季度达到 first token，运营商就能多产生超过 100 亿美元收入。公司计划明年初向美国和欧洲中部的客户交付首批 POD。",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "公司战略",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Colette 把公司战略概括为：保持多年领先路线图、锁定到 2030 年的供应协议、以及可持续的需求。她说公司的雄心、创新热情和对客户、伙伴、股东的承诺都不会改变。",
+            "items": []
+          },
+          {
+            "type": "ol",
+            "text": "",
+            "items": [
+              "继续扩产并锁定关键供应：新增基板和先进封装供应商，采购承诺提高到 3900 亿美元，目的是让供给跟上仍然超过供给的需求。",
+              "支持开放模型生态：收购 Hugging Face，推动 Nemotron 成为开放模型入口，让每个国家、公司和行业都能构建自己的智能，从而扩大算力需求飞轮。",
+              "推进 agent 安全平台：通过 OpenShell 和 NVIDIA Sentry 提供 agent 行为控制，目标是让 agent 运行更久、更自主时仍然安全可控。",
+              "用 DSX POD 缩短部署周期：把 AI 工厂从机架级组装延伸到整集群模块化交付，帮助客户更快产生收入，也加快 NVIDIA 基础设施的落地速度。",
+              "在资本配置上优先供应商和关键客户：优先支持供应商扩产，对 land、power and shell 等关键资产提供有选择的融资或担保，同时继续执行 1500 亿美元回购计划，目标在 2028 财年末前完成。"
+            ]
+          },
+          {
+            "type": "p",
+            "text": "在领导层过渡上，Harvey 说董事会已经聘请 Heidrick & Struggles 负责寻找永久 CEO，会同时考虑内部和外部候选人。董事会认为新 CEO 需要应对先进芯片技术和国家安全动态带来的市场变化，因此会彻底搜索，但不会为了赶时间而选错人。",
+            "items": []
+          }
+        ]
+      }
+    ],
     "management_eps": {
       "basis": "non-GAAP",
       "next_quarter": {
@@ -878,18 +1389,305 @@
     }
   },
   "qa": {
-    "items": [],
-    "topic_stats": {},
-    "new_topics": [],
+    "items": [
+      {
+        "exchange_id": "1",
+        "analyst": "Joseph Moore",
+        "firm": "Morgan Stanley",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师询问管理层为何有信心将下一财年增长预期从70%上调至75%，以及此前提到的100%需求增长是否仍然成立。",
+        "answer_summary": "Colette（临时CEO兼CFO）：管理层确认将下一财年增长预期从70%上调至75%，原因是需求持续增长，同时公司能够向不同客户提供更多供应。管理层还评估了当前出口管制，仍在研究细节，但对现有需求和新增供应有信心实现75%的增长。",
+        "new_numbers": [
+          {
+            "value": "75%",
+            "meaning": "下一财年增长预期从70%上调至75%"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "未直接回答100%需求增长是否仍然成立，仅表示对75%增长有信心。",
+        "tone": "positive",
+        "answer_quote": "We had originally indicated that we would be at about 70% growth year over year, and now we are increasing that to 75% growth. We took a lot of time working into both our demand that continues to be growing, as well as our additional supply that we are able to provide to our different customers.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "2",
+        "analyst": "Vivek Arya",
+        "firm": "Bank of America Securities",
+        "topic": "其他",
+        "is_new_topic": true,
+        "question_summary": "在领导层过渡期间，NVIDIA 的结构性护城河、人才保留、竞争定位和财务战略有哪些会保持，哪些可能改变？",
+        "answer_summary": "Colette（临时 CEO 兼 CFO）：目前最重要的是员工。员工是公司一切工作的核心，我们相信他们致力于在 NVIDIA 做自己一生的事业。过渡期间我们会照顾好员工，确保他们安全并继续完成工作。领导团队在过去一周也非常坚定地支持财报工作和全球员工。我们拥有全球最优秀的技术人才和多年期路线图。业务上一切照常，客户、供应商和合作伙伴都全力支持我们，客户对业务前景表示支持，我们也在与供应商密切合作缩小供需差距。台积电领导层本周也到我们办公室，全力协助。我们已经锁定了内存和先进封装。\nHarvey（董事会主席）：董事会非常重视 CEO 遴选，会同时考虑内部和外部候选人。当前先进芯片技术和国家安全形势正在给市场带来重大变化，新 CEO 必须非常谨慎地应对这些局面。遴选会非常彻底，我们希望尽快任命正式 CEO，但在找到完全合适的人选之前不会仓促决定。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "We have the best technologists on the planet with a world-class multi-year roadmap. From a business perspective, it's business as usual. We've engaged with our customers, we've engaged with our suppliers, our partners. They're all 100% up behind us.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Timothy Arcuri",
+        "firm": "UBS",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道英伟达能否长期维持定价能力和毛利率，以及是否愿意接受一定程度的利润率压缩来保护竞争地位。",
+        "answer_summary": "Colette（临时CEO兼CFO）：我们在上次财报中已经给出过2027财年最后两个季度和2028财年的毛利率展望。当时供应链成本发生了显著变化，所以我们重新调整了成本和定价的考虑。第四季度给出的72%-73%是毛利率的底部，因为我们兑现了此前已收到的客户订单，并确保在进入新一年、执行新定价之前保持稳定。\n关于2028财年的变化，与上季度沟通的内容一致，目前没有变化，我们对这些数字有信心。长期来看，我们的全栈路线图和系统是世界级的，系统所承载的能力非常重要，定价是经过深思熟虑的，但未来定价会继续根据情况调整。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答是否愿意接受利润率压缩来保护竞争地位，也没有给出长期定价能力的具体判断。",
+        "tone": "neutral",
+        "answer_quote": "What we provided here in Q4 is our bottom. If you recall, that was our bottom as we honored many of the different POs that we had already received from our customers, and we just wanted to make sure that that was held solid as we moved to a new pricing as we moved into the new year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "4",
+        "analyst": "CJ Muse",
+        "firm": "Cantor Fitzgerald",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "分析师询问 NVIDIA 未来对供应商融资的兴趣是否有变化，以及这对 ACIE 业务（尤其是 NCP 客户）增长的影响。",
+        "answer_summary": "Colette（临时 CEO 兼 CFO）：ACIE 客户群很广，其中 neoclouds 是重要部分，它们支持企业和各国主权 AI 建设。企业建设 AI 工厂时，neoclouds 提供私有云能力。未来融资方面，公司会重点考虑土地、电力和建筑外壳的融资，因为这些是数据中心建设的关键瓶颈，且是优质资产。公司也会利用已有的融资基金和投资级客户来帮助 neoclouds 或企业客户，包括预付款等方式。过去一个季度情况变化很大，公司会仔细评估哪些客户值得提供融资支持，同时继续与现有优质客户合作。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "The most important part of the financing that we would probably review, but have to review in detail to make sure it is the right thing, is focusing on land, power, and shell. The availability of land, power, and shell is such a critical part of the whole structure in terms of building out those data centers, so they may need the assistance.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "5",
+        "analyst": "Stacy Rasgon",
+        "firm": "Bernstein Research",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "分析师问，CFO 评论中关于 neoclouds 承诺需先自行融资才能生效的表述，是新的业务做法，还是一直如此、只是现在才披露。",
+        "answer_summary": "Colette（临时 CEO 兼 CFO）：这不是新做法，也没有改变任何东西。我们的担保是在对方完成土地、电力、厂房建设，并通过股权或债务融到资金、准备好采购和安装算力之后才开始生效。如果他们在建设过程中出现延误或遇到困难，我们的担保就不再存在。我们只是把这一点写得更清楚，因为之前收到过关于担保如何运作的问题。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "Is it new? No. Did we change anything? No. What this is only saying is that we wanted to make sure that the clarity, there was other communication in another part that would have already communicated this, but we just wanted to make sure it was very clear as we had been receiving some of the questions on how that exactly worked.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "6",
+        "analyst": "Ben Reitzes",
+        "firm": "Melius Research",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师询问管理层是否担心2028年因政府更迭和政策变化导致业务大幅放缓，以及是否与政府沟通后对2027年之后的增长更有信心。",
+        "answer_summary": "Colette（临时CEO兼CFO）：目前需求非常旺盛，大型公司持续开发大量智能体解决方案和新模型，我们的重点就是协助他们。就在上周，客户还在不断询问如何获得更多供应来满足眼前的需求。虽然大家很关注美国数据中心与周边社区的关系，但已经有很多数据中心在运营或准备就绪。我们始终与政府保持沟通，确保对未来方向的认识一致。智能体相关的需求不仅会持续到2027年，也会延续到2028年，因为眼前的需求量会继续累积。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "positive",
+        "answer_quote": "I think the demand and what we have in terms of agentic will continue not only in the 2027 perspective, but moving to the 2028 as well, as we'll continue to carry over the amount of demand that's in front of us.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Joshua Buchalter",
+        "firm": "TD Cowen",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道 NVIDIA 在需求远超供给的情况下，会如何在不同终端需求（超大规模云厂商、AI 实验室、新云厂商）之间分配产能，以及 AI 实验室收入占比未来可能达到多大规模。",
+        "answer_summary": "Colette（临时 CEO 兼 CFO）：公司在分配产能时，最看重客户是否已经具备立即高效使用算力的条件，包括土地、电力和机房是否已经建成并准备就绪。其次会看客户的资金是否已经到位，以及是否有可靠的承购承诺。只要客户有采购订单、资金有保障，公司就会尽快分配产能。随着供应增加，分配规模也会继续扩大。目前所有客户拿到的价格都是一样的，公司不会用不同定价来分配产能。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有回答 AI 实验室收入占比未来可能达到多大规模，只说明了分配产能的考虑因素。",
+        "tone": "neutral",
+        "answer_quote": "All are getting the same pricing. That is super important for us, and we just need to assure that they are ready on their side in terms of being able to accept the compute.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "8",
+        "analyst": "Jim Schneider",
+        "firm": "Goldman Sachs",
+        "topic": "资本配置与股东回报",
+        "is_new_topic": false,
+        "question_summary": "资本配置的优先级是否变化，客户融资的障碍率或门槛是否调整，以及回购与客户/供应商融资的时间顺序如何安排。",
+        "answer_summary": "Colette（临时CEO兼CFO）：资本配置的首要任务是支持供应商，通过预付款等方式帮助他们尽快扩大产能。其次是完成已承诺的投资，以及为部分实力较强的客户提供融资或担保支持，但会深入评估这些投资是否合适。综合来看，公司仍有能力在2028财年结束前完成全部股票回购计划。",
+        "new_numbers": [],
+        "directness": "direct",
+        "evasion_note": "",
+        "tone": "neutral",
+        "answer_quote": "The top priority is going to be our suppliers. Our suppliers are working feverishly to build more demand for us, and some of that demand needs assistance. Excuse me, some of that supply needs assistance in terms of capital from any forms of different types of prepaids to help them in terms of capacity.",
+        "review_flags": []
+      }
+    ],
+    "topic_stats": {
+      "指引与展望": 2,
+      "其他": 1,
+      "毛利率与成本": 1,
+      "客户与订单": 3,
+      "资本配置与股东回报": 1
+    },
+    "new_topics": [
+      "其他",
+      "客户与订单",
+      "指引与展望",
+      "毛利率与成本",
+      "资本配置与股东回报"
+    ],
     "dropped_topics": [],
-    "hot_topics": [],
-    "evasive_list": []
+    "hot_topics": [
+      "客户与订单",
+      "指引与展望",
+      "其他"
+    ],
+    "evasive_list": [
+      {
+        "exchange_id": "1",
+        "analyst": "Joseph Moore",
+        "firm": "Morgan Stanley",
+        "topic": "指引与展望",
+        "is_new_topic": false,
+        "question_summary": "分析师询问管理层为何有信心将下一财年增长预期从70%上调至75%，以及此前提到的100%需求增长是否仍然成立。",
+        "answer_summary": "Colette（临时CEO兼CFO）：管理层确认将下一财年增长预期从70%上调至75%，原因是需求持续增长，同时公司能够向不同客户提供更多供应。管理层还评估了当前出口管制，仍在研究细节，但对现有需求和新增供应有信心实现75%的增长。",
+        "new_numbers": [
+          {
+            "value": "75%",
+            "meaning": "下一财年增长预期从70%上调至75%"
+          }
+        ],
+        "directness": "partial",
+        "evasion_note": "未直接回答100%需求增长是否仍然成立，仅表示对75%增长有信心。",
+        "tone": "positive",
+        "answer_quote": "We had originally indicated that we would be at about 70% growth year over year, and now we are increasing that to 75% growth. We took a lot of time working into both our demand that continues to be growing, as well as our additional supply that we are able to provide to our different customers.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "3",
+        "analyst": "Timothy Arcuri",
+        "firm": "UBS",
+        "topic": "毛利率与成本",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道英伟达能否长期维持定价能力和毛利率，以及是否愿意接受一定程度的利润率压缩来保护竞争地位。",
+        "answer_summary": "Colette（临时CEO兼CFO）：我们在上次财报中已经给出过2027财年最后两个季度和2028财年的毛利率展望。当时供应链成本发生了显著变化，所以我们重新调整了成本和定价的考虑。第四季度给出的72%-73%是毛利率的底部，因为我们兑现了此前已收到的客户订单，并确保在进入新一年、执行新定价之前保持稳定。\n关于2028财年的变化，与上季度沟通的内容一致，目前没有变化，我们对这些数字有信心。长期来看，我们的全栈路线图和系统是世界级的，系统所承载的能力非常重要，定价是经过深思熟虑的，但未来定价会继续根据情况调整。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有直接回答是否愿意接受利润率压缩来保护竞争地位，也没有给出长期定价能力的具体判断。",
+        "tone": "neutral",
+        "answer_quote": "What we provided here in Q4 is our bottom. If you recall, that was our bottom as we honored many of the different POs that we had already received from our customers, and we just wanted to make sure that that was held solid as we moved to a new pricing as we moved into the new year.",
+        "review_flags": []
+      },
+      {
+        "exchange_id": "7",
+        "analyst": "Joshua Buchalter",
+        "firm": "TD Cowen",
+        "topic": "客户与订单",
+        "is_new_topic": false,
+        "question_summary": "分析师想知道 NVIDIA 在需求远超供给的情况下，会如何在不同终端需求（超大规模云厂商、AI 实验室、新云厂商）之间分配产能，以及 AI 实验室收入占比未来可能达到多大规模。",
+        "answer_summary": "Colette（临时 CEO 兼 CFO）：公司在分配产能时，最看重客户是否已经具备立即高效使用算力的条件，包括土地、电力和机房是否已经建成并准备就绪。其次会看客户的资金是否已经到位，以及是否有可靠的承购承诺。只要客户有采购订单、资金有保障，公司就会尽快分配产能。随着供应增加，分配规模也会继续扩大。目前所有客户拿到的价格都是一样的，公司不会用不同定价来分配产能。",
+        "new_numbers": [],
+        "directness": "partial",
+        "evasion_note": "没有回答 AI 实验室收入占比未来可能达到多大规模，只说明了分配产能的考虑因素。",
+        "tone": "neutral",
+        "answer_quote": "All are getting the same pricing. That is super important for us, and we just need to assure that they are ready on their side in terms of being able to accept the compute.",
+        "review_flags": []
+      }
+    ]
   },
   "summary": {
-    "headline": "",
-    "key_findings": [],
+    "headline": "收入与指引双超预期，但毛利率指引下修至71%-72%区间",
+    "key_findings": [
+      {
+        "finding": "FQ3 2027收入1158.44亿美元，同比+103.2%，超一致预期6.6%，主因数据中心收入同比+110%至1076亿美元。",
+        "evidence": "revenue, data_center_revenue"
+      },
+      {
+        "finding": "FQ4收入指引中值1300亿美元，超一致预期4.1%，但GAAP毛利率指引降至71.0%-72.0%，低于本季74.8%。",
+        "evidence": "next_q_revenue_guidance, gross_margin_gaap"
+      },
+      {
+        "finding": "管理层将FY2028收入增长预期从70%上调至75%，并称需求继续超过供给，但未直接回应100%需求增长是否仍成立。",
+        "evidence": "Q&A 1"
+      }
+    ],
     "prior_watchlist_review": [],
-    "next_watchlist": []
+    "next_watchlist": [
+      {
+        "question": "FQ4 2027 GAAP毛利率是否落在指引区间71.0%-72.0%内？",
+        "metric_key": "gross_margin_gaap",
+        "condition": "FQ4 2027 GAAP毛利率",
+        "threshold": "71.0%-72.0%"
+      },
+      {
+        "question": "FQ4 2027收入是否达到指引中值1300亿美元？",
+        "metric_key": "revenue",
+        "condition": "FQ4 2027收入",
+        "threshold": "1300亿美元"
+      },
+      {
+        "question": "FY2028收入同比增速是否达到管理层指引的约75%？",
+        "metric_key": "revenue",
+        "condition": "FY2028收入同比增速",
+        "threshold": "75%"
+      },
+      {
+        "question": "FY2028 GAAP毛利率是否改善至72%-73%区间？",
+        "metric_key": "gross_margin_gaap",
+        "condition": "FY2028 GAAP毛利率",
+        "threshold": "72%-73%"
+      },
+      {
+        "question": "FY2027 Physical AI收入是否超过250亿美元？",
+        "metric_key": "revenue",
+        "condition": "FY2027 Physical AI收入",
+        "threshold": "250亿美元"
+      }
+    ]
   },
-  "thesis_review": {}
+  "thesis_review": {
+    "stage": "watch",
+    "theses": [],
+    "answers": [
+      {
+        "index": 0,
+        "answered": true,
+        "answer": "数据中心收入本季创纪录1076亿美元，同比增长110%；云行业积压订单从2万亿增至2.5万亿美元，采购承诺增至3900亿美元，未显示放缓迹象。",
+        "quote": "Data Center revenue for the third quarter was a record $107.6 billion, up 110% from a year ago and up 21% sequentially.",
+        "source": "prepared_remarks",
+        "quote_unverified": false
+      },
+      {
+        "index": 1,
+        "answered": true,
+        "answer": "本季GAAP毛利率74.8%，同比提升1.4个百分点；管理层预计第四财季为底部，2028财年改善至72%-73%区间。",
+        "quote": "We expect Q4 to mark the bottom of gross margins before improving to the 72%-73% range in fiscal year 2028.",
+        "source": "prepared_remarks",
+        "quote_unverified": false
+      },
+      {
+        "index": 2,
+        "answered": true,
+        "answer": "第四财季指引未假设任何来自中国的数据中心计算收入，且已停止向中国发货许可Hopper数据中心产品；管理层称需求远超供应，预计业绩保持强劲。",
+        "quote": "NVIDIA is not assuming any Data Center compute revenue from China in its outlook.",
+        "source": "press_release",
+        "quote_unverified": false
+      }
+    ],
+    "triggers": [],
+    "new_concerns": [
+      {
+        "concern": "领导层过渡期间CEO遴选的不确定性可能影响战略执行和客户信心",
+        "raised_by": "Vivek Arya, Bank of America Securities",
+        "why": "临时CEO和董事会主席均未给出明确时间表，过渡期可能延长并影响重大决策。"
+      },
+      {
+        "concern": "对neocloud客户的融资和担保承诺规模巨大，存在信用风险",
+        "raised_by": "Stacy Rasgon, Bernstein Research",
+        "why": "总担保达1180亿美元，若客户融资或建设进度不及预期，可能形成或有负债。"
+      },
+      {
+        "concern": "出口管制新规对2028财年及以后中国相关收入的持续影响",
+        "raised_by": "Joseph Moore, Morgan Stanley",
+        "why": "管理层仍在研究新规细节，且已停止向中国发货许可Hopper产品，后续影响尚难量化。"
+      }
+    ],
+    "fingerprint": "584370427c4f3151",
+    "reviewed_at": "2026-11-18T02:24:07+00:00",
+    "model": "deepseek/deepseek-v4-pro-0813"
+  }
 }
