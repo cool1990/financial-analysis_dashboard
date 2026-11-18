@@ -67,10 +67,31 @@ def detect_layout(extracted: dict[str, Any]) -> dict[str, int] | None:
     year_ago = parse_number(prior.get("raw")) if prior.get("raw") else None
     if not cells or year_ago is None:
         return None
-    for idx in (1, 2):
+    return _layout_matching(cells, year_ago)
+
+
+def _layout_matching(cells: list[float], year_ago: float | None) -> dict[str, int] | None:
+    """在本季之后的列里找去年同季。找到第 2 列或更后时，第 1 列视为上季。"""
+    if year_ago is None:
+        return None
+    for idx in (1, 2, 3):
         if idx < len(cells) and _close(cells[idx], year_ago):
-            return {"yoy": idx, "qoq": 1} if idx == 2 else {"yoy": 1}
+            return {"yoy": idx, "qoq": 1} if idx >= 2 else {"yoy": 1}
     return None
+
+
+def _row_layout(
+    cells: list[float],
+    year_ago: float | None,
+    fallback: dict[str, int] | None,
+) -> dict[str, int] | None:
+    """本行自己的去年同季优先。
+
+    营收表常常只有「本季 / 去年同季」，Non-GAAP 调节表会在中间多一列上季。
+    用营收列号去套调节表，会把上季当成去年同季。
+    """
+    matched = _layout_matching(cells, year_ago)
+    return matched or fallback
 
 
 def press_release_comparatives(extracted: dict[str, Any]) -> dict[str, dict[str, float | None]]:
@@ -78,15 +99,19 @@ def press_release_comparatives(extracted: dict[str, Any]) -> dict[str, dict[str,
     layout = detect_layout(extracted)
     if not layout:
         return {}
+    priors = extracted.get("prior_year_comparables") or {}
     out: dict[str, dict[str, float | None]] = {}
     for field, is_eps in FIELDS.items():
         item = extracted.get(field)
         cells = _cells_from_anchor(item)
         if not cells or (item or {}).get("period_type") == "ytd":
             continue
+        prior = priors.get(field) if isinstance(priors.get(field), dict) else {}
+        year_ago_hint = parse_number(prior.get("raw")) if prior.get("raw") else None
+        row_layout = _row_layout(cells, year_ago_hint, layout)
         row: dict[str, float | None] = {}
         for name, key in (("year_ago", "yoy"), ("prior_q", "qoq")):
-            idx = layout.get(key)
+            idx = row_layout.get(key) if row_layout else None
             if idx is None or idx >= len(cells):
                 row[name] = None
                 continue

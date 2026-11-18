@@ -273,6 +273,47 @@ def test_comparatives_two_column_layout_and_existing_values_kept():
     assert fin["operating_margin_gaap"]["year_ago"] == pytest.approx(-1200 / 89498)
 
 
+def test_nongaap_reconciliation_does_not_use_prior_quarter_as_year_ago():
+    """NVDA FY2027Q3：GAAP 收入行是本季/去年同季，Non-GAAP 调节表在中间多一列上季。"""
+    from pipeline.compute.comparatives import apply_press_comparatives
+
+    extracted = {
+        "revenue": {
+            "raw": "115,844",
+            "unit": "millions",
+            "source_quote": "Revenue $115,844 $57,006 $293,681 $147,811",
+        },
+        "gross_profit_nongaap": {
+            "raw": "86,724",
+            "unit": "millions",
+            "source_quote": "Non-GAAP gross profit $86,724 $72,188 $41,897 $220,145 $102,593",
+        },
+        "eps_nongaap_diluted": {
+            "raw": "2.68",
+            "source_quote": "Non-GAAP* $2.68 $2.22 $1.27 $6.77 $3.05",
+        },
+        "prior_year_comparables": {
+            "revenue": {"raw": "57,006"},
+            "gross_profit_nongaap": {"raw": "41,897"},
+            "eps_nongaap_diluted": {"raw": "1.27"},
+        },
+    }
+    fin = {
+        "revenue": {"value": 115844e6, "yoy_pct": 1.03, "qoq_pct": 0.20},
+        "gross_margin_nongaap": {"value": 86724 / 115844, "yoy_pp": None, "qoq_pp": None},
+        "eps_nongaap": {"value": 2.68, "yoy_pct": None, "qoq_pct": None},
+    }
+    apply_press_comparatives(fin, extracted)
+    assert fin["revenue"]["yoy_pct"] == 1.03
+    assert fin["gross_margin_nongaap"]["year_ago"] == pytest.approx(41897 / 57006)
+    assert fin["gross_margin_nongaap"]["yoy_pp"] == pytest.approx(86724 / 115844 - 41897 / 57006)
+    assert fin["gross_margin_nongaap"]["qoq_pp"] is None
+    assert fin["eps_nongaap"]["year_ago"] == pytest.approx(1.27)
+    assert fin["eps_nongaap"]["prior_q"] == pytest.approx(2.22)
+    assert fin["eps_nongaap"]["yoy_pct"] == pytest.approx(2.68 / 1.27 - 1)
+    assert fin["eps_nongaap"]["qoq_pct"] == pytest.approx(2.68 / 2.22 - 1)
+
+
 def test_comparatives_reject_row_without_anchor():
     from pipeline.compute.comparatives import press_release_comparatives
 
