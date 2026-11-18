@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import re
 import time
+from html import unescape
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +25,48 @@ from pipeline.sources.earnings_6k import (
 
 class SecRateLimitError(RuntimeError):
     pass
+
+
+_INDEX_ROW_RE = re.compile(r"<tr\b[^>]*>(.*?)</tr>", re.I | re.S)
+_INDEX_CELL_RE = re.compile(r"<td\b[^>]*>(.*?)</td>", re.I | re.S)
+_INDEX_FILE_RE = re.compile(r'href="[^"]*/([^"/?#]+)"', re.I)
+_INDEX_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def document_types_from_index_html(html: str) -> dict[str, str]:
+    """EDGAR ``{accession}-index.html`` 的 Type 列。
+
+    ``index.json`` 的 description 经常是空的，文件名也不再带 EX-99。
+    类型（EX-99.1 等）写在这份 HTML 表格里。
+    """
+    out: dict[str, str] = {}
+    for row in _INDEX_ROW_RE.findall(html or ""):
+        cells = _INDEX_CELL_RE.findall(row)
+        if len(cells) < 4:
+            continue
+        names = _INDEX_FILE_RE.findall(cells[2])
+        if not names:
+            continue
+        doc_type = unescape(_INDEX_TAG_RE.sub("", cells[3]))
+        doc_type = re.sub(r"\s+", " ", doc_type).strip()
+        if doc_type:
+            out[names[-1]] = doc_type
+    return out
+
+
+def _is_press_release_file(name: str, description: str) -> bool:
+    name_u = name.upper()
+    desc_u = (description or "").upper()
+    if not name_u.endswith((".HTM", ".HTML", ".TXT")):
+        return False
+    return (
+        "EX-99" in name_u
+        or "EX99" in name_u
+        or "EXHIBIT99" in name_u
+        or "EXHIBIT 99" in desc_u
+        or "EX-99" in desc_u
+        or "PRESS" in desc_u
+    )
 
 
 class SecEdgarClient:
@@ -288,23 +332,34 @@ class SecEdgarClient:
     def find_press_release_files(self, cik: str, accession: str) -> list[str]:
         index = self.filing_index(cik, accession)
         items = index.get("directory", {}).get("item", [])
+        types: dict[str, str] = {}
         matches: list[str] = []
         for item in items:
             name = item.get("name", "")
-            desc = (item.get("description") or "").upper()
-            name_u = name.upper()
             # 有的 8-K 把 Exhibit 99.1 写成 exhibit991.htm（没有 EX-99 / EX99）
-            if (
-                "EX-99" in name_u
-                or "EX99" in name_u
-                or "EXHIBIT99" in name_u
-                or "EXHIBIT 99" in desc
-                or "PRESS" in desc
-            ):
-                if name_u.endswith((".HTM", ".HTML", ".TXT")):
+            if _is_press_release_file(name, item.get("description") or ""):
+                matches.append(name)
+        # index.json 经常不写 description。NVDA FY2027Q3 的新闻稿是 q3fy27pr.htm，
+        # 类型 EX-99.1 只出现在 -index.html。
+        if not matches:
+            html = self.download_file(cik, accession, f"{accession}-index.html")
+            if isinstance(html, bytes):
+                html = html.decode("utf-8", "replace")
+            types = document_types_from_index_html(html)
+            for item in items:
+                name = item.get("name", "")
+                desc = " ".join(
+                    part for part in (item.get("description") or "", types.get(name, "")) if part
+                )
+                if _is_press_release_file(name, desc):
                     matches.append(name)
-        # Prefer EX-99.1
-        matches.sort(key=lambda n: (0 if "99.1" in n.upper() else 1, n))
+
+        def _rank(name: str) -> tuple:
+            doc_type = types.get(name, "").upper()
+            is_991 = "99.1" in name.upper() or doc_type.startswith("EX-99.1")
+            return (0 if is_991 else 1, name)
+
+        matches.sort(key=_rank)
         return matches
 
     def download_press_release(

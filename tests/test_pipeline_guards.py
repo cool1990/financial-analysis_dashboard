@@ -64,6 +64,76 @@ def test_press_release_matches_exhibit991_filename():
     ]
 
 
+def test_press_release_reads_index_html_when_filename_omits_ex99():
+    """NVDA FY2027Q3 的 Exhibit 99 文件名是 q3fy27pr.htm，index.json 没有描述。"""
+    from pipeline.sources.sec_edgar import SecEdgarClient
+
+    html = """
+    <table class="tableFile" summary="Document Format Files">
+      <tr>
+        <td scope="row">1</td>
+        <td scope="row">8-K</td>
+        <td scope="row"><a href="/Archives/edgar/data/1045810/000104581026000088/nvda-20261117.htm">nvda-20261117.htm</a></td>
+        <td scope="row">8-K</td>
+        <td scope="row">26811</td>
+      </tr>
+      <tr>
+        <td scope="row">2</td>
+        <td scope="row">EX-99.1</td>
+        <td scope="row"><a href="/Archives/edgar/data/1045810/000104581026000088/q3fy27pr.htm">q3fy27pr.htm</a></td>
+        <td scope="row">EX-99.1</td>
+        <td scope="row">348063</td>
+      </tr>
+      <tr>
+        <td scope="row">3</td>
+        <td scope="row">EX-99.2</td>
+        <td scope="row"><a href="/Archives/edgar/data/1045810/000104581026000088/q3fy27cfocommentary.htm">q3fy27cfocommentary.htm</a></td>
+        <td scope="row">EX-99.2</td>
+        <td scope="row">251464</td>
+      </tr>
+      <tr>
+        <td scope="row">4</td>
+        <td scope="row">EX-99.3</td>
+        <td scope="row"><a href="/Archives/edgar/data/1045810/000104581026000088/supplementalfinancialinfor.htm">supplementalfinancialinfor.htm</a></td>
+        <td scope="row">EX-99.3</td>
+        <td scope="row">240566</td>
+      </tr>
+      <tr>
+        <td scope="row">8</td>
+        <td scope="row">NVDA LOGO</td>
+        <td scope="row"><a href="/Archives/edgar/data/1045810/000104581026000088/nvdalogoa19.jpg">nvdalogoa19.jpg</a></td>
+        <td scope="row">GRAPHIC</td>
+        <td scope="row">13441</td>
+      </tr>
+    </table>
+    """
+    client = SecEdgarClient.__new__(SecEdgarClient)
+    client.filing_index = lambda cik, accession: {
+        "directory": {
+            "item": [
+                {"name": "nvda-20261117.htm"},
+                {"name": "q3fy27cfocommentary.htm"},
+                {"name": "q3fy27pr.htm"},
+                {"name": "supplementalfinancialinfor.htm"},
+                {"name": "nvdalogoa19.jpg"},
+            ]
+        }
+    }
+    calls: list[str] = []
+
+    def download(cik, accession, filename):
+        calls.append(filename)
+        return html.encode()
+
+    client.download_file = download
+    assert client.find_press_release_files("0001045810", "0001045810-26-000088") == [
+        "q3fy27pr.htm",
+        "q3fy27cfocommentary.htm",
+        "supplementalfinancialinfor.htm",
+    ]
+    assert calls == ["0001045810-26-000088-index.html"]
+
+
 def test_near_earnings_gate(monkeypatch):
     from pipeline.commands import poll_cmd
 
