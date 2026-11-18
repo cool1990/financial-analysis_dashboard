@@ -118,7 +118,12 @@ jobs:
             exit 0
           fi
           git commit -m "chore: manual stage2 NVDA FY2027Q3"
-          git rebase origin/main
+          if ! git rebase origin/main; then
+            # poll 可能先写过「没有文字稿」。Stage 2 这一份覆盖 NVDA 季度和页面。
+            git checkout --theirs -- data/NVDA/FY2027Q3.json data/market_brief.json site/stocks/NVDA/FY2027Q3.html site/stocks/NVDA/index.html
+            git add data/NVDA/FY2027Q3.json data/market_brief.json site/stocks/NVDA/FY2027Q3.html site/stocks/NVDA/index.html
+            GIT_EDITOR=true git rebase --continue
+          fi
           git push origin HEAD:main
           git push origin HEAD:cursor/nvda-fy2027q3-stage2-754f
           echo "changed=true" >> "$GITHUB_OUTPUT"
