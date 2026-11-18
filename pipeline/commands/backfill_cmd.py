@@ -33,6 +33,76 @@ def _block(node: dict[str, Any] | None, *, yoy: float | None, qoq: float | None,
     return block
 
 
+def fill_missing_capex_and_fcf(ticker: str, facts: dict[str, Any] | None = None) -> dict[str, Any]:
+    """只补还空着的资本开支和自由现金流，并补上因此才能算的同比、环比。
+
+    已有金额不改。利润表、每股收益、指引都不动。
+    """
+    from pipeline.compute.metrics import pct_change
+    from pipeline.compute.periods import prior_fiscal_period, yoy_fiscal_period
+
+    cfg = load_ticker_config(ticker)
+    if is_hk_listing(cfg) or not cfg.get("cik"):
+        return {"ticker": ticker.upper(), "updated": []}
+    facts = facts if facts is not None else SecEdgarClient().company_facts(str(cfg["cik"]))
+    series = quarterly_statements(facts)
+    by_end = {end: row for end, row in series.items()}
+    folder = data_dir(ticker)
+    loaded: dict[str, tuple[Path, dict[str, Any]]] = {}
+    for path in sorted(folder.glob("FY*.json")):
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(doc, dict):
+            loaded[path.stem] = (path, doc)
+
+    def _saved(period: str, key: str) -> float | None:
+        item = loaded.get(period)
+        if item is None:
+            return None
+        node = (item[1].get("financials") or {}).get(key)
+        if isinstance(node, dict):
+            return node.get("value")
+        return None
+
+    updated: list[str] = []
+    for period, (path, doc) in loaded.items():
+        end_text = str((doc.get("meta") or {}).get("period_end") or "")[:10]
+        try:
+            end = date.fromisoformat(end_text)
+        except ValueError:
+            continue
+        row = by_end.get(end) or {}
+        fin = doc.setdefault("financials", {})
+        changed = False
+        for key in ("capex", "fcf"):
+            node = fin.get(key) if isinstance(fin.get(key), dict) else None
+            incoming = row.get(key)
+            if (node is None or node.get("value") is None) and incoming and incoming.get("value") is not None:
+                fin[key] = _block(incoming, yoy=None, qoq=None)
+                changed = True
+        for key in ("capex", "fcf"):
+            node = fin.get(key) if isinstance(fin.get(key), dict) else None
+            if node is None or node.get("value") is None:
+                continue
+            if node.get("yoy_pct") is None:
+                yoy = pct_change(node["value"], _saved(yoy_fiscal_period(period), key))
+                if yoy is not None:
+                    node["yoy_pct"] = yoy
+                    changed = True
+            if node.get("qoq_pct") is None:
+                qoq = pct_change(node["value"], _saved(prior_fiscal_period(period), key))
+                if qoq is not None:
+                    node["qoq_pct"] = qoq
+                    changed = True
+        if not changed:
+            continue
+        save_period_json(ticker, period, doc)
+        updated.append(period)
+    return {"ticker": ticker.upper(), "updated": updated}
+
+
 def write_xbrl_history(
     ticker: str,
     *,

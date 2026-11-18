@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 
-from builder.build import _history
+import pytest
+
+from builder.build import _history, adjust_diluted_shares
 from pipeline.sources.xbrl_history import quarterly_statements
 
 
@@ -158,6 +160,139 @@ def test_residual_rejects_span_wider_than_a_quarter_and_accepts_a_normal_one():
     assert _revenue_ending(annual_end, annual_end - timedelta(days=100)) is not None
     assert _revenue_ending(annual_end, annual_end - timedelta(days=79)) is None
     assert _revenue_ending(annual_end, annual_end - timedelta(days=101)) is None
+
+
+def test_capex_prefers_productive_assets_and_does_not_add_the_ppe_tag():
+    """同一季两条资本开支都有时用 productive assets，不把固定资产再加一遍。"""
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "PaymentsToAcquireProductiveAssets": {
+                    "units": {"USD": [_row("2026-01-26", "2026-04-26", 1_757_000_000, filed="2026-05-20")]}
+                },
+                "PaymentsToAcquirePropertyPlantAndEquipment": {
+                    "units": {"USD": [_row("2026-01-26", "2026-04-26", 99_000_000, filed="2026-08-26")]}
+                },
+                "NetCashProvidedByUsedInOperatingActivities": {
+                    "units": {"USD": [_row("2026-01-26", "2026-04-26", 5_000_000_000)]}
+                },
+            }
+        }
+    }
+    node = quarterly_statements(facts)[date(2026, 4, 26)]
+    assert node["capex"]["value"] == 1_757_000_000
+    assert node["capex"]["tag"] == "PaymentsToAcquireProductiveAssets"
+    assert node["fcf"]["value"] == 5_000_000_000 - 1_757_000_000
+
+
+def test_capex_falls_back_to_ppe_and_residuals_q4_from_the_annual_span():
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "PaymentsToAcquirePropertyPlantAndEquipment": {
+                    "units": {
+                        "USD": [
+                            _row("2016-01-01", "2016-03-31", 30),
+                            _row("2016-01-01", "2016-06-30", 50),
+                            _row("2016-01-01", "2016-09-30", 80),
+                        ]
+                    }
+                },
+                "PaymentsToAcquireProductiveAssets": {
+                    "units": {
+                        "USD": [
+                            _row("2016-01-01", "2016-09-30", 80),
+                            _row("2016-01-01", "2016-12-31", 110, filed="2017-02-01"),
+                        ]
+                    }
+                },
+                "NetCashProvidedByUsedInOperatingActivities": {
+                    "units": {"USD": [_row("2016-10-01", "2016-12-31", 40)]}
+                },
+            }
+        }
+    }
+    series = quarterly_statements(facts)
+    assert series[date(2016, 3, 31)]["capex"]["value"] == 30
+    assert series[date(2016, 3, 31)]["capex"]["tag"] == "PaymentsToAcquirePropertyPlantAndEquipment"
+    assert series[date(2016, 6, 30)]["capex"]["value"] == 20
+    q4 = series[date(2016, 12, 31)]
+    assert q4["capex"]["value"] == 30  # 110 - 80，不是两条标签相加
+    assert q4["capex"]["derived"] is True
+    assert q4["fcf"]["value"] == 10  # 40 - 30
+
+
+def test_nvda_share_series_is_split_adjusted_and_does_not_residual_q4(monkeypatch):
+    monkeypatch.setattr("builder.build._fill_statement_levels", lambda *a, **k: None)
+    monkeypatch.setattr(
+        "builder.build._xbrl_activity",
+        lambda ticker: {
+            "diluted_shares": [
+                {"start": "2020-01-27", "end": "2020-04-26", "value": 622_000_000, "filed": "2021-05-26"},
+                {"start": "2020-04-27", "end": "2020-07-26", "value": 2_504_000_000, "filed": "2021-08-20"},
+                {"start": "2023-01-30", "end": "2023-04-30", "value": 2_490_000_000, "filed": "2024-05-29"},
+                {"start": "2023-05-01", "end": "2023-07-30", "value": 24_994_000_000, "filed": "2024-08-28"},
+                {"start": "2025-01-27", "end": "2026-01-25", "value": 24_514_000_000, "filed": "2026-02-25"},
+                {"start": "2026-04-27", "end": "2026-07-26", "value": 24_285_000_000, "filed": "2026-08-26"},
+            ]
+        },
+    )
+    docs = {
+        "FY2021Q1": {"meta": {"ticker": "NVDA", "period_end": "2020-04-26"}, "financials": {}},
+        "FY2021Q2": {"meta": {"ticker": "NVDA", "period_end": "2020-07-26"}, "financials": {}},
+        "FY2024Q1": {"meta": {"ticker": "NVDA", "period_end": "2023-04-30"}, "financials": {}},
+        "FY2024Q2": {"meta": {"ticker": "NVDA", "period_end": "2023-07-30"}, "financials": {}},
+        "FY2026Q4": {"meta": {"ticker": "NVDA", "period_end": "2026-01-25"}, "financials": {}},
+        "FY2027Q2": {"meta": {"ticker": "NVDA", "period_end": "2026-07-26"}, "financials": {}},
+        "FY2027Q3": {
+            "meta": {"ticker": "NVDA", "period_end": "2026-10-25"},
+            "financials": {"share_count": {"value": 24_186_000_000, "qoq_pct": None}},
+        },
+    }
+    points = {row["period"]: row for row in _history(docs)}
+    assert points["FY2021Q1"]["share_count"] == 622_000_000 * 40
+    assert points["FY2021Q2"]["share_count"] == 2_504_000_000 * 10
+    assert points["FY2024Q1"]["share_count"] == 2_490_000_000 * 10
+    assert points["FY2024Q2"]["share_count"] == 24_994_000_000
+    assert points["FY2026Q4"]["share_count"] is None
+    assert points["FY2027Q2"]["share_count"] == 24_285_000_000
+    assert points["FY2027Q3"]["share_count"] == 24_186_000_000
+    assert adjust_diluted_shares("AAPL", 622_000_000, date(2020, 4, 26)) == 622_000_000
+
+
+def test_nvda_history_keeps_q3_official_figures_and_fills_cash_and_shares():
+    from builder.build import _history, _load_docs
+
+    docs = _load_docs("NVDA")
+    points = {row["period"]: row for row in _history(docs)}
+    q3 = points["FY2027Q3"]
+    assert q3["revenue"] == 115_844_000_000
+    assert q3["eps"] == 2.7
+    assert q3["eps_nongaap"] == 2.68
+    assert q3["capex"] == 4_422_000_000
+    assert q3["fcf"] == 43_831_000_000
+    assert q3["capex_qoq"] == pytest.approx(4_422 / 2_677 - 1)
+    assert q3["fcf_qoq"] == pytest.approx(43_831 / 21_400 - 1)
+    assert points["FY2027Q2"]["capex"] == 2_677_000_000
+    assert points["FY2026Q3"]["capex"] == 1_636_000_000
+    assert [points[f"FY2026Q{i}"]["capex"] for i in range(1, 5)] == [
+        1_227_000_000,
+        1_895_000_000,
+        1_636_000_000,
+        1_284_000_000,
+    ]
+    assert points["FY2023Q1"]["capex"] is None
+    assert points["FY2016Q4"]["capex"] is None
+    assert q3["share_count"] == 24_186_000_000
+    assert points["FY2027Q2"]["share_count"] == 24_285_000_000
+    assert points["FY2026Q3"]["share_count"] == 24_483_000_000
+    assert points["FY2021Q1"]["share_count"] == 622_000_000 * 40
+    assert points["FY2026Q4"]["share_count"] is None
+    filled = lambda key: sum(row.get(key) is not None for row in points.values())
+    assert filled("capex") == 38
+    assert filled("fcf") == 38
+    assert filled("share_count") == 36
+    assert filled("ocf") == 48
 
 
 def test_history_fills_missing_qoq_from_neighbor():

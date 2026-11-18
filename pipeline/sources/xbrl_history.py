@@ -120,6 +120,15 @@ def quarterly_values(facts: dict[str, Any], tags: list[str], *unit_keys: str, al
     return out
 
 
+def capex_values(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
+    """资本开支。优先 productive assets；没有这条累计时才用固定资产。同一季不把两个标签相加。"""
+    preferred = quarterly_values(facts, PRODUCTIVE_CAPEX_TAGS, "USD")
+    fallback = quarterly_values(facts, PPE_CAPEX_TAGS, "USD")
+    merged = dict(fallback)
+    merged.update(preferred)
+    return merged
+
+
 REVENUE_TAGS = [
     "RevenueFromContractWithCustomerExcludingAssessedTax",
     "Revenues",
@@ -130,7 +139,11 @@ OI_TAGS = ["OperatingIncomeLoss"]
 NI_TAGS = ["NetIncomeLoss"]
 EPS_TAGS = ["EarningsPerShareDiluted"]
 OCF_TAGS = ["NetCashProvidedByUsedInOperatingActivities"]
-CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment"]
+# 购建固定资产、软件和无形资产。英伟达后来用这一条，和新闻稿「property and equipment and intangible assets」一致。
+PRODUCTIVE_CAPEX_TAGS = ["PaymentsToAcquireProductiveAssets"]
+# 旧口径只有固定资产。同一季两边都有时用上面那条，不把两条加在一起。
+PPE_CAPEX_TAGS = ["PaymentsToAcquirePropertyPlantAndEquipment"]
+CAPEX_TAGS = PRODUCTIVE_CAPEX_TAGS + PPE_CAPEX_TAGS
 
 
 def quarterly_statements(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
@@ -157,7 +170,7 @@ def quarterly_statements(facts: dict[str, Any]) -> dict[date, dict[str, Any]]:
     ni = quarterly_values(facts, NI_TAGS, "USD")
     eps = quarterly_values(facts, EPS_TAGS, "USD/shares", allow_residual=False)
     ocf = quarterly_values(facts, OCF_TAGS, "USD")
-    capex = quarterly_values(facts, CAPEX_TAGS, "USD")
+    capex = capex_values(facts)
     ends = set(revenue) | set(cost) | set(oi) | set(ni) | set(eps) | set(ocf) | set(capex)
     out: dict[date, dict[str, Any]] = {}
     for end in sorted(ends):

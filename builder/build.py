@@ -1444,6 +1444,45 @@ def _activity_rows(
     return rows
 
 
+def adjust_diluted_shares(ticker: str, value: float, period_end: date) -> float:
+    """把稀释加权股换到现行股本。英伟达 2021-07-20 四拆一、2024-06-10 十拆一。
+
+    公司事实里后来重述过、已经是拆股后数量的，不再乘。第四季加权股不能用全年减九个月。
+    """
+    if ticker.upper() != "NVDA":
+        return value
+    if value >= 5_000_000_000:
+        return value
+    if period_end < date(2021, 7, 20) and value < 1_500_000_000:
+        return value * 40
+    if period_end < date(2024, 6, 10):
+        return value * 10
+    return value
+
+
+def _fill_xbrl_share_counts(points: dict[str, dict[str, Any]], docs: dict[str, dict[str, Any]]) -> None:
+    """季度稀释股优先用已保存的数字（新闻稿），没有再用 10-Q 的 80–100 天加权股。"""
+    ticker = ""
+    for doc in docs.values():
+        ticker = str((doc.get("meta") or {}).get("ticker") or "")
+        if ticker:
+            break
+    if not ticker:
+        return
+    rows = (_xbrl_activity(ticker) or {}).get("diluted_shares")
+    for period, point in points.items():
+        doc = docs.get(period) or {}
+        end = _as_date((doc.get("meta") or {}).get("period_end"))
+        if point.get("share_count") is None and end is not None:
+            raw = _xbrl_level(rows, end, quarterly=True)
+            if raw is not None:
+                point["share_count"] = raw
+        value = point.get("share_count")
+        if value is None or end is None:
+            continue
+        point["share_count"] = adjust_diluted_shares(ticker, float(value), end)
+
+
 def _fill_statement_levels(points: dict[str, dict[str, Any]], docs: dict[str, dict[str, Any]]) -> None:
     ticker = ""
     for doc in docs.values():
@@ -3555,6 +3594,7 @@ def _history(docs: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
 
     _fill_profit_levels(points, docs)
     _fill_statement_levels(points, docs)
+    _fill_xbrl_share_counts(points, docs)
     ordered = [points[p] for p in sorted(points)]
     by_period = {p["period"]: p for p in ordered}
     for point in ordered:

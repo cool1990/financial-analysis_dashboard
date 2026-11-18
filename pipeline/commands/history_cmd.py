@@ -486,9 +486,10 @@ def refresh_history(
     )
     documents = apply_nvda_disclosed_mix(ticker, documents)
     paths = _write_documents(ticker, documents)
-    from pipeline.commands.backfill_cmd import write_xbrl_history
+    from pipeline.commands.backfill_cmd import fill_missing_capex_and_fcf, write_xbrl_history
 
     periods = write_xbrl_history(ticker, start=start, facts=facts, instance_ends=instance_ends)
+    fill_missing_capex_and_fcf(ticker, facts=facts)
     segment = documents["segment_history"]
     return {
         "ticker": ticker.upper(),
