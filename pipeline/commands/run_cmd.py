@@ -655,6 +655,15 @@ def _execute_stage2(
         raise RuntimeError("文字稿未取得")
 
     doc["meta"]["transcript_source"] = source
+    meta_path = raw_dir / "transcript_meta.json"
+    if meta_path.exists():
+        try:
+            tmeta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            tmeta = {}
+        url = tmeta.get("source_url") if isinstance(tmeta, dict) else None
+        if isinstance(url, str) and url.strip():
+            doc["meta"]["transcript_url"] = url.strip()
     mark_stage(ticker, fiscal_period, "transcript_found")
 
     def _step(name: str):

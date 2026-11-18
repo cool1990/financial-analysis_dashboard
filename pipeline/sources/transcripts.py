@@ -17,6 +17,19 @@ def load_manual_transcript(raw_dir: Path) -> str | None:
     return None
 
 
+def manual_transcript_source(raw_dir: Path) -> str:
+    """手动稿的来源名。没有 meta 时仍是 manual，避免把第三方稿标成官方 IR。"""
+    meta_path = raw_dir / "transcript_meta.json"
+    if not meta_path.exists():
+        return "manual"
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "manual"
+    source = str(meta.get("source") or "").strip()
+    return source or "manual"
+
+
 def save_transcript(
     raw_dir: Path,
     text: str,
@@ -61,7 +74,9 @@ def fetch_transcript(
         if src in {"manual", "local_import"}:
             text = load_manual_transcript(raw_dir)
             if text:
-                return text, "local_import" if src == "local_import" else "manual"
+                if src == "local_import":
+                    return text, "local_import"
+                return text, manual_transcript_source(raw_dir)
         elif src == "motley_fool":
             if not period:
                 continue
@@ -106,6 +121,7 @@ def split_prepared_and_qa(transcript: str) -> tuple[str, str]:
         "Questions and Answers",
         "Q&A Session",
         "Operator:",
+        "Your first question comes from",
     ]
     cut = None
     for m in markers:

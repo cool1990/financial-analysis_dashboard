@@ -283,6 +283,83 @@ def test_workflows_pass_alphavantage_key():
     assert "python -m pipeline tv-scan" in daily
 
 
+def test_stockanalysis_comes_from_splits_questions_and_drops_close():
+    """没有 Operator: 的第三方稿，按接线员 “comes from” 分轮，收束语不进最后一问。"""
+    from pipeline.analyze.qa import _split_exchanges
+    from pipeline.sources.transcripts import split_prepared_and_qa
+
+    text = """
+Harvey Jones
+
+With that, I will turn it over to Harvey.
+
+Colette Kress
+
+Thank you, Harvey. Total revenue of $116 billion.
+
+Toshiya Hari
+
+We will now transition to Q&A. Ian Buck will be joining Colette.
+
+Operator (Sarah)
+
+Conference Operator
+
+Your first question comes from Joseph Moore with Morgan Stanley.
+
+Joseph Moore
+
+Morgan Stanley
+
+What gives you confidence in 75% growth?
+
+Colette Kress
+
+Interim CEO and CFO, NVIDIA
+
+Demand is stronger than supply.
+
+Operator (Sarah)
+
+Conference Operator
+
+Your next question comes from CJ Muse with Cantor Fitzgerald.
+
+C.J. Muse
+
+Cantor Fitzgerald
+
+How should we think about buybacks?
+
+Colette Kress
+
+Interim CEO and CFO, NVIDIA
+
+We plan to finish the authorization before the end of FY 2028.
+
+Operator (Sarah)
+
+Conference Operator
+
+There are no further questions at this time.
+
+Colette Kress
+
+Thank you all for joining us.
+"""
+    prepared, qa = split_prepared_and_qa(text)
+    assert "$116 billion" in prepared and "Joseph Moore" not in prepared
+    assert "Ian Buck" in prepared
+    exchanges = _split_exchanges(qa)
+    assert [(ex["analyst"], ex["firm"]) for ex in exchanges] == [
+        ("Joseph Moore", "Morgan Stanley"),
+        ("CJ Muse", "Cantor Fitzgerald"),
+    ]
+    assert "75% growth" in exchanges[0]["text"]
+    assert "no further questions" not in exchanges[-1]["text"].lower()
+    assert "Thank you all" not in exchanges[-1]["text"]
+
+
 def test_hk_local_import_transcript_splits_into_analyst_exchanges():
     """中文 local_import 文字稿要拆出问答，不能因为没有 Operator 就得到空列表。"""
     from pipeline.analyze.qa import _split_exchanges

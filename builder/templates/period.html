@@ -331,7 +331,7 @@
 <details class="ev" id="notes">
   <summary><span class="ev-t">数据来源</span><span class="ev-meta">新闻稿 · 文字稿{% if warnings %} · 数据提示 {{ warnings|length }} 条{% endif %}</span></summary>
   <div class="ev-body notes">
-    <p>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}" rel="noopener">SEC EDGAR</a>{% else %}—{% endif %} · 文件编号 {{ doc.meta.accession or "—" }} · 文字稿：{{ doc.meta.transcript_source|source }}</p>
+    <p>新闻稿：{% if doc.meta.press_release_url %}<a href="{{ doc.meta.press_release_url }}" rel="noopener">SEC EDGAR</a>{% else %}—{% endif %} · 文件编号 {{ doc.meta.accession or "—" }} · 文字稿：{{ doc.meta.transcript_source|source }}{% if doc.meta.transcript_url %} · <a href="{{ doc.meta.transcript_url }}" rel="noopener">第三方原文</a>{% endif %}</p>
     {% if doc.meta.pre_earnings_snapshot_source %}<p>财报前一致预期：{{ doc.meta.pre_earnings_snapshot_source }}</p>{% endif %}
     <p>判定阈值：营收 ±1%，每股收益 ±2% 或 ±{{ eps_mark|default('$') }}0.01 以内为「符合预期」。</p>
     {% if warnings %}<ul class="warn-list">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}

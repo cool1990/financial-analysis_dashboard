@@ -195,6 +195,7 @@ SOURCE_LABELS = {
     "motley_fool": "Motley Fool 文字稿",
     "ir_page": "投资者关系",
     "manual": "手动上传",
+    "stockanalysis": "StockAnalysis 第三方文字稿（非 NVIDIA 官方 IR）",
     "consensus": "一致预期",
     "none": "无",
     "xbrl": "SEC XBRL",

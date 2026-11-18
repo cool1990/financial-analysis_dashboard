@@ -46,6 +46,39 @@ _ANALYST_TITLE = re.compile(
 )
 
 
+_COMES_FROM_RE = re.compile(
+    r"(?m)^Your (?:first|next) question comes from (?P<name>[^.\n]+?) with (?P<firm>[^.\n]+)\."
+)
+_NO_FURTHER_RE = re.compile(
+    r"\n+Operator \(Sarah\)\s*\n+Conference Operator\s*\n+There are no further questions"
+)
+
+
+def _split_comes_from_exchanges(qa_text: str) -> list[dict[str, Any]]:
+    """StockAnalysis 这类稿没有 ``Operator:``，用接线员的 “comes from” 分轮。"""
+    matches = list(_COMES_FROM_RE.finditer(qa_text or ""))
+    exchanges: list[dict[str, Any]] = []
+    for index, match in enumerate(matches):
+        start = match.start()
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(qa_text)
+        text = qa_text[start:end]
+        closer = _NO_FURTHER_RE.search(text)
+        if closer:
+            text = text[: closer.start()]
+        text = text.strip()
+        if not text:
+            continue
+        exchanges.append(
+            {
+                "exchange_id": str(len(exchanges) + 1),
+                "analyst": match.group("name").strip(),
+                "firm": match.group("firm").strip(" ."),
+                "text": text,
+            }
+        )
+    return exchanges
+
+
 def _split_operator_exchanges(qa_text: str) -> list[dict[str, Any]]:
     """英文稿：以 Operator 引出下一位分析师为界。"""
     parts = re.split(r"\n(?=Operator:)", qa_text)
@@ -143,6 +176,10 @@ def _split_exchanges(qa_text: str) -> list[dict[str, Any]]:
         numbered = _split_cn_numbered_exchanges(qa_text)
         if numbered:
             return numbered
+    if _COMES_FROM_RE.search(qa_text or ""):
+        comes_from = _split_comes_from_exchanges(qa_text)
+        if comes_from:
+            return comes_from
     if re.search(r"(?m)^Operator:", qa_text or ""):
         return _split_operator_exchanges(qa_text)
     headed = _split_speaker_heading_exchanges(qa_text or "")

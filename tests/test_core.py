@@ -332,6 +332,16 @@ def test_fetch_transcript_prefers_manual(tmp_path):
         fiscal_period="FY2026Q4",
     )
     assert src == "manual" and text.startswith("Operator")
+    (raw / "transcript_meta.json").write_text(
+        '{"source": "stockanalysis", "source_url": "https://stockanalysis.com/example"}',
+        encoding="utf-8",
+    )
+    text, src = fetch_transcript(
+        {"ticker": "MU", "name": "Micron", "transcript_sources": ["manual", "motley_fool"]},
+        raw,
+        fiscal_period="FY2026Q4",
+    )
+    assert src == "stockanalysis" and text.startswith("Operator")
 
 
 def test_loads_json_payload_strips_fence_and_rejects_empty():
