@@ -34,6 +34,49 @@ def test_q1_table_numbers_stay_cny():
     assert "usd" not in str(extracted).lower()
 
 
+def test_negative_narrative_fcf_is_not_the_ex_prepayment_figure():
+    """Q3 2026 叙述里的负自由现金流，不能写成剔除算力预付款后的正数。"""
+    from pipeline.extract.hk_results import extract_hk_results
+
+    text = (
+        "截至二零二六年九月三十日止三个月\n"
+        "简明综合收益表\n"
+        "未经审核截至 2026 年 9 月 30 日止三个月\n"
+        "3Q2026 3Q2025 2Q2026\n"
+        "收入 207,336 192,869 204,785\n"
+        "收入成本 (91,425) (84,071) (86,352)\n"
+        "毛利 115,911 108,798 118,433\n"
+        "经营盈利 59,147 63,554 67,276\n"
+        "期内盈利 65,139 64,943 57,977\n"
+        "- 摊薄 6.947 6.779 6.104\n"
+        "录得负自由现金流人民币691 亿元，乃由于经营活动所产生的现金净额人民币26 亿元，"
+        "被资本开支付款人民币651 亿元、媒体内容付款人民币46 亿元及租赁负债付款人民币20 亿元超额抵销。"
+        "若剔除算力采购的预付款，我们的自由现金流将转正至人民币169 亿元。\n"
+    )
+    extracted = extract_hk_results(text, "FY2026Q3")
+    fcf = extracted["kpis"]["free_cash_flow"]
+    assert fcf["raw"] == "-691"
+    assert fcf["unit"] == "亿元"
+    assert "169" not in fcf["raw"]
+    assert extracted["operating_cash_flow"] is None
+    assert extracted["capex_gross"] is None or extracted["capex_gross"]["raw"] != "65,100"
+    warning = " ".join(extracted["warnings"])
+    assert "不写入 financials.fcf" in warning
+    assert "169" in warning
+    assert "不是本期自由现金流" in warning
+    assert "资本开支付款不是同一口径" in warning
+
+
+def test_positive_fcf_sentence_stays_unsigned():
+    from pipeline.extract.hk_results import _free_cash_flow_kpi
+
+    node, warnings = _free_cash_flow_kpi("自由现金流为人民币567 亿元，同比增长20%。")
+    assert node is not None
+    assert node["raw"] == "567"
+    assert "169" not in " ".join(warnings)
+    assert "不写入 financials.fcf" in warnings[0]
+
+
 def test_half_year_is_not_q2():
     from pipeline.extract.hk_results import HkImportError, extract_hk_results
 
@@ -108,7 +151,7 @@ def test_imported_period_json_and_homepage_stage(monkeypatch):
     assert row["status_label"] == "持仓"
     assert row["group"] == "软件与云" and row["kind"] == "软件与云"
     # NTM 估计和股价都是港币，直接相除，不因缺少人民币汇率写成待核对。
-    assert row["forward_pe"] == "11.9×"
+    assert row["forward_pe"] == "11.5×"
     assert row["forward_pe_fx"] == ""
     # 首页营收 / EPS 仍读记分卡。港股 Stage1 没有一致预期，verdict 是 unknown。
     assert row["revenue"]["label"] == "待核对"
@@ -123,6 +166,33 @@ def test_imported_period_json_and_homepage_stage(monkeypatch):
     assert manifest["stage1"] == "stage1_done"
     assert manifest["transcript"]["filename"] == "Tencent_2026_Q2.md"
     assert manifest["transcript_source"] == "local_import"
+    q3_doc = load_period_json("0700.HK", "FY2026Q3")
+    assert q3_doc is not None
+    q3 = q3_doc["financials"]
+    assert q3_doc["meta"]["period_end"] == "2026-09-30"
+    assert q3_doc["meta"]["extract_mode"] == "disclosed"
+    assert q3["revenue"]["value"] == 207_336_000_000
+    assert q3["revenue"]["year_ago"] == 192_869_000_000
+    assert q3["revenue"]["prior_q"] == 204_785_000_000
+    assert q3["gross_profit_gaap"]["value"] == 115_911_000_000
+    assert q3["operating_income_gaap"]["value"] == 59_147_000_000
+    assert q3["operating_income_nongaap"]["value"] == 68_073_000_000
+    assert q3["operating_income_nongaap"]["display_label"] == "经营盈利（Non-IFRS）"
+    assert q3["net_income_gaap"]["value"] == 65_139_000_000
+    assert q3["eps_gaap"]["value"] == 6.947
+    assert q3["eps_nongaap"]["value"] == 7.227
+    assert q3["capex"]["value"] == 81_433_000_000
+    assert q3["capex"]["source_quote"].startswith("资本开支")
+    assert q3["capex"]["value"] != 65_100_000_000
+    assert q3.get("fcf") is None
+    assert q3["kpis"]["free_cash_flow"]["raw"] == "-691"
+    assert q3["kpis"]["free_cash_flow"]["value"] == -69_100_000_000
+    assert q3["kpis"]["vas_revenue"]["value"] == 98_326_000_000
+    assert q3["kpis"]["advertising_revenue"]["value"] == 43_049_000_000
+    assert q3["kpis"]["fintech_biz_revenue"]["value"] == 63_655_000_000
+    warning = " ".join(q3_doc["status"]["warnings"])
+    assert "169" in warning and "不是本期自由现金流" in warning
+    assert "资本开支付款不是同一口径" in warning
 
 
 def test_kept_transcript_survives_a_later_pdf_manifest(tmp_path):
@@ -192,7 +262,7 @@ def test_hk_paths_do_not_call_sec(monkeypatch):
 
     with pytest.raises(RuntimeError, match="listing=hk"):
         replay_cmd.replay_earnings_filters("0700.HK")
-    assert resolve_latest_period("0700.HK") == "FY2026Q2"
+    assert resolve_latest_period("0700.HK") == "FY2026Q3"
     assert "0700.HK" not in init_cmd.init_missing()
     monkeypatch.setattr(poll_cmd, "list_tickers", lambda: ["0700.HK"])
     monkeypatch.setattr(poll_cmd, "near_earnings", lambda *a, **k: (_ for _ in ()).throw(AssertionError("poll 不应探测财报日")))
@@ -521,8 +591,8 @@ def test_tencent_press_statement_matches_meta_charts():
     built_statement, _built_segment = build_tencent_histories_from_periods(folder)
     built_periods = [row["period"] for row in built_statement["quarters"]]
     assert built_periods[0] == "FY2016Q1"
-    assert built_periods[-1] == "FY2026Q2"
-    assert len(built_periods) == 42
+    assert built_periods[-1] == "FY2026Q3"
+    assert len(built_periods) == 43
     by_built = {row["period"]: row for row in built_statement["quarters"]}
     assert by_built["FY2017Q1"]["revenue"] == 49_552_000_000
     assert by_built["FY2025Q2"]["revenue"] == 184_504_000_000
@@ -543,9 +613,14 @@ def test_tencent_press_statement_matches_meta_charts():
     saved_by = {row["period"]: row for row in saved_statement["quarters"]}
     saved_lines = {row["period"]: row["lines"] for row in saved_segment["quarters"]}
     # history --from-periods 用季度 JSON 补上简明表没有的季度，2026Q1 仍用表内原数。
+    assert saved_by["FY2026Q3"]["revenue"] == 207_336_000_000
+    assert saved_by["FY2026Q3"]["cost_of_revenue"] == 91_425_000_000
+    assert saved_by["FY2026Q3"]["gross_profit"] == 115_911_000_000
+    assert saved_by["FY2026Q3"]["opex"] == 56_221_000_000
     assert saved_by["FY2026Q1"]["revenue"] == current["revenue"]
     assert saved_by["FY2026Q1"]["cost_of_revenue"] == current["cost_of_revenue"]
     assert [line["name"] for line in saved_lines["FY2026Q1"]] == ["增值服务", "营销服务", "金融科技及企业服务", "其他"]
+    assert [line["value"] for line in saved_lines["FY2026Q3"]] == [98_326_000_000, 43_049_000_000, 63_655_000_000]
     assert saved_by["FY2025Q2"]["revenue"] == 184_504_000_000
     assert saved_lines["FY2025Q2"]  # 全历史回填后 Q2 不再空
     assert [line["name"] for line in saved_lines["FY2017Q1"]] == ["增值服务", "营销服务"]
@@ -559,7 +634,8 @@ def test_tencent_press_statement_matches_meta_charts():
     assert [chart["title"] for chart in charts] == ["营业收入", "按业务", "按地区"]
     assert charts[0]["subtitle"] == "十亿人民币"
     assert charts[0]["labels"][0] == "FY2016Q1"
-    assert charts[0]["labels"][-1] == "FY2026Q2"
+    assert charts[0]["labels"][-1] == "FY2026Q3"
+    assert charts[0]["amount"][charts[0]["labels"].index("FY2026Q3")] == 207.34
     assert charts[0]["amount"][charts[0]["labels"].index("FY2016Q1")] == 32.0
     assert charts[0]["amount"][charts[0]["labels"].index("FY2026Q1")] == 196.46
     assert charts[0]["amount"][charts[0]["labels"].index("FY2017Q1")] == 49.55
@@ -701,12 +777,12 @@ def test_tencent_consensus_uses_live_hkdcny_not_raw_hkd(monkeypatch):
 def test_tencent_expect_chart_converts_tv_hkd_with_live_hkdcny():
     import json
 
-    from builder.build import _load_docs, _reported_expect_chart
+    from builder.build import _load_docs, _quote_fx, _reported_expect_chart
 
-    # 未来季只画在最新一页。main 回补后最新页是 FY2026Q2，FQ3 2026 仍是第一季未公布预期。
+    # 预期图用行情日的 HKDCNY 把港币扫描预期换成人民币。FQ3 2026 的实际来自已导入的季报。
     doc = json.loads((ROOT / "data" / "0700.HK" / "FY2026Q2.json").read_text(encoding="utf-8"))
     scan = json.loads((ROOT / "data" / "0700.HK" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
-    rate = json.loads((ROOT / "data" / "fx" / "HKDCNY.json").read_text(encoding="utf-8"))["rates"]["2026-10-23"]["rate"]
+    rate = _quote_fx("0700.HK")["rate"]
     chart = _reported_expect_chart(doc, _load_docs("0700.HK"))
     assert chart is not None
     revenue = {row["label"]: row for row in chart["revenue"]["quarters"]}
