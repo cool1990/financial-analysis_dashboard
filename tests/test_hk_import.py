@@ -568,7 +568,9 @@ def test_tencent_press_statement_matches_meta_charts():
     assert business["FY2025Q2"]["gap"] is False
     assert business["FY2017Q1"]["gap"] is False
     assert all(point["gap"] for point in charts[2]["points"])
-    assert [chart["title"] for chart in view["by_key"]["gross_margin_gaap"]["charts"]] == ["毛利"]
+    assert [chart["title"] for chart in view["by_key"]["gross_margin_gaap"]["charts"]] == ["毛利率（GAAP）"]
+    assert view["by_key"]["gross_margin_gaap"]["charts"][0]["kind"] == "rate_yoy"
+    assert view["by_key"]["gross_margin_gaap"]["charts"][0]["subtitle"] == "%"
     assert [chart["title"] for chart in view["by_key"]["opex"]["charts"]] == ["营业费用", "费用构成"]
     token = _REPORTING_CCY.set("CNY")
     try:

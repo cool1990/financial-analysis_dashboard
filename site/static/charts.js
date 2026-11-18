@@ -315,6 +315,52 @@ if (page.finView) {
     });
     live.push(drawn);
   }
+  function drawRate(canvas, chart) {
+    var labels = chart.labels || [];
+    var drawn = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: '毛利率', data: chart.rate, borderColor: cssColor('--s1', '#2a78d6'), backgroundColor: cssColor('--s1', '#2a78d6'), yAxisID: 'y', tension: 0.25, spanGaps: false, pointRadius: 2, borderWidth: 1.5, order: 2 },
+          { label: '同比', data: chart.yoy, borderColor: cssColor('--s2', '#eb6834'), backgroundColor: cssColor('--s2', '#eb6834'), yAxisID: 'y1', tension: 0.25, spanGaps: false, pointRadius: 2, borderWidth: 1.5, order: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                if (ctx.dataset.label === '同比') {
+                  if (ctx.parsed.y == null) return '同比 缺去年同期';
+                  var change = ctx.parsed.y;
+                  return '同比 ' + (change > 0 ? '+' : '') + change + '个百分点';
+                }
+                if (ctx.parsed.y == null) return '毛利率 —';
+                var text = (chart.rate_text || [])[ctx.dataIndex];
+                return '毛利率 ' + (text || ctx.parsed.y + '%');
+              },
+              afterBody: function (items) {
+                if (!items.length) return;
+                var qoq = (chart.qoq || [])[items[0].dataIndex];
+                if (qoq == null) return '环比 缺上一季';
+                return '环比 ' + (qoq > 0 ? '+' : '') + qoq + '个百分点';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: yearTicks(labels) },
+          y: { ticks: { callback: function (v) { return v + '%'; } } },
+          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: function (v) { return v + 'pp'; } } }
+        }
+      }
+    });
+    live.push(drawn);
+  }
   function drawShare(canvas, chart) {
     var labels = chart.labels || [];
     var points = chart.points || [];
@@ -432,7 +478,7 @@ if (page.finView) {
   }
   function presented(chart) {
     if (!chart || currentGrain() !== 'year') return chart;
-    if (chart.kind !== 'amount_yoy' && chart.kind !== 'share') return chart;
+    if (chart.kind !== 'amount_yoy' && chart.kind !== 'share' && chart.kind !== 'rate_yoy') return chart;
     var annual = chart.annual || null;
     if (!annual || !annual.labels || !annual.labels.length) return null;
     var copy = {};
@@ -453,6 +499,11 @@ if (page.finView) {
       var shown = chart && presented(chart);
       if (shown) drawAmount(canvas, shown);
     });
+    root.querySelectorAll('canvas[data-fin-kind="rate_yoy"]').forEach(function (canvas) {
+      var chart = active[Number(canvas.getAttribute('data-fin-index'))];
+      var shown = chart && presented(chart);
+      if (shown) drawRate(canvas, shown);
+    });
     root.querySelectorAll('canvas[data-fin-kind="share"]').forEach(function (canvas) {
       var chart = active[Number(canvas.getAttribute('data-fin-index'))];
       var shown = chart && presented(chart);
@@ -461,7 +512,7 @@ if (page.finView) {
     root.querySelectorAll('canvas[data-series]').forEach(drawGeneric);
   }
   function cardHtml(chart, index) {
-    if (currentGrain() === 'year' && (chart.kind === 'amount_yoy' || chart.kind === 'share') && !presented(chart)) {
+    if (currentGrain() === 'year' && (chart.kind === 'amount_yoy' || chart.kind === 'share' || chart.kind === 'rate_yoy') && !presented(chart)) {
       return '<div class="card chart"><h3>' + esc(chart.title) + '</h3><p class="c-sub">' + esc(chart.subtitle || '') + '</p><p class="placeholder">没有完整财年</p></div>';
     }
     var canvas = chart.kind === 'generic'
@@ -482,7 +533,7 @@ if (page.finView) {
   }
   function hasGrain(charts) {
     return (charts || []).some(function (chart) {
-      return chart.kind === 'amount_yoy' || chart.kind === 'share';
+      return chart.kind === 'amount_yoy' || chart.kind === 'share' || chart.kind === 'rate_yoy';
     });
   }
   function syncGrainBar(panel, charts) {

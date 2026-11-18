@@ -2381,6 +2381,122 @@ def _annual_share_series(points: list[dict[str, Any]]) -> dict[str, Any] | None:
     }
 
 
+def _margin_rows(ticker: str, key: str) -> list[dict[str, Any]]:
+    """各季已保存的毛利率。没有该口径就不填，不用另一口径顶上。"""
+    rows = []
+    docs = _load_docs(ticker)
+    for period in sorted(docs):
+        doc = docs[period]
+        block = (doc.get("financials") or {}).get(key)
+        block = block if isinstance(block, dict) else {}
+        rows.append(
+            {
+                "period": period,
+                "rate": _num(block.get("value")),
+                "revenue": _block_num(doc, "revenue"),
+                "yoy_pp": _num(block.get("yoy_pp")),
+                "qoq_pp": _num(block.get("qoq_pp")),
+            }
+        )
+    return rows
+
+
+def _points_change(current: float | None, prior: float | None) -> float | None:
+    if current is None or prior is None:
+        return None
+    return round((float(current) - float(prior)) * 100, 1)
+
+
+def _annual_rate_series(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """年度毛利率 = 四个季度毛利合计 / 营收合计。缺一季、没有营收，或比率本身缺失，就整年省略。"""
+    buckets: dict[int, dict[int, dict[str, Any]]] = {}
+    for row in rows:
+        parts = _fiscal_parts(str(row.get("period") or ""))
+        if parts is None:
+            continue
+        year, quarter = parts
+        buckets.setdefault(year, {})[quarter] = row
+    totals: dict[int, float] = {}
+    for year, slots in buckets.items():
+        if any(quarter not in slots for quarter in (1, 2, 3, 4)):
+            continue
+        weighted = 0.0
+        revenue = 0.0
+        complete = True
+        for quarter in (1, 2, 3, 4):
+            rate = slots[quarter].get("rate")
+            base = slots[quarter].get("revenue")
+            if rate is None or base is None:
+                complete = False
+                break
+            weighted += float(rate) * float(base)
+            revenue += float(base)
+        if not complete or revenue == 0:
+            continue
+        totals[year] = weighted / revenue
+    if not totals:
+        return None
+    labels: list[str] = []
+    rate: list[float] = []
+    yoy: list[float | None] = []
+    text: list[str] = []
+    for year in sorted(totals):
+        pct = round(totals[year] * 100, 1)
+        labels.append(f"FY{year}")
+        rate.append(pct)
+        text.append(f"{pct:.1f}%")
+        yoy.append(_points_change(totals[year], totals.get(year - 1)))
+    return {"labels": labels, "rate": rate, "yoy": yoy, "qoq": [None] * len(labels), "rate_text": text}
+
+
+def _rate_yoy_chart(rows: list[dict[str, Any]], title: str) -> dict[str, Any] | None:
+    """毛利率图。水平值是百分数，同比和环比是百分点，不是金额变化率。"""
+    by_period = {str(row["period"]): row for row in rows}
+    labels: list[str] = []
+    rate: list[float | None] = []
+    yoy: list[float | None] = []
+    qoq: list[float | None] = []
+    text: list[str | None] = []
+    any_rate = False
+    for row in rows:
+        label = str(row["period"])
+        raw = row.get("rate")
+        labels.append(label)
+        if raw is None:
+            rate.append(None)
+            text.append(None)
+            yoy.append(None)
+            qoq.append(None)
+            continue
+        any_rate = True
+        pct = round(float(raw) * 100, 1)
+        rate.append(pct)
+        text.append(f"{pct:.1f}%")
+        yoy_pp = row.get("yoy_pp")
+        if yoy_pp is None:
+            prior = by_period.get(yoy_fiscal_period(label)) or {}
+            yoy_pp = None if prior.get("rate") is None else float(raw) - float(prior["rate"])
+        qoq_pp = row.get("qoq_pp")
+        if qoq_pp is None:
+            prev = by_period.get(prior_fiscal_period(label)) or {}
+            qoq_pp = None if prev.get("rate") is None else float(raw) - float(prev["rate"])
+        yoy.append(None if yoy_pp is None else round(float(yoy_pp) * 100, 1))
+        qoq.append(None if qoq_pp is None else round(float(qoq_pp) * 100, 1))
+    if not any_rate:
+        return None
+    return {
+        "title": title,
+        "kind": "rate_yoy",
+        "subtitle": "%",
+        "labels": labels,
+        "rate": rate,
+        "yoy": yoy,
+        "qoq": qoq,
+        "rate_text": text,
+        "annual": _annual_rate_series(rows),
+    }
+
+
 def _amount_yoy_chart(quarters: list[dict[str, Any]], field: str, title: str, subtitle: str) -> dict[str, Any]:
     labels: list[str] = []
     amount: list[float | None] = []
@@ -2575,13 +2691,20 @@ def _build_fin_series(ticker: str) -> dict[str, Any]:
             "note": statement.get("source") or "",
             "charts": [_amount_yoy_chart(quarters, "revenue", "营业收入", money_sub)],
         }
-        if any(row.get("gross_profit") is not None for row in quarters):
-            gross_chart = {
-                "note": "毛利金额来自已保存的报表历史，和营业收入同一套季度。没有再拆开。",
-                "charts": [_amount_yoy_chart(quarters, "gross_profit", "毛利", money_sub)],
+        for margin_key, title in (
+            ("gross_margin_gaap", "毛利率（GAAP）"),
+            ("gross_margin_nongaap", "毛利率（Non-GAAP）"),
+        ):
+            chart = _rate_yoy_chart(_margin_rows(ticker, margin_key), title)
+            if chart is None:
+                continue
+            by_key[margin_key] = {
+                "note": (
+                    f"{title}用各季已经保存的比率。没有这一口径的季度留空，不用另一口径填上。"
+                    "同比、环比是百分点。年度毛利率是四个季度毛利合计除以营收合计，不是把季度比率相加；缺一季就不画这一年。"
+                ),
+                "charts": [chart],
             }
-            by_key["gross_margin_gaap"] = gross_chart
-            by_key["gross_margin_nongaap"] = gross_chart
         if any(row.get("opex") is not None for row in quarters):
             opex_charts = [_amount_yoy_chart(quarters, "opex", "营业费用", money_sub)]
             if any(row.get("opex_lines") for row in quarters):
@@ -2647,7 +2770,7 @@ def _fin_panel(rows: list[dict[str, Any]], view: dict[str, Any]) -> dict[str, An
     default = "revenue" if any(row["key"] == "revenue" for row in rows) else (rows[0]["key"] if rows else "")
     spec = (view.get("by_key") or {}).get(default) or {}
     charts = spec.get("charts") or (_generic_charts(default) if default else [])
-    grain = any(chart.get("kind") in {"amount_yoy", "share"} for chart in charts)
+    grain = any(chart.get("kind") in {"amount_yoy", "share", "rate_yoy"} for chart in charts)
     return {**view, "default": default, "charts": charts, "note": spec.get("note") or "", "grain": grain}
 
 

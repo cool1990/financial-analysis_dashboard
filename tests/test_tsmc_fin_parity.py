@@ -97,7 +97,9 @@ def test_fin_view_keeps_meta_copy_and_gives_tsm_three_revenue_charts():
     assert meta["by_key"]["revenue"]["note"] == META_REVENUE_NOTE
     assert [chart["title"] for chart in meta["by_key"]["revenue"]["charts"]] == ["营业收入", "按业务", "按地区"]
     assert [chart["title"] for chart in meta["by_key"]["opex"]["charts"]] == ["营业费用", "费用构成"]
-    assert [chart["title"] for chart in meta["by_key"]["gross_margin_gaap"]["charts"]] == ["毛利"]
+    assert [chart["title"] for chart in meta["by_key"]["gross_margin_gaap"]["charts"]] == ["毛利率（GAAP）"]
+    assert meta["by_key"]["gross_margin_gaap"]["charts"][0]["kind"] == "rate_yoy"
+    assert meta["by_key"]["gross_margin_gaap"]["charts"][0]["subtitle"] == "%"
     assert "companyfacts" in meta["by_key"]["cost_of_revenue"]["note"]
 
     tsm = _fin_view("TSM", "FY2026Q3")
