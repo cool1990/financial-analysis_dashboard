@@ -35,6 +35,101 @@ def test_geo_lines_skip_a_partial_region_set():
     assert geo_lines({"USCanadaMember": 10, "EuropeMember": 4}) == []
 
 
+def test_geo_lines_keep_nvidia_countries_and_drop_the_non_us_parent():
+    lines = geo_lines(
+        {
+            "US": 72899,
+            "TW": 30295,
+            "ChinaIncludingHongKongMember": 11050,
+            "OtherCountriesMember": 1600,
+            "NonUsMember": 42945,
+        }
+    )
+    assert [(line["key"], line["name"]) for line in lines] == [
+        ("us", "美国"),
+        ("tw", "台湾"),
+        ("cn_hk", "中国（含香港）"),
+        ("other_countries", "其他国家"),
+    ]
+
+
+def test_lines_for_nvidia_markets_skip_datacenter_children():
+    lines = lines_for(
+        _members(
+            DataCenterMember=89023,
+            EdgeComputingMember=7198,
+            HyperscaleMember=48710,
+            AICloudsIndustrialEnterpriseMember=40313,
+        )
+    )
+    assert [(line["key"], line["name"]) for line in lines] == [
+        ("datacenter", "数据中心"),
+        ("edge", "边缘计算"),
+    ]
+
+
+def test_later_filing_replaces_geo_set_instead_of_union():
+    from pipeline.sources.segment_history import assemble_geography
+
+    def fact(member: str, value: float) -> dict:
+        return {
+            "tag": "Revenues",
+            "end": "2025-04-27",
+            "days": 90,
+            "members": (member,),
+            "value": value,
+        }
+
+    older = {
+        "filed": "2025-05-28",
+        "form": "10-Q",
+        "accession": "old",
+        "facts": [
+            fact("US", 20_739),
+            fact("TW", 7_158),
+            fact("SG", 9_017),
+            fact("AllOtherCountriesNotSeparatelyDisclosedMember", 1_626),
+        ],
+    }
+    newer = {
+        "filed": "2026-05-20",
+        "form": "10-Q",
+        "accession": "new",
+        "facts": [
+            fact("US", 25_685),
+            fact("TW", 7_648),
+            fact("OtherCountriesMember", 1_070),
+        ],
+    }
+    rows = assemble_geography([older, newer], fiscal_year_end_month=1)
+    assert len(rows) == 1
+    assert rows[0]["accession"] == "new"
+    assert [(line["key"], line["value"]) for line in rows[0]["lines"]] == [
+        ("us", 25_685),
+        ("tw", 7_648),
+        ("other_countries", 1_070),
+    ]
+
+
+def test_nvda_q3_supplement_geo_and_press_markets():
+    from pipeline.sources.segment_history import parse_nvda_hq_geo_quarter, parse_nvda_q3_markets
+
+    text = """
+Geographic Revenue based upon Customer Headquarters Location:
+United States $72,899 $39,177 $196,742 $97,759
+Taiwan 30,295 13,751 69,286 30,301
+China (including Hong Kong) 11,050 2,973 23,480 16,617
+Other 1,600 1,105 4,173 3,134
+Total revenue $115,844 $57,006 $293,681 $147,811
+Data Center revenue of $107.6 billion, up 110%
+Third-quarter Edge Computing revenue was $8.2 billion, up 14%
+"""
+    geo = parse_nvda_hq_geo_quarter(text)
+    assert [line["value"] for line in geo] == [72_899_000_000, 30_295_000_000, 11_050_000_000, 1_600_000_000]
+    markets = parse_nvda_q3_markets(text)
+    assert [line["value"] for line in markets] == [107_600_000_000, 8_200_000_000]
+
+
 def _members(**pairs: float) -> dict[tuple[str, ...], float]:
     return {tuple(name.split("|")): value for name, value in pairs.items()}
 

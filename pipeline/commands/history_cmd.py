@@ -369,6 +369,77 @@ def _history_complete(ticker: str) -> bool:
     return all((data_dir(ticker) / name).exists() for name in HISTORY_FILES)
 
 
+def apply_nvda_disclosed_mix(ticker: str, documents: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """FY2027Q3 还没有 10-Q。地区用 8-K 补充表，业务线用新闻稿里的数据中心和边缘计算。"""
+    if ticker.upper() != "NVDA":
+        return documents
+    from pipeline.extract.press_release import html_to_text_and_tables
+    from pipeline.sources.segment_history import parse_nvda_hq_geo_quarter, parse_nvda_q3_markets
+    from pipeline.state import load_period_json
+
+    path = data_dir("NVDA") / "raw" / "FY2027Q3" / "press_release.html"
+    if not path.exists():
+        return documents
+    text = html_to_text_and_tables(path.read_bytes())["combined"]
+    geo = parse_nvda_hq_geo_quarter(text)
+    markets = parse_nvda_q3_markets(text)
+    statement = documents["statement_history"]
+    quarters = statement.setdefault("quarters", [])
+    if geo:
+        row = next((item for item in quarters if item.get("period") == "FY2027Q3"), None)
+        geo_lines = [
+            {"key": line["key"], "name": line["name"], "value": int(line["value"])} for line in geo
+        ]
+        if row is None:
+            period = load_period_json("NVDA", "FY2027Q3") or {}
+            revenue = ((period.get("financials") or {}).get("revenue") or {}).get("value")
+            if revenue is None:
+                revenue = sum(line["value"] for line in geo_lines)
+            quarters.append(
+                {
+                    "period": "FY2027Q3",
+                    "end": "2026-10-25",
+                    "revenue": int(revenue),
+                    "revenue_method": "press_release",
+                    "geo": geo_lines,
+                    "geo_method": "8k_supplement",
+                }
+            )
+        elif not row.get("geo"):
+            row["geo"] = geo_lines
+            row["geo_method"] = "8k_supplement"
+        quarters.sort(key=lambda item: str(item.get("end") or ""))
+        extra = (
+            "地区按直接客户总部所在地列示，可能与最终客户或收货地不同。"
+            "FY2027Q3 地区来自 8-K 补充财务信息，不是 10-Q。"
+        )
+        source = str(statement.get("source") or "")
+        if extra not in source:
+            statement["source"] = (source + " " + extra).strip()
+    segment = documents["segment_history"]
+    rows = segment.setdefault("quarters", [])
+    if markets and not any(item.get("period") == "FY2027Q3" and item.get("lines") for item in rows):
+        rows.append(
+            {
+                "period": "FY2027Q3",
+                "end": "2026-10-25",
+                "lines": markets,
+                "method": "8k_press",
+                "filed": "2026-11-17",
+                "form": "8-K",
+                "accession": "0001045810-26-000088",
+            }
+        )
+        rows.sort(key=lambda item: str(item.get("end") or ""))
+    keys = {line.get("key") for item in rows for line in (item.get("lines") or [])}
+    if "gaming" in keys and "edge" in keys:
+        note = "游戏业务线后来改称边缘计算，两列不合并。"
+        source = str(segment.get("source") or "")
+        if note not in source:
+            segment["source"] = (source + note).strip()
+    return documents
+
+
 def refresh_history(
     ticker: str,
     *,
@@ -377,6 +448,9 @@ def refresh_history(
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     """总是重写三份文件。港股和 ADR 跳过，不访问 SEC。"""
+    # 英伟达财年在 1 月结束，FY2016 前三季落在 2015 年。
+    if ticker.upper() == "NVDA" and start == "2016-01-01":
+        start = "2015-01-01"
     cfg = load_ticker_config(ticker)
     reason = skip_reason(cfg)
     if reason:
@@ -410,6 +484,7 @@ def refresh_history(
         generated_at=stamp,
         start=start,
     )
+    documents = apply_nvda_disclosed_mix(ticker, documents)
     paths = _write_documents(ticker, documents)
     from pipeline.commands.backfill_cmd import write_xbrl_history
 

@@ -13,7 +13,7 @@ from typing import Any
 from pipeline.config import cache_dir
 from pipeline.sources.sec_edgar import SecEdgarClient, SecRateLimitError
 from pipeline.sources.segment_history import (
-    GEO_AXIS,
+    GEO_AXES,
     _bucket,
     parse_axis_facts,
     parse_composition_table,
@@ -189,7 +189,9 @@ def collect_filings(
             raw = _download(client, cik, row["accession"], filename)
             try:
                 segment_facts = parse_instance(raw)
-                geo_facts = parse_axis_facts(raw, GEO_AXIS)
+                geo_facts = []
+                for axis in GEO_AXES:
+                    geo_facts.extend(parse_axis_facts(raw, axis))
             except Exception as exc:
                 warnings.append(f"{row['accession']} 的 XBRL 没有解析: {exc}")
                 segment_facts = []

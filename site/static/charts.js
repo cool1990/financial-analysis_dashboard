@@ -346,10 +346,23 @@ if (page.finView) {
       data: { labels: labels, datasets: datasets },
       options: {
         responsive: true, maintainAspectRatio: false, animation: false,
-        interaction: { mode: 'nearest', intersect: true },
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 8, font: { size: 11 } } },
-          tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(1) + '%'); } } }
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                if (ctx.parsed.y == null) return null;
+                var point = points[ctx.dataIndex] || {};
+                var item = (point.items || []).filter(function (row) {
+                  return row.key === ctx.dataset.key && row.stack;
+                })[0];
+                var share = ctx.parsed.y.toFixed(1) + '%';
+                var amount = item && item.amount ? ' · ' + item.amount : '';
+                return (item && item.name ? item.name : ctx.dataset.label) + ' ' + share + amount;
+              }
+            }
+          }
         },
         scales: {
           x: { stacked: true, grid: { display: false }, ticks: yearTicks(labels) },

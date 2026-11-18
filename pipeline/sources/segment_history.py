@@ -23,6 +23,7 @@ ALLOW_AXES = {
     "ProductOrServiceAxis",
     "StatementProductOrServiceAxis",
     "ProductsAndServicesAxis",
+    "MarketAxis",
 }
 
 # 堆叠图用叶子，避免母项和应用家族下面的广告重复计算。
@@ -36,6 +37,10 @@ _OTH = frozenset({"ServiceOtherMember"})
 
 
 GEO_AXIS = "StatementGeographicalAxis"
+GEO_AXES = (
+    "StatementGeographicalAxis",
+    "RevenueFromCustomersBasedInDifferentGeographicRegionsAxis",
+)
 # 两套地区不能混成一条线：2016–2017 的 Rest of World 是美国以外，之后的是四区里的剩余部分。
 _GEO_FOUR = ("USCanadaMember", "EuropeMember", "AsiaPacificMember", "RestOfWorldMember")
 _GEO_LABELS = {
@@ -47,10 +52,74 @@ _GEO_LABELS = {
     "US": ("us", "美国"),
     "UnitedStatesMember": ("us", "美国"),
 }
+# 这些成员一出现，就按申报自己的国家/地区列，不再套 Meta 的四区或美国/美国以外。
+_NVIDIA_GEO_TRIGGERS = {
+    "TW",
+    "TaiwanMember",
+    "CN",
+    "ChinaMember",
+    "ChinaIncludingHongKongMember",
+    "OtherAmericasMember",
+    "OtherAsiaPacificMember",
+    "OtherCountriesMember",
+    "AllOtherCountriesNotSeparatelyDisclosedMember",
+    "SG",
+    "SingaporeMember",
+    "IL",
+    "IN",
+}
+_NVIDIA_GEO_ORDER = (
+    ("US", "us", "美国"),
+    ("UnitedStatesMember", "us", "美国"),
+    ("TW", "tw", "台湾"),
+    ("TaiwanMember", "tw", "台湾"),
+    ("CN", "cn", "中国"),
+    ("ChinaMember", "cn", "中国"),
+    ("ChinaIncludingHongKongMember", "cn_hk", "中国（含香港）"),
+    ("EuropeMember", "europe", "欧洲"),
+    ("OtherAmericasMember", "other_americas", "其他美洲"),
+    ("OtherAsiaPacificMember", "other_apac", "其他亚太"),
+    ("SG", "sg", "新加坡"),
+    ("SingaporeMember", "sg", "新加坡"),
+    ("IL", "il", "以色列"),
+    ("IN", "in", "印度"),
+    ("OtherCountriesMember", "other_countries", "其他国家"),
+    ("AllOtherCountriesNotSeparatelyDisclosedMember", "other_undisclosed", "未单列的其他国家"),
+)
+# NonUsMember 是美国以外的母项。已经拆出国家时不再并进柱。
+_GEO_PARENTS = {"NonUsMember"}
+
+# 产品/市场线。Compute、Networking、Hyperscale 是数据中心内部，不和数据中心叠在一起。
+_MARKET_ORDER = (
+    ("DataCenterMember", "datacenter", "数据中心"),
+    ("DatacenterMember", "datacenter", "数据中心"),
+    ("GamingMember", "gaming", "游戏"),
+    ("EdgeComputingMember", "edge", "边缘计算"),
+    ("ProfessionalVisualizationMember", "proviz", "专业可视化"),
+    ("AutomotiveMember", "auto", "汽车"),
+    ("OEMAndOtherMember", "oem", "OEM 及其他"),
+    ("OEMIPMember", "oem", "OEM 与 IP"),
+    ("OEMandIPMember", "oem", "OEM 与 IP"),
+)
+
+
+def _alias_geo_members(members: dict[str, float]) -> dict[str, float]:
+    """10-K 把「未单列的其他国家」改称 Other countries。两套名字不会同时出现。"""
+    out = dict(members)
+    src = "AllOtherCountriesNotSeparatelyDisclosedMember"
+    dst = "OtherCountriesMember"
+    if src in out and dst not in out:
+        out[dst] = out.pop(src)
+    return out
 
 
 def geo_lines(members: dict[str, float]) -> list[dict[str, Any]]:
-    """同一季只留一套地区。四区齐全时用四区；否则仅在美国和美国以外都有数时用两区。"""
+    """同一季只留一套地区。
+
+    Meta 四区齐全时用四区；否则只有美国和美国以外时用两区。
+    申报自己列出台湾、中国等成员时，按那些成员画，不改成 Meta 的区。
+    """
+    members = _alias_geo_members(members)
     if all(name in members and members[name] > 0 for name in _GEO_FOUR):
         rows = []
         for name in _GEO_FOUR:
@@ -59,14 +128,26 @@ def geo_lines(members: dict[str, float]) -> list[dict[str, Any]]:
                 key, label = "row", "世界其他地区"
             rows.append({"key": key, "name": label, "value": members[name], "depth": 0, "stack": True})
         return rows
+    triggered = any(name in members and members[name] > 0 for name in _NVIDIA_GEO_TRIGGERS)
     us = members.get("US", members.get("UnitedStatesMember"))
     broad = members.get("RestOfWorldMember")
-    if us and broad and us > 0 and broad > 0:
+    if not triggered and us and broad and us > 0 and broad > 0:
         return [
             {"key": "us", "name": "美国", "value": us, "depth": 0, "stack": True},
             {"key": "row_broad", "name": "美国以外", "value": broad, "depth": 0, "stack": True},
         ]
-    return []
+    if not triggered:
+        return []
+    rows = []
+    seen: set[str] = set()
+    for name, key, label in _NVIDIA_GEO_ORDER:
+        if name in _GEO_PARENTS or name not in members or members[name] <= 0 or key in seen:
+            continue
+        seen.add(key)
+        rows.append({"key": key, "name": label, "value": members[name], "depth": 0, "stack": True})
+    if len(rows) < 2:
+        return []
+    return rows
 
 
 def parse_axis_facts(xml_bytes: bytes, axis: str) -> list[dict[str, Any]]:
@@ -96,15 +177,14 @@ def parse_axis_facts(xml_bytes: bytes, axis: str) -> list[dict[str, Any]]:
         contexts[cid] = {"start": start, "end": end, "members": tuple(sorted(set(members)))}
     facts: list[dict[str, Any]] = []
     for el in root.iter():
-        tag = _local(el.tag)
-        if tag not in REVENUE_TAGS or el.text is None:
+        tag = _fact_tag(el)
+        if tag not in REVENUE_TAGS:
             continue
         ctx = contexts.get(el.get("contextRef") or "")
         if ctx is None:
             continue
-        try:
-            value = float(el.text)
-        except ValueError:
+        value = _fact_number(el)
+        if value is None:
             continue
         start_d = date.fromisoformat(ctx["start"])
         end_d = date.fromisoformat(ctx["end"])
@@ -196,30 +276,41 @@ def assemble_geography(
     fiscal_year_end_month: int = 12,
 ) -> list[dict[str, Any]]:
     """filings 的 facts 已是 parse_axis_facts 的结果。没有单季事实时，用全年减前九个月。"""
-    best: dict[tuple[str, str, str], dict[str, Any]] = {}
     history: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    choices: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for filing in filings:
+        local: dict[tuple[str, str], dict[str, float]] = {}
         for (end, bucket, members), fact in _prefer(filing["facts"]).items():
             if len(members) != 1:
                 continue
             slot_key = (end, bucket, members[0])
-            chosen = {
-                "value": fact["value"],
-                "filed": filing["filed"],
-                "form": filing["form"],
-                "accession": filing["accession"],
-            }
-            history.setdefault(slot_key, []).append(chosen)
-            prev = best.get(slot_key)
-            if prev is None or filing["filed"] >= prev["filed"]:
-                best[slot_key] = chosen
+            history.setdefault(slot_key, []).append(
+                {
+                    "value": fact["value"],
+                    "filed": filing["filed"],
+                    "form": filing["form"],
+                    "accession": filing["accession"],
+                }
+            )
+            local.setdefault((end, bucket), {})[members[0]] = fact["value"]
+        for slot, member_values in local.items():
+            choices.setdefault(slot, []).append(
+                {
+                    "members": member_values,
+                    "filed": filing["filed"],
+                    "form": filing["form"],
+                    "accession": filing["accession"],
+                }
+            )
+    # 同一季的国家名单以一整份申报为准。后一份 10-Q 会重分类（例如新加坡并进其他国家），
+    # 不能把旧名单里多出来的成员再加回去。
     grouped: dict[tuple[str, str], dict[str, float]] = {}
     meta: dict[tuple[str, str], dict[str, Any]] = {}
-    for (end, bucket, member), slot in best.items():
-        grouped.setdefault((end, bucket), {})[member] = slot["value"]
-        prev = meta.get((end, bucket))
-        if prev is None or slot["filed"] >= prev["filed"]:
-            meta[(end, bucket)] = slot
+    for slot, options in choices.items():
+        ordered = sorted(options, key=lambda item: item["filed"], reverse=True)
+        picked = next((item for item in ordered if geo_lines(item["members"])), ordered[0])
+        grouped[slot] = picked["members"]
+        meta[slot] = picked
     direct: dict[str, dict[str, Any]] = {}
     for (end, bucket), member_values in grouped.items():
         if bucket != "quarter":
@@ -240,12 +331,15 @@ def assemble_geography(
     for fy, end in year_ends:
         if end in direct:
             continue
-        nine = nine_by_fy.get(fy) or {}
+        nine = _alias_geo_members(nine_by_fy.get(fy) or {})
         # 后来的 10-K 会把 Rest of World 收窄。只拿仍大于前九个月的那条全年数，避免两套口径相减。
+        # 「未单列的其他国家」和 Other countries 是同一行换了名字，相减前对齐。
         residual = {}
         members = {member for (mend, bucket, member) in history if mend == end and bucket == "year"}
         for member in members:
-            nine_value = nine.get(member)
+            aliased = _alias_geo_members({member: 0})
+            nine_key = next(iter(aliased))
+            nine_value = nine.get(nine_key)
             if nine_value is None:
                 continue
             usable = [item for item in history.get((end, "year", member), []) if item["value"] > nine_value]
@@ -253,8 +347,8 @@ def assemble_geography(
                 continue
             annual_value = max(usable, key=lambda item: item["filed"])["value"]
             gap = annual_value - nine_value
-            if gap > 0:
-                residual[member] = gap
+            if gap > 0 and nine_key not in residual:
+                residual[nine_key] = gap
         lines = geo_lines(residual)
         if not lines:
             continue
@@ -274,6 +368,30 @@ def assemble_geography(
 
 def _local(tag: str) -> str:
     return tag.split("}")[-1]
+
+
+def _fact_tag(el: Any) -> str:
+    if _local(el.tag) == "nonFraction":
+        return (el.get("name") or "").split(":")[-1]
+    return _local(el.tag)
+
+
+def _fact_number(el: Any) -> float | None:
+    """经典 XBRL 的 text，或 iXBRL nonFraction（可带千分位和 scale）。"""
+    raw = "".join(el.itertext()).replace(",", "").replace("$", "").strip()
+    if not raw:
+        return None
+    try:
+        value = float(raw)
+    except ValueError:
+        return None
+    scale = el.get("scale")
+    if scale not in (None, ""):
+        try:
+            value *= 10 ** int(scale)
+        except ValueError:
+            return None
+    return value
 
 
 def parse_instance(xml_bytes: bytes) -> list[dict[str, Any]]:
@@ -305,15 +423,14 @@ def parse_instance(xml_bytes: bytes) -> list[dict[str, Any]]:
         contexts[cid] = {"start": start, "end": end, "members": tuple(sorted(set(members)))}
     facts: list[dict[str, Any]] = []
     for el in root.iter():
-        tag = _local(el.tag)
-        if tag not in REVENUE_TAGS or el.text is None:
+        tag = _fact_tag(el)
+        if tag not in REVENUE_TAGS:
             continue
         ctx = contexts.get(el.get("contextRef") or "")
         if ctx is None:
             continue
-        try:
-            value = float(el.text)
-        except ValueError:
+        value = _fact_number(el)
+        if value is None:
             continue
         start_d = date.fromisoformat(ctx["start"])
         end_d = date.fromisoformat(ctx["end"])
@@ -328,6 +445,59 @@ def parse_instance(xml_bytes: bytes) -> list[dict[str, Any]]:
             }
         )
     return facts
+
+
+def parse_nvda_hq_geo_quarter(text: str) -> list[dict[str, Any]] | None:
+    """8-K 补充信息里「客户总部所在地」的三个月地区收入。单位按表头百万美元。"""
+    marker = "Geographic Revenue based upon Customer Headquarters Location:"
+    start = text.find(marker)
+    if start < 0:
+        return None
+    block = text[start : start + 700]
+    spec = (
+        ("United States", "us", "美国"),
+        ("Taiwan", "tw", "台湾"),
+        ("China (including Hong Kong)", "cn_hk", "中国（含香港）"),
+        ("Other", "other_countries", "其他国家"),
+    )
+    lines = []
+    for label, key, name in spec:
+        match = re.search(re.escape(label) + r"\s+\$?\s*([\d,]+)", block)
+        if not match:
+            return None
+        value = float(match.group(1).replace(",", "")) * 1_000_000
+        lines.append({"key": key, "name": name, "value": value, "depth": 0, "stack": True})
+    total = re.search(r"Total revenue\s+\$?\s*([\d,]+)", block)
+    if total is None:
+        return None
+    reported = float(total.group(1).replace(",", "")) * 1_000_000
+    if abs(sum(line["value"] for line in lines) - reported) > 1:
+        return None
+    return lines
+
+
+def parse_nvda_q3_markets(text: str) -> list[dict[str, Any]] | None:
+    """新闻稿里的数据中心和边缘计算。单位是 billion，不把电话会约数写进来。"""
+    datacenter = re.search(r"Data Center revenue of \$([0-9]+(?:\.[0-9]+)?) billion", text)
+    edge = re.search(r"Edge Computing revenue was \$([0-9]+(?:\.[0-9]+)?) billion", text)
+    if not datacenter or not edge:
+        return None
+    return [
+        {
+            "key": "datacenter",
+            "name": "数据中心",
+            "value": round(float(datacenter.group(1)) * 1_000_000_000),
+            "depth": 0,
+            "stack": True,
+        },
+        {
+            "key": "edge",
+            "name": "边缘计算",
+            "value": round(float(edge.group(1)) * 1_000_000_000),
+            "depth": 0,
+            "stack": True,
+        },
+    ]
 
 
 def parse_composition_table(html: str) -> dict[str, float] | None:
@@ -407,7 +577,19 @@ def lines_for(members: dict[tuple[str, ...], float]) -> list[dict[str, Any]]:
         rows.append({"key": "other", "name": "支付及其他费用", "value": indexed[_PAY], "depth": 0, "stack": True})
     elif _OTH in indexed:
         rows.append({"key": "other", "name": "其他收入", "value": indexed[_OTH], "depth": 0, "stack": True})
-    return rows
+    if rows:
+        return rows
+    singles = {key[0]: value for key, value in members.items() if len(key) == 1 and value > 0}
+    seen: set[str] = set()
+    market_rows = []
+    for name, key, label in _MARKET_ORDER:
+        if name not in singles or key in seen:
+            continue
+        seen.add(key)
+        market_rows.append({"key": key, "name": label, "value": singles[name], "depth": 0, "stack": True})
+    if len(market_rows) >= 2:
+        return market_rows
+    return []
 
 
 def _index_filing(facts: list[dict[str, Any]]) -> dict[tuple, float]:

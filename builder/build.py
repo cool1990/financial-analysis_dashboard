@@ -2624,6 +2624,8 @@ def _build_fin_series(ticker: str) -> dict[str, Any]:
             note = f"{note} 业务柱只计广告、其他和 Reality Labs；应用家族是母项，不重复计入。"
         else:
             note = f"{note} 业务柱只计已披露且能加总的分部，没有占比的季度不补数。"
+        if "gaming" in _stacked_point_keys(business) and "edge" in _stacked_point_keys(business):
+            note = f"{note} 游戏业务线后来改称边缘计算，两列不合并。"
         by_key["revenue"]["note"] = note.strip()
         charts = by_key["revenue"]["charts"]
         charts.insert(1, _share_chart(business, "按业务", "占比", period))
