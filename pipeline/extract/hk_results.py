@@ -17,7 +17,13 @@ from pipeline.extract.hk_text import parse_cn_date, read_pdf_text
 
 __all__ = ["HkCumulativeOnly", "HkImportError", "extract_hk_results", "load_press_text", "pdf_to_text"]
 
-_FCF = re.compile(r"自由现金流为人民币\s*([\d,]+(?:\.\d+)?)\s*亿元")
+_FCF = re.compile(
+    r"(?:录得)?(?P<sign>负)?自由现金流为人民币\s*(?P<amount>[\d,]+(?:\.\d+)?)\s*亿元"
+    r"|录得负自由现金流人民币\s*(?P<neg>[\d,]+(?:\.\d+)?)\s*亿元"
+)
+_FCF_EX_PREPAY = re.compile(
+    r"若剔除算力\s*采购的预付款[,，]\s*我们的自由现金流将转正至人民币\s*([\d,]+(?:\.\d+)?)\s*亿元"
+)
 _IFRS_EPS = re.compile(r"每股摊薄盈利为人民币\s*([\d.]+)\s*元")
 
 
@@ -61,6 +67,40 @@ def _ifrs_eps_sentence(text: str) -> str | None:
     return None
 
 
+def _free_cash_flow_kpi(text: str) -> tuple[dict[str, Any] | None, list[str]]:
+    """叙述里的自由现金流只进 kpi。剔除预付款后的正数不是本期自由现金流。
+
+    不写入 financials.fcf。其他财务资料表的资本开支另有口径，这里不取。
+    """
+    matched = _FCF.search(text)
+    if matched is None:
+        return None, ["公告未单列经营现金流，operating_cash_flow 与 fcf 留空"]
+    amount = matched.group("neg") or matched.group("amount")
+    negative = bool(matched.group("neg") or matched.group("sign"))
+    raw = f"-{amount}" if negative else amount
+    excluded = _FCF_EX_PREPAY.search(text, matched.end())
+    quote_end = excluded.end() if excluded and excluded.start() - matched.start() < 500 else matched.start() + 200
+    quote = " ".join(text[matched.start():quote_end].split())
+    node = {
+        "raw": raw,
+        "unit": "亿元",
+        "currency": "CNY",
+        "period_type": "3m",
+        "months": 3,
+        "source_quote": quote[:360],
+    }
+    warning = "自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf"
+    if negative:
+        warning += f"。本期官方自由现金流为负人民币{amount}亿元"
+    if excluded:
+        warning += (
+            f"。剔除算力采购预付款后的正数人民币{excluded.group(1)}亿元不是本期自由现金流"
+        )
+    if negative or excluded:
+        warning += "。其他财务资料表的资本开支与叙述里的资本开支付款不是同一口径"
+    return node, [warning]
+
+
 def extract_hk_results(
     text: str,
     fiscal_period: str,
@@ -95,21 +135,12 @@ def extract_hk_results(
         node = rows.get(key)
         if node:
             kpis[key] = node
-    fcf_matched = _FCF.search(parsed["prepared_text"])
-    if fcf_matched is None:
-        fcf_matched = _FCF.search(text)
-    if fcf_matched:
-        kpis["free_cash_flow"] = {
-            "raw": fcf_matched.group(1),
-            "unit": "亿元",
-            "currency": "CNY",
-            "period_type": "3m",
-            "months": 3,
-            "source_quote": fcf_matched.group(0)[:200],
-        }
-        warnings.append("自由现金流只记入 kpis.free_cash_flow；公告未单列经营现金流，不写入 financials.fcf")
-    else:
-        warnings.append("公告未单列经营现金流，operating_cash_flow 与 fcf 留空")
+    fcf_node, fcf_warnings = _free_cash_flow_kpi(parsed["prepared_text"])
+    if fcf_node is None:
+        fcf_node, fcf_warnings = _free_cash_flow_kpi(text)
+    if fcf_node:
+        kpis["free_cash_flow"] = fcf_node
+    warnings.extend(fcf_warnings)
 
     release = _release_day(text) or _release_day(parsed["prepared_text"])
     end: date = parsed["period_end"]

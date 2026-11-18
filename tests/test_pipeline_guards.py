@@ -595,12 +595,17 @@ def test_meta_quote_card_divides_tradingview_columns():
     assert by["市值"]["value"] == _fmt_cap(cols["market_cap_basic"])
     assert by["市值"]["sub"] == "TradingView"
     assert "未接入" not in by["市值"]["value"] and "缺股价" not in by["市值"]["sub"]
-    forward = _forward_pe_view("META", doc, "FY2026Q3", load_ticker_config("META"), active=True)
+    cfg = load_ticker_config("META")
+    forward = _forward_pe_view("META", doc, "FY2026Q3", cfg, active=True)
     assert forward["price"] == f"${cols['close']:.2f}"
     rows = {row["label"]: row for row in forward["rows"]}
-    # NTM 按剩余月份加权表内两个财年，不再用 close ÷ eps_estimate_ntm 单独占一格。
+    # NTM 按行情日到财年末的剩余月份加权，不再用 close ÷ eps_estimate_ntm 单独占一格。
+    from builder.build import _as_date, _months_remaining, _price_quote
+
+    as_of = _as_date(_price_quote("META", doc).get("as_of"))
+    months = _months_remaining(as_of, int(cfg.get("fiscal_year_end_month") or 12))
     assert rows["未来 12 个月（NTM）"]["eps_raw"] == pytest.approx(
-        3 / 12 * rows["FY26E"]["eps_raw"] + 9 / 12 * rows["FY27E"]["eps_raw"]
+        months / 12 * rows["FY26E"]["eps_raw"] + (12 - months) / 12 * rows["FY27E"]["eps_raw"]
     )
     assert "vs" not in rows["近 4 季（TTM）"]
     assert rows["近 4 季（TTM）"]["pe"].endswith("×")
@@ -1363,7 +1368,8 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
         label = f"FQ{item['tv_label'][-1]} {item['tv_label'][:4]}"
         assert by_q[label]["actual"] is None
         assert by_q[label]["consensus"] == round_eps(item["eps_est"])
-    assert by_q["FQ4 2026"]["consensus"] == round_eps(8.352415) == 8.35
+    fq4 = next(item for item in forward if item["tv_label"] == "2026-Q4")
+    assert by_q["FQ4 2026"]["consensus"] == round_eps(fq4["eps_est"])
     assert by_q["FQ2 2027"]["yoy_pct"] == pytest.approx((forward[2]["eps_est"] / 7.35 - 1) * 100)
     assert all(q["actual"] != 3.83 for q in chart["quarters"])
     assert all(q["basis"] == "Non-GAAP" for q in chart["quarters"] if q["actual"] is not None)
@@ -1397,7 +1403,8 @@ def test_meta_eps_uses_ex_charge_against_street_consensus():
         assert rev_by[label]["actual"] is None
         assert rev_by[label]["consensus"] == round(item["rev_est"] / 1_000_000_000, 2)
     rev_q4 = rev_by["FQ4 2026"]
-    assert rev_q4["consensus"] == round(74882505478.0 / 1_000_000_000, 2)
+    fq4_rev = next(item for item in forward if item["tv_label"] == "2026-Q4")
+    assert rev_q4["consensus"] == round(fq4_rev["rev_est"] / 1_000_000_000, 2)
     rev_nq = rev_by["FQ1 2027"]
     assert rev_nq["consensus"] is not None
     horizons = {item["label"]: item["value"] for item in revenue["horizons"]}
@@ -1610,8 +1617,8 @@ def test_forward_yoy_stays_empty_when_last_year_is_unreported():
     assert chart is not None and chart["revenue"]
     by_eps = {row["label"]: row for row in chart["quarters"]}
     by_rev = {row["label"]: row for row in chart["revenue"]["quarters"]}
-    # FY2026Q2 已披露，FQ2 2027 用这一季实际做分母，不拿预期除预期。
-    assert latest == "FY2026Q2"
+    # FY2026Q3 已披露。FQ2 2027 用已披露的 FY2026Q2 实际做分母，不拿预期除预期。
+    assert latest == "FY2026Q3"
     assert by_eps["FQ2 2026"]["actual"] is not None
     assert by_eps["FQ2 2027"]["consensus"] is not None and by_eps["FQ2 2027"]["actual"] is None
     assert by_eps["FQ2 2027"]["yoy_pct"] is not None
@@ -1619,7 +1626,7 @@ def test_forward_yoy_stays_empty_when_last_year_is_unreported():
     assert by_rev["FQ2 2027"]["consensus"] is not None and by_rev["FQ2 2027"]["yoy_pct"] is not None
 
     without = {key: value for key, value in docs.items() if key != "FY2026Q2"}
-    prior = _eps_chart(without["FY2026Q1"], without)
+    prior = _eps_chart(without[max(key for key in without if key.startswith("FY"))], without)
     prior_eps = {row["label"]: row for row in prior["quarters"]}
     prior_rev = {row["label"]: row for row in prior["revenue"]["quarters"]}
     assert prior_eps["FQ2 2027"]["consensus"] is not None and prior_eps["FQ2 2027"]["yoy_pct"] is None
@@ -1638,7 +1645,9 @@ def test_amzn_q4_eps_yoy_uses_scan_actual():
     assert by["FQ4 2025"]["basis"] == "扫描已公布"
     assert by["FQ4 2025"]["yoy_pct"] == pytest.approx((1.95 / 1.86 - 1) * 100)
     assert by["FQ4 2026"]["actual"] is None
-    assert by["FQ4 2026"]["yoy_pct"] == pytest.approx((2.459832 / 1.95 - 1) * 100)
+    scan = json.loads((ROOT / "data" / "AMZN" / "consensus" / "tradingview_scan.json").read_text(encoding="utf-8"))
+    fq4 = next(item for item in scan["future_quarters"] if item["tv_label"] == "2026-Q4")
+    assert by["FQ4 2026"]["yoy_pct"] == pytest.approx((fq4["eps_est"] / 1.95 - 1) * 100)
 
 
 def test_mismatched_scan_eps_does_not_fill_quarter_gap():
