@@ -3400,9 +3400,17 @@ def _industry_outlook(doc: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _guide_section(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
-    """指引展望只留两块：有数字的业绩指引，以及 Stage2 写入的行业展望。"""
-    docs = docs or {}
-    return {"rows": _performance_rows(doc, docs), "outlook": _industry_outlook(doc)}
+    """读取数字指引、可选的电话会方向性指引及行业展望。"""
+    guidance = doc.get("guidance") or {}
+    call_outlook = [
+        item for item in guidance.get("items") or []
+        if item.get("type") in {"directional", "qualitative"} and item.get("statement")
+    ] if guidance.get("show_call_outlook") else []
+    return {
+        "rows": _performance_rows(doc, docs or {}),
+        "call_outlook": call_outlook,
+        "outlook": _industry_outlook(doc),
+    }
 
 
 def _revision_rows(doc: dict[str, Any]) -> dict[str, Any]:
