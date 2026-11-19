@@ -3401,16 +3401,14 @@ def _industry_outlook(doc: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _guide_section(doc: dict[str, Any], docs: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     """读取数字指引、可选的电话会方向性指引及行业展望。"""
+    view = {"rows": _performance_rows(doc, docs or {}), "outlook": _industry_outlook(doc)}
     guidance = doc.get("guidance") or {}
-    call_outlook = [
-        item for item in guidance.get("items") or []
-        if item.get("type") in {"directional", "qualitative"} and item.get("statement")
-    ] if guidance.get("show_call_outlook") else []
-    return {
-        "rows": _performance_rows(doc, docs or {}),
-        "call_outlook": call_outlook,
-        "outlook": _industry_outlook(doc),
-    }
+    if guidance.get("show_call_outlook"):
+        view["call_outlook"] = [
+            item for item in guidance.get("items") or []
+            if item.get("type") in {"directional", "qualitative"} and item.get("statement")
+        ]
+    return view
 
 
 def _revision_rows(doc: dict[str, Any]) -> dict[str, Any]:

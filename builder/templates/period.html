@@ -178,8 +178,9 @@
   </div>
 </details>
 
+{% set call_outlook = guidance.call_outlook|default([]) %}
 <details class="ev" id="guide">
-  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引{% if guidance.rows or guidance.call_outlook %} {{ guidance.rows|length + guidance.call_outlook|length }} 项{% endif %} · 行业展望{% if guidance.outlook %} {{ guidance.outlook|length }} 题{% else %} 无{% endif %}</span></summary>
+  <summary><span class="ev-t">指引展望</span><span class="ev-meta">业绩指引{% if guidance.rows or call_outlook %} {{ guidance.rows|length + call_outlook|length }} 项{% endif %} · 行业展望{% if guidance.outlook %} {{ guidance.outlook|length }} 题{% else %} 无{% endif %}</span></summary>
   <div class="ev-body">
   <div class="guide-stack">
     <section class="guide-part">
@@ -239,13 +240,13 @@
         </tbody>
       </table>
       </div>
-      {% elif not guidance.call_outlook %}
+      {% elif not call_outlook %}
       <p class="guide-empty">管理层没有给出营收、利润率、调整后摊薄 EPS 或资本开支的数字。</p>
       {% endif %}
-      {% if guidance.call_outlook %}
+      {% if call_outlook %}
       <p class="layer-sub">电话会方向性展望。正式营收、利润率、调整后摊薄 EPS 及资本开支的点值或区间未披露。</p>
       <div class="outlook-list">
-      {% for item in guidance.call_outlook %}
+      {% for item in call_outlook %}
         <article class="outlook-block">
           <h4>{{ item.metric_label }}{% if item.period %}（{{ item.period }}）{% endif %}</h4>
           <div class="outlook-copy"><p>{{ item.statement }}</p></div>
